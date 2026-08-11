@@ -74,11 +74,24 @@ surfaced months later:
    would carry a `Signed-off-by` that Gerrit rejects. Fixed by aligning both.
    Nothing about this failure would have pointed at its cause.
 
-**`TODO(me)`** — CLA status. It goes to `manager@lfprojects.org`, and signing
-it inside Gerrit is *not* the same thing. Confirm whether it was already sent
-for the other project; if so record the date here, if not send it today and
-keep the sent copy under `docs/upstream/`. This has a waiting time attached,
-which is the only reason it is urgent on day one.
+**Resolved same day.** The Individual CLA was sent to
+`manager@lfprojects.org` on **2026-08-04** under the other project, and one
+agreement covers every OpenBMC repository. The Gerrit account, SSH key,
+`commit-msg` hook and a rehearsed `%private,wip` submission were all completed
+in the same window. Dates and evidence are in
+[`docs/upstream/README.md`](docs/upstream/README.md).
+
+So the item that was supposed to be day one's urgent one — the thing with a
+queue in front of it — was already finished before this project started. Worth
+noticing why: the queue was not shortened, it was simply entered earlier, for
+a different reason. Gate 7's remaining risk here is entirely technical.
+
+One detail from that setup is worth carrying because it is the same mistake
+this machine made again today: signing in to Gerrit with GitHub OAuth
+populated the profile's full name from GitHub rather than the legal name, and
+nothing indicates the problem until a `Signed-off-by:` is rejected. An identity
+written down in one place and assumed everywhere else — which is exactly what
+the Windows and WSL git configurations were doing this morning.
 
 ### A clone that looks like a hang
 

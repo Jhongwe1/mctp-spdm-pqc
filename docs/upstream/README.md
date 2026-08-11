@@ -13,15 +13,46 @@ long as it takes. Work that has a queue in front of it starts first.
 
 ## Status
 
+The account-level work was completed under a separate OpenBMC project of mine
+before this one started. One Individual CLA and one Gerrit identity cover every
+repository in the OpenBMC project, so none of it is repeated here — but the
+dates belong in this tracker, because "the paperwork is done" is a claim that
+needs a date attached to it.
+
 | Item | State | Date | Evidence |
 |---|---|---|---|
-| Gerrit account, real name, SSH key | **done** | 2026-08-04 | `ssh openbmc.gerrit` returns a greeting with the account's full name |
-| git identity matches Gerrit on both host environments | **done** | 2026-08-11 | `user.name` is the legal name in WSL and on Windows |
-| CLA sent to `manager@lfprojects.org` | **`TODO`** | | keep the sent copy in this directory |
+| Individual CLA sent to `manager@lfprojects.org` | **done** | 2026-08-04 | signed as the legal name; one agreement covers every OpenBMC repository |
+| Gerrit account, SSH key, `~/.ssh/config` | **done** | 2026-08-04 | `ssh openbmc.gerrit` returns a greeting with the account's full name |
+| Gerrit profile full name corrected | **done** | 2026-08-04 | GitHub OAuth had populated it with a short form — see the third trap below |
+| `commit-msg` hook installed (Change-Id) | **done** | 2026-08-04 | hook served by Gerrit 3.11.7 |
+| Submission pipeline rehearsed end to end | **done** | 2026-08-05 | a `%private,wip` change, three patchsets, abandoned once verified |
+| git identity matches Gerrit in every environment | **done** | 2026-08-11 | legal name in both the WSL and the Windows git config |
 | Community channel joined, reading only | **`TODO`** | | |
-| Target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
-| First change submitted | not started | | |
+| **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
+| **This project's** first change submitted | not started | | |
 | Reviewer response received | not started | | |
+
+> **Not a deliverable of this project.** A change to `openbmc/docs` was
+> submitted on 2026-08-11 under the other project. It appears nowhere in this
+> repository's results and is mentioned only because of what it removes: the
+> path from `git commit -s` to a change sitting in Gerrit has been walked once
+> already, so what this project still owes upstream is a technical problem, not
+> an administrative one.
+
+## Rehearsing the submission before submitting
+
+Worth naming, because it is the step most people skip. Before the first real
+change, push one marked private and work-in-progress:
+
+```bash
+git push openbmc.gerrit HEAD:refs/for/master%private,wip
+```
+
+It traverses the whole pipeline — CLA check, DCO check, Change-Id, CI — while
+remaining visible only to its author. Every configuration mistake surfaces with
+nobody notified, and the change is abandoned afterwards. The alternative is
+finding out about a rejected sign-off on a change that reviewers are already
+looking at.
 
 ## First build attempt — 2026-08-11
 
@@ -104,19 +135,30 @@ meson setup build             # succeeds: 808 targets
 meson compile -C build        # fails on GCC 13.3 — see blockers 4 and 5
 ```
 
-## Two things that are easy to get wrong
+## Three identity traps, all of which are silent until they are not
 
 **The CLA is not signed inside Gerrit.** It is a document that goes to
 `manager@lfprojects.org`. Ticking something in a web interface is not the same
 act, and the difference does not become visible until a change is blocked
-months later. Keep the sent copy here — it is the only proof of the date.
+months later. Keep the sent copy — it is the only proof of the date.
 
 **The CLA and the DCO are different requirements, and both apply.** The CLA is
 a one-time agreement covering the person. The DCO is the `Signed-off-by:` line
-that has to be on every individual commit, produced by `git commit -s`, and it
-has to match the name on the account. This is why `user.name` is the legal name
-in every environment that might produce a commit — a mismatch is rejected with
-a message that explains the rule but not which of the two identities is wrong.
+on every individual commit, produced by `git commit -s`, and it has to match
+the name on the account. A mismatch is rejected with a message that explains
+the rule but not which of the two identities is wrong.
+
+**Signing in to Gerrit with GitHub OAuth fills the profile name from GitHub.**
+So the account can end up carrying a handle or a shortened display name rather
+than the legal name that has to appear in `Signed-off-by:`. It has to be
+corrected in Gerrit's profile settings, and nothing says so until a change is
+rejected. Hit and fixed on 2026-08-04.
+
+The three are the same failure in three costumes: an identity recorded in one
+place and assumed everywhere else. The same shape turned up again on
+2026-08-11 on this machine, where the Windows and WSL git configurations
+carried different `user.name` values and only one of them would have satisfied
+the DCO.
 
 ## Why this target
 

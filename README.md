@@ -39,7 +39,7 @@ exists today, not what is planned. Planned work is in
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | target built; five blockers documented |
+| G7 | upstream contribution | agreements and account done; target built, five blockers documented |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
