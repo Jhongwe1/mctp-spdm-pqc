@@ -1,0 +1,391 @@
+#!/usr/bin/env bash
+#
+# harness/healthcheck.sh — ten checks that decide what this project can do.
+#
+#   bash harness/healthcheck.sh pqc
+#   bash harness/healthcheck.sh pqc --write-baseline    # also refresh docs/env-baseline.md
+#   bash harness/healthcheck.sh stable
+#
+# Checks 4 and 7 are the ones that matter:
+#
+#   #4  minimal handshake — if this fails nothing downstream is possible
+#   #7  post-quantum handshake — decides whether the PQC half of the project
+#       is a measurement or a paper exercise
+#
+# Everything else is recorded so that in three months there is a written answe
+# to "what was your environment", which is a question that gets asked.
+#
+# Exit code: 0 when check 4 passes, 1 when it does not. Check 7 failing on the
+# `stable` flavor is expected and is not an error.
+#
+# ── three things fixed relative to a naive version of this script ───────────
+#
+#   1. It cd's into the binary directory before running anything. spdm-emu
+#      opens its sample certificates by RELATIVE path (ecp384/..., rsa3072/...),
+#      so running the binary by absolute path from elsewhere fails with an
+#      unhelpful error about a missing certificate chain.
+#   2. It waits for the responder to actually be listening instead of
+#      sleeping a fixed number of seconds. A fixed sleep is a race that passes
+#      on an idle laptop and fails in CI.
+#   3. Every child process is killed on exit, including on Ctrl-C. A stray
+#      responder holding port 2323 makes the next run fail for a reason that
+#      has nothing to do with the code.
+
+set -uo pipefail
+
+_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${_HERE}/lib/common.sh"
+. "${_HERE}/lib/provenance.sh"
+
+FLAVOR="${1:-pqc}"
+WRITE_BASELINE=0
+[ "${2:-}" = "--write-baseline" ] && WRITE_BASELINE=1
+
+BIN="$(flavor_bin "$FLAVOR")"
+PORT="${SPDM_EMU_PORT:-2323}"
+
+# ── the two flags that define "minimal", and why both are needed ────────────
+#
+# MIN_CONN cuts the connection phase from the ten operations spdm-emu runs by
+# default down to the four that constitute an attestation flow.
+#
+# MIN_SESSION is the one that is easy to miss, and it is the more important of
+# the two. `--exe_session` defaults to FOURTEEN operations —
+#   KEY_EX,PSK,KEY_UPDATE,HEARTBEAT,MEAS,MEL,DIGEST,CERT,GET_CSR,SET_CERT,
+#   GET_KEY_PAIR_INFO,SET_KEY_PAIR_INFO,EP_INFO,APP
+# — and they run inside an encrypted session that the connection-phase
+# attestation flow does not need at all. Leaving it at the default costs a
+# handshake that is twice the size, twice the duration, and that exits non-zero
+# because SET_CERT inside the session fails on the sample key material.
+#
+# Measured on this build (libspdm 4.0.0-rc), same --exe_conn either way:
+#   default --exe_session : 1116 packets, 61807 bytes, 53 s, exit 1
+#   --exe_session NO_END  :  554 packets, 20549 bytes, 24 s, exit 0
+#
+# NO_END is used because the flag parser has no token meaning "nothing", and
+# NO_END (0x4) sets neither KEY_EX (0x1) nor PSK (0x2) — and those two are the
+# only flags that cause spdm_requester_emu to establish a session at all. The
+# name is about END_SESSION, so this is a side effect rather than the flag's
+# purpose; if a future release changes it, check the two `if` statements in
+# spdm_emu/spdm_requester_emu/spdm_requester_emu.c that gate do_session_via_spdm.
+MIN_CONN="DIGEST,CERT,CHAL,MEAS"
+MIN_SESSION="NO_END"
+
+[ -d "$BIN" ] || die "no build for flavor '${FLAVOR}' at ${BIN}
+  build it first:  bash harness/build_spdm_emu.sh ${FLAVOR}"
+
+prov_begin "healthcheck-${FLAVOR}" "$FLAVOR"
+VERDICTS="${PROV_RUN_DIR}/verdicts.tsv"
+: > "$VERDICTS"
+
+# --------------------------------------------------------------- helpers ----
+
+verdict() {   # verdict <PASS|FAIL|INFO> <id> <description>
+    printf '%s\t%s\t%s\n' "$1" "$2" "$3" >> "$VERDICTS"
+    printf '  [%s] %s\n' "$1" "$3"
+}
+
+# grep -c prints "0" AND exits 1 when there are no matches. Writing
+# `$(grep -c ... || echo 0)` therefore yields "0\n0", which then fails every
+# numeric test with "integer expression expected". Swallow the status instead
+# of supplying a replacement value.
+count_matches() {   # count_matches <pattern> <file>
+    local n
+    n="$(grep -c "$1" "$2" 2>/dev/null || true)"
+    printf '%s' "${n:-0}"
+}
+
+# Pull one field out of a capture summary, or 0 if anything at all goes wrong.
+pcap_field() {   # pcap_field <file> <key>
+    python3 "${REPO_ROOT}/harness/pcapcount.py" "$1" --json 2>/dev/null \
+        | python3 -c "import json,sys; print(json.load(sys.stdin)['summary']['$2'])" \
+          2>/dev/null || printf '0'
+}
+
+section() { printf '\n=== %s ===\n' "$*"; }
+
+RESPONDER_PID=""
+cleanup() {
+    if [ -n "$RESPONDER_PID" ] && kill -0 "$RESPONDER_PID" 2>/dev/null; then
+        kill "$RESPONDER_PID" 2>/dev/null || true
+        sleep 0.3
+        kill -9 "$RESPONDER_PID" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
+
+port_is_listening() {
+    if command -v ss >/dev/null 2>&1; then
+        ss -ltn 2>/dev/null | grep -qE "[:.]${PORT}[[:space:]]"
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -ltn 2>/dev/null | grep -qE "[:.]${PORT}[[:space:]]"
+    else
+        return 2      # cannot tell; caller falls back to a sleep
+    fi
+}
+
+wait_for_responder() {   # wait_for_responder <pid> <timeout_s>
+    local pid="$1" limit="$2" waited=0
+    while [ "$waited" -lt "$((limit * 10))" ]; do
+        kill -0 "$pid" 2>/dev/null || return 1        # it died
+        port_is_listening && return 0
+        case $? in 2) sleep 3; return 0 ;; esac       # no ss/netstat: best effort
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+    return 1
+}
+
+# do_handshake <label> <extra args...>
+# Starts a responder, runs a requester against it, captures a pcap, and leaves
+# four files in the run directory: <label>.{rsp,req}.log and <label>.pcap.
+do_handshake() {
+    local label="$1"; shift
+    local rsp_log="${PROV_RUN_DIR}/${label}.rsp.log"
+    local req_log="${PROV_RUN_DIR}/${label}.req.log"
+    local pcap="${PROV_RUN_DIR}/${label}.pcap"
+
+    # Run from the binary directory: sample certificates are opened by relative path.
+    cd "$BIN" || return 90
+
+    local common=(--exe_conn "$MIN_CONN" --exe_session "$MIN_SESSION")
+
+    prov_cmd "./spdm_responder_emu" "${common[@]}" "$@"
+    ./spdm_responder_emu "${common[@]}" "$@" >"$rsp_log" 2>&1 &
+    RESPONDER_PID=$!
+
+    if ! wait_for_responder "$RESPONDER_PID" 10; then
+        RESPONDER_PID=""
+        return 91                                     # responder never came up
+    fi
+
+    prov_cmd "./spdm_requester_emu" "${common[@]}" --pcap "$pcap" "$@"
+    timeout 90 ./spdm_requester_emu "${common[@]}" --pcap "$pcap" "$@" \
+        >"$req_log" 2>&1
+    local rc=$?
+
+    # The requester normally shuts the responder down; give it a moment, then
+    # make sure either way.
+    local waited=0
+    while kill -0 "$RESPONDER_PID" 2>/dev/null && [ "$waited" -lt 30 ]; do
+        sleep 0.1; waited=$((waited + 1))
+    done
+    cleanup; RESPONDER_PID=""
+    cd "$REPO_ROOT" || true
+    return $rc
+}
+
+# ------------------------------------------------------------------ body ----
+
+body() {
+
+printf 'SPDM attestation lab — environment baseline\n'
+printf 'flavor : %s\n' "$FLAVOR"
+printf 'binary : %s\n' "$BIN"
+printf 'run    : %s\n' "$PROV_RUN_ID"
+printf 'date   : %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+section "0. version pins (the caption source for every table in this repo)"
+if [ -f "$(flavor_pin "$FLAVOR")" ]; then
+    cat "$(flavor_pin "$FLAVOR")"
+    verdict PASS 0 "BUILD_PIN.txt present"
+else
+    verdict FAIL 0 "BUILD_PIN.txt missing — results cannot be attributed"
+fi
+
+section "1. which algorithms the CLI exposes (decides which experiments exist)"
+HELP="$("${BIN}/spdm_requester_emu" --help 2>&1 || true)"
+printf '%s\n' "$HELP" | grep -oE '\-\-(pqc_asym|kem|pqc_first|asym|hash|dhe|aead|ver)[^]]*' \
+    | sed 's/^/  /' | head -40 || true
+if printf '%s\n' "$HELP" | grep -q -- '--pqc_asym'; then
+    verdict PASS 1 "--pqc_asym exposed by this build"
+else
+    verdict INFO 1 "--pqc_asym absent (expected for flavor=stable)"
+fi
+
+section "2. SPDM versions this build negotiates"
+printf '%s\n' "$HELP" | grep -oE '\-\-ver[^]]*' | sed 's/^/  /' || echo "  (not advertised in --help)"
+
+section "3. sample certificates and keys (make copy_sample_key)"
+if ls -d "${BIN}"/*/ >/dev/null 2>&1; then
+    ls -d "${BIN}"/*/ | sed 's#.*/\([^/]*\)/$#  \1/#' | head -30
+    KEYDIRS="$(ls -d "${BIN}"/*/ 2>/dev/null | wc -l)"
+    verdict PASS 3 "${KEYDIRS} sample key directories present"
+else
+    verdict FAIL 3 "no sample key directories — 'make copy_sample_key' did not run before 'make'"
+fi
+
+section "4. minimal handshake  ★ go / no-go for the whole project"
+printf '  --exe_conn %s  --exe_session %s\n' "$MIN_CONN" "$MIN_SESSION"
+if do_handshake minimal; then
+    # An exit status of 0 is necessary but not sufficient. spdm_requester_emu
+    # does more than the handshake, and a stage that fails without aborting
+    # would leave the status at 0 while the capture is not what it claims to
+    # be. Check the evidence as well: no error lines, and a capture that
+    # actually contains a certificate-sized exchange.
+    ERRS="$(count_matches 'ERROR' "${PROV_RUN_DIR}/minimal.req.log")"
+    PKTS="$(pcap_field "${PROV_RUN_DIR}/minimal.pcap" packets)"
+    printf '  exit=0  error lines=%s  packets=%s\n' "$ERRS" "$PKTS"
+    prov_note minimal_packets "$PKTS"
+    prov_note minimal_bytes   "$(pcap_field "${PROV_RUN_DIR}/minimal.pcap" captured_bytes_total)"
+    if [ "$ERRS" -eq 0 ] && [ "$PKTS" -ge 10 ]; then
+        verdict PASS 4 "minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)"
+        HANDSHAKE_OK=1
+    else
+        verdict FAIL 4 "requester exited 0 but the evidence disagrees (errors=${ERRS}, packets=${PKTS})"
+        HANDSHAKE_OK=0
+        grep 'ERROR' "${PROV_RUN_DIR}/minimal.req.log" 2>/dev/null | head -10 | sed 's/^/  | /'
+    fi
+else
+    rc=$?
+    case $rc in
+        90) verdict FAIL 4 "could not enter binary directory ${BIN}" ;;
+        91) verdict FAIL 4 "responder never listened on port ${PORT} — see minimal.rsp.log" ;;
+        124) verdict FAIL 4 "requester timed out after 60s — see minimal.req.log" ;;
+        *)  verdict FAIL 4 "requester exited ${rc} — see minimal.req.log" ;;
+    esac
+    HANDSHAKE_OK=0
+    printf '  --- last 15 lines of responder log ---\n'
+    tail -15 "${PROV_RUN_DIR}/minimal.rsp.log" 2>/dev/null | sed 's/^/  | /'
+    printf '  --- last 15 lines of requester log ---\n'
+    tail -15 "${PROV_RUN_DIR}/minimal.req.log" 2>/dev/null | sed 's/^/  | /'
+fi
+
+section "5. capture file produced, and how many packets are in it"
+if [ -s "${PROV_RUN_DIR}/minimal.pcap" ]; then
+    python3 "${REPO_ROOT}/harness/pcapcount.py" "${PROV_RUN_DIR}/minimal.pcap" | sed 's/^/  /'
+    verdict PASS 5 "pcap written and parsed by harness/pcapcount.py"
+else
+    verdict FAIL 5 "no pcap produced — nothing downstream can be measured"
+fi
+
+section "6. spdm_dump (offline capture decoding, needed from W02)"
+if command -v spdm_dump >/dev/null 2>&1; then
+    verdict PASS 6 "spdm_dump on PATH: $(command -v spdm_dump)"
+elif [ -x "${WORK_DIR}/spdm-dump/build/bin/spdm_dump" ]; then
+    verdict PASS 6 "spdm_dump built at ${WORK_DIR}/spdm-dump/build/bin/spdm_dump"
+else
+    verdict INFO 6 "spdm_dump not built yet — run: bash harness/build_spdm_dump.sh"
+fi
+
+section "7. post-quantum handshake  ★ decides whether PQC is measured or estimated"
+printf '  --pqc_asym ML_DSA_65  --kem ML_KEM_768  --pqc_first TRUE  --asym NONE --dhe NONE\n'
+if do_handshake pqc \
+        --asym NONE --dhe NONE \
+        --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE; then
+    PQC_ERRS="$(count_matches 'ERROR' "${PROV_RUN_DIR}/pqc.req.log")"
+    if [ "$PQC_ERRS" -eq 0 ]; then
+        verdict PASS 7 "post-quantum handshake completed with no errors"
+    else
+        verdict FAIL 7 "exit 0 but ${PQC_ERRS} error lines in pqc.req.log"
+    fi
+    grep -E '^(asym|dhe|pqc_asym|kem|pqc_first) ' "${PROV_RUN_DIR}/pqc.req.log" \
+        2>/dev/null | sed 's/^/  requested: /'
+
+    # Preliminary byte comparison. Both captures were produced by this run,
+    # under the same --exe_conn and --exe_session, minutes apart.
+    #
+    # ⚠️ This is an OBSERVATION, not a result. The values above are what the
+    # requester was ASKED for. What was actually NEGOTIATED can only be read
+    # out of the ALGORITHMS response in the capture, which needs spdm_dump.
+    # Until that is done this number must not be quoted as a measurement —
+    # verifying the independent variable rather than asserting it is the whole
+    # point. G4 is where this becomes a result.
+    CB="$(pcap_field "${PROV_RUN_DIR}/minimal.pcap" captured_bytes_total)"
+    PB="$(pcap_field "${PROV_RUN_DIR}/pqc.pcap"     captured_bytes_total)"
+    if [ "$CB" -gt 0 ] && [ "$PB" -gt 0 ]; then
+        printf '  preliminary: classical %s bytes vs post-quantum %s bytes (ratio %s)\n' \
+            "$CB" "$PB" "$(awk -v a="$PB" -v b="$CB" 'BEGIN{printf "%.2fx", a/b}')"
+        printf '  NOT a result — the negotiated algorithm has not been read back yet (G4).\n'
+        prov_note prelim_classical_bytes "$CB"
+        prov_note prelim_pqc_bytes       "$PB"
+        prov_note prelim_caveat          "requested algorithms only; negotiated values unverified"
+    fi
+else
+    rc=$?
+    if [ "$FLAVOR" = "stable" ]; then
+        verdict INFO 7 "PQC handshake failed on flavor=stable — expected, 3.8.2 has no ML-DSA"
+    else
+        verdict FAIL 7 "PQC handshake failed (rc=${rc}) — see pqc.req.log"
+        tail -15 "${PROV_RUN_DIR}/pqc.req.log" 2>/dev/null | sed 's/^/  | /'
+    fi
+fi
+
+section "8. system OpenSSL — only affects signing our own certificate chain (W03)"
+openssl version 2>&1 | sed 's/^/  /'
+if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
+    verdict PASS 8 "system OpenSSL offers ML-DSA"
+else
+    verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5) — affects W03 only, not the handshake"
+fi
+
+section "9. QEMU with an SPDM-capable device (W09 transport work)"
+if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+    qemu-system-x86_64 -device nvme,help 2>&1 | grep -i spdm | sed 's/^/  /' \
+        && verdict PASS 9 "QEMU exposes an spdm_port property" \
+        || verdict INFO 9 "QEMU present but no spdm_port — W09 falls back"
+else
+    verdict INFO 9 "no QEMU installed — W09 transport path degrades, main line unaffected"
+fi
+
+section "10. kernel MCTP support (W09 AF_MCTP path)"
+if zcat /proc/config.gz 2>/dev/null | grep -qE '^CONFIG_MCTP=[ym]' \
+   || grep -qE '^CONFIG_MCTP=[ym]' "/boot/config-$(uname -r)" 2>/dev/null; then
+    verdict PASS 10 "CONFIG_MCTP enabled in this kernel"
+else
+    ( zcat /proc/config.gz 2>/dev/null || cat "/boot/config-$(uname -r)" 2>/dev/null ) \
+        | grep -E 'CONFIG_MCTP' | sed 's/^/  /' || echo "  (no kernel config readable)"
+    verdict INFO 10 "no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected"
+fi
+
+# ---------------------------------------------------------------- summary ---
+section "summary"
+awk -F'\t' '{printf "  %-4s #%-3s %s\n", $1, $2, $3}' "$VERDICTS"
+printf '\n'
+printf '  PASS=%s  FAIL=%s  INFO=%s\n' \
+    "$(grep -c '^PASS' "$VERDICTS" || true)" \
+    "$(grep -c '^FAIL' "$VERDICTS" || true)" \
+    "$(grep -c '^INFO' "$VERDICTS" || true)"
+
+if [ "${HANDSHAKE_OK:-0}" -eq 1 ]; then
+    printf '\n  GATE 0 (minimal handshake): PASS — the project can proceed.\n'
+else
+    printf '\n  GATE 0 (minimal handshake): FAIL — stop and fix this before anything else.\n'
+    printf '  See RUNBOOK.md section "When it does not work".\n'
+fi
+
+}
+
+# ------------------------------------------------------------------ run -----
+
+OUT_TXT="${PROV_RUN_DIR}/healthcheck.txt"
+body 2>&1 | tee "$OUT_TXT"
+
+prov_note gate0_handshake "$(grep -q '^PASS	4' "$VERDICTS" && echo pass || echo fail)"
+prov_note gate0_pqc       "$(grep -q '^PASS	7' "$VERDICTS" && echo pass || echo fail)"
+prov_finish
+
+if [ "$WRITE_BASELINE" -eq 1 ]; then
+    BASELINE="${REPO_ROOT}/docs/env-baseline.md"
+    mkdir -p "$(dirname "$BASELINE")"
+    {
+        echo "# Environment baseline"
+        echo
+        echo "Verbatim output of \`harness/healthcheck.sh\`. This file is generated;"
+        echo "do not hand-edit it. Regenerate with:"
+        echo
+        echo '```bash'
+        echo "bash harness/healthcheck.sh ${FLAVOR} --write-baseline"
+        echo '```'
+        echo
+        echo "Run: \`${PROV_RUN_ID}\` · captured $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "Full artifacts and SHA-256 manifest: \`bench/data/${PROV_RUN_ID}/\`"
+        echo
+        echo '```text'
+        cat "$OUT_TXT"
+        echo '```'
+    } > "$BASELINE"
+    printf 'baseline  : %s\n' "$BASELINE"
+fi
+
+grep -q '^PASS	4' "$VERDICTS"
