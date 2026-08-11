@@ -1,21 +1,8 @@
-# Environment baseline
-
-Verbatim output of `harness/healthcheck.sh`. This file is generated;
-do not hand-edit it. Regenerate with:
-
-```bash
-bash harness/healthcheck.sh pqc --write-baseline
-```
-
-Run: `healthcheck-pqc-20260811T094034Z` · captured 2026-08-11T09:41:27Z
-Full artifacts and SHA-256 manifest: `bench/data/healthcheck-pqc-20260811T094034Z/`
-
-```text
 SPDM attestation lab — environment baseline
 flavor : pqc
 binary : /home/key/spdm-lab/work/spdm-emu-pqc/build/bin
-run    : healthcheck-pqc-20260811T094034Z
-date   : 2026-08-11T09:40:35Z
+run    : healthcheck-pqc-20260811T093921Z
+date   : 2026-08-11T09:39:21Z
 
 === 0. version pins (the caption source for every table in this repo) ===
 flavor=pqc
@@ -100,7 +87,7 @@ built-at=2026-08-11T05:18:34Z
   [PASS] minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)
 
 === 5. capture file produced, and how many packets are in it ===
-  file       : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T094034Z/minimal.pcap (29437 bytes)
+  file       : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T093921Z/minimal.pcap (29437 bytes)
   format     : classic pcap v2.4, little-endian, microsecond timestamps
   linktype   : 291 (MCTP)
   snaplen    : 65536
@@ -183,4 +170,3 @@ built-at=2026-08-11T05:18:34Z
   PASS=8  FAIL=0  INFO=3
 
   GATE 0 (minimal handshake): PASS — the project can proceed.
-```

@@ -32,18 +32,53 @@ exists today, not what is planned. Planned work is in
 
 | Gate | Subject | State |
 |:--|---|---|
-| G0 | environment and version baseline | **in progress** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
+| G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
 | G1 | full handshake, field by field | not started |
 | G2 | certificate chain, three tamper points | not started |
 | G3 | RATS verification pipeline | not started |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | environment prepared |
+| G7 | upstream contribution | target built; five blockers documented |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 1 established
+
+Two things came out of the environment work that were not the point of it.
+
+**A post-quantum certificate chain is ten times the size of a classical one,
+and that changes the message flow rather than only the byte count.**
+
+| | classical | post-quantum |
+|---|---|---|
+| negotiated signature algorithm | ECDSA-P384 | **ML-DSA-65** |
+| negotiated key encapsulation | none | **ML-KEM-768** |
+| certificate chain | 1,655 bytes | **16,853 bytes** |
+| chunk round trips to fetch it | **0** | **4** |
+
+The chain exceeds the negotiated `DataTransferSize` (4,608 bytes), so
+`GET_CERTIFICATE` is answered with `SPDM_ERROR(LargeResponse)` and the exchange
+falls into SPDM's chunking mechanism. **The classical path never executes that
+code.** On a real BMC speaking MCTP over I²C, where the transfer unit is
+smaller again, that is the part that would be felt.
+
+Both rows come from one decoded protocol field read out of both captures, with
+the algorithm confirmed from the `ALGORITHMS` response rather than from what
+was requested. `harness/healthcheck.sh` re-derives them on every run.
+
+**The reference decoder cannot read the reference emulator's post-quantum
+output.** `spdm_dump`, built from the same `libspdm` commit as the emulator,
+stops partway through with `cert_chain is too larger — increase
+LIBSPDM_MAX_CERT_CHAIN_SIZE and rebuild`. The handshake is fine; the decoder's
+compile-time constant is not. Anything that reports a short decode as a short
+handshake will be wrong, so the health check labels that case explicitly.
+
+Neither of these is Gate 4. They are single observations from a single build,
+recorded because they were seen, and they are what Gate 4 will have to
+measure properly.
 
 ## Getting started
 

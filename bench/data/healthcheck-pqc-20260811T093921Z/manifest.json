@@ -1,0 +1,114 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "healthcheck-pqc-20260811T093921Z",
+    "name": "healthcheck-pqc",
+    "flavor": "pqc",
+    "started_at": "2026-08-11T09:39:21Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "6945560592f0cf2d4316cd606d13609fb06bb0a3",
+    "repo_dirty": "true",
+    "minimal_packets": "554",
+    "minimal_bytes": "20549",
+    "minimal_chunk_get_count": "0",
+    "minimal_spdm_error_count": "246",
+    "minimal_decode_truncated": "false",
+    "pqc_chunk_get_count": "4",
+    "pqc_spdm_error_count": "1",
+    "pqc_decode_truncated": "true (spdm_dump LIBSPDM_MAX_CERT_CHAIN_SIZE)",
+    "gate0_handshake": "pass",
+    "gate0_pqc": "pass",
+    "finished_at": "2026-08-11T09:40:16Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z"
+  },
+  "commands": [
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T093921Z/minimal.pcap",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T093921Z/pqc.pcap --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T093921Z/minimal.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260811T093921Z/pqc.pcap"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 404,
+      "sha256": "c27b3d6da4d4e88e642e13303e193979ad7466322807c750a1731de8ded002ce"
+    },
+    {
+      "path": "healthcheck.txt",
+      "bytes": 6525,
+      "sha256": "09e6b4a6904826be17305951f473017812d5c652c635e26de3b121cec8b1862d"
+    },
+    {
+      "path": "minimal.decode.txt",
+      "bytes": 59875,
+      "sha256": "bc112b596343b07373f6fffbc3c0ef9972782a821a545cdc8159b29d0c3c0b2a"
+    },
+    {
+      "path": "minimal.pcap",
+      "bytes": 29437,
+      "sha256": "c42eac315fe00aa12e1d88d111bbdf700800200b276dac79bd3fff2556cb4a35"
+    },
+    {
+      "path": "minimal.req.log",
+      "bytes": 79,
+      "sha256": "362352ed73303ce31d9262c7486aab312bdfb0c76ff3ac3238a405a0b5ba8a91"
+    },
+    {
+      "path": "minimal.rsp.log",
+      "bytes": 77,
+      "sha256": "dd4794a9a868f489f19baf4a9388d8fbe91b966b25702baca822eb884f2dfe43"
+    },
+    {
+      "path": "pqc.decode.txt",
+      "bytes": 3323,
+      "sha256": "00602f7bed478dca7f793dc7cad1c79bcbf4115fb70d00c0e82ab24c2031fa15"
+    },
+    {
+      "path": "pqc.pcap",
+      "bytes": 131521,
+      "sha256": "04217ef1afd6e7ae0ca8157f9206143879caf71a0c34065c3cb2ec15e575b8f1"
+    },
+    {
+      "path": "pqc.req.log",
+      "bytes": 166,
+      "sha256": "1e0ae7d202a851300e355fc37018a54742aec961651fc26b6ade6125a87c02d1"
+    },
+    {
+      "path": "pqc.rsp.log",
+      "bytes": 164,
+      "sha256": "22bf02ee4ba44273b3d9871acbc89eb992fc0801f8d1c873a53be0427a2b3daf"
+    },
+    {
+      "path": "verdicts.tsv",
+      "bytes": 715,
+      "sha256": "c975e5598b7d51c1a2893a5a77c183a6f31badd7c1d44e854f5fe2733b6b7cdd"
+    }
+  ],
+  "artifact_count": 11,
+  "artifact_bytes": 232286
+}
