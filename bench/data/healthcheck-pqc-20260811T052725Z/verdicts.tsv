@@ -1,0 +1,10 @@
+PASS	0	BUILD_PIN.txt present
+PASS	1	--pqc_asym exposed by this build
+PASS	3	28 sample key directories present
+FAIL	4	requester exited 1 — see minimal.req.log
+PASS	5	pcap written and parsed by harness/pcapcount.py
+INFO	6	spdm_dump not built yet — run: bash harness/build_spdm_dump.sh
+FAIL	7	PQC handshake failed (rc=1) — see pqc.req.log
+INFO	8	system OpenSSL has no ML-DSA (needs >= 3.5) — affects W03 only, not the handshake
+INFO	9	no QEMU installed — W09 transport path degrades, main line unaffected
+INFO	10	no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
