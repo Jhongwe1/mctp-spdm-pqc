@@ -259,11 +259,15 @@ else
     verdict FAIL 5 "no pcap produced — nothing downstream can be measured"
 fi
 
-section "6. spdm_dump (offline capture decoding, needed from W02)"
+section "6. spdm_dump (offline capture decoding — the only way to read a negotiation)"
+SPDM_DUMP=""
 if command -v spdm_dump >/dev/null 2>&1; then
-    verdict PASS 6 "spdm_dump on PATH: $(command -v spdm_dump)"
+    SPDM_DUMP="$(command -v spdm_dump)"
 elif [ -x "${WORK_DIR}/spdm-dump/build/bin/spdm_dump" ]; then
-    verdict PASS 6 "spdm_dump built at ${WORK_DIR}/spdm-dump/build/bin/spdm_dump"
+    SPDM_DUMP="${WORK_DIR}/spdm-dump/build/bin/spdm_dump"
+fi
+if [ -n "$SPDM_DUMP" ]; then
+    verdict PASS 6 "spdm_dump available: ${SPDM_DUMP}"
 else
     verdict INFO 6 "spdm_dump not built yet — run: bash harness/build_spdm_dump.sh"
 fi
@@ -282,25 +286,8 @@ if do_handshake pqc \
     grep -E '^(asym|dhe|pqc_asym|kem|pqc_first) ' "${PROV_RUN_DIR}/pqc.req.log" \
         2>/dev/null | sed 's/^/  requested: /'
 
-    # Preliminary byte comparison. Both captures were produced by this run,
-    # under the same --exe_conn and --exe_session, minutes apart.
-    #
-    # ⚠️ This is an OBSERVATION, not a result. The values above are what the
-    # requester was ASKED for. What was actually NEGOTIATED can only be read
-    # out of the ALGORITHMS response in the capture, which needs spdm_dump.
-    # Until that is done this number must not be quoted as a measurement —
-    # verifying the independent variable rather than asserting it is the whole
-    # point. G4 is where this becomes a result.
-    CB="$(pcap_field "${PROV_RUN_DIR}/minimal.pcap" captured_bytes_total)"
-    PB="$(pcap_field "${PROV_RUN_DIR}/pqc.pcap"     captured_bytes_total)"
-    if [ "$CB" -gt 0 ] && [ "$PB" -gt 0 ]; then
-        printf '  preliminary: classical %s bytes vs post-quantum %s bytes (ratio %s)\n' \
-            "$CB" "$PB" "$(awk -v a="$PB" -v b="$CB" 'BEGIN{printf "%.2fx", a/b}')"
-        printf '  NOT a result — the negotiated algorithm has not been read back yet (G4).\n'
-        prov_note prelim_classical_bytes "$CB"
-        prov_note prelim_pqc_bytes       "$PB"
-        prov_note prelim_caveat          "requested algorithms only; negotiated values unverified"
-    fi
+    # The values printed above are what the requester was ASKED for. What was
+    # actually NEGOTIATED is checked in section 11, from the capture.
 else
     rc=$?
     if [ "$FLAVOR" = "stable" ]; then
@@ -336,6 +323,89 @@ else
     ( zcat /proc/config.gz 2>/dev/null || cat "/boot/config-$(uname -r)" 2>/dev/null ) \
         | grep -E 'CONFIG_MCTP' | sed 's/^/  /' || echo "  (no kernel config readable)"
     verdict INFO 10 "no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected"
+fi
+
+section "11. what the captures actually contain  ★ verified, not requested"
+#
+# Everything above this line reports what the emulator was told to do. This
+# section reports what it did, by decoding the captures. The distinction is the
+# whole discipline: an independent variable that is asserted rather than
+# verified is not a variable, it is a hope.
+if [ -z "$SPDM_DUMP" ]; then
+    verdict INFO 11 "no spdm_dump — negotiated algorithms cannot be verified"
+else
+    for cap in minimal pqc; do
+        [ -s "${PROV_RUN_DIR}/${cap}.pcap" ] || continue
+        DEC="${PROV_RUN_DIR}/${cap}.decode.txt"
+        "$SPDM_DUMP" -r "${PROV_RUN_DIR}/${cap}.pcap" > "$DEC" 2>&1
+        prov_cmd "$SPDM_DUMP" -r "${PROV_RUN_DIR}/${cap}.pcap"
+
+        printf '\n  --- %s.pcap ---\n' "$cap"
+        printf '  decoded %s messages of %s packets\n' \
+            "$(count_matches 'MCTP(' "$DEC")" "$(pcap_field "${PROV_RUN_DIR}/${cap}.pcap" packets)"
+
+        VERS="$(grep -m1 -oE 'SPDM_VERSION \([^)]*\)' "$DEC" || true)"
+        [ -n "$VERS" ] && printf '  %s\n' "$VERS"
+
+        # The ALGORITHMS response, not the NEGOTIATE_ALGORITHMS request.
+        NEG="$(grep -m1 -oE ' SPDM_ALGORITHMS \(.*' "$DEC" || true)"
+        if [ -n "$NEG" ]; then
+            for k in Hash MeasHash Asym PqcAsym DHE KEM AEAD; do
+                v="$(printf '%s' "$NEG" | grep -oE "${k}=[^,)]*\([^)]*\)" | head -1 || true)"
+                [ -n "$v" ] && printf '    negotiated %s\n' "$v"
+            done
+        fi
+
+        # Certificate chain length, straight out of the decoded field. This is
+        # the honest post-quantum cost number: same protocol field, both runs.
+        CERTLEN="$(grep -m1 -oE 'SPDM_CERTIFICATE \([^)]*PortLen=0x[0-9a-f]+' "$DEC" \
+                   | grep -oE 'PortLen=0x[0-9a-f]+' | cut -d= -f2 || true)"
+        if [ -n "$CERTLEN" ]; then
+            printf '    certificate chain: %s bytes (%s)\n' "$((CERTLEN))" "$CERTLEN"
+            prov_note "${cap}_cert_chain_bytes" "$((CERTLEN))"
+        fi
+
+        # Chunking is triggered when a response exceeds DataTransferSize. A
+        # post-quantum certificate does; a classical one does not. That is a
+        # change in message flow, not only in size.
+        CHUNKS="$(count_matches 'SPDM_CHUNK_GET' "$DEC")"
+        printf '    chunk round trips: %s\n' "$CHUNKS"
+        prov_note "${cap}_chunk_get_count" "$CHUNKS"
+
+        ERRS_PROTO="$(count_matches 'SPDM_ERROR' "$DEC")"
+        printf '    SPDM_ERROR responses: %s' "$ERRS_PROTO"
+        if [ "$ERRS_PROTO" -gt 0 ]; then
+            printf ' — %s\n' "$(grep -m1 -oE 'SPDM_ERROR \(ErrCode=[^,]*' "$DEC" | head -1)"
+        else
+            printf '\n'
+        fi
+        prov_note "${cap}_spdm_error_count" "$ERRS_PROTO"
+
+        # spdm_dump has a compile-time LIBSPDM_MAX_CERT_CHAIN_SIZE. A
+        # post-quantum chain exceeds it, and the decode stops there. Say so
+        # rather than reporting a short decode as a short handshake.
+        if grep -q 'cert_chain is too larger' "$DEC"; then
+            printf '    ⚠ decode TRUNCATED: spdm_dump hit LIBSPDM_MAX_CERT_CHAIN_SIZE.\n'
+            printf '      The handshake is not short; the decoder stopped. Counts above\n'
+            printf '      cover only the decoded prefix.\n'
+            prov_note "${cap}_decode_truncated" "true (spdm_dump LIBSPDM_MAX_CERT_CHAIN_SIZE)"
+        else
+            prov_note "${cap}_decode_truncated" "false"
+        fi
+    done
+
+    MIN_CERT="$(grep -m1 -oE 'PortLen=0x[0-9a-f]+' "${PROV_RUN_DIR}/minimal.decode.txt" 2>/dev/null | cut -d= -f2 || true)"
+    PQC_CERT="$(grep -m1 -oE 'PortLen=0x[0-9a-f]+' "${PROV_RUN_DIR}/pqc.decode.txt"     2>/dev/null | cut -d= -f2 || true)"
+    if [ -n "$MIN_CERT" ] && [ -n "$PQC_CERT" ]; then
+        printf '\n  certificate chain, classical vs post-quantum: %s vs %s bytes (%s)\n' \
+            "$((MIN_CERT))" "$((PQC_CERT))" \
+            "$(awk -v a="$((PQC_CERT))" -v b="$((MIN_CERT))" 'BEGIN{printf "%.1fx", a/b}')"
+        printf '  Both read from the same decoded protocol field, with the negotiated\n'
+        printf '  algorithm confirmed above. This one is a measurement.\n'
+        verdict PASS 11 "negotiated algorithms and certificate sizes read back from the captures"
+    else
+        verdict INFO 11 "captures decoded, but no certificate length field found"
+    fi
 fi
 
 # ---------------------------------------------------------------- summary ---

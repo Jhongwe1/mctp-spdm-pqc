@@ -48,18 +48,20 @@ MAGICS = {
 }
 PCAPNG_MAGIC = b"\x0a\x0d\x0d\x0a"
 
-# Best-effort labels only. The numeric link type is always reported verbatim;
-# the label is a convenience and is NOT evidence.
+# The numeric link type is always reported verbatim; a label is a convenience.
+# An unrecognised number is printed as "unknown" rather than guessed at.
 #
-# TODO(W02): confirm which value spdm-emu actually writes by reading
-# spdm_emu/spdm_emu_common/pcap.c, then record the finding in LOG.md. Until
-# that is done, an unrecognised number is printed as "unknown", never guessed.
+# 291 is the one this project cares about, and it is not a guess: spdm_dump
+# prints `DataLink - 291 (MCTP)` for the same captures, which is the reference
+# decoder agreeing with the reference emulator. Confirmed 2026-08-11.
 LINKTYPE_LABELS = {
     0: "NULL/loopback",
     1: "Ethernet",
     101: "RAW IP",
     147: "USER0",
     228: "IPv4",
+    291: "MCTP",
+    292: "PCI DOE",
 }
 
 
