@@ -280,6 +280,117 @@ bet paid. And writing the risk down beforehand turned a surprise into a
 scheduled decision: the response was already drafted before the failure
 happened.
 
+### The decoder ran out before the handshake did
+
+**現象** `spdm_dump` on the two captures produced wildly different amounts of
+output: 554 decoded messages for the classical capture, **18** for the
+post-quantum one — despite the two captures holding 554 and 590 packets. The
+post-quantum decode showed no `CHALLENGE` and no `MEASUREMENTS` at all.
+
+**假設** (a) the post-quantum handshake genuinely stopped after
+`GET_CERTIFICATE`, and exit status 0 was hiding it; (b) the decoder stopped.
+
+**先驗哪個、為什麼** Compared packet counts first, because it needs no tools
+and it discriminates cleanly: a handshake that stopped early cannot produce
+590 packets when the complete one produces 554. That pointed at (b) before
+reading a single line of decode output.
+
+**根因** Printed by the decoder itself, on its last line:
+
+```
+SPDM_CHUNK_RESPONSE (Attr=0x01(LastChunk), ChunkSize=0x00000f0d)
+SPDM_CERTIFICATE (SlotID=0x00, PortLen=0x000041d5, RemLen=0x00000000)
+SPDM cert_chain is too larger. Please increase LIBSPDM_MAX_CERT_CHAIN_SIZE and rebuild.
+```
+
+`LIBSPDM_MAX_CERT_CHAIN_SIZE` is a **compile-time constant** in the decoder's
+own libspdm. An ML-DSA-65 certificate chain exceeds it, so `spdm_dump` gives up
+partway through — while the emulator that produced the capture, built from the
+same libspdm commit, handles it without complaint.
+
+**教訓** A short decode is not a short handshake, and the health check now says
+so out loud instead of reporting the decoded prefix as if it were the whole
+capture. More generally: three times today a tool has answered a slightly
+different question than the one being asked — `tee`'s exit status, the
+requester's exit status, and now the decoder's output length. The pattern is
+worth more than any of the three.
+
+### What the captures actually contain
+
+With the negotiation read back rather than assumed, section 11 of the health
+check now records this on every run:
+
+| | classical | post-quantum |
+|---|---|---|
+| SPDM version offered | 1.0, 1.1, 1.2, 1.3, 1.4 | same |
+| negotiated Hash | SHA-384 | SHA-384 |
+| negotiated MeasHash | SHA-512 | SHA-512 |
+| negotiated Asym | **ECDSA-P384** | none |
+| negotiated PqcAsym | none | **ML-DSA-65** |
+| negotiated KEM | none | **ML-KEM-768** |
+| negotiated AEAD | AES-256-GCM | AES-256-GCM |
+| **certificate chain** | **1,655 bytes** | **16,853 bytes** |
+| chunk round trips | **0** | **4** |
+| `SPDM_ERROR` responses | 246 × `InvalidRequset` | 1 × `LargeResponse` |
+
+Three things follow, and the second is the interesting one.
+
+**The independent variable is now verified.** `ML_DSA_65` and `ML_KEM_768`
+appear in the `ALGORITHMS` *response*, not only in the request. Earlier today
+the same comparison was recorded as an observation because only the request
+was known. It is a measurement now.
+
+**Post-quantum does not merely cost more bytes — it changes the message flow.**
+A 16,853-byte certificate chain exceeds the negotiated `DataTransferSize`
+(0x1200 = 4,608 bytes), so the responder answers `GET_CERTIFICATE` with
+`SPDM_ERROR(LargeResponse)` and the exchange falls into SPDM's chunking
+mechanism: four `CHUNK_GET`/`CHUNK_RESPONSE` round trips to deliver one
+certificate. **The classical path never executes that code at all.** On a real
+BMC talking MCTP over I²C, where the transfer unit is smaller still, this is
+the part that would be felt — not the byte count.
+
+**The 5.94× total-byte ratio recorded earlier is withdrawn.** Not because
+either run failed, but because the two captures cannot yet be shown to contain
+the same operations: the classical one spends 246 of its messages on
+`InvalidRequset` responses to a measurement-index probe, and the post-quantum
+one cannot be decoded past packet 18. The certificate-chain comparison above
+replaces it, and is sound for a specific reason — it is one protocol field,
+read from both captures, with the negotiated algorithm confirmed in each.
+
+Open for G1: the classical run issues 263 `GET_MEASUREMENTS` and receives 246
+`InvalidRequset` errors and 17 `MEASUREMENTS`. That looks like the emulator
+walking measurement indices and being told most do not exist. Whether that is
+the emulator's choice or something the specification implies is a question for
+the field-by-field pass, and it dominates the packet count of every capture
+this project will take.
+
+### openbmc/spdm does not build on the current Ubuntu LTS
+
+**現象** Five successive failures, each only visible after fixing the previous
+one: two missing python modules at `meson setup`, a third at `meson compile`, a
+GCC internal compiler error, and a C++23 library feature the compiler's
+standard library does not have.
+
+**根因** Recorded in full in [`docs/upstream/README.md`](docs/upstream/README.md),
+including the one that cost the most time: installing the generator modules
+into a virtualenv is not enough, because meson resolves `python3` through
+`find_program`, which searches `PATH`. Running `venv/bin/meson` without
+activating the venv finds `/usr/bin/python3` and fails with the same message as
+before, which reads as "the fix did not work" rather than "the fix was applied
+to the wrong interpreter".
+
+**教訓** This is the contribution. The repository has **no `README.md`**, so
+every one of those five is discovered by a newcomer, one build at a time,
+with nothing in the tree suggesting any of it is expected. Two candidate
+patches fall straight out: a README with the prerequisites and the `PATH` trap,
+and a statement of the minimum compiler version — the second supported by two
+concrete failures on a mainstream distribution's default toolchain.
+
+Also worth noting for its own sake: the ICE is in
+`requester/utils/mapper.cpp`, one of the two files that has no test coverage.
+That is a coincidence, but it is the kind of coincidence worth being able to
+point at.
+
 **`TODO(me)`** — 緯穎 whitepaper, *SPDM Attestation between BMC and ERoT on AI
 Server* (page updated 2026-08-06). Read it in full, not the abstract. Copy the
 "challenges and future directions" section here point by point, in my own
