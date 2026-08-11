@@ -1,0 +1,38 @@
+# Line endings are load-bearing in this repo.
+#
+# The working copy lives on an NTFS drive but every script is executed by bash
+# inside WSL / Docker / a GitHub Actions runner. A single CRLF in a .sh file
+# produces `bash: line 1: $'\r': command not found`, or worse, a shebang that
+# silently resolves to nothing. Normalising to LF in the index AND in the
+# working tree removes that failure mode for everyone who clones this.
+#
+# This file must exist before the first `git add`, otherwise already-tracked
+# files keep whatever line endings they were committed with.
+
+* text=auto eol=lf
+
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.py        text eol=lf
+*.c         text eol=lf
+*.h         text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.txt       text eol=lf
+Makefile    text eol=lf
+Dockerfile  text eol=lf
+*.pin       text eol=lf
+
+# Evidence files. Never touch these — a normalised byte is a corrupted capture,
+# and byte counts are the unit this project reports its results in.
+*.pcap      binary
+*.pcapng    binary
+*.der       binary
+*.bin       binary
+*.png       binary
+*.pdf       binary
+
+# Keep generated evidence out of diff noise but still reviewable.
+docs/env-baseline.md    linguist-generated=true

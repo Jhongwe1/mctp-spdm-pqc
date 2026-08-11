@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Personal planning material — deliberately not published.
+#
+#  These directories hold the private 14-week schedule this work is executed
+#  against. The public, technical version of the same roadmap lives in
+#  docs/roadmap.md and is what belongs in a repository.
+# ─────────────────────────────────────────────────────────────────────────────
+plan/
+archive/
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Upstream source and build trees.
+#
+#  libspdm builds its own OpenSSL from a submodule: several GB, tens of
+#  thousands of files, and none of it ours. What this repo carries instead is
+#  third_party/*.pin — the exact commit hashes every result was produced from.
+#  See docs/decisions/0001-two-build-flavors.md.
+# ─────────────────────────────────────────────────────────────────────────────
+third_party/*/
+!third_party/*.pin
+!third_party/README.md
+lab/
+work/
+build/
+*.o
+*.a
+*.so
+*.exe
+
+# c-drills: binaries are built from source by `make`, never committed.
+c-drills/d[0-9]*
+!c-drills/d[0-9]*.c
+!c-drills/d[0-9]*.h
+!c-drills/d[0-9]*.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Scratch / transient run output. Curated evidence under bench/data/ IS
+# committed — that is the point of the project — but scratch runs are not.
+bench/data/_scratch/
+*.tmp
+*.log
+!docs/**/*.log
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets. Nothing here should ever be committed, but make it explicit —
+# W03 generates a private certificate chain and it is easy to be careless.
+*.key
+!certs/**/*.key.example
+id_ed25519*
+*.pem.private
+.env
