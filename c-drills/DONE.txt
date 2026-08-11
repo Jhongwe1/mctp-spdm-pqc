@@ -1,0 +1,14 @@
+# Drills that are finished and whose tests `make test` should run.
+#
+# One name per line, no .c extension. Blank lines and #-comments are ignored.
+#
+# Add a drill here only after all four steps are done:
+#   1. written on paper in the time box, nothing open
+#   2. dry-run by hand on two cases, one of them a boundary
+#   3. typed in, compile-error count recorded in SCORECARD.md
+#   4. `make test` clean under -Werror and both sanitizers
+#
+# CI runs exactly this list. An unfinished drill still has to compile, so a
+# syntax error is caught immediately, but it is not run and is not claimed.
+
+# d3_queue_via_list
