@@ -1,0 +1,78 @@
+name: CI
+
+# What this pipeline is for
+# -------------------------
+# By the end of the project this runs four jobs, and the one that matters is
+# the one that re-runs the tamper experiment and asserts that a tampered
+# measurement is REJECTED. A table of results can be anything; a job that turns
+# red when the policy stops rejecting bad input is the reason a table can be
+# believed.
+#
+# That job needs the tamper harness (G2) and the verification pipeline (G3),
+# which do not exist yet. Building the pipeline in the order the evidence
+# arrives — rather than stubbing four red jobs on day one — keeps the badge
+# meaningful: green here has always meant "everything that exists, passes".
+#
+#   now      verify    lint, parser self-test, provenance completeness,
+#                      scope-statement placement
+#   now      drills    every C drill compiles under -Werror + sanitizers;
+#                      the ones marked complete in c-drills/DONE.txt run
+#   G2/G3    rats      rebuild, re-run clean and tampered captures, assert the
+#                      clean one passes and ★ the tampered one FAILS
+#   G6       upstream  build libspdm from the pinned commit, run its unit tests
+#
+# The `verify` job deliberately shells out to harness/verify_repo.sh rather
+# than restating the checks here. Two copies of a check drift, and the copy
+# that drifts is always the one nobody runs locally.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: lint, self-tests, provenance
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: harness/verify_repo.sh
+        run: bash harness/verify_repo.sh
+
+  drills:
+    name: c-drills (-Werror, ASan, UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile every drill
+        working-directory: c-drills
+        run: make
+
+      - name: Run the drills marked complete
+        working-directory: c-drills
+        run: make test
+
+      - name: Report progress
+        working-directory: c-drills
+        run: |
+          total=$(ls d[0-9]*.c 2>/dev/null | wc -l)
+          done_count=$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' DONE.txt | wc -l)
+          {
+            echo "### C drills: ${done_count} of ${total} complete"
+            echo
+            echo "Unfinished drills still have to compile cleanly under \`-Werror\`;"
+            echo "they are not executed and are not claimed as passing."
+          } >> "$GITHUB_STEP_SUMMARY"
