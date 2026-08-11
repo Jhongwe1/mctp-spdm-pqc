@@ -372,10 +372,30 @@ bench/data/healthcheck-pqc-<時間戳>/
 你剛剛跑的那一行,展開來是這樣:
 
 ```bash
-./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS &     # 先起「裝置」端
-./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS \
-                     --pcap minimal.pcap                     # 再起「BMC」端
+./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END &
+./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
+                     --pcap minimal.pcap
 ```
+
+> ### 🔴 `--exe_session` 是這裡最容易漏掉的一個字
+>
+> **有兩個旗標,不是一個。** 大部分教學(和本專案的原始計畫)只講 `--exe_conn`,
+> 但 `--exe_session` 的預設值有 **14 項**:
+> `KEY_EX,PSK,KEY_UPDATE,HEARTBEAT,MEAS,MEL,DIGEST,CERT,GET_CSR,SET_CERT,`
+> `GET_KEY_PAIR_INFO,SET_KEY_PAIR_INFO,EP_INFO,APP`
+>
+> 這 14 項全部跑在一條**加密 session** 裡,而**連線階段的證明流程根本不需要
+> session**。其中 `SET_CERT` 還會在範例金鑰上失敗。實測(同樣的 `--exe_conn`):
+>
+> | `--exe_session` | 封包 | 位元組 | 時間 | 結束碼 |
+> |---|--:|--:|--:|:--:|
+> | 預設(14 項) | 1116 | 61,807 | 53 s | **1** ❌ |
+> | `NO_END` | 554 | 20,549 | 24 s | **0** ✅ |
+> | `KEY_EX` | 578 | 30,834 | 27 s | 0 |
+>
+> **為什麼是 `NO_END`?** 因為旗標解析器沒有「什麼都不要」這個字,而 `NO_END`(0x4)
+> 既不含 `KEY_EX`(0x1)也不含 `PSK`(0x2)——**而那兩個是唯一會讓程式建立
+> session 的旗標**。這是副作用不是本意,所以程式碼裡有註解說明。
 
 兩個行程透過 **TCP port 2323** 對話。訊息流大致是:
 
@@ -438,6 +458,9 @@ bash harness/build_spdm_dump.sh          # 首次要編,約 15 分鐘
 | `Address already in use` | 上次的 responder 沒死乾淨 | `pkill -f spdm_responder_emu`,或 `SPDM_EMU_PORT=2400 bash harness/healthcheck.sh pqc` |
 | `bash: line N: $'\r': command not found` | 檔案是 CRLF 換行 | `sed -i 's/\r$//' harness/*.sh`。本 repo 的 `.gitattributes` 已強制 LF |
 | 腳本跑到一半噴出「某行註解不是指令」 | **你在腳本執行中途編輯了它** | bash 是邊讀邊執行的,改檔案會讓它讀到錯的位移。等它跑完再改 |
+| 握手跑 53 秒、1116 個封包、結束碼 1 | **只砍了 `--exe_conn`,忘了 `--exe_session`** | 兩個都要砍,見 §6 的紅框 |
+| `spdm_dump` 只解出十幾行就停,最後一行寫 `cert_chain is too larger` | **解碼器的編譯期常數 `LIBSPDM_MAX_CERT_CHAIN_SIZE` 不夠大** | ⚠️ **這不是握手失敗,是解碼器停了。** 後量子憑證鏈約 16.8 KB,超過 spdm_dump 內建上限。要完整解碼得改常數重編 spdm-dump。體檢第 11 項會明確標示這種情況 |
+| 用 `| tee` 接 build,結果騙人 | pipeline 的結束碼是**最後一個**指令的 | `set -o pipefail`,或看 `${PIPESTATUS[0]}` |
 | build 跑很久而且電腦很卡 | `-j$(nproc)` 吃滿了 | `JOBS=3 nice -n 19 bash harness/build_spdm_emu.sh pqc` |
 | WSL 上 build 慢到不合理 | **程式碼放在 `/mnt/c/`** | 編譯樹必須在 `~/`。本 repo 預設就是 `~/spdm-lab` |
 | 磁碟滿了 | 兩個 flavor + spdm-dump ≈ 20 GB | `rm -rf ~/spdm-lab/work/spdm-emu-stable`,需要時再 `--seed-from pqc` 重建 |
@@ -577,17 +600,24 @@ python3 harness/pcapcount.py <file>.pcap --list         # 每個封包一行
 
 # ── 手動跑一次握手 ──────────────────────────────────────
 cd ~/spdm-lab/work/spdm-emu-pqc/build/bin        # ★ 一定要 cd 進來
-./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS &
-./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --pcap /tmp/x.pcap
+#                                    ★★ 兩個旗標都要砍,見 §6
+./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END &
+./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
+                     --pcap /tmp/x.pcap
 pkill -f spdm_responder_emu                       # 收工
 
 # ── 後量子 ──────────────────────────────────────────────
-./spdm_responder_emu --asym NONE --dhe NONE \
+./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
+    --asym NONE --dhe NONE \
+    --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE &
+./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
+    --asym NONE --dhe NONE \
     --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE \
-    --exe_conn DIGEST,CERT,CHAL,MEAS &
-./spdm_requester_emu --asym NONE --dhe NONE \
-    --pqc_asym ML_DSA_65 --kem ML_KEM_768 \
-    --exe_conn DIGEST,CERT,CHAL,MEAS --pcap /tmp/pqc.pcap
+    --pcap /tmp/pqc.pcap
+
+# ── 讀出「實際協商到什麼」(不是你要求什麼)★ ────────────
+~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /tmp/x.pcap | grep ' SPDM_ALGORITHMS'
+~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /tmp/x.pcap | grep -m1 SPDM_VERSION
 
 # ── 基本功 ──────────────────────────────────────────────
 cd c-drills && make test
