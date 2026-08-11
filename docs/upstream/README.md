@@ -19,9 +19,90 @@ long as it takes. Work that has a queue in front of it starts first.
 | git identity matches Gerrit on both host environments | **done** | 2026-08-11 | `user.name` is the legal name in WSL and on Windows |
 | CLA sent to `manager@lfprojects.org` | **`TODO`** | | keep the sent copy in this directory |
 | Community channel joined, reading only | **`TODO`** | | |
-| Target repository built locally | **`TODO`** | | record every problem hit — those are the contribution |
+| Target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | First change submitted | not started | | |
 | Reviewer response received | not started | | |
+
+## First build attempt — 2026-08-11
+
+Target at `72e3ea9` (last commit 2026-07-31). Host: Ubuntu 24.04.4 LTS,
+GCC 13.3.0, meson 1.12.0, on the distribution's default toolchain.
+
+Repository shape, re-verified rather than taken from notes:
+
+| | |
+|---|---|
+| tracked files | **31** |
+| root `README.md` | **absent** |
+| `OWNERS` | present |
+| tests | 3 files: `test_mctp_transport_discovery`, `test_policy_manager`, `test_spdm_discovery` |
+| untested source | `requester/utils/mapper.{cpp,hpp}`, `requester/utils/paths.{cpp,hpp}` |
+| subprojects pulled | CLI11, phosphor-dbus-interfaces, phosphor-logging, sdbusplus, stdexec — 53 MB |
+| build tree after a full attempt | 1.8 GB |
+
+### Five blockers, in the order they appear
+
+1. **`meson setup` fails: `python3 is missing modules: inflection, mako`.**
+   Required by sdbusplus's code generator, not documented anywhere in the
+   repository.
+
+2. **Installing those modules into a virtualenv is not sufficient.** meson
+   resolves the generator through `find_program('python3')`, which searches
+   `PATH`. Running `venv/bin/meson` while `venv/bin` is *not* on `PATH` finds
+   `/usr/bin/python3`, which still lacks the modules. The error message is
+   also self-contradictory — it reports `found: NO modules: yaml` on one line
+   and `missing modules: inflection, mako` on the next.
+
+3. **`meson compile` then fails: `ModuleNotFoundError: No module named
+   'jsonschema'`.** A third generator dependency, surfacing only after setup
+   succeeds, so the three are discovered one build at a time.
+
+4. **GCC 13.3.0 hits an internal compiler error** on
+   `requester/utils/mapper.cpp:46`:
+   `internal compiler error: in build_special_member_call, at cp/call.cc:11096`.
+   An ICE is a compiler defect, but the operational fact stands: this file does
+   not compile with the toolchain shipped in the current Ubuntu LTS.
+
+5. **`tests/test_policy_manager.cpp:67` requires `std::formatter<std::thread::id>`.**
+   `std::format("spdm_test_{}_{}", ..., std::this_thread::get_id())` fails the
+   `formatter must be specialized` static assertion, because the libstdc++
+   shipped with GCC 13 has no specialization for `std::thread::id`. The
+   project declares C++23 and states no minimum compiler version.
+
+   *(The specialization comes from a C++23 library paper adopted after GCC 13.
+   Check the exact paper number and the libstdc++ version that implements it
+   against the primary source before quoting either — this project does not
+   repeat version claims it has not verified itself.)*
+
+### What this is worth
+
+Blockers 1 through 3 are exactly the kind of thing a `README.md` exists to
+prevent, and this repository does not have one. A newcomer on a mainstream
+distribution hits three undocumented failures before reaching a compiler error,
+and there is nothing in the tree to tell them any of it is expected.
+
+Blockers 4 and 5 are separate and sharper: **the repository does not build with
+the default toolchain of the current Ubuntu LTS**, and it does not say which
+toolchain it does need.
+
+That gives two candidate contributions, both small, both verifiable, and both
+useful to the next person:
+
+- a `README.md` stating prerequisites, the generator modules, the `PATH` trap,
+  and a build recipe that works
+- a statement of the minimum compiler version, supported by the two failures
+  above
+
+Reproduction recipe as it stands today, which is what a README would say:
+
+```bash
+git clone https://github.com/openbmc/spdm.git && cd spdm
+python3 -m venv .venv
+. .venv/bin/activate          # must be activated: meson finds python3 via PATH
+pip install meson ninja inflection mako pyyaml jsonschema
+meson setup build             # succeeds: 808 targets
+meson compile -C build        # fails on GCC 13.3 — see blockers 4 and 5
+```
 
 ## Two things that are easy to get wrong
 
