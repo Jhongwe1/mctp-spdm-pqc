@@ -173,6 +173,36 @@ class Message:
         return self.fields.get(key, {}).get("value")
 
 
+HEX_ROW_RE = re.compile(r"^\s*[0-9a-f]{4}:\s+((?:[0-9a-f]{2}\s*)+)$")
+
+
+def parse_hex(text: str) -> dict[int, int]:
+    """Byte count of each SPDM message, from `spdm_dump -x` output.
+
+    Message SIZE is not in the summary decode — spdm_dump prints the fields it
+    understood, not how many bytes they occupied — and it is the primitive every
+    later cost comparison is built on. The hex dump has it, so it is read from
+    there rather than estimated from the pcap record, which would also include
+    the transport framing.
+
+        5 (...) MCTP(5) REQ->RSP SPDM(14, 0xe3) SPDM_NEGOTIATE_ALGORITHMS (...)
+          SPDM Message:
+            0000: 14 e3 06 00 38 00 01 12 ...
+    """
+    sizes: dict[int, int] = {}
+    current = None
+    for line in text.splitlines():
+        head = LINE_RE.match(line)
+        if head:
+            current = int(head.group("seq"))
+            sizes.setdefault(current, 0)
+            continue
+        row = HEX_ROW_RE.match(line)
+        if row and current is not None:
+            sizes[current] += len(row.group(1).split())
+    return sizes
+
+
 def parse_decode(text: str) -> tuple[list[Message], dict]:
     messages: list[Message] = []
     meta = {"decode_truncated": False, "truncation_reason": None,
@@ -512,13 +542,16 @@ def extract(messages, meta, source: Path) -> dict:
     # by a MEASUREMENTS rather than an ERROR. The decode is in order, so pair by
     # position within the request/response alternation.
     existing = []
-    for i, g in enumerate(gm):
-        op = g.fields.get("MeasOp", {}).get("value")
+    record_by_index: dict[int, int] = {}
+    for g in gm:
+        op = g.field("MeasOp")
         if op in (None, 0, 0xFF):
             continue
         nxt = next((m for m in messages if m.seq > g.seq), None)
-        if nxt is not None and nxt.name == "SPDM_MEASUREMENTS" and op not in existing:
-            existing.append(op)
+        if nxt is not None and nxt.name == "SPDM_MEASUREMENTS":
+            if op not in existing:
+                existing.append(op)
+            record_by_index.setdefault(op, nxt.field("MeasRecordLen") or 0)
     out["measurements"] = {
         "blocks_reported": total if total is not None else blocks,
         "total_index_reported": total,
@@ -529,6 +562,13 @@ def extract(messages, meta, source: Path) -> dict:
         "invalid_request_errors": len(invalid),
         "existing_indices": existing,
         "existing_indices_hex": [f"0x{i:02x}" for i in existing],
+        # The sum of every distinct index's MeasurementRecordLength. Under
+        # --meas_op ALL the same total arrives as one record, so these two
+        # numbers are the same measurement fetched two ways — and asserting
+        # both is what turns "the round trips are the emulator's choice, not
+        # the protocol's" from an argument into a check.
+        "record_bytes_by_index": {f"0x{k:02x}": v for k, v in sorted(record_by_index.items())},
+        "record_bytes_sum": sum(record_by_index.values()) if record_by_index else None,
         "operation": ("ALL" if any(g.field("MeasOp") == 0xFF for g in gm)
                       else "ONE_BY_ONE" if gm else None),
     }
@@ -539,6 +579,29 @@ def extract(messages, meta, source: Path) -> dict:
         code = e.fields.get("ErrCode", {}).get("annotation") or "unnamed"
         by_code[code] = by_code.get(code, 0) + 1
     out["errors"] = {"total": len(errors), "by_code": by_code}
+
+    # -- message sizes, if the hex dump was kept beside the decode ----------
+    hexfile = source.with_name(source.name.replace(".decode.txt", ".hex.txt"))
+    if hexfile.exists() and hexfile != source:
+        sizes = parse_hex(hexfile.read_text(encoding="utf-8", errors="replace"))
+        # Not `first` — that is the name of the message lookup helper above, and
+        # binding it here would shadow it for the whole function.
+        first_bytes: dict[str, int] = {}
+        total_bytes: dict[str, int] = {}
+        for m in messages:
+            n = sizes.get(m.seq)
+            if n is None:
+                continue
+            first_bytes.setdefault(m.name, n)
+            total_bytes[m.name] = total_bytes.get(m.name, 0) + n
+        out["message_bytes"] = {
+            "source": hexfile.name,
+            "total": sum(sizes.values()),
+            "first_by_type": dict(sorted(first_bytes.items())),
+            "total_by_type": dict(sorted(total_bytes.items(), key=lambda kv: -kv[1])),
+        }
+    else:
+        out["message_bytes"] = None
 
     return out
 
@@ -629,6 +692,13 @@ def render(data: dict) -> str:
              f"{ms['invalid_request_errors']} InvalidRequset")
     if ms["existing_indices_hex"]:
         L.append(f"              indices that exist: {', '.join(ms['existing_indices_hex'])}")
+    mb = data.get("message_bytes")
+    if mb:
+        L.append("")
+        L.append(f"bytes       : {mb['total']} in SPDM messages "
+                 f"(transport framing excluded), from {mb['source']}")
+        for name, n in list(mb["total_by_type"].items())[:6]:
+            L.append(f"              {n:>7}  {name}")
     return "\n".join(L)
 
 
@@ -653,7 +723,16 @@ def check(doc_path: Path, repo_root: Path) -> int:
     checked = 0
 
     print(f"  document: {doc_path}")
+    in_fence = False
     for lineno, line in enumerate(text.splitlines(), 1):
+        # A document that explains this markup has to be able to show it. Text
+        # inside a fenced code block is an example, not an assertion.
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+
         cap = CAPTURE_RE.search(line)
         if cap:
             capture_name = cap.group("path")

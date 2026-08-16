@@ -123,9 +123,16 @@ arm() {
     fi
 
     # Decode immediately. An undecoded capture is a file, not evidence.
+    #
+    # Two decodes are kept, because they answer different questions. The
+    # summary says what each message MEANT; the hex says how many bytes it
+    # OCCUPIED, which the summary never states and which every later cost
+    # comparison is built on.
     if [ -s "${prefix}.pcap" ]; then
         prov_cmd "$SPDM_DUMP" -r "${prefix}.pcap"
         "$SPDM_DUMP" -r "${prefix}.pcap" > "${prefix}.decode.txt" 2>&1
+        prov_cmd "$SPDM_DUMP" -r "${prefix}.pcap" -x
+        "$SPDM_DUMP" -r "${prefix}.pcap" -x > "${prefix}.hex.txt" 2>&1
     fi
 }
 
@@ -144,6 +151,18 @@ arm classical-stable stable "stock algorithms, stable build — the control" \
     --meas_op ONE_BY_ONE
 
 arm walkthrough pqc "stock algorithms + --meas_op ALL — the annotated capture" \
+    --meas_op ALL
+
+# One algorithm per group instead of the stock two to four, everything else
+# identical to `classical`. The question it answers is a common assumption:
+# does offering more algorithms make NEGOTIATE_ALGORITHMS bigger? The fields
+# that carry them are fixed-width bitmasks, so the arithmetic says no — but an
+# argument from a header file is not a measurement, and the alternative (that a
+# group set to NONE drops its whole AlgStructure table) would change the size
+# for a different reason. Two captures settle it.
+arm single-algo pqc "one algorithm per group — does offering more cost bytes?" \
+    --hash SHA_384 --asym ECDSA_P384 --dhe SECP_384_R1 --aead AES_256_GCM \
+    --req_asym RSAPSS_3072 --meas_hash SHA_512 \
     --meas_op ALL
 
 # ---------------------------------------------------------------------------
