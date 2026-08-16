@@ -63,18 +63,53 @@ prov_begin() {
 
     # Fold in the upstream build pin, so each field lands in the manifest as a
     # first-class key (libspdm, spdm-emu, libspdm-version, ...).
+    prov_pin "$flavor" BUILD_PIN.txt
+}
+
+# prov_pin <flavor> <dest-filename>
+#
+# Copy a build flavor's BUILD_PIN.txt into the run directory and fold every
+# key=value line into the manifest.
+#
+# A run may involve more than one build. The post-quantum comparison needs the
+# pqc flavor and the released pair side by side, and every capture is read back
+# by spdm_dump, which is a third binary with its own libspdm. Recording only the
+# primary one would leave the others as unattributed dependencies of a published
+# number — which is the thing this file exists to prevent.
+prov_pin() {
+    local flavor="${1:?prov_pin needs a flavor}" dest="${2:-BUILD_PIN.txt}"
     local pin
     pin="$(flavor_pin "$flavor" 2>/dev/null || true)"
-    if [ -n "$pin" ] && [ -f "$pin" ]; then
-        cp "$pin" "${PROV_RUN_DIR}/BUILD_PIN.txt"
-        local line key val
+    prov_pin_file "$pin" "$dest" "$flavor"
+}
+
+# prov_pin_file <path> <dest-filename> <label>
+#
+# The same, for a pin file that does not belong to a build flavor — spdm-dump,
+# for instance. Keys are prefixed with the label so two pins cannot collide in
+# the manifest.
+prov_pin_file() {
+    local src="${1:-}" dest="${2:?prov_pin_file needs a destination}" label="${3:?needs a label}"
+    local prefix line key val
+
+    # The primary flavor keeps the bare upstream_ prefix it has always had, so
+    # existing manifests and anything reading them stay valid.
+    if [ "$dest" = "BUILD_PIN.txt" ]; then
+        prefix="upstream"
+    else
+        prefix="upstream_${label//-/_}"
+    fi
+
+    if [ -n "$src" ] && [ -f "$src" ]; then
+        cp "$src" "${PROV_RUN_DIR}/${dest}"
         while IFS= read -r line; do
             [ -n "$line" ] || continue
+            case "$line" in \#*) continue ;; esac
             key="${line%%=*}"; val="${line#*=}"
-            prov_note "upstream_${key//-/_}" "$val"
-        done < "$pin"
+            prov_note "${prefix}_${key//-/_}" "$val"
+        done < "$src"
     else
-        prov_note upstream_pin "MISSING — results from this run cannot be attributed"
+        prov_note "${prefix}_pin" "MISSING — results depending on ${label} cannot be attributed"
     fi
 }
 
