@@ -2,11 +2,15 @@
 #
 # harness/build_spdm_emu.sh — build one flavor of DMTF spdm-emu + libspdm.
 #
-#   ./harness/build_spdm_emu.sh pqc        # spdm-emu 4.0.0-rc -> libspdm 4.0.0-rc
-#   ./harness/build_spdm_emu.sh stable     # spdm-emu 3.8.0    -> libspdm 3.8.0
-#   ./harness/build_spdm_emu.sh pqc --force        # wipe and rebuild
-#   JOBS=4 ./harness/build_spdm_emu.sh pqc         # cap parallelism
-#   LAB_DIR=/tmp/lab ./harness/build_spdm_emu.sh pqc
+#   bash harness/build_spdm_emu.sh pqc     # spdm-emu 4.0.0-rc -> libspdm 4.0.0-rc
+#   bash harness/build_spdm_emu.sh stable  # spdm-emu 3.8.0    -> libspdm 3.8.0
+#   bash harness/build_spdm_emu.sh pqc --force        # wipe and rebuild
+#   JOBS=4 bash harness/build_spdm_emu.sh pqc         # cap parallelism
+#   LAB_DIR=/tmp/lab bash harness/build_spdm_emu.sh pqc
+#
+# Invoked as `bash harness/...`, never `./harness/...`: the working tree is
+# often on NTFS, which does not carry the executable bit, and core.filemode is
+# off so git records these as 100644. See docs/decisions/0002.
 #
 # Idempotent: safe to re-run. It only re-clones when the tree is missing.
 #
@@ -209,4 +213,4 @@ echo "  binaries : ${BIN}"
 echo "  pin      : ${PIN}"
 echo "  log      : ${BUILD_LOG}"
 echo
-echo "  next     : ./harness/healthcheck.sh ${FLAVOR}"
+echo "  next     : bash harness/healthcheck.sh ${FLAVOR}"

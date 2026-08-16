@@ -72,7 +72,7 @@ need() {
 }
 
 # Number of parallel jobs; overridable so a laptop sharing RAM with another
-# build can dial it down (JOBS=4 ./harness/build_spdm_emu.sh pqc).
+# build can dial it down (JOBS=4 bash harness/build_spdm_emu.sh pqc).
 jobs_default() {
     local n; n="$(nproc 2>/dev/null || echo 4)"
     echo "${JOBS:-$n}"
