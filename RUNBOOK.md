@@ -273,8 +273,8 @@ JOBS=3 nice -n 19 bash harness/build_spdm_emu.sh pqc
 bash harness/build_spdm_emu.sh stable --seed-from pqc
 ```
 
-`--seed-from pqc` 會直接複製第一份的原始碼樹,**完全不重新下載**,只把
-libspdm 換到 `3.8.2` 再編一次。省下 20 分鐘和 2.5 GB。
+`--seed-from pqc` 會直接複製第一份的原始碼樹,**完全不重新下載**,把 spdm-emu
+切到 `3.8.0`(libspdm 跟著它的 submodule 指標走)再編一次。省下 20 分鐘和 2.5 GB。
 
 <details>
 <summary><b>為什麼要兩份 build?</b></summary>
@@ -284,10 +284,16 @@ libspdm 換到 `3.8.2` 再編一次。省下 20 分鐘和 2.5 GB。
 
 **我不想讓一個 RC 當我的基準線。** 所以:
 
-| flavor | libspdm | 用途 |
-|---|---|---|
-| `stable` | 3.8.2 | 所有 baseline 量測 |
-| `pqc` | 4.0.0-rc | 只跑後量子實驗 |
+| flavor | spdm-emu | libspdm | 用途 |
+|---|---|---|---|
+| `stable` | 3.8.0 | 3.8.0 | 所有 baseline 量測 |
+| `pqc` | 4.0.0-rc | 4.0.0-rc | 只跑後量子實驗 |
+
+**釘的是 `spdm-emu` 的 tag,libspdm 跟著那個 tag 的 submodule 指標走**,因為
+上游是把這兩個當一組發布跟測試的。這樣做的代價寫在這裡而不是藏在決策紀錄裡:
+**沒有任何一個 `spdm-emu` commit 指向過 libspdm 3.8.2,所以基準線是 3.8.0,
+它沒有那兩個 2026 advisory 的修補。** 位元組數與來回次數不會因為那兩個修補而
+改變;真的會受影響的結果,就必須換一份有修補的 build 重跑。
 
 兩份的 commit hash 都釘在 `third_party/*.pin`,每一張表的 caption 都會寫是
 哪一份跑出來的。完整理由見 `docs/decisions/0001-two-build-flavors.md`。
@@ -585,7 +591,7 @@ bash harness/doctor.sh                        # 只檢查,不動任何東西
 
 # ── 建置 ────────────────────────────────────────────────
 bash harness/build_spdm_emu.sh pqc            # libspdm 4.0.0-rc
-bash harness/build_spdm_emu.sh stable --seed-from pqc   # 3.8.2,不重新下載
+bash harness/build_spdm_emu.sh stable --seed-from pqc   # 3.8.0,不重新下載
 bash harness/build_spdm_emu.sh pqc --force    # 砍掉重建
 bash harness/build_spdm_dump.sh               # 離線封包解析器
 JOBS=3 nice -n 19 bash harness/build_spdm_emu.sh pqc    # 與別的工作共用機器
@@ -656,5 +662,5 @@ SPDM_EMU_PORT=2400         # 換 port(預設 2323)
 | **libspdm** | DMTF 的 SPDM 參考實作(C 語言) |
 | **spdm-emu** | 用 libspdm 做的 requester/responder 模擬器,兩個行程透過 TCP 對話 |
 | **spdm-dump** | 把 pcap 逐欄位解開的工具 |
-| **flavor** | 本專案的術語:一份釘死版本的 build。目前有 `stable`(3.8.2)和 `pqc`(4.0.0-rc) |
+| **flavor** | 本專案的術語:一份釘死版本的 build。目前有 `stable`(spdm-emu 3.8.0)和 `pqc`(spdm-emu 4.0.0-rc);libspdm 跟著各自的 submodule 指標走 |
 | **provenance / manifest** | 出處紀錄。每次實驗自動產生的 `manifest.json`,含上游 hash、完整指令列、每個檔案的 SHA-256 |

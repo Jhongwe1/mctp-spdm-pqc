@@ -143,15 +143,23 @@ build trees from those pins on any machine.
 Two independent builds are maintained, and every result states which one
 produced it.
 
-| Flavor | libspdm | Used for |
-|---|---|---|
-| `stable` | 3.8.2 | every baseline measurement |
-| `pqc` | 4.0.0-rc | post-quantum experiments only |
+| Flavor | spdm-emu | libspdm | Used for |
+|---|---|---|---|
+| `stable` | 3.8.0 | 3.8.0 | every baseline measurement |
+| `pqc` | 4.0.0-rc | 4.0.0-rc | post-quantum experiments only |
+
+What is pinned is the `spdm-emu` tag; `libspdm` follows that tag's submodule
+pointer, because that is the pair upstream releases and tests together. The
+cost of doing it that way is stated here rather than left in a decision
+record: no `spdm-emu` commit has ever pointed at libspdm 3.8.2, so **the
+baseline is 3.8.0 and does not carry the two 2026 advisory fixes.** Byte counts
+and round-trip counts do not turn on those fixes. Any result that does has to
+be re-run against a build that has them.
 
 Post-quantum support reached the libspdm main line on 2026-08-04 in a release
 candidate. A release candidate is not a baseline, so it is not used as one. The
-reasoning is recorded in
-[`docs/decisions/0001-two-build-flavors.md`](docs/decisions/0001-two-build-flavors.md).
+reasoning, and the revision that produced the pinning rule above, are recorded
+in [`docs/decisions/0001-two-build-flavors.md`](docs/decisions/0001-two-build-flavors.md).
 
 ## What this project does not do
 

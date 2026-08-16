@@ -291,7 +291,7 @@ if do_handshake pqc \
 else
     rc=$?
     if [ "$FLAVOR" = "stable" ]; then
-        verdict INFO 7 "PQC handshake failed on flavor=stable — expected, 3.8.2 has no ML-DSA"
+        verdict INFO 7 "PQC handshake failed on flavor=stable — expected, 3.8.0 has no ML-DSA"
     else
         verdict FAIL 7 "PQC handshake failed (rc=${rc}) — see pqc.req.log"
         tail -15 "${PROV_RUN_DIR}/pqc.req.log" 2>/dev/null | sed 's/^/  | /'

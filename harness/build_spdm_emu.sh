@@ -2,8 +2,8 @@
 #
 # harness/build_spdm_emu.sh — build one flavor of DMTF spdm-emu + libspdm.
 #
-#   ./harness/build_spdm_emu.sh pqc        # libspdm 4.0.0-rc  (ML-DSA / ML-KEM)
-#   ./harness/build_spdm_emu.sh stable     # libspdm 3.8.2     (baseline)
+#   ./harness/build_spdm_emu.sh pqc        # spdm-emu 4.0.0-rc -> libspdm 4.0.0-rc
+#   ./harness/build_spdm_emu.sh stable     # spdm-emu 3.8.0    -> libspdm 3.8.0
 #   ./harness/build_spdm_emu.sh pqc --force        # wipe and rebuild
 #   JOBS=4 ./harness/build_spdm_emu.sh pqc         # cap parallelism
 #   LAB_DIR=/tmp/lab ./harness/build_spdm_emu.sh pqc
@@ -85,8 +85,9 @@ fi
 # a long while printing "Cloning into ..." lines. That is expected.
 #
 # --seed-from <flavor> avoids paying it twice. The two flavors differ only in
-# which libspdm tag is checked out, so the second build can copy the first
-# tree and re-point the submodule. Same result, no second download.
+# which spdm-emu tag is checked out — libspdm follows that tag's submodule
+# pointer — so the second build can copy the first tree and re-point the
+# submodule. Same result, no second download.
 if [ ! -d "${SRC}/.git" ]; then
     if [ -n "$SEED_FROM" ]; then
         SEED_DIR="$(flavor_dir "$SEED_FROM")"

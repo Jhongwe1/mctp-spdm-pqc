@@ -8,6 +8,13 @@
 plan/
 archive/
 
+# CLAUDE.md is working instructions for an assistant, not documentation of the
+# system: local absolute paths, how to talk to me, what not to do for me. It
+# belongs in the same category as plan/ — material this work is executed
+# against rather than material it produces. What a reader needs is in
+# RUNBOOK.md and docs/.
+CLAUDE.md
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  Upstream source and build trees.
 #

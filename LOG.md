@@ -418,3 +418,50 @@ solves isolation; attestation is how you know the isolation held.
 > Leave that line honest. In three months it is the most useful thing on this
 > page, because it is evidence that the uncertainty was real at the time and
 > was later resolved.
+
+---
+
+## 2026-08-16 · the README named a version the repo does not build
+
+**現象** `README.md` states the `stable` flavor is libspdm 3.8.2. So do four
+places in `RUNBOOK.md`, the usage comment of `harness/build_spdm_emu.sh`, and
+an INFO verdict in `harness/healthcheck.sh`. What the build actually produces
+is **3.8.0** — `third_party/spdm-emu-stable.pin` records it, and
+`flavor_emu_ref()` in `harness/lib/common.sh` is what puts it there.
+
+**假設** (a) the pin is stale and the documents are right; (b) the documents
+are stale and the pin is right; (c) the two describe different things and both
+are right.
+
+**先驗哪個、為什麼** (b), and it needed no build to settle. The pin file is
+*generated* — `build_spdm_emu.sh` writes `BUILD_PIN.txt` from
+`git rev-parse HEAD` after the checkout, and `third_party/*.pin` is a copy of
+it. A generated record and a hand-written sentence cannot disagree unless the
+hand-written one is wrong, because the generated one is downstream of the
+thing it describes. Checking (a) would have meant a rebuild; checking (b) meant
+reading one function.
+
+**根因** ADR 0001 was revised on 2026-08-11 — pin the `spdm-emu` tag and let
+`libspdm` follow its submodule pointer, instead of pinning `libspdm` directly.
+The mechanism changed, the ADR and this log recorded it, and six documents that
+had quoted the *old* value were never revisited. Nothing failed: the version
+string appears in no assertion, so no test, no `verify_repo.sh` check and no CI
+job could see it. It survived five days precisely because it was inert.
+
+**教訓** Two, and the second is the general one.
+
+1. When a mechanism changes, grep for the old value before closing the change.
+   The ADR is not the deliverable — the documents a reader actually opens are.
+2. **This repository's whole claim is that every number points at its source, so
+   a number that contradicts its own source is the most expensive kind of error
+   it can carry** — more expensive than a wrong measurement, because it
+   discredits the mechanism rather than one result. The failure mode is
+   specific: facts that are only ever *stated* have nothing checking them,
+   while facts that are *computed* are checked every run. Where the two overlap,
+   the stated one is the one that rots.
+
+Fixed here, and the correction was not only the digit. The tables now name both
+`spdm-emu` and `libspdm`, because naming only the one that is not pinned is
+what made the drift possible; and the cost of the pinning rule — 3.8.0 lacks
+the two 2026 advisory fixes — is now stated in `README.md` and `RUNBOOK.md`
+next to the table, rather than left in ADR 0001 for a reader who goes looking.
