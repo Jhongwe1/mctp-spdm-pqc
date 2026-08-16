@@ -9,8 +9,9 @@ Working notes, newest last. Each technical entry uses the same five parts:
 **教訓** what changes as a result
 
 The third line is the one that matters. Anyone can list what they tried.
-Choosing *which* thing to try first, and being able to say why, is the whole
-content of the question "how do you debug".
+Choosing *which* hypothesis to test first, and being able to say on what
+grounds, is the difference between an entry the next reader can reuse and one
+they can only re-run.
 
 Entries marked **`TODO(me)`** are placeholders for things only I can write —
 what I read, what I concluded, how the drill went. They are left blank rather

@@ -5,9 +5,9 @@ the paper version produced when it was first typed in, unedited.**
 
 That number is the measurement. Everything else in this directory is the
 apparatus for producing it. Writing correct C with a compiler one keystroke
-away is a different skill from writing it on a whiteboard, and only the second
-one is being examined when it matters. The gap between those two skills is
-invisible unless it is counted.
+away is a different skill from writing it with nothing to ask, and the second
+one is the one that decays without ever announcing it. The gap between the two
+is invisible unless it is counted.
 
 The expectation is that this column falls from roughly 5–8 at the start to 0–1
 by the end. If it does not fall, the drills are being done with the editor
@@ -16,7 +16,8 @@ open, and the practice is not practising the thing it is supposed to practise.
 ## Rules for filling this in
 
 - **Type the paper version in exactly as written.** Do not fix anything on the
-  way in. A typo that would have cost a whiteboard is a real error; count it.
+  way in. A typo the compiler would normally have caught is a real error here;
+  count it.
 - Count **errors**, not lines of compiler output — one missing semicolon that
   cascades into nine messages is one error.
 - Count warnings separately. `-Werror` is on, so a warning stops the build too,
@@ -59,6 +60,6 @@ second time, the only variable left is whether it was actually learned.
 |---|---|---|---:|---|
 | 1st pass | W01–W07 | D1–D8, one per week | | |
 | full rewrite | W10 | all eight, paper only | | |
-| timed mock 1 | W08 | two problems, 45 min | | |
-| timed mock 2 | W11 | two problems, 45 min | | |
-| timed mock 3 | W13 | two problems, 45 min | | |
+| timed round 1 | W08 | two problems, 45 min | | |
+| timed round 2 | W11 | two problems, 45 min | | |
+| timed round 3 | W13 | two problems, 45 min | | |

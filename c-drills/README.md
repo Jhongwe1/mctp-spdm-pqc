@@ -5,9 +5,10 @@ runs into. They are here because the repository and the exercises are testing
 different things, and it is easy to mistake the first for the second.
 
 The repository demonstrates that a system was built, measured, and reasoned
-about. It does not demonstrate that C can be written on a whiteboard, from
-memory, in twenty minutes, with someone watching. That is a separate skill, it
-degrades quietly, and it is usually examined first.
+about. It does not demonstrate whether C can still be written correctly with no
+compiler in the loop to ask. That is a separate skill, it degrades quietly, and
+nothing in a normal working day turns red when it does — which is the reason it
+is measured here on purpose.
 
 ## The four steps
 
@@ -68,7 +69,7 @@ it reports what has been finished and never claims anything else.
 | D1 | SPDM header parser | a buffer shorter than the header it claims to contain | first step of every capture-analysis script here |
 | D5 | endianness conversion | sign extension when widening | the socket framing is big-endian, the payload little-endian |
 | D6 | packed struct layout | assuming the compiler laid it out the way it reads | wire formats are byte layouts, not struct layouts |
-| D4 | BST delete | deleting a node with two children | classic examined structure |
+| D4 | BST delete | deleting a node with two children | not used here — kept for the three-way pointer rewiring it forces |
 | D2 | offset + length overflow | `offset + length` wrapping past the end of the buffer | the arithmetic behind a real advisory class |
 | D7 | ring buffer | full and empty are indistinguishable by indices alone | proxy and transport buffering |
 | D8 | length-bounded string copy | the truncation case, and who writes the terminator | the other real advisory class |

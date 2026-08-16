@@ -14,9 +14,9 @@
  * │    4. `make test` clean, sanitizers included.                         │
  * │                                                                       │
  * │  Step 3 is not bookkeeping. Writing correct C in an editor with a     │
- * │  compiler one keystroke away is a different skill from writing it on  │
- * │  a whiteboard with someone watching, and only the second one is being │
- * │  tested when it counts.                                               │
+ * │  compiler one keystroke away is a different skill from writing it     │
+ * │  with nothing to ask, and the second one decays without warning.      │
+ * │  Counting is what makes that decay visible.                           │
  * └───────────────────────────────────────────────────────────────────────┘
  *
  * Where this connects to the project
