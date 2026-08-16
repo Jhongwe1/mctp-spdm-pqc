@@ -68,7 +68,7 @@ need() {
     for t in "$@"; do
         command -v "$t" >/dev/null 2>&1 || { warn "missing required tool: $t"; missing=1; }
     done
-    [ "$missing" -eq 0 ] || die "install the tools above and re-run (see RUNBOOK.md §2)"
+    [ "$missing" -eq 0 ] || die "install the tools above and re-run (see RUNBOOK.md §3)"
 }
 
 # Number of parallel jobs; overridable so a laptop sharing RAM with another

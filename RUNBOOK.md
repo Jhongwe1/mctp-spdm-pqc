@@ -5,7 +5,43 @@
 「任何人」包含三個月後已經忘光的你,也包含沒碰過韌體、沒聽過 SPDM 的高中生。
 所以每一步都會寫三件事:**指令是什麼、成功長什麼樣、失敗了怎麼辦。**
 
-不需要事先懂 SPDM。§0 有五分鐘的背景,§7 有詞彙表。
+不需要事先懂 SPDM。§1 有五分鐘的背景,附錄 B 有詞彙表。
+
+---
+
+## 0. 三十秒版本
+
+| 問題 | 答案 |
+|---|---|
+| 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
+| 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
+| **現在做到哪?** | ★★ **W02 D1(2026-08-17):逐欄位理解 ＋ 把文件的數字變成 CI 會檢查的斷言 ＋ W01 稽核**。收了 5 臂基線 capture、寫了 `harness/fields.py`、`docs/handshake-walkthrough.md`(**84 個數字全部由腳本從 capture 重算,CI 會檢查**)、`docs/transports.md`。**W01 稽核抓到三個機制缺陷,全修**(見下) |
+| ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
+| ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
+| ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**84/84 通過,而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
+| ★★ 一句話成果(W02 · 稽核) | 「我回頭稽核 W01,發現**三個機制缺陷,而且三個都在報告成功**:`manifest.json` 對 12 個被 `.gitignore` 擋掉的檔案簽了 SHA-256;`repo_dirty` 永遠是 `true`(因為先 `mkdir` 才問 git);解碼器 `spdm-dump` 從來沒被釘版本。全修,而且各補一條 CI 檢查」 |
+| ★ 反直覺的一個發現 | 「**多提供幾個演算法不會讓 `NEGOTIATE_ALGORITHMS` 變大。** 提供 1 個和提供 4 個都是 **56 bytes**,因為那些欄位是固定寬度的位元遮罩。多提供的代價不是頻寬,是**你在讀回 `ALGORITHMS` 之前不知道會用哪個**」 |
+| Claude Code 從哪開? | **`C:\Users\Key20\Desktop\mctp-spdm-pqc`** |
+| 程式碼在哪? | repo 就在上面那個路徑;**上游原始碼與 build tree 在 WSL 的 `~/spdm-lab/`(ext4),絕不放 `/mnt/c`** |
+| GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
+| 今天要做什麼? | W02 剩下的:**① `c-drills` D1(SPDM 標頭解析器)四步** ② **D3 補做**(W01 欠的,`DONE.txt` 還是空的) ③ W03 預習:**08/31 SPDM 1.5 公評截止會過期** |
+| 專案那軌 vs 基本功那軌 | 專案 **超前**(W02 一天做完);**基本功欠一整週:D3 到現在四步一步都沒過。這是目前最大的風險** —— c-drills 量的是「沒有編譯器可以問的時候還能不能把 C 寫對」,它會安靜地退化 |
+| 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
+| ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我**。現在只有 `verify` 與 `drills` 兩個 CI job,真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)要到 G2/G3 才存在<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
+
+### 現在的關卡狀態
+
+| Gate | 主題 | 狀態 |
+|---|---|---|
+| G0 | 環境與版本基線 | ✅ 完成 |
+| G1 | 完整握手、逐欄位 | 🟡 **進行中** — 逐欄位文件已完成 7 個訊息對 |
+| G2 | 憑證鏈與三點篡改 | ⬜ 未開始(W03~W05) |
+| G3 | RATS 驗證流水線 | ⬜ 未開始(W06~W07) |
+| G4 | 後量子成本 | ⬜ 未開始(W08) |
+| G5 | 真實傳輸 | ⬜ 未開始(W09) |
+| G6 | 一致性與負面測試 | ⬜ 未開始(W10~W11) |
+| G7 | 上游貢獻 | 🟡 環境已備妥;**今天多找到一個候選 patch**(`spdm-emu` 的 `--help` 預設值與 `key.c` 不同步) |
+| G8 | 交付與敘事 | ⬜ 未開始(W12~W14) |
 
 ---
 
@@ -13,22 +49,24 @@
 
 | § | 內容 | 需要時間 |
 |:--|---|---|
-| [0](#0-你正在建什麼五分鐘) | 你正在建什麼 | 讀 5 分 |
-| [1](#1-你需要什麼) | 你需要什麼 | — |
-| [2](#2-準備一台-linuxwindows-使用者看這裡) | 準備一台 Linux(Windows 看這裡) | 15 分 |
-| [3](#3-取得-repo-並檢查機器) | 取得 repo 並檢查機器 | 2 分 |
-| [4](#4-建置-30-分鐘大部分在下載) | 建置 | 30 分 |
-| [5](#5-體檢跑出第一份封包) | 體檢:跑出第一份封包 | 2 分 |
-| [6](#6-剛剛到底發生了什麼) | 剛剛到底發生了什麼 | 讀 10 分 |
-| [7](#7-出問題時症狀--原因--解法) | 出問題時:症狀 → 原因 → 解法 | 查表 |
-| [8](#8-基本功c-drills) | 基本功:c-drills | 每週 |
-| [9](#9-每天怎麼用這個-repo) | 每天怎麼用這個 repo | — |
-| [10](#10-把一切從零重建驗證可重現性) | 把一切從零重建 | 40 分 |
+| [0](#0-三十秒版本) | 三十秒版本 | 讀 30 秒 |
+| [1](#1-你正在建什麼五分鐘) | 你正在建什麼 | 讀 5 分 |
+| [2](#2-你需要什麼) | 你需要什麼 | — |
+| [3](#3-準備一台-linuxwindows-使用者看這裡) | 準備一台 Linux(Windows 看這裡) | 15 分 |
+| [4](#4-取得-repo-並檢查機器) | 取得 repo 並檢查機器 | 2 分 |
+| [5](#5-建置-30-分鐘大部分在下載) | 建置 | 30 分 |
+| [6](#6-體檢跑出第一份封包) | 體檢:跑出第一份封包 | 2 分 |
+| [7](#7-剛剛到底發生了什麼) | 剛剛到底發生了什麼 | 讀 10 分 |
+| [8](#8-收證據把一份-capture-變成可以被檢查的數字) | **收證據:把 capture 變成可被檢查的數字** | 讀 10 分 |
+| [9](#9-出問題時症狀--原因--解法) | 出問題時:症狀 → 原因 → 解法 | 查表 |
+| [10](#10-基本功c-drills) | 基本功:c-drills | 每週 |
+| [11](#11-每天怎麼用這個-repo) | 每天怎麼用這個 repo | — |
+| [12](#12-把一切從零重建驗證可重現性) | 把一切從零重建 | 40 分 |
 | [附錄](#附錄-a-指令速查) | 指令速查、詞彙表 | 查表 |
 
 ---
 
-## 0. 你正在建什麼(五分鐘)
+## 1. 你正在建什麼(五分鐘)
 
 ### 問題長這樣
 
@@ -87,11 +125,11 @@ Responder 回你一個 measurement,比如 `a3f9...`。**然後呢?**
 
 ---
 
-## 1. 你需要什麼
+## 2. 你需要什麼
 
 | 項目 | 需求 | 備註 |
 |---|---|---|
-| 作業系統 | **Linux**(Ubuntu 24.04 已驗證) | Windows 看 §2,macOS 用 Docker |
+| 作業系統 | **Linux**(Ubuntu 24.04 已驗證) | Windows 看 §3,macOS 用 Docker |
 | CPU | 4 核以上 | 8 核會快一倍 |
 | 記憶體 | 4 GB 以上 | 編譯 OpenSSL 時 `-j3` 約吃 1.5 GB |
 | **磁碟** | **25 GB 空的** | ⚠️ 這是最容易低估的一項,見下 |
@@ -110,7 +148,7 @@ Responder 回你一個 measurement,比如 `a3f9...`。**然後呢?**
 >
 > **這是正常的,不是你做錯了。**
 
-需要的軟體(§3 的 `doctor.sh` 會逐項幫你檢查):
+需要的軟體(§4 的 `doctor.sh` 會逐項幫你檢查):
 
 ```
 git   cmake(≥3.10)   make   gcc   python3   perl
@@ -118,11 +156,11 @@ git   cmake(≥3.10)   make   gcc   python3   perl
 
 ---
 
-## 2. 準備一台 Linux(Windows 使用者看這裡)
+## 3. 準備一台 Linux(Windows 使用者看這裡)
 
 Windows 上有兩條路。**推薦 WSL2**,因為它快,而且就是本 repo 驗證過的環境。
 
-### 2A · WSL2(推薦)
+### 3A · WSL2(推薦)
 
 在 **PowerShell(系統管理員)** 執行:
 
@@ -155,18 +193,18 @@ sudo apt-get install -y git cmake build-essential python3 perl iproute2
 > 但**編譯樹一律建在 `~/spdm-lab/`**,也就是 Linux 的 ext4 上。
 > 這不只是為了快——上游的原始碼本來就不該混進你自己的 repo。
 
-### 2B · Docker(macOS,或不想裝 WSL)
+### 3B · Docker(macOS,或不想裝 WSL)
 
 ```bash
 docker build -t spdm-lab docker/
 docker run -it --rm -v "$PWD:/repo" -w /repo spdm-lab bash
 ```
 
-進去之後 §3 之後的步驟完全一樣。
+進去之後 §4 之後的步驟完全一樣。
 
 ---
 
-## 3. 取得 repo 並檢查機器
+## 4. 取得 repo 並檢查機器
 
 ```bash
 git clone https://github.com/Jhongwe1/mctp-spdm-pqc.git
@@ -212,7 +250,7 @@ bash harness/doctor.sh
 
 ---
 
-## 4. 建置(30 分鐘,大部分在下載)
+## 5. 建置(30 分鐘,大部分在下載)
 
 ```bash
 bash harness/build_spdm_emu.sh pqc
@@ -307,7 +345,7 @@ libspdm 3.8.1 或 3.8.2**——那兩個在 `release-3.8` 維護分支上,而 sp
 
 ---
 
-## 5. 體檢:跑出第一份封包
+## 6. 體檢:跑出第一份封包
 
 ```bash
 bash harness/healthcheck.sh pqc --write-baseline
@@ -380,7 +418,7 @@ bench/data/healthcheck-pqc-<時間戳>/
 
 ---
 
-## 6. 剛剛到底發生了什麼
+## 7. 剛剛到底發生了什麼
 
 你剛剛跑的那一行,展開來是這樣:
 
@@ -454,11 +492,141 @@ bash harness/build_spdm_dump.sh          # 首次要編,約 15 分鐘
 ~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r bench/data/<run-id>/minimal.pcap
 ```
 
-它會把每一個訊息逐欄位印出來。**這就是 W02 要做的事:把每一個欄位講清楚。**
+它會把每一個訊息逐欄位印出來。**下一節就是把這些欄位變成可以被檢查的數字。**
 
 ---
 
-## 7. 出問題時:症狀 → 原因 → 解法
+## 8. 收證據:把一份 capture 變成可以被檢查的數字
+
+這一節是這個 repo 跟「跑過一次然後截圖」的差別所在。**如果你只想看一次結果,
+上一節就夠了。這一節在講怎麼讓那個結果三個月後還是對的。**
+
+### 8.1 收一組基線 capture
+
+```bash
+bash harness/capture.sh --name w2-baseline        # 約 3 分鐘
+```
+
+它一次跑**五臂**,寫進同一個 `bench/data/<name>-<時間戳>/`:
+
+| 臂 | 是什麼 | 為什麼要有它 |
+|---|---|---|
+| `classical` | pqc build,預設演算法 | 對照組 |
+| `pqc` | pqc build,ML-DSA-65 ＋ ML-KEM-768,**兩個方向都釘死** | 後量子那一臂 |
+| `classical-stable` | **stable build**,預設演算法 | ★ **控制組**:回答「pqc build 上的 classical 能不能代表 stable 基線」 |
+| `walkthrough` | pqc build ＋ `--meas_op ALL` | 30 個封包,逐欄位標註用這一份 |
+| `single-algo` | 每組演算法只提供一個 | 回答「多提供幾個會不會變大」 |
+
+> ### 🔴 為什麼一定要有控制組
+>
+> 因為答案是**不能代表**。同樣的旗標,兩份 build 的結果差在五個地方:協商到的
+> SPDM 版本(1.4 vs **1.3**)、requester 能力位元(少了 `LARGE_RESP_CAP`)、
+> 一次要求的憑證長度(163,824 vs **1,024**)、憑證鏈大小(1,655 vs **1,591**
+> bytes)、以及取完整條鏈要幾趟(1 vs **2**)。
+>
+> **「classical 基線」不是一個跟 build 無關的東西。** 哪一份 build 跑出來的,
+> 要寫進表格的說明;`manifest.json` 無論你寫不寫都會記。
+
+> ### 🔴 為什麼後量子那臂要釘**兩個**方向
+>
+> **SPDM 是雙向認證的,而且兩個方向的演算法是分開協商的。**
+> 08-11 那次只釘了 `--pqc_asym`(responder 側),`--req_pqc_asym` 留預設 →
+> responder 幫 requester 挑了 **ML-DSA-87**。那份 capture 裡是「responder 用
+> ML-DSA-65、requester 用 ML-DSA-87」,而對照的 classical 臂 requester 用的是
+> RSAPSS-3072。**兩臂的 requester 演算法不一樣,就不能相減。**
+>
+> 這跟 08-11 撤掉 5.94× 是同一類錯,但藏得更深:那次是「數字從請求推出來的」,
+> 這次是「讀回來了,但只看了一個欄位」。
+
+### 8.2 把協定欄位讀出來
+
+```bash
+python3 harness/fields.py bench/data/<run>/walkthrough.decode.txt
+python3 harness/fields.py bench/data/<run>/walkthrough.decode.txt --json
+python3 harness/fields.py bench/data/<run>/walkthrough.decode.txt --list-keys
+```
+
+它讀的是 `spdm_dump` 的輸出,不是 pcap —— 因為 `spdm_dump` 已經會解 SPDM 了,
+再寫一個解析器就是多一個要維護對的東西。**它印的是「實際協商到什麼」,不是
+「你要求了什麼」。**
+
+輸出大概長這樣:
+
+```
+requester   : Flags 0x8882f7c6  CTExponent 0  DataTransferSize 4608
+              CERT_CAP, CHAL_CAP, ..., CHUNK_CAP, EP_INFO_CAP_SIG, ...
+algorithms  : offered -> negotiated
+              Hash        SHA_256, SHA_384          -> SHA_384
+              ReqAsym     RSASSA_2048, ...          -> RSAPSS_3072
+certificate : 3 GET_CERTIFICATE (+1 encapsulated), requested Length 163824
+              responder slot 0 : 1655 bytes, 1 portion(s) per fetch, fetched 2x
+measurements: operation ALL, responder reports 8 block(s), record 528 bytes
+```
+
+### 8.3 ★ 讓文件裡的數字不能腐爛
+
+**這是這個 repo 的核心機制,而且它是被 08-16 跟 08-17 兩次教訓逼出來的。**
+
+那兩次的結論是同一句:**只被「寫下來」的事實沒有任何東西在檢查它;被「算出來」
+的事實每次執行都會被檢查。兩者重疊的地方,爛掉的一定是寫下來的那個。**
+
+所以 `docs/handshake-walkthrough.md` 裡的每一個數字都不是打字打進去的,而是:
+
+```markdown
+<!-- capture: bench/data/<run>/walkthrough.decode.txt -->
+
+| `DataTransferSize` | <!--claim capabilities.requester.data_transfer_size=4608--> 4,608 |
+```
+
+`<!--claim ...-->` 在渲染出來的網頁上看不到,但:
+
+```bash
+python3 harness/fields.py --check docs/handshake-walkthrough.md
+#   84/84 claims match the capture
+```
+
+`harness/verify_repo.sh` 會跑這個檢查,CI 會跑 `verify_repo.sh`。
+**所以一個數字跟它的 capture 對不上,是建置變紅,不是「希望有人注意到」。**
+
+> ### 綠燈要先證明過它會紅
+>
+> 三種壞法都試過,三種都會紅:
+>
+> | 弄壞什麼 | 結果 |
+> |---|---|
+> | 把 528 改成 529 | `FAIL line 508: document says 529, capture says 528` |
+> | 把欄位名寫成不存在的 `measurements.mode` | `FAIL: 'measurements.mode' is not a field this tool computes` |
+> | 把 capture 路徑改成不存在的檔案 | `FAIL: capture not found` |
+>
+> **第二種特別重要**:它讓你不能用「發明一個欄位名」來滿足檢查。
+
+### 8.4 每一個結果都有出處
+
+跑完之後 `bench/data/<run>/manifest.json` 裡有:
+
+- 三份 build 的 commit hash(**pqc、stable、以及解碼器 `spdm-dump`**)
+- 完整的指令列,原樣
+- 每一個檔案的 SHA-256 與位元組數
+- 跑的時候工作樹乾不乾淨(`repo_dirty`)
+
+> ### 🔴 `repo_dirty` 曾經永遠是 `true`
+>
+> 因為 `prov_begin` 先 `mkdir` 了 run 目錄、才去問 git 乾不乾淨 —— 那個目錄
+> 本身就讓樹變髒了。**一個永遠只會回答同一個值的欄位不是觀察**,而且比沒有
+> 這個欄位更糟,因為讀的人分不出來。08-17 修掉。
+
+> ### 🔴 `.gitignore` 的 `*.log` 曾經吃掉 12 個被 manifest 簽過名的檔案
+>
+> `manifest.json` 對 `<arm>.req.log` 簽了 SHA-256,但 `.gitignore` 讓它們根本
+> 沒進 repo。**乾淨 clone 拿到的是一份指向不存在檔案的保證** —— 而且機制全程
+> 回報成功。修法不只是改 `.gitignore`:`verify_repo.sh` 現在會檢查
+> **每一個 manifest 提到的檔案都真的被 git 追蹤**。
+>
+> 通則:**忽略規則不准蓋過 manifest。**
+
+---
+
+## 9. 出問題時:症狀 → 原因 → 解法
 
 | 症狀 | 原因 | 解法 |
 |---|---|---|
@@ -471,7 +639,11 @@ bash harness/build_spdm_dump.sh          # 首次要編,約 15 分鐘
 | `Address already in use` | 上次的 responder 沒死乾淨 | `pkill -f spdm_responder_emu`,或 `SPDM_EMU_PORT=2400 bash harness/healthcheck.sh pqc` |
 | `bash: line N: $'\r': command not found` | 檔案是 CRLF 換行 | `sed -i 's/\r$//' harness/*.sh`。本 repo 的 `.gitattributes` 已強制 LF |
 | 腳本跑到一半噴出「某行註解不是指令」 | **你在腳本執行中途編輯了它** | bash 是邊讀邊執行的,改檔案會讓它讀到錯的位移。等它跑完再改 |
-| 握手跑 53 秒、1116 個封包、結束碼 1 | **只砍了 `--exe_conn`,忘了 `--exe_session`** | 兩個都要砍,見 §6 的紅框 |
+| 握手跑 53 秒、1116 個封包、結束碼 1 | **只砍了 `--exe_conn`,忘了 `--exe_session`** | 兩個都要砍,見 §7 的紅框 |
+| 握手 554 個封包,其中 500 多個是 `GET_MEASUREMENTS` 跟 `SPDM_ERROR` | **`--meas_op` 預設 `ONE_BY_ONE`**,requester 從 index 1 掃到 0xFE **兩趟** | 加 `--meas_op ALL` → 30 個封包,而且送的位元組完全一樣(528)。原因見 `docs/handshake-walkthrough.md` §7 |
+| 後量子那次的 requester 用了 ML-DSA-**87**,不是我指定的 65 | **`--pqc_asym` 只管 responder 側。** requester 側是 `--req_pqc_asym`,兩個方向分開協商 | 兩個都指定。**沒指定的那個方向就是未控制的變因** |
+| 兩份 build 跑同樣的旗標,憑證鏈大小不一樣 | **不是 bug。** `stable`(3.8.0)協商到 SPDM 1.3,沒有 1.4 的 `LargeCert`,所以一次只取 1024 bytes | 這是控制組要回答的問題。每一張表的說明要寫是哪一份 build |
+| `fields.py --check` 說 `is not a field this tool computes` | 你在文件裡宣告了一個不存在的欄位名 | `python3 harness/fields.py <decode> --list-keys` 看有哪些鍵。**這個檢查是故意的**——不然可以靠發明欄位名來過關 |
 | `spdm_dump` 只解出十幾行就停,最後一行寫 `cert_chain is too larger` | **解碼器的編譯期常數 `LIBSPDM_MAX_CERT_CHAIN_SIZE` 不夠大** | ⚠️ **這不是握手失敗,是解碼器停了。** 後量子憑證鏈約 16.8 KB,超過 spdm_dump 內建上限。要完整解碼得改常數重編 spdm-dump。體檢第 11 項會明確標示這種情況 |
 | 用 `| tee` 接 build,結果騙人 | pipeline 的結束碼是**最後一個**指令的 | `set -o pipefail`,或看 `${PIPESTATUS[0]}` |
 | build 跑很久而且電腦很卡 | `-j$(nproc)` 吃滿了 | `JOBS=3 nice -n 19 bash harness/build_spdm_emu.sh pqc` |
@@ -486,14 +658,14 @@ bash harness/build_spdm_dump.sh          # 首次要編,約 15 分鐘
 ```bash
 docker build -t spdm-lab docker/
 docker run -it --rm -v "$PWD:/repo" -w /repo spdm-lab bash
-# 進去之後從 §3 重來
+# 進去之後從 §4 重來
 ```
 
 Docker 那條路是**釘死版本的**,基底映像用 digest 鎖住。它一定會動。
 
 ---
 
-## 8. 基本功:c-drills
+## 10. 基本功:c-drills
 
 ```bash
 cd c-drills
@@ -526,7 +698,7 @@ make test       # 只跑 DONE.txt 裡列出來的
 
 ---
 
-## 9. 每天怎麼用這個 repo
+## 11. 每天怎麼用這個 repo
 
 ```bash
 # 一、開工前確認環境還在
@@ -560,7 +732,7 @@ Gerrit,現在練起來那時候不用重學。
 
 ---
 
-## 10. 把一切從零重建(驗證可重現性)
+## 12. 把一切從零重建(驗證可重現性)
 
 **這一節是這份 runbook 的驗收條件。** 每隔一段時間跑一次,確認它沒有腐爛。
 
@@ -607,28 +779,48 @@ bash harness/healthcheck.sh pqc
 bash harness/healthcheck.sh pqc --write-baseline        # 順便更新 docs/env-baseline.md
 bash harness/healthcheck.sh stable
 
-# ── 分析 ────────────────────────────────────────────────
+# ── 收證據(★ 五臂,有出處)────────────────────────────
+bash harness/capture.sh                       # 預設 --name w2-baseline
+bash harness/capture.sh --name g2-tamper      # 之後的實驗換個名字
+
+# ── 分析:封包層 ────────────────────────────────────────
 python3 harness/pcapcount.py <file>.pcap
 python3 harness/pcapcount.py <file>.pcap --json
 python3 harness/pcapcount.py <file>.pcap --list         # 每個封包一行
-~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r <file>.pcap
+
+# ── 分析:協定欄位層(★ 實際協商到什麼)──────────────────
+python3 harness/fields.py <run>/walkthrough.decode.txt
+python3 harness/fields.py <run>/walkthrough.decode.txt --json
+python3 harness/fields.py <run>/walkthrough.decode.txt --list-keys   # 可以宣告的鍵
+python3 harness/fields.py --check docs/handshake-walkthrough.md      # ★ CI 也跑這個
+
+# ── 手動解碼 ────────────────────────────────────────────
+~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r <file>.pcap         # 摘要
+~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r <file>.pcap -a      # 全欄位
+~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r <file>.pcap -x      # 十六進位
 
 # ── 手動跑一次握手 ──────────────────────────────────────
 cd ~/spdm-lab/work/spdm-emu-pqc/build/bin        # ★ 一定要 cd 進來
-#                                    ★★ 兩個旗標都要砍,見 §6
+#                                    ★★ 兩個旗標都要砍,見 §7
 ./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END &
 ./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
                      --pcap /tmp/x.pcap
 pkill -f spdm_responder_emu                       # 收工
 
-# ── 後量子 ──────────────────────────────────────────────
+# ── 後量子(★ --req_pqc_asym 一定要一起釘,見 §8.1)──────
 ./spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
     --asym NONE --dhe NONE \
-    --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE &
+    --pqc_asym ML_DSA_65 --req_pqc_asym ML_DSA_65 \
+    --kem ML_KEM_768 --pqc_first TRUE &
 ./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
     --asym NONE --dhe NONE \
-    --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE \
+    --pqc_asym ML_DSA_65 --req_pqc_asym ML_DSA_65 \
+    --kem ML_KEM_768 --pqc_first TRUE \
     --pcap /tmp/pqc.pcap
+
+# ── 把 526 個封包砍掉(★ 第三個旗標,見 §8)───────────────
+./spdm_requester_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \
+    --meas_op ALL --pcap /tmp/small.pcap        # 554 個封包 → 30 個
 
 # ── 讀出「實際協商到什麼」(不是你要求什麼)★ ────────────
 ~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /tmp/x.pcap | grep ' SPDM_ALGORITHMS'

@@ -366,7 +366,7 @@ if [ "${HANDSHAKE_OK:-0}" -eq 1 ]; then
     printf '\n  GATE 0 (minimal handshake): PASS — the project can proceed.\n'
 else
     printf '\n  GATE 0 (minimal handshake): FAIL — stop and fix this before anything else.\n'
-    printf '  See RUNBOOK.md section "When it does not work".\n'
+    printf '  See RUNBOOK.md §9 (symptom -> cause -> fix).\n'
 fi
 
 }
