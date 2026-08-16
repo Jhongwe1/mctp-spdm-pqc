@@ -12,14 +12,14 @@ table and the two are kept in step.
 
 | Gate | Weeks | Subject | Definition of done | Status |
 |:--|:--|---|---|---|
-| **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **in progress** |
-| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | not started |
+| **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **complete** |
+| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **in progress** — seven pairs annotated in `docs/handshake-walkthrough.md`, 84 values asserted against their captures by CI |
 | **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | not started |
 | **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | not started |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | not started |
 | **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | not started |
 | **G6** | 10–11 | conformance and negative testing | upstream responder validator run with a root cause for every failure; negative tests reproducing three 2026 advisory *classes* | not started |
-| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared |
+| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared; **two candidates with evidence** — `openbmc/spdm` prerequisites, and `DMTF/spdm-emu` help text that disagrees with its own defaults |
 | **G8** | 12–14 | delivery and write-up | README, limitations, threat scope, demo, one-page summary | not started |
 
 ## Dependencies
@@ -86,8 +86,17 @@ it does.
 5. **Limitations sit next to the result**, not in a closing section.
 6. **Versions are recorded**, by commit hash, automatically.
 7. **Nothing is cited that has not been checked** against the primary source.
-8. **Independent variables are verified, not assumed.** When an algorithm is
-   requested, the result reports what was actually negotiated.
+8. **Independent variables are verified, not assumed, and enumerated rather
+   than spot-checked.** When an algorithm is requested, the result reports what
+   was actually negotiated — in *every* direction the protocol negotiates
+   separately. Confirming one field of a pair is not confirming the variable;
+   2026-08-17 in `LOG.md` is what that costs.
+9. **A published number is marked up so a machine can re-derive it.** Prose has
+   no equivalent of `prov_begin`, so where a document states a measured value it
+   carries a claim comment and `harness/fields.py --check` recomputes it from
+   the capture on every CI run. Facts that are only stated are the ones that rot.
+10. **An ignore rule does not outrank a manifest.** Every artifact a manifest
+    attests to must be present and tracked, and `verify_repo.sh` checks it.
 
 ## External dates that do not wait
 

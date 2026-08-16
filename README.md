@@ -26,28 +26,64 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 1 of a 14-week programme. The table below is the truth about what
+This is week 2 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
-[`docs/roadmap.md`](docs/roadmap.md).
+[`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
 | Gate | Subject | State |
 |:--|---|---|
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
-| G1 | full handshake, field by field | not started |
+| G1 | full handshake, field by field | **in progress** — seven message pairs annotated, numbers asserted by CI |
 | G2 | certificate chain, three tamper points | not started |
 | G3 | RATS verification pipeline | not started |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | agreements and account done; target built, five blockers documented |
+| G7 | upstream contribution | agreements and account done; two candidate changes with evidence, neither submitted |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
 
-### What week 1 established
+### What week 2 established
 
-Two things came out of the environment work that were not the point of it.
+**The minimal handshake was 554 packets. 526 of them were one default flag, and
+they carried the same bytes as a single message.**
+
+| | `--meas_op ONE_BY_ONE` (default) | `--meas_op ALL` |
+|---|--:|--:|
+| packets | 554 | **30** |
+| `GET_MEASUREMENTS` sent | 263 | **1** |
+| `SPDM_ERROR(InvalidRequset)` received | 246 | **0** |
+| measurement record delivered | **528 bytes** | **528 bytes** |
+
+The last row is the result. Summing `MeasurementRecordLength` over the eight
+measurement indices that exist gives 528; the single `ALL` response carries a
+528-byte record. Both numbers are re-derived from their own captures by
+[`harness/fields.py`](harness/fields.py) and asserted in CI, so the identity is
+checked rather than argued.
+
+Why the default behaves that way has three separate causes, and separating them
+is the point: the **two-pass structure is required by the specification** (from
+SPDM 1.2 an errored `MEASUREMENT` resets the L1/L2 transcript, so a requester
+must learn which indices exist before building a signed one), **walking the
+index space is the emulator's choice**, and **the early exit never fires**
+because the sample responder's eight indices end at `0xFE`. Full derivation in
+[`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md) §7.
+
+**A field-by-field walkthrough whose numbers cannot rot.** Every value in that
+document is marked up in its source and re-derived from the capture it cites by
+`harness/fields.py --check`, which `harness/verify_repo.sh` and therefore CI
+run. 84 claims across five captures. The mechanism was deliberately broken three
+ways — a byte count off by one, a claim naming a field the tool does not
+compute, a capture that has moved — and turns red on each.
+
+**A classical baseline is not build-independent.** Identical flags on
+`spdm-emu` 3.8.0 and 4.0.0-rc differ in five measurable ways, including a
+1,591-byte certificate chain against 1,655 and two round trips to fetch it
+against one. Which build produced a number belongs beside the number.
+
+### What week 1 established, revised by week 2
 
 **A post-quantum certificate chain is ten times the size of a classical one,
 and that changes the message flow rather than only the byte count.**
@@ -59,26 +95,32 @@ and that changes the message flow rather than only the byte count.**
 | certificate chain | 1,655 bytes | **16,853 bytes** |
 | chunk round trips to fetch it | **0** | **4** |
 
-The chain exceeds the negotiated `DataTransferSize` (4,608 bytes), so
-`GET_CERTIFICATE` is answered with `SPDM_ERROR(LargeResponse)` and the exchange
-falls into SPDM's chunking mechanism. **The classical path never executes that
-code.** On a real BMC speaking MCTP over I²C, where the transfer unit is
-smaller again, that is the part that would be felt.
+Measured on the `pqc` build, which is what makes it a controlled comparison —
+both arms from one binary, varying the algorithm. The chain exceeds the
+negotiated `DataTransferSize` (4,608 bytes), so `GET_CERTIFICATE` is answered
+with `SPDM_ERROR(LargeResponse)` and the exchange falls into SPDM's chunking
+mechanism. **The classical path never executes that code.** On a real BMC
+speaking MCTP over I²C, where the transfer unit is smaller again, that is the
+part that would be felt.
 
-Both rows come from one decoded protocol field read out of both captures, with
-the algorithm confirmed from the `ALGORITHMS` response rather than from what
-was requested. `harness/healthcheck.sh` re-derives them on every run.
+Week 2 found the flaw in the week 1 version of this comparison and fixed it:
+only the responder's algorithm had been pinned. SPDM negotiates the requester's
+signature separately, and the responder had chosen ML-DSA-87 for it against
+RSAPSS-3072 in the classical arm. Both directions are pinned now, in every arm.
 
-**The reference decoder cannot read the reference emulator's post-quantum
-output.** `spdm_dump`, built from the same `libspdm` commit as the emulator,
-stops partway through with `cert_chain is too larger — increase
-LIBSPDM_MAX_CERT_CHAIN_SIZE and rebuild`. The handshake is fine; the decoder's
-compile-time constant is not. Anything that reports a short decode as a short
-handshake will be wrong, so the health check labels that case explicitly.
+**The reference decoder is not configured to read the reference emulator's
+post-quantum output.** `spdm_dump` stops partway through with `cert_chain is too
+larger`. Week 1 recorded that as its compile-time constant being too small; week
+2 measured the constant — **4,096 bytes**, read out of the compiled binary by
+bisecting the size of an input it validates before parsing, with no rebuild. The
+chain it fails on is 16,853, and the same header selects 32,768 when ML-DSA
+support is compiled in. The emulator that produced the capture is built from the
+**same libspdm commit**. So this is build configuration, not version — a task
+rather than a limitation, and the difference is worth the eight seconds it took
+to establish.
 
-Neither of these is Gate 4. They are single observations from a single build,
-recorded because they were seen, and they are what Gate 4 will have to
-measure properly.
+Neither of these is Gate 4. They are observations from single runs, recorded
+because they were seen, and they are what Gate 4 will have to measure properly.
 
 ## Getting started
 
@@ -102,7 +144,8 @@ bash harness/healthcheck.sh pqc --write-baseline
 Every experiment writes into `bench/data/<run-id>/`, and every run directory
 contains a `manifest.json` holding:
 
-- the exact `libspdm` and `spdm-emu` commit hashes the binaries were built from
+- the commit hashes of **every** upstream binary the run depended on — both
+  emulator builds and `spdm_dump`, through which each capture is read
 - the complete command lines that were executed, as executed
 - compiler, OpenSSL, Python and kernel versions
 - SHA-256 and byte count of every artifact in the directory
@@ -115,12 +158,23 @@ be produced without being attributed. The reason is narrow and practical: a
 number in a table is worth exactly as much as the reader's ability to find the
 capture file it came from and check it.
 
+Which is why `harness/verify_repo.sh` also checks that every artifact a manifest
+attests to is **present and tracked**. It exists because that guarantee was
+quietly broken: `.gitignore`'s `*.log` excluded twelve evidence files that three
+manifests had already signed for, so a fresh clone received a promise it could
+not check — while the mechanism reported success throughout. An ignore rule is
+not allowed to outrank a manifest.
+
 ## Repository layout
 
 ```
-harness/       build, health-check and analysis scripts
-  lib/         shared shell helpers; provenance stamping
+harness/       build, capture, health-check and analysis scripts
+  capture.sh   take a run's captures, all arms, with provenance
+  fields.py    read protocol fields out of a decode; assert a document's numbers
+  lib/         shared shell helpers; provenance stamping; the handshake runner
 docs/          baseline, design notes, decision records, roadmap
+  handshake-walkthrough.md   every message, field by field, numbers checked by CI
+  transports.md              what --trans MCTP is, and what it is not
   decisions/   architecture decision records — why, not what
   upstream/    upstream contribution tracking
 bench/data/    experiment runs, one directory each, each with manifest.json
@@ -145,8 +199,18 @@ produced it.
 
 | Flavor | spdm-emu | libspdm | Used for |
 |---|---|---|---|
-| `stable` | 3.8.0 | 3.8.0 | every baseline measurement |
-| `pqc` | 4.0.0-rc | 4.0.0-rc | post-quantum experiments only |
+| `stable` | 3.8.0 | 3.8.0 | the released-pair control |
+| `pqc` | 4.0.0-rc | 4.0.0-rc | the comparison arms, classical and post-quantum |
+
+**Both arms of a comparison come from one build**, because holding the binary
+constant is what makes the algorithm the variable. The `stable` build is run
+with identical flags as a control, and week 2 measured what that control is
+worth: the two builds differ in SPDM version negotiated (1.3 against 1.4),
+requester capability bits, certificate chain size (1,591 against 1,655 bytes)
+and the number of round trips to fetch it (2 against 1). So a "classical
+baseline" is a property of a build, not of the classical algorithms, and every
+table names the flavor that produced it. `manifest.json` records it whether or
+not anyone remembers to.
 
 What is pinned is the `spdm-emu` tag; `libspdm` follows that tag's submodule
 pointer, because that is the pair upstream releases and tests together. No
