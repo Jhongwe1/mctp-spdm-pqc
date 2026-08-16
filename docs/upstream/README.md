@@ -29,7 +29,8 @@ needs a date attached to it.
 | git identity matches Gerrit in every environment | **done** | 2026-08-11 | legal name in both the WSL and the Windows git config |
 | Community channel joined, reading only | **`TODO`** | | |
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
-| **This project's** first change submitted | not started | | |
+| Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
+| **This project's** first change submitted | not started | | scheduled W03 |
 | Reviewer response received | not started | | |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
@@ -134,6 +135,63 @@ pip install meson ninja inflection mako pyyaml jsonschema
 meson setup build             # succeeds: 808 targets
 meson compile -C build        # fails on GCC 13.3 — see blockers 4 and 5
 ```
+
+## A second candidate, on a different repository — 2026-08-17
+
+`DMTF/spdm-emu`, at `5f01d2f` (tag `4.0.0-rc`). Found while reading the source
+for a different reason, which is usually how these are found.
+
+**The `--help` text disagrees with the defaults it describes.**
+
+```
+spdm_emu/spdm_emu_common/spdm_emu.c:115
+  "By default, CERT,CHAL,ENCRYPT,MAC,MUT_AUTH,KEY_EX,PSK,ENCAP,HBEAT,
+   KEY_UPD,HANDSHAKE_IN_CLEAR,MULTI_KEY_NEG,LARGE_RESP is used for Requester."
+
+spdm_emu/spdm_emu_common/key.c:12-30
+  m_use_requester_capability_flags = ( ...
+      SPDM_GET_CAPABILITIES_REQUEST_FLAGS_CHUNK_CAP |
+      SPDM_GET_CAPABILITIES_REQUEST_FLAGS_EP_INFO_CAP_SIG | ... );
+```
+
+The help string is hand-written; the default is a hand-written initialiser; and
+nothing checks that they agree. What is missing from the help text:
+
+| side | capabilities set by default but not listed |
+|---|---|
+| Requester | `CHUNK`, `EP_INFO_SIG` |
+| Responder | `CHUNK`, `EP_INFO_SIG`, `MEL` |
+
+**Evidence in three forms, which is what makes this submittable rather than
+merely noticed:**
+
+1. the two source locations above,
+2. the `Flags` word on the wire — `0x8882F7C6` and `0xB99AFBF7`, both with bit
+   17 (`CHUNK_CAP`) set, in
+   `bench/data/w2-baseline-20260816T172221Z/walkthrough.decode.txt`,
+3. behaviour that could not happen otherwise: the post-quantum arm of the same
+   run performs four `CHUNK_GET`/`CHUNK_RESPONSE` round trips. Chunking is not
+   reachable unless both sides negotiated `CHUNK_CAP`.
+
+**Why it is worth submitting.** Not for the size of the change — it is a few
+lines of string — but because reading `--help` is how a newcomer decides which
+flags to pass, and a wrong default sends them looking for a capability they
+already have. This project's own week-two plan carried the belief that `CHUNK`
+was absent from the defaults, sourced from that help text and marked as
+re-checked. Being wrong from the same place twice is a reasonable argument that
+the text is worth fixing.
+
+**Why not today.** `DMTF/spdm-emu` takes GitHub pull requests rather than
+Gerrit, so it is a different pipeline from the one already rehearsed, and
+opening it properly is an hour that week two did not have. Scheduled for W03,
+alongside the other upstream item that week. Deliberately recorded here with
+its evidence attached so that scheduling it is not the same as forgetting it.
+
+**Why it derisks Gate 7.** `openbmc/spdm` is the higher-value target and the
+riskier one: five blockers, no README, and a change that argues for a minimum
+compiler version is a change that invites disagreement. This one is a factual
+correction with the wire as its witness. Two targets, one high-value and one
+high-probability, is a better bet than one of either.
 
 ## Three identity traps, all of which are silent until they are not
 
