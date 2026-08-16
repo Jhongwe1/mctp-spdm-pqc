@@ -1,0 +1,7 @@
+exe_conn - 0x0000001e
+asym - 0x00000000
+dhe - 0x0000
+pqc_asym - 0x00000002
+kem - 0x00000002
+pqc_first - 0x01
+SPDM Responder server stopped

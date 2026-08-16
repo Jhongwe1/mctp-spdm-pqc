@@ -1,0 +1,6 @@
+ERROR: libspdm_set_certificate - 80010001
+ERROR: do_certificate_provising_via_spdm - 80010001
+ERROR: do_session_via_spdm - 80010001
+exe_conn - 0x0000001e
+connect success!
+Client stopped

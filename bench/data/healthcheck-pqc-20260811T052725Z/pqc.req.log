@@ -1,0 +1,11 @@
+ERROR: set certificate :read_responder_public_certificate_chain_per_slot fail!
+ERROR: do_certificate_provising_via_spdm - 80030000
+ERROR: do_session_via_spdm - 80030000
+exe_conn - 0x0000001e
+asym - 0x00000000
+dhe - 0x0000
+pqc_asym - 0x00000002
+kem - 0x00000002
+pqc_first - 0x01
+connect success!
+Client stopped

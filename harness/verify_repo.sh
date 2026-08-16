@@ -75,6 +75,13 @@ else
     bad "a drill does not compile"
 fi
 
+step "python syntax (analysis tools)"
+if python3 -m py_compile harness/fields.py; then
+    good "harness/fields.py compiles"
+else
+    bad "harness/fields.py has a syntax error"
+fi
+
 step "every experiment run is attributed"
 missing=0
 shopt -s nullglob
@@ -87,6 +94,38 @@ if [ "$missing" -eq 0 ]; then
 else
     bad "a run directory has no manifest.json (see docs/decisions/0003)"
 fi
+
+step "every artifact a manifest attests to is actually in the repository"
+# A manifest lists each artifact with its SHA-256. If the file is not tracked,
+# a fresh clone gets a promise it cannot check — which is worse than no promise,
+# because the mechanism reports success. This check exists because .gitignore's
+# `*.log` quietly excluded four evidence files that three manifests had already
+# signed for. An ignore rule does not outrank a manifest.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys
+
+tracked = set(subprocess.run(
+    ["git", "ls-files", "bench/data"], capture_output=True, text=True, check=False
+).stdout.split())
+
+problems = []
+manifests = sorted(pathlib.Path("bench/data").glob("*/manifest.json"))
+for man in manifests:
+    data = json.loads(man.read_text(encoding="utf-8"))
+    for art in data.get("artifacts", []):
+        rel = f"{man.parent.as_posix()}/{art['path']}"
+        if not pathlib.Path(rel).exists():
+            problems.append(f"MISSING  {rel}")
+        elif rel not in tracked:
+            problems.append(f"UNTRACKED {rel}  (attested with a sha256 but not committed)")
+
+for p in problems:
+    print("  " + p)
+print(f"  {len(manifests)} manifest(s) checked")
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "every attested artifact is present and tracked" \
+             || bad "a manifest attests to a file the repository does not carry"
 
 step "scope statement precedes the build badge"
 # Two checks. The first reads README.md with all whitespace collapsed, so the
@@ -108,6 +147,22 @@ elif [ -n "$badge" ] && [ "$scope" -gt "$badge" ]; then
     bad "scope statement (line $scope) comes after the badge (line $badge)"
 else
     good "scope at line $scope, badge at line ${badge:-none}"
+fi
+
+step "the handshake walkthrough still agrees with its capture"
+# The walkthrough is a document made almost entirely of stated facts, which is
+# the category this project has twice caught itself getting wrong. So its
+# numbers are not typed in: each is marked up as <!--claim key=value--> and
+# re-derived here from the decode file the document names. A number that drifts
+# from its capture is a failed build, not something a reader might notice.
+if [ -f docs/handshake-walkthrough.md ]; then
+    if python3 harness/fields.py --check docs/handshake-walkthrough.md; then
+        good "every claim in the walkthrough matches the capture it cites"
+    else
+        bad "docs/handshake-walkthrough.md contradicts its own capture"
+    fi
+else
+    printf '  --   docs/handshake-walkthrough.md not written yet — skipped\n'
 fi
 
 step "planning material is not tracked"

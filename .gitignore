@@ -55,6 +55,22 @@ bench/data/_scratch/
 *.log
 !docs/**/*.log
 
+# ── the exception that had to be carved out, and why ─────────────────────────
+#
+# `*.log` above silently swallowed bench/data/*/‹arm›.req.log and .rsp.log.
+# Those files are not build noise: they are the emulator stating what it parsed
+# the flags as (`exe_conn - 0x0000001e`), which is the evidence behind more than
+# one claim in LOG.md — and every one of them is listed, with a SHA-256, in the
+# manifest.json committed beside it. So a fresh clone received a manifest
+# attesting to four files that were not in the repository.
+#
+# That is the exact failure this project's provenance mechanism exists to make
+# impossible, arriving through the one file nobody thinks of as a mechanism.
+# The rule that follows: an ignore pattern is not allowed to outrank a
+# manifest. `harness/verify_repo.sh` now checks that every artifact named in a
+# manifest is actually tracked, so this cannot recur silently.
+!bench/data/**/*.log
+
 # Editor / OS
 .vscode/
 .idea/
