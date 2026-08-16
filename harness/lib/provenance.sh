@@ -31,6 +31,22 @@ prov_begin() {
     PROV_RUN_ID="${name}-$(date -u +%Y%m%dT%H%M%SZ)"
     PROV_RUN_DIR="${REPO_ROOT}/bench/data/${PROV_RUN_ID}"
 
+    # Read the working tree's state BEFORE creating the run directory.
+    #
+    # Creating it first makes the tree dirty by definition, so repo_dirty was
+    # recorded as true on every run this project has ever produced — including
+    # runs from a genuinely clean checkout. A field that cannot say anything but
+    # one value is not evidence, and it is worse than an absent field because a
+    # reader has no way to tell it apart from a real observation.
+    local dirty="unknown"
+    if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
+            dirty=true
+        else
+            dirty=false
+        fi
+    fi
+
     mkdir -p "$PROV_RUN_DIR"
 
     PROV_META="${PROV_RUN_DIR}/.provenance.meta"
@@ -50,15 +66,13 @@ prov_begin() {
     prov_note python       "$(python3 --version 2>&1 | awk '{print $2}')"
     prov_note openssl_cli  "$(openssl version 2>/dev/null || echo absent)"
 
-    # The repo's own state. A result produced from a dirty tree is still valid,
-    # but the reader deserves to know it was not a clean checkout.
+    # The repo's own state, as it was before this run touched it. A result
+    # produced from a dirty tree is still valid, but the reader deserves to know
+    # it was not a clean checkout — which means the answer has to be capable of
+    # being "no".
     if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
         prov_note repo_commit "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo none)"
-        if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
-            prov_note repo_dirty true
-        else
-            prov_note repo_dirty false
-        fi
+        prov_note repo_dirty "$dirty"
     fi
 
     # Fold in the upstream build pin, so each field lands in the manifest as a
