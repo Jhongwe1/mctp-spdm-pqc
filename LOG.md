@@ -541,3 +541,293 @@ Also settled while the clone was open, because it is what ADR 0001 rests on:
 **4.0.0 has not been released.** `4.0.0-rc` (2026-08-04) is still the newest
 tag; `main` is at 2026-08-13. The two-flavor decision is still current, and it
 now has a date attached to when that was last true.
+
+---
+
+## 2026-08-17 · Day 2 · the handshake, and an audit of the week before it
+
+### Auditing week one before building on it: three mechanisms that were reporting success
+
+**現象** Before starting the field-by-field work, a check of what week one
+actually left behind. The version pins held — both build trees are byte-identical
+to their committed `.pin` files, and `stable` genuinely has no `--pqc_asym`. But
+three mechanisms were found to be answering a different question than the one
+they appeared to answer, and all three were reporting success while doing it:
+
+1. `manifest.json` in all three committed runs lists `<arm>.req.log` and
+   `<arm>.rsp.log` with a SHA-256 each. `.gitignore` line 55 is `*.log`. **Those
+   twelve files were never in the repository.**
+2. `repo_dirty` reads `true` in every manifest this project has produced,
+   including runs from a clean checkout.
+3. `third_party/` pinned two emulator builds and **not `spdm-dump`** — through
+   which every statement about what was *negotiated* is read.
+
+**假設** For (1): (a) the files were deleted after the run, (b) they were never
+added, (c) an ignore rule excluded them. For (2): (a) the tree really was dirty
+every time, (b) the check runs at the wrong moment.
+
+**先驗哪個、為什麼** For (1), `git check-ignore -v` on one of the files, because
+it names the rule and the line number in a single command and distinguishes all
+three hypotheses at once — a deleted file and an unadded file both produce no
+output. It printed `.gitignore:55:*.log`.
+
+For (2), read `prov_begin` rather than experiment, because a mechanism that has
+produced the same answer on every run it has ever performed is more likely to be
+structurally incapable of the other answer than to have encountered the same
+condition every time. `mkdir -p "$PROV_RUN_DIR"` sits above the `git status`
+call. **The directory it creates is what makes the tree dirty.**
+
+**根因** Three different failures with one shape: a check placed where it cannot
+fail. The ignore rule outranked the manifest, and no code compared them. The
+dirty check ran after the thing that dirties. The decoder was outside the set of
+things considered "upstream" because it is a reader rather than a producer, and
+nobody had written down that a reading is part of a result.
+
+**教訓** Four, and the last one is the general one.
+
+1. **An ignore rule is not allowed to outrank a manifest.** `verify_repo.sh` now
+   checks that every artifact a manifest attests to is present *and tracked*.
+   Writing that check first is what found all twelve; a fix without it would
+   have restored the files and left the hole.
+2. **A field that cannot take more than one value is not an observation**, and
+   it is worse than an absent field because a reader cannot tell the difference.
+3. **A result's provenance includes the tools that read it**, not only the ones
+   that produced it. `spdm-dump.pin` exists now.
+4. **Auditing is cheapest immediately before building on something, and it is
+   never the thing you planned to do that morning.** All three of these were
+   invisible while everything was green, and all three would have been carried
+   into every result this project produces afterwards. The trigger that found
+   them was not suspicion — it was the ordinary act of asking, before adding a
+   fifth run directory, what the first three actually contained.
+
+### Determining a third-party binary's compile-time constant without rebuilding it
+
+**現象** `spdm_dump` gives up partway through a post-quantum capture:
+`SPDM cert_chain is too larger. Please increase LIBSPDM_MAX_CERT_CHAIN_SIZE and
+rebuild.` `README.md` already recorded this as the decoder's compile-time
+constant being too small. What it did not say is *what the constant is*, which
+decides whether this is a limitation or a task.
+
+**假設** From `libspdm/include/library/spdm_lib_config.h`, the macro can only be
+one of three values: `0x1000` (4,096) with no post-quantum signature support
+compiled in, `0x8000` (32,768) with ML-DSA, `0x28000` with SLH-DSA. The chain it
+fails on is 16,853 bytes — **which `0x8000` would hold with room to spare.** So
+either (a) the build has no ML-DSA support and the limit is 4,096, or (b) the
+limit is larger and something else is failing.
+
+**先驗哪個、為什麼** Neither by rebuilding, which is twenty minutes and changes
+the thing being measured. `spdm_dump.c:850` compares the **size of a
+`--rsp_cert_chain` file** against the macro *before parsing it*, and prints the
+same message. That is an oracle: feed it files of known size and the constant
+falls out of where the answer changes. Twenty probes, bisection from 1 to 2^20,
+no rebuild and no patch.
+
+```
+  4096 bytes (0x1000)  accepted
+  4097 bytes (0x1001)  REJECTED
+```
+
+**根因** `LIBSPDM_MAX_CERT_CHAIN_SIZE` is **4,096** in this build — the branch
+taken when no post-quantum signature algorithm is compiled in. And
+`spdm-emu-pqc`, which produced the capture and handles the same chain without
+complaint, is built from **the same libspdm commit**. The difference is build
+configuration, not version.
+
+**教訓** Two.
+
+1. **An input-validation check is a measuring instrument.** Anything that
+   compares a caller-supplied quantity against an internal constant and reports
+   the comparison will tell you the constant, and this one did it in eight
+   seconds of shell. It is worth looking for that shape before reaching for a
+   rebuild — a program that validates its inputs is a program that answers
+   questions about itself.
+2. **"Cannot" and "is not configured to" are different sentences**, and the
+   README was carrying the first while the second was true. The correction is
+   not cosmetic: one is a limitation to be documented in `limitations.md`, the
+   other is a task with a known fix. `build_spdm_dump.sh` now runs the same
+   bisection after every build, so the number is produced rather than
+   remembered.
+
+### The independent variable had two halves and only one was pinned
+
+**現象** The post-quantum run of 2026-08-11 set `--pqc_asym ML_DSA_65` and its
+`ALGORITHMS` response confirms `PqcAsym=ML_DSA_65`. Read one field further:
+**`ReqPqcAsym=0x0004(ML_DSA_87)`**.
+
+**假設** (a) a decoder artefact, (b) the responder ignored the request,
+(c) `ReqPqcAsym` is negotiated separately and was never constrained.
+
+**先驗哪個、為什麼** (c), by reading `--help` for a flag that would constrain it,
+because if such a flag exists the question is answered and if it does not,
+(a) and (b) are worth investigating. `--req_pqc_asym` exists, defaults to
+`ML_DSA_44,ML_DSA_65,ML_DSA_87`, and was not passed.
+
+**根因** SPDM authenticates in **two directions** and negotiates the algorithm
+for each independently. `--pqc_asym` constrains the responder's signature;
+`--req_pqc_asym` constrains the requester's. That capture therefore holds a
+responder signing with ML-DSA-65 and a requester signing with ML-DSA-87 — while
+the classical arm it would be compared against has a requester signing with
+RSAPSS-3072. The requester's own certificate chain is **3,794 bytes** in the
+classical arm, which is more than twice the responder's 1,655. Two arms whose
+requester-side algorithm differs cannot be subtracted from each other.
+
+**教訓** This is the same failure as the withdrawn 5.94× ratio, one week later,
+and **it is hiding one layer deeper**. That one was "the number came from what
+was requested rather than what was negotiated", and the fix was to read the
+`ALGORITHMS` response. This one *was* read out of the `ALGORITHMS` response —
+from the wrong field. So:
+
+> **Verifying the independent variable means enumerating it, not spot-checking
+> it.** "I confirmed the algorithm" is not a claim about a system with two
+> independently negotiated algorithms. Every arm in `harness/capture.sh` now
+> pins both directions, and `harness/fields.py` reports both whether or not
+> anyone asks.
+
+The general form is worth keeping: **when a check passes, ask what else is in
+the same category as the thing you checked.** One `ReqAsym` row on the same
+table would have shown this on 2026-08-11.
+
+### 526 of 554 packets, and an open question closed from a source comment
+
+**現象** The "minimal" handshake is 554 packets. 263 of them are
+`GET_MEASUREMENTS`, 246 are `SPDM_ERROR(InvalidRequset)`, and 17 are
+`MEASUREMENTS`. `LOG.md` left this open on 2026-08-11: is the per-block round
+trip the emulator's choice or the protocol's?
+
+**假設** (a) the protocol requires one request per measurement block, (b) the
+emulator does it that way and there is a flag, (c) the responder is answering
+badly.
+
+**先驗哪個、為什麼** (b), by reading `spdm_requester_measurement.c` — because if
+a flag exists it is one `--help` line away, and because (a) is a claim about
+DSP0274 that would cost an hour of specification reading to settle either way.
+Read the implementation first; it either names the alternative or rules it out.
+
+**根因** Three causes stacked, and separating them is the whole answer:
+
+- **The two-pass structure is required by the specification.** The source
+  comment says why: *"In SPDM 1.2 spec, the L1/L2 will be reset in case of
+  MEASUREMENT error. That impacts 1-by-1 calculation… The solution is: get the
+  existing measurement list, then query measurement one by one."* A requester
+  building a signed transcript has to learn which indices exist before it
+  starts, and the discovery pass is the one that absorbs the errors.
+- **Walking the index space is the emulator's choice.** `--meas_op ALL` sends
+  `MeasurementOperation = 0xFF` and gets every block in one message.
+- **The early exit never fires because of the sample data.** Both loops break
+  when they have collected `TotalNumberOfMeasurements` blocks. The eight that
+  exist are `0x01–0x04, 0x10, 0x11, 0xFD, 0xFE`, and the last is `0xFE`.
+
+Measured: `--meas_op ALL` gives **30 packets** instead of 554. And summing
+`MeasurementRecordLength` over the eight indices under `ONE_BY_ONE` gives
+**528 bytes**; the single `ALL` response carries a record of **528 bytes**.
+**263 round trips and 1 round trip deliver the same measurement bytes.**
+
+**教訓** Two.
+
+1. **"Is this the protocol or the implementation" is answered by reading the
+   implementation, not the specification.** The implementation names the
+   specification's constraint where it is subject to one — this comment cites
+   the SPDM 1.2 transcript rule directly — and where it does not, the behaviour
+   is its own. Reading DSP0274 first would have found the L1/L2 rule and still
+   not explained the 246 errors.
+2. **A question left open in a log is an asset, not a debt**, provided it is
+   written where it will be seen again. This one was closed by a source comment
+   found while looking for something else, six days later, and the only reason
+   it got closed is that it was written down as a question rather than
+   dissolved into "measurements are slow".
+
+### Two claims in this week's plan that the capture refutes
+
+**現象** The plan for this week carries two facts marked as re-checked:
+`CHUNK` is not in either side's default capabilities, and offering several
+algorithms per group makes `NEGOTIATE_ALGORITHMS` larger. Both are wrong.
+
+**假設** For `CHUNK`: (a) the plan is right and the capture is being misread,
+(b) the plan's source is wrong, (c) the default changed between versions.
+
+**先驗哪個、為什麼** (a) first, and cheaply: the post-quantum capture performs
+four `CHUNK_GET`/`CHUNK_RESPONSE` round trips. **Chunking is not reachable
+unless both sides negotiated `CHUNK_CAP`**, so behaviour that already happened
+settles a question about capability bits without decoding anything. That
+eliminated (a) before any bit was inspected.
+
+**根因** `spdm_emu.c:115`'s `--help` string is hand-written and
+`key.c:25`'s default is a hand-written initialiser, and nothing checks that they
+agree. Requester defaults omit `CHUNK` and `EP_INFO_SIG` from the text;
+responder defaults omit those two and `MEL`. `CHUNK_CAP` is set on **both**
+builds, 3.8.0 included.
+
+The second claim fell to a measurement rather than an argument. One arm offering
+a single algorithm per group, against the stock arm offering two to four:
+`NEGOTIATE_ALGORITHMS` is **56 bytes in both**, byte for byte the same `Length`
+field, differing only in the values of fixed-width bitmasks. What does change
+the size is a whole group being dropped (`--dhe NONE`: one fewer
+`AlgStructure` table, 4 bytes) and the protocol version (1.3 is 48 bytes; 1.4's
+two extra tables are the difference, while `PQCAsymAlgo` was carved out of
+reserved space and cost nothing).
+
+**教訓** Two, and the second is why this entry is not just a correction.
+
+1. **`--help` is documentation, and documentation is a stated fact.** The wire
+   is a computed one. Where they disagree the wire wins, and this is the third
+   time this project has been caught by the same distinction — after the
+   `--exe_session` default and the libspdm version number. The rule that follows
+   is narrow and usable: **a default value read from help text is a hypothesis.**
+2. **The plan's assumption about message size was reasonable and still wrong**,
+   and the difference between "offering more costs bytes" and "offering more
+   costs certainty" is the difference between optimising the wrong thing and the
+   right one. The cost of offering everything you support is that **you do not
+   know what you are using until you read the response** — which is not a
+   bandwidth problem and cannot be fixed by trimming flags.
+
+### The documentation mechanism, and proving it turns red
+
+**現象** `docs/handshake-walkthrough.md` is a document made almost entirely of
+stated facts — 84 numbers read out of captures. Two entries in this log, one day
+apart, are about stated facts going wrong.
+
+**假設** Not a fault to diagnose; a design choice with three options: write the
+numbers and re-check them by hand periodically; generate the whole document from
+the captures; or write the document by hand and have a machine check its
+numbers.
+
+**先驗哪個、為什麼** The third, because the first is exactly the discipline this
+project has twice failed to sustain, and the second discards the reason to write
+a walkthrough at all. **The value of this document is the sentences, not the
+tables**, and a generator would produce the tables and none of the sentences.
+
+**根因** — **教訓** Every number in the document is marked up as
+`<!--claim key=value-->`, invisible when rendered, and `harness/fields.py
+--check` re-derives it from the decode file the section names. `verify_repo.sh`
+runs it; CI runs `verify_repo.sh`. 84 claims across five captures.
+
+Three things this was made to fail on before being trusted, because **green is
+worth nothing until it has been shown it can go red**:
+
+| broken deliberately | result |
+|---|---|
+| a byte count changed from 528 to 529 | `FAIL: document says 529, capture says 528` |
+| a claim naming a field the tool does not compute | `FAIL: 'measurements.mode' is not a field this tool computes` |
+| the capture path pointed at a file that does not exist | `FAIL: capture not found` |
+
+The second matters most: without it, a claim could be satisfied by inventing a
+field name, and the mechanism would be theatre.
+
+And the limits are written into §10 of the document itself, because **a check
+trusted beyond its reach is worse than no check**. The capability-bit names are
+transcribed from a header by hand, so a renamed bit would stay self-consistent
+and pass. Most of the offsets come from struct definitions rather than from the
+wire — three messages have been confirmed byte for byte, and the document says
+which three.
+
+**`TODO(me)`** — 緯穎 whitepaper, still unread. Carried from Day 1 deliberately
+rather than quietly dropped.
+
+**`TODO(me)`** — `c-drills` D1 and D3. D3 has been outstanding since week one and
+`DONE.txt` is still empty. The drills measure whether C can still be written
+correctly with no compiler to ask, which is a thing that decays silently and
+which nothing else in this repository would notice. **A week where the project
+track ran a week ahead and the drill track ran a week behind is the shape of the
+risk, not an accident of scheduling.**
+
+**`TODO(me)`** — What I am least sure about right now: _______________
