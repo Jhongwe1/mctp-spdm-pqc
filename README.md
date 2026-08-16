@@ -149,12 +149,19 @@ produced it.
 | `pqc` | 4.0.0-rc | 4.0.0-rc | post-quantum experiments only |
 
 What is pinned is the `spdm-emu` tag; `libspdm` follows that tag's submodule
-pointer, because that is the pair upstream releases and tests together. The
-cost of doing it that way is stated here rather than left in a decision
-record: no `spdm-emu` commit has ever pointed at libspdm 3.8.2, so **the
-baseline is 3.8.0 and does not carry the two 2026 advisory fixes.** Byte counts
-and round-trip counts do not turn on those fixes. Any result that does has to
-be re-run against a build that has them.
+pointer, because that is the pair upstream releases and tests together. No
+`spdm-emu` commit has ever pointed at libspdm 3.8.1 or 3.8.2 — both sit on a
+`release-3.8` maintenance branch that `spdm-emu` never followed — so **the
+baseline is 3.8.0.**
+
+What that costs was audited against upstream history rather than assumed.
+3.8.1 is four commits of build and portability work carrying no security fix;
+3.8.2 adds ten more, of which exactly one is a security fix, *Fix security
+vulnerability in GET_CSR parsing code*. **That fix is in 4.0.0-rc under a
+different hash**, so only the baseline is without it — and `GET_CSR` is not
+among the operations these measurements run. What else the baseline predates,
+and how this was checked, is in
+[`docs/decisions/0001`](docs/decisions/0001-two-build-flavors.md).
 
 Post-quantum support reached the libspdm main line on 2026-08-04 in a release
 candidate. A release candidate is not a baseline, so it is not used as one. The

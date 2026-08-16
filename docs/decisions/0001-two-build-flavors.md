@@ -95,15 +95,48 @@ both more likely to build and a more honest description of what was run.
 
 **Accepted, and stated wherever it matters**
 
-**The baseline is libspdm 3.8.0, not 3.8.2.** 3.8.1 and 3.8.2 carry fixes for
-two 2026 advisories, and the baseline does not have them.
+**The baseline is libspdm 3.8.0, not 3.8.2.** An earlier version of this record
+said 3.8.1 and 3.8.2 carry fixes for two 2026 advisories. That was written from
+memory and it is wrong. Audited on 2026-08-17 against upstream history, in a
+clean blobless clone, with every tag resolved by SHA:
 
-This is acceptable for what the baseline is used for — byte counts and round
-trip counts in a protocol flow, which bounds-check fixes do not change — and it
-is unacceptable to leave implicit. If a result ever turns on behaviour that
-changed between 3.8.0 and 3.8.2, that result must be re-run against a build
-that has it, and getting there means pinning `spdm-emu` to an untagged commit
-and confirming the pair compiles. Not attempted in G0; recorded as open.
+| range | released | commits | security content |
+|---|---|---:|---|
+| 3.8.0 → 3.8.1 | 2025-09-03 | 4 | **none** — two build breaks, a disabled-capability build fix, one unaligned-access fix |
+| 3.8.1 → 3.8.2 | 2026-04-03 | 10 | **one** — `Fix security vulnerability in GET_CSR parsing code`, 2026-02-10 |
+
+No commit message in either range names a CVE or a GHSA identifier. And 3.8.1
+was released in 2025, so it cannot carry a fix for a 2026 advisory — which is
+what should have made the original sentence suspect before any clone was made.
+
+Three things follow. The second is the one that changes the conclusion.
+
+1. 3.8.1 and 3.8.2 sit on a `release-3.8` maintenance branch that `spdm-emu`
+   never followed. Its submodule pointer moved on 2026-03-10 and next on
+   2026-05-11; 3.8.2 was tagged on 2026-04-03, inside that gap. **3.8.2 was
+   never a configuration this project could have had**, regardless of the
+   pinning rule.
+2. **The GET_CSR fix is in 4.0.0-rc.** `704bc991` on `release-3.8` is a
+   backport of main-line `713e32c0`, same day; `git cherry -v 4.0.0-rc 3.8.2`
+   marks it `-`, meaning patch-equivalent content is already upstream. So the
+   `pqc` flavor has the fix and only the `stable` baseline is without it.
+3. The baseline also predates main-line fixes made after 3.8.0 — among them an
+   out-of-bounds read in `libspdm_process_general_opaque_data_check`
+   (`6485badd`, 2026-06-26) and an unaligned read of a vendor-defined response
+   payload length (`070b4a3b`, 2026-07-20).
+
+None of it is reached by what is measured here. These flows run as
+`--exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END`, which excludes
+`GET_CSR` entirely. That is a reason the baseline is usable, not a reason the
+gap does not exist. If a result ever turns on post-3.8.0 behaviour it must be
+re-run against a build that has it, and getting there means pinning `spdm-emu`
+to an untagged commit and confirming the pair compiles. Not attempted in G0;
+recorded as open.
+
+Checked at the same time, because it is the assumption this whole record rests
+on: **4.0.0 has not been released.** `4.0.0-rc` (2026-08-04) is still the
+newest tag, although `main` has moved on to 2026-08-13. Re-check before
+repeating either claim.
 
 ## Alternatives rejected
 

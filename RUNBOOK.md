@@ -290,10 +290,16 @@ bash harness/build_spdm_emu.sh stable --seed-from pqc
 | `pqc` | 4.0.0-rc | 4.0.0-rc | 只跑後量子實驗 |
 
 **釘的是 `spdm-emu` 的 tag,libspdm 跟著那個 tag 的 submodule 指標走**,因為
-上游是把這兩個當一組發布跟測試的。這樣做的代價寫在這裡而不是藏在決策紀錄裡:
-**沒有任何一個 `spdm-emu` commit 指向過 libspdm 3.8.2,所以基準線是 3.8.0,
-它沒有那兩個 2026 advisory 的修補。** 位元組數與來回次數不會因為那兩個修補而
-改變;真的會受影響的結果,就必須換一份有修補的 build 重跑。
+上游是把這兩個當一組發布跟測試的。**沒有任何一個 `spdm-emu` commit 指向過
+libspdm 3.8.1 或 3.8.2**——那兩個在 `release-3.8` 維護分支上,而 spdm-emu
+從來沒跟過那條線——**所以基準線是 3.8.0。**
+
+代價是去查上游歷史查出來的,不是憑印象寫的:3.8.1 是四個 commit,全部是編譯與
+可攜性,**沒有任何安全性修補**;3.8.2 再加十個,其中**恰好一個**是安全性修補
+(`Fix security vulnerability in GET_CSR parsing code`)。**而那個修補在
+4.0.0-rc 裡有**(同一天的主線 commit,hash 不同),所以只有基準線沒有它——
+而且 `GET_CSR` 根本不在本專案跑的那幾個操作裡。基準線還少了哪些主線修補、
+以及這是怎麼查的,見 `docs/decisions/0001-two-build-flavors.md`。
 
 兩份的 commit hash 都釘在 `third_party/*.pin`,每一張表的 caption 都會寫是
 哪一份跑出來的。完整理由見 `docs/decisions/0001-two-build-flavors.md`。

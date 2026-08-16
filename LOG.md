@@ -462,6 +462,82 @@ job could see it. It survived five days precisely because it was inert.
 
 Fixed here, and the correction was not only the digit. The tables now name both
 `spdm-emu` and `libspdm`, because naming only the one that is not pinned is
-what made the drift possible; and the cost of the pinning rule — 3.8.0 lacks
-the two 2026 advisory fixes — is now stated in `README.md` and `RUNBOOK.md`
-next to the table, rather than left in ADR 0001 for a reader who goes looking.
+what made the drift possible; and the cost of the pinning rule — which ADR 0001
+gave as "3.8.0 lacks the two 2026 advisory fixes" — was moved into `README.md`
+and `RUNBOOK.md` next to the table, rather than left in ADR 0001 for a reader
+who goes looking.
+
+**That last sentence was itself wrong, and the next entry is about that.**
+
+---
+
+## 2026-08-17 · the sentence I promoted was one I had not checked
+
+**現象** Asked to confirm the previous entry rather than accept it, the first
+two claims held under direct measurement: the built tree is
+`spdm-emu 3.8.0 → libspdm 3.8.0` with `VERSION.md` saying so, `BUILD_PIN.txt`
+is byte-identical to the committed pin, and an exact-SHA sweep of every
+`spdm-emu` commit that ever moved the `libspdm` gitlink shows **3.8.1 and 3.8.2
+were never pointed at, once, in the entire history.** The third claim did not
+hold. I had carried "3.8.0 lacks the two 2026 advisory fixes" out of ADR 0001
+and into `README.md`, and I had never checked it.
+
+**假設** (a) the claim is right and simply undocumented; (b) the advisory years
+are wrong; (c) the affected releases are wrong; (d) some combination.
+
+**先驗哪個、為什麼** None of them, first. Before fetching anything I checked
+the claim against a number already on the table from the previous hour:
+**libspdm 3.8.1 is dated 2025-09-03.** A release cut in 2025 cannot contain a
+fix for a 2026 advisory. That is an internal contradiction, available for the
+cost of re-reading two lines, and it converted "is this true" into "how is it
+false" before any download. Only then was a clone worth making — blobless,
+no checkout, outside `~/spdm-lab`, so nothing that produces a result could
+change as a side effect of asking a question about it.
+
+**根因** The sentence was written from memory and never verified. What upstream
+history actually shows:
+
+| range | released | commits | security content |
+|---|---|---:|---|
+| 3.8.0 → 3.8.1 | 2025-09-03 | 4 | **none** |
+| 3.8.1 → 3.8.2 | 2026-04-03 | 10 | **one**, `Fix security vulnerability in GET_CSR parsing code` |
+
+Not two, not spread over both releases, and no commit message in either range
+names a CVE or GHSA identifier at all. Two further things fell out that matter
+more than the correction:
+
+- **`git cherry -v 4.0.0-rc 3.8.2` marks that security commit `-`.** It is a
+  backport of main-line `713e32c0` from the same day, so **4.0.0-rc has the
+  fix**. "3.8.2 is not an ancestor of 4.0.0-rc" is true and would have been a
+  wrong thing to conclude from: on a maintenance branch the same fix has a
+  different hash by construction, and ancestry is the wrong test. Patch-id is
+  the right one.
+- The gap the baseline really carries is the *main line* after 3.8.0, including
+  an out-of-bounds read fix in `libspdm_process_general_opaque_data_check`
+  (2026-06-26). That is a more useful thing to know than the original claim,
+  and it is a class this project already has a drill for.
+
+**教訓** Three, and the third is why this entry exists at all.
+
+1. **Ancestry is not content.** Before concluding that a branch lacks a fix,
+   compare by patch-id, not by `merge-base --is-ancestor`. The cheap test
+   answers a neighbouring question — the same failure shape as `tee`'s exit
+   status, now the fifth instance in this log.
+2. **Check for internal contradiction before reaching for the network.** A
+   2025 date under a 2026 claim is free to notice and settles the direction of
+   the whole investigation.
+3. **Moving a claim makes it mine.** The sentence had sat in ADR 0001 for five
+   days without being examined; copying it into `README.md` put it on the page
+   a stranger reads first, and that is the act that made it my assertion rather
+   than an inherited one. **I wrote the previous entry — about facts that are
+   only ever stated having nothing to check them — and then committed exactly
+   that failure one commit later.** Knowing the failure mode is not the same as
+   being immune to it, which is the argument for mechanisms over intentions and
+   is the reason `prov_begin` exists. There is no equivalent mechanism for
+   prose, so the substitute is a rule: **a claim that moves to a more prominent
+   place gets re-checked at the moment it moves.**
+
+Also settled while the clone was open, because it is what ADR 0001 rests on:
+**4.0.0 has not been released.** `4.0.0-rc` (2026-08-04) is still the newest
+tag; `main` is at 2026-08-13. The two-flavor decision is still current, and it
+now has a date attached to when that was last true.
