@@ -1,0 +1,257 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w2-baseline-20260816T172221Z",
+    "name": "w2-baseline",
+    "flavor": "pqc",
+    "started_at": "2026-08-16T17:22:21Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "aeed0401ba390c4127ef4fd2606c80f42aae894f",
+    "repo_dirty": "false",
+    "finished_at": "2026-08-16T17:23:44Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "stable_flavor": "stable",
+    "stable_spdm_emu": "a8285827282c8c63708043298b2f4f06936d1c12",
+    "stable_spdm_emu_short": "a828582",
+    "stable_spdm_emu_ref": "3.8.0",
+    "stable_libspdm": "3560bc4bc48104cec6c55d1a25288b48c27b1007",
+    "stable_libspdm_short": "3560bc4",
+    "stable_libspdm_ref": "3.8.0",
+    "stable_libspdm_pinned_by": "spdm-emu submodule pointer",
+    "stable_libspdm_version": "libspdm version 3.8.0",
+    "stable_crypto": "openssl",
+    "stable_arch": "x64",
+    "stable_target": "Release",
+    "stable_toolchain": "GCC",
+    "stable_cc": "13.3.0",
+    "stable_cmake": "3.28.3",
+    "stable_host": "Ubuntu 24.04.4 LTS",
+    "stable_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "stable_built_at": "2026-08-11T05:43:25Z",
+    "spdm_dump_tool": "spdm-dump",
+    "spdm_dump_spdm_dump": "9d91f21e21ad56f842affa30361b2807ea9c8e22",
+    "spdm_dump_spdm_dump_short": "9d91f21",
+    "spdm_dump_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "spdm_dump_libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "spdm_dump_built_at": "2026-08-11T05:46:07Z"
+  },
+  "commands": [
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ONE_BY_ONE",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ONE_BY_ONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical.pcap -x",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --req_pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --meas_op ONE_BY_ONE",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --req_pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --meas_op ONE_BY_ONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/pqc.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/pqc.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/pqc.pcap -x",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ONE_BY_ONE",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ONE_BY_ONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical-stable.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical-stable.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/classical-stable.pcap -x",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/walkthrough.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/walkthrough.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/walkthrough.pcap -x",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --hash SHA_384 --asym ECDSA_P384 --dhe SECP_384_R1 --aead AES_256_GCM --req_asym RSAPSS_3072 --meas_hash SHA_512 --meas_op ALL",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --hash SHA_384 --asym ECDSA_P384 --dhe SECP_384_R1 --aead AES_256_GCM --req_asym RSAPSS_3072 --meas_hash SHA_512 --meas_op ALL --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/single-algo.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/single-algo.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w2-baseline-20260816T172221Z/single-algo.pcap -x"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.spdm-dump.txt",
+      "bytes": 227,
+      "sha256": "215d83f718731633df540ab58a5938a159d12b23519c0fb7855c6e7d978e3bfa"
+    },
+    {
+      "path": "BUILD_PIN.stable.txt",
+      "bytes": 448,
+      "sha256": "0ac2c9f9c63e0f17927e1877333d439838c932b5ed5e7a55ab327b8e28d927c3"
+    },
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 404,
+      "sha256": "c27b3d6da4d4e88e642e13303e193979ad7466322807c750a1731de8ded002ce"
+    },
+    {
+      "path": "arms.tsv",
+      "bytes": 412,
+      "sha256": "e0fc173ba862c00f0b338ffbf62d150f6d022fbcacd07b34681ee026b96d0fdb"
+    },
+    {
+      "path": "classical-stable.decode.txt",
+      "bytes": 61379,
+      "sha256": "1b980e63b75d789e4ad869836561e1148156c5b111de0824f60c44a8c9ae25fa"
+    },
+    {
+      "path": "classical-stable.fields.json",
+      "bytes": 8706,
+      "sha256": "dc75fdeacd7a9b1f06113e3b710f6265ab0ae9f61bf05b6689d222d46c15f178"
+    },
+    {
+      "path": "classical-stable.hex.txt",
+      "bytes": 147955,
+      "sha256": "a26d06b04c827e52fefe08c32d395f311cc4e1bfce4fd075ae63e56f5fa8db49"
+    },
+    {
+      "path": "classical-stable.pcap",
+      "bytes": 29476,
+      "sha256": "d09e7fb748a9b37475a1131aa03eb1bab92b8c5114e17d17c88c5c8f8656150f"
+    },
+    {
+      "path": "classical-stable.req.log",
+      "bytes": 297734,
+      "sha256": "6d884ffea4733a43636ef2e54bd94d68c40e6ebe605b7813009fbfb97a24d9b9"
+    },
+    {
+      "path": "classical-stable.rsp.log",
+      "bytes": 279291,
+      "sha256": "5b7389cd4ae0cfb6eedb0e0fdf9838a58d25e9991fed76986fbbbc5818b4f085"
+    },
+    {
+      "path": "classical.decode.txt",
+      "bytes": 59875,
+      "sha256": "24f6a051f6a73938e87a2d85cd9887a9436e07d396c043bf9fa2ea56e9d2c554"
+    },
+    {
+      "path": "classical.fields.json",
+      "bytes": 8980,
+      "sha256": "c4ee171e363f20caf287c410e7781022766afbe353c539bc4bf0b54e181cf63a"
+    },
+    {
+      "path": "classical.hex.txt",
+      "bytes": 146796,
+      "sha256": "09c8d7efdf76cf292b14780b87aba82845fa2cb899be81c10b26d5b53b0f5604"
+    },
+    {
+      "path": "classical.pcap",
+      "bytes": 29437,
+      "sha256": "712c744242459a8c5db1282bf58d6dda8c305f2c4a496818c789798007f0509b"
+    },
+    {
+      "path": "classical.req.log",
+      "bytes": 94,
+      "sha256": "f566851307611d8c86461cd6946af7047b1ea9d2b1f82f20dbabe84ebc6f7c8a"
+    },
+    {
+      "path": "classical.rsp.log",
+      "bytes": 92,
+      "sha256": "2e80284af573590809aa0ffc5cad341e3875d557d3bf62862e91c7daa057ae32"
+    },
+    {
+      "path": "pqc.decode.txt",
+      "bytes": 3303,
+      "sha256": "c19b575eba10f51c14c089ab3f9cb1c432e66c686fbc42dd9d116e5511b12874"
+    },
+    {
+      "path": "pqc.fields.json",
+      "bytes": 6698,
+      "sha256": "ab7ec2459c2712822f86ae9b41bcb01463bf1a9197925aef85e6fc441dfc375f"
+    },
+    {
+      "path": "pqc.hex.txt",
+      "bytes": 48178,
+      "sha256": "31c9073aca66d7099062a8371fb85189403890789f20c598269c1c2088efa225"
+    },
+    {
+      "path": "pqc.pcap",
+      "bytes": 124119,
+      "sha256": "c543cf3e1c3b26cd555a2acc0b252fbdc681cc12aa6d6af1be6aad1f6776ec2a"
+    },
+    {
+      "path": "pqc.req.log",
+      "bytes": 207,
+      "sha256": "68d6537af7cfe7cff62d246b2dfb98dc0242f3bff2145ccacb1a69fc4693dd61"
+    },
+    {
+      "path": "pqc.rsp.log",
+      "bytes": 205,
+      "sha256": "67fdf1cc0949c2460bd944ca0d46f77cc8d9f2a8cd5dd426fe8e2c82135da0ed"
+    },
+    {
+      "path": "single-algo.decode.txt",
+      "bytes": 5537,
+      "sha256": "8c46cfb5740910115ed68dadc7135c4bd02ab513c24cacc8a92219e2f9c28a04"
+    },
+    {
+      "path": "single-algo.fields.json",
+      "bytes": 8310,
+      "sha256": "c407c1e0221993979823b51d595101892891f1f3e92678201b4b80f20dab985b"
+    },
+    {
+      "path": "single-algo.hex.txt",
+      "bytes": 58740,
+      "sha256": "c5c0c79e832d56dbcdd282e8cef861512f9ba2617e5d293d885a9eb81dceaacc"
+    },
+    {
+      "path": "single-algo.pcap",
+      "bytes": 11945,
+      "sha256": "60365d21307966d18f41ec3a5b9e6e289f5aa3e34e39bac7d5b25577efad494f"
+    },
+    {
+      "path": "single-algo.req.log",
+      "bytes": 198,
+      "sha256": "4f50bde3e32d4d164ece9f88f6f349980721bf76a1cee93e638244717a776d74"
+    },
+    {
+      "path": "single-algo.rsp.log",
+      "bytes": 196,
+      "sha256": "7ec4780fe070364bc0edab7ab95e510f33e131bd03294ac7f7ae19ffb49048d6"
+    },
+    {
+      "path": "walkthrough.decode.txt",
+      "bytes": 5644,
+      "sha256": "1af48dda4acb725711cd2f4064a4de980a7eb398efdcecdd0edf15028fe99b46"
+    },
+    {
+      "path": "walkthrough.fields.json",
+      "bytes": 8516,
+      "sha256": "c07970e3435c60d98b606b227359adfe8e7c17c3eb143f96f664e5b506b79906"
+    },
+    {
+      "path": "walkthrough.hex.txt",
+      "bytes": 58847,
+      "sha256": "dac4294681c75c819aed3046429414f7a0bbcfbeb6097d749ddfb9f5ec69bb93"
+    },
+    {
+      "path": "walkthrough.pcap",
+      "bytes": 11945,
+      "sha256": "28bdfb69dc7006ed84f9eff69eec1f0696858c485099ff4d9ebc658cc8dc003c"
+    },
+    {
+      "path": "walkthrough.req.log",
+      "bytes": 94,
+      "sha256": "4ba4f578f4b71f6e4d0f30c68c5a7f74be05b446aacff317a2564b5747416cda"
+    },
+    {
+      "path": "walkthrough.rsp.log",
+      "bytes": 92,
+      "sha256": "1869c9d9045fa2c8e527844a01ab2ee91e7c1d0eb6001fbcd67a0ce19f0be16d"
+    }
+  ],
+  "artifact_count": 34,
+  "artifact_bytes": 1424080
+}
