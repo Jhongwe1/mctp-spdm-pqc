@@ -218,10 +218,20 @@ else
 fi
 
 section "7. post-quantum handshake  ★ decides whether PQC is measured or estimated"
-printf '  --pqc_asym ML_DSA_65  --kem ML_KEM_768  --pqc_first TRUE  --asym NONE --dhe NONE\n'
+# --req_pqc_asym is pinned as well as --pqc_asym, and the reason is a trap this
+# project already fell into. SPDM authenticates in BOTH directions and
+# negotiates the algorithm for each separately. --pqc_asym constrains only the
+# responder; leaving --req_pqc_asym at its default (ML_DSA_44,65,87) let the
+# responder pick ML_DSA_87 for the requester on 2026-08-11, so that capture held
+# two different parameter sets while reporting one. See LOG.md, 2026-08-17.
+#
+# A health check does not publish a comparison, so it would survive the mistake.
+# It is pinned anyway: this file is the first thing anyone copies flags out of.
+printf '  --pqc_asym ML_DSA_65  --req_pqc_asym ML_DSA_65  --kem ML_KEM_768  --pqc_first TRUE  --asym NONE --dhe NONE\n'
 if do_handshake pqc \
         --asym NONE --dhe NONE \
-        --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE; then
+        --pqc_asym ML_DSA_65 --req_pqc_asym ML_DSA_65 \
+        --kem ML_KEM_768 --pqc_first TRUE; then
     PQC_ERRS="$(count_matches 'ERROR' "${PROV_RUN_DIR}/pqc.req.log")"
     if [ "$PQC_ERRS" -eq 0 ]; then
         verdict PASS 7 "post-quantum handshake completed with no errors"
@@ -293,9 +303,14 @@ else
         [ -n "$VERS" ] && printf '  %s\n' "$VERS"
 
         # The ALGORITHMS response, not the NEGOTIATE_ALGORITHMS request.
+        #
+        # ReqAsym and ReqPqcAsym are in this list because leaving them out is
+        # how a run reports one algorithm while using two: the requester's own
+        # signature is negotiated separately from the responder's, and a table
+        # comparing arms that differ in it is comparing two things.
         NEG="$(grep -m1 -oE ' SPDM_ALGORITHMS \(.*' "$DEC" || true)"
         if [ -n "$NEG" ]; then
-            for k in Hash MeasHash Asym PqcAsym DHE KEM AEAD; do
+            for k in Hash MeasHash Asym PqcAsym DHE KEM AEAD ReqAsym ReqPqcAsym; do
                 v="$(printf '%s' "$NEG" | grep -oE "${k}=[^,)]*\([^)]*\)" | head -1 || true)"
                 [ -n "$v" ] && printf '    negotiated %s\n' "$v"
             done
