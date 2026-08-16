@@ -36,13 +36,13 @@ set -uo pipefail
 _HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "${_HERE}/lib/common.sh"
 . "${_HERE}/lib/provenance.sh"
+. "${_HERE}/lib/handshake.sh"
 
 FLAVOR="${1:-pqc}"
 WRITE_BASELINE=0
 [ "${2:-}" = "--write-baseline" ] && WRITE_BASELINE=1
 
 BIN="$(flavor_bin "$FLAVOR")"
-PORT="${SPDM_EMU_PORT:-2323}"
 
 # ── the two flags that define "minimal", and why both are needed ────────────
 #
@@ -104,75 +104,20 @@ pcap_field() {   # pcap_field <file> <key>
 
 section() { printf '\n=== %s ===\n' "$*"; }
 
-RESPONDER_PID=""
-cleanup() {
-    if [ -n "$RESPONDER_PID" ] && kill -0 "$RESPONDER_PID" 2>/dev/null; then
-        kill "$RESPONDER_PID" 2>/dev/null || true
-        sleep 0.3
-        kill -9 "$RESPONDER_PID" 2>/dev/null || true
-    fi
-}
-trap cleanup EXIT INT TERM
-
-port_is_listening() {
-    if command -v ss >/dev/null 2>&1; then
-        ss -ltn 2>/dev/null | grep -qE "[:.]${PORT}[[:space:]]"
-    elif command -v netstat >/dev/null 2>&1; then
-        netstat -ltn 2>/dev/null | grep -qE "[:.]${PORT}[[:space:]]"
-    else
-        return 2      # cannot tell; caller falls back to a sleep
-    fi
-}
-
-wait_for_responder() {   # wait_for_responder <pid> <timeout_s>
-    local pid="$1" limit="$2" waited=0
-    while [ "$waited" -lt "$((limit * 10))" ]; do
-        kill -0 "$pid" 2>/dev/null || return 1        # it died
-        port_is_listening && return 0
-        case $? in 2) sleep 3; return 0 ;; esac       # no ss/netstat: best effort
-        sleep 0.1
-        waited=$((waited + 1))
-    done
-    return 1
-}
+# Starting a responder, waiting for it to actually listen, running a requester
+# at it and cleaning up afterwards lives in harness/lib/handshake.sh, because
+# harness/capture.sh needs exactly the same sequence. Two copies of a
+# four-failure-mode procedure is two places for it to be wrong differently —
+# the same argument .github/workflows/ci.yml makes for shelling out to
+# verify_repo.sh instead of restating its checks.
+trap hs_cleanup EXIT INT TERM
 
 # do_handshake <label> <extra args...>
-# Starts a responder, runs a requester against it, captures a pcap, and leaves
-# four files in the run directory: <label>.{rsp,req}.log and <label>.pcap.
+# Leaves <label>.{rsp,req}.log and <label>.pcap in the run directory.
 do_handshake() {
     local label="$1"; shift
-    local rsp_log="${PROV_RUN_DIR}/${label}.rsp.log"
-    local req_log="${PROV_RUN_DIR}/${label}.req.log"
-    local pcap="${PROV_RUN_DIR}/${label}.pcap"
-
-    # Run from the binary directory: sample certificates are opened by relative path.
-    cd "$BIN" || return 90
-
-    local common=(--exe_conn "$MIN_CONN" --exe_session "$MIN_SESSION")
-
-    prov_cmd "./spdm_responder_emu" "${common[@]}" "$@"
-    ./spdm_responder_emu "${common[@]}" "$@" >"$rsp_log" 2>&1 &
-    RESPONDER_PID=$!
-
-    if ! wait_for_responder "$RESPONDER_PID" 10; then
-        RESPONDER_PID=""
-        return 91                                     # responder never came up
-    fi
-
-    prov_cmd "./spdm_requester_emu" "${common[@]}" --pcap "$pcap" "$@"
-    timeout 90 ./spdm_requester_emu "${common[@]}" --pcap "$pcap" "$@" \
-        >"$req_log" 2>&1
-    local rc=$?
-
-    # The requester normally shuts the responder down; give it a moment, then
-    # make sure either way.
-    local waited=0
-    while kill -0 "$RESPONDER_PID" 2>/dev/null && [ "$waited" -lt 30 ]; do
-        sleep 0.1; waited=$((waited + 1))
-    done
-    cleanup; RESPONDER_PID=""
-    cd "$REPO_ROOT" || true
-    return $rc
+    hs_run "$BIN" "${PROV_RUN_DIR}/${label}" \
+        --exe_conn "$MIN_CONN" --exe_session "$MIN_SESSION" "$@"
 }
 
 # ------------------------------------------------------------------ body ----
@@ -240,8 +185,8 @@ else
     rc=$?
     case $rc in
         90) verdict FAIL 4 "could not enter binary directory ${BIN}" ;;
-        91) verdict FAIL 4 "responder never listened on port ${PORT} — see minimal.rsp.log" ;;
-        124) verdict FAIL 4 "requester timed out after 60s — see minimal.req.log" ;;
+        91) verdict FAIL 4 "responder never listened on port ${HS_PORT} — see minimal.rsp.log" ;;
+        124) verdict FAIL 4 "requester timed out after ${HS_TIMEOUT}s — see minimal.req.log" ;;
         *)  verdict FAIL 4 "requester exited ${rc} — see minimal.req.log" ;;
     esac
     HANDSHAKE_OK=0
