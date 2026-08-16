@@ -95,37 +95,58 @@ else
     bad "a run directory has no manifest.json (see docs/decisions/0003)"
 fi
 
-step "every artifact a manifest attests to is actually in the repository"
-# A manifest lists each artifact with its SHA-256. If the file is not tracked,
-# a fresh clone gets a promise it cannot check — which is worse than no promise,
-# because the mechanism reports success. This check exists because .gitignore's
-# `*.log` quietly excluded four evidence files that three manifests had already
-# signed for. An ignore rule does not outrank a manifest.
+step "every artifact still hashes to what its manifest signed for"
+# A manifest lists each artifact with its SHA-256. Three things can break that
+# promise, and only the first one is obvious:
+#
+#   the file is gone;
+#   the file is present but not tracked, so a fresh clone never receives it —
+#     which is worse than absence, because the mechanism reports success. This
+#     is not hypothetical: .gitignore's `*.log` quietly excluded twelve evidence
+#     files that three manifests had already signed for;
+#   the file is present, tracked, and no longer the file that was hashed.
+#
+# The third is why the digest is recomputed rather than the path merely checked.
+# "Do not edit anything under bench/data" is a rule a person can forget by week
+# six; a digest cannot. Line endings are pinned to LF in .gitattributes for
+# every text file precisely so this comparison means the same thing on every
+# platform.
 python3 - <<'PY'
-import json, pathlib, subprocess, sys
+import hashlib, json, pathlib, subprocess, sys
 
 tracked = set(subprocess.run(
     ["git", "ls-files", "bench/data"], capture_output=True, text=True, check=False
 ).stdout.split())
 
-problems = []
+problems, checked = [], 0
 manifests = sorted(pathlib.Path("bench/data").glob("*/manifest.json"))
 for man in manifests:
     data = json.loads(man.read_text(encoding="utf-8"))
     for art in data.get("artifacts", []):
         rel = f"{man.parent.as_posix()}/{art['path']}"
-        if not pathlib.Path(rel).exists():
-            problems.append(f"MISSING  {rel}")
-        elif rel not in tracked:
+        path = pathlib.Path(rel)
+        if not path.exists():
+            problems.append(f"MISSING   {rel}")
+            continue
+        if rel not in tracked:
             problems.append(f"UNTRACKED {rel}  (attested with a sha256 but not committed)")
+            continue
+        checked += 1
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != art["sha256"]:
+            problems.append(f"ALTERED   {rel}")
+            problems.append(f"          manifest: {art['sha256']}")
+            problems.append(f"          on disk : {digest}")
+        elif path.stat().st_size != art["bytes"]:
+            problems.append(f"SIZE      {rel}: manifest {art['bytes']}, on disk {path.stat().st_size}")
 
 for p in problems:
     print("  " + p)
-print(f"  {len(manifests)} manifest(s) checked")
+print(f"  {checked} artifact(s) across {len(manifests)} manifest(s) re-hashed")
 sys.exit(1 if problems else 0)
 PY
-[ $? -eq 0 ] && good "every attested artifact is present and tracked" \
-             || bad "a manifest attests to a file the repository does not carry"
+[ $? -eq 0 ] && good "every attested artifact is present, tracked, and unaltered" \
+             || bad "an artifact no longer matches the manifest that attests to it"
 
 step "scope statement precedes the build badge"
 # Two checks. The first reads README.md with all whitespace collapsed, so the
