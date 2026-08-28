@@ -149,7 +149,9 @@ committed file became false while its hash still matched. **A digest tells you a
 file is unaltered. It does not tell you the file is still true.** There is no
 mechanism here for re-stamping a manifest and there should not be, so the repair
 was a new run rather than an edited old one. CI now requires every committed
-derivation to reproduce from its inputs.
+derivation to reproduce from its inputs; the reasoning and the four alternatives
+rejected are in
+[`docs/decisions/0004`](docs/decisions/0004-derivations-must-reproduce.md).
 
 **A classical baseline is not build-independent.** Identical flags on
 `spdm-emu` 3.8.0 and 4.0.0-rc differ in five measurable ways, including a

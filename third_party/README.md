@@ -92,6 +92,11 @@ the header turns the build red**, which is the rule
 [CLAUDE.md](../CLAUDE.md) states as "re-grep the old version number after
 changing a pin", made into something that does not depend on remembering.
 
+This is the same decision as the one governing derived artifacts under
+`bench/data/` — a copy taken out of a source has to be re-derivable from that
+source, whether the source is a capture or a header. Both are
+[`docs/decisions/0004`](../docs/decisions/0004-derivations-must-reproduce.md).
+
 At libspdm 4.0.0-rc the comparison found 19 requester and 32 responder
 single-bit capabilities, and every name matched.
 

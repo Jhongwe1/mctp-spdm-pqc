@@ -1112,7 +1112,9 @@ convention [`docs/roadmap.md`](roadmap.md) states and this is the evidence for.
 `harness/verify_repo.sh` now requires every committed `*.fields.json` in a run
 that a document cites to be exactly what `fields.py` produces from the decode
 beside it. Runs no document cites keep whatever their manifest signed for: that
-they are unaltered, which is all this repository ever claimed about them.
+they are unaltered, which is all this repository ever claimed about them. The
+decision, and the four alternatives rejected to reach it, are
+[`docs/decisions/0004`](decisions/0004-derivations-must-reproduce.md).
 
 ---
 
