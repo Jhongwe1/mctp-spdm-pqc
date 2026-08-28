@@ -1,0 +1,11 @@
+source=libspdm/include/industry_standard/spdm.h
+consumed-by=harness/fields.py REQ_FLAGS and RSP_FLAGS
+libspdm=8a92317f9510543b1a31d849c80cadbc23a5593d
+sha256=a2f0f8dcee1fb58fabe22c1d5a673bc9f427e386b3a524c6a8d07ac864544663
+requester-bits=19
+responder-bits=32
+verified-at=2026-08-28T10:42:58Z
+# Written by: python3 harness/fields.py --verify-tables <spdm.h> --write-pin
+# verify_repo.sh fails when libspdm= here is not libspdm= in
+# spdm-emu-pqc.pin, because then the bit names were checked against a
+# different source than the one the captures were produced from.

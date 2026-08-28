@@ -170,6 +170,63 @@ else
     good "scope at line $scope, badge at line ${badge:-none}"
 fi
 
+step "the capability-bit names were checked against the pinned libspdm"
+# fields.py names capability bits from a table transcribed by hand out of
+# libspdm's spdm.h, and section 10 of the walkthrough names what that leaves
+# open: --check cannot notice a bit upstream renamed, because a wrong name stays
+# consistent with itself and no capture disagrees with it.
+#
+# `fields.py --verify-tables <spdm.h>` compares the two directly, but it needs
+# the upstream source and CI has none. So the comparison is pinned. This step
+# checks the pin: the header must have been read at the same libspdm commit the
+# captures came from, and the tables must still have the number of entries that
+# comparison found. Move the emulator pin without re-reading the header, or add
+# a bit by hand, and the build goes red asking for the check to be re-run.
+python3 - <<'PY'
+import pathlib, sys
+
+
+def pinned(path):
+    out = {}
+    for line in pathlib.Path(path).read_text(encoding="utf-8").splitlines():
+        if line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        out[key.strip()] = value.strip()
+    return out
+
+
+header_pin = pathlib.Path("third_party/spdm-h.pin")
+if not header_pin.exists():
+    print("  third_party/spdm-h.pin is missing")
+    print("  run: python3 harness/fields.py --verify-tables <spdm.h> --write-pin")
+    sys.exit(1)
+
+hp, ep = pinned(header_pin), pinned("third_party/spdm-emu-pqc.pin")
+if hp.get("libspdm") != ep.get("libspdm"):
+    print(f"  the bit names were checked against libspdm {hp.get('libspdm', '?')[:7]}")
+    print(f"  the captures were produced by libspdm     {ep.get('libspdm', '?')[:7]}")
+    print("  re-run: python3 harness/fields.py --verify-tables <spdm.h> --write-pin")
+    sys.exit(1)
+
+sys.path.insert(0, "harness")
+import fields as F                                          # noqa: E402
+
+local = sum(1 for side, _bit in F.LOCAL_BIT_NAMES if side == "requester")
+want_req, want_rsp = int(hp["requester-bits"]) + local, int(hp["responder-bits"])
+if (len(F.REQ_FLAGS), len(F.RSP_FLAGS)) != (want_req, want_rsp):
+    print(f"  the tables hold {len(F.REQ_FLAGS)} requester and {len(F.RSP_FLAGS)} "
+          f"responder bits; the pin was written against {want_req} and {want_rsp}")
+    print("  a bit was added or removed without re-reading the header")
+    sys.exit(1)
+
+print(f"  libspdm {hp['libspdm'][:7]}, spdm.h {hp['sha256'][:16]}…, "
+      f"read {hp['verified-at']}")
+print(f"  {want_req} requester and {want_rsp} responder capability bits")
+PY
+[ $? -eq 0 ] && good "the bit names come from the same libspdm as the captures" \
+             || bad "the capability tables and the pinned libspdm have drifted apart"
+
 step "two tools agree on how many bytes went down the wire"
 # pcapcount.py owns the capture file and fields.py never opens one. That
 # separation is what lets them check each other, because neither can be wrong in

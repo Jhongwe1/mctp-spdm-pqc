@@ -1110,6 +1110,110 @@ def render(data: dict) -> str:
     return "\n".join(L)
 
 
+# ------------------------------------------------------------------ tables --
+#
+# The capability-bit tables at the top of this file are transcribed from
+# libspdm's spdm.h, and section 10 of the walkthrough names the hole that leaves:
+# `--check` cannot see a bit that upstream renamed, because a wrong name is still
+# self-consistent with itself. Nothing in a capture disagrees with it.
+#
+# So the tables are compared against the header directly, and the result is
+# pinned. `--verify-tables` needs the upstream source, which CI does not have;
+# `third_party/spdm-h.pin` records which libspdm commit the comparison was made
+# against, and verify_repo.sh refuses to pass when that commit is not the one
+# `third_party/spdm-emu-pqc.pin` says the captures came from. Re-pin the
+# emulator without re-reading the header and the build goes red.
+
+DEFINE_RE = re.compile(
+    r"^#define\s+SPDM_GET_CAPABILITIES_(?P<side>REQUEST|RESPONSE)_FLAGS_"
+    r"(?P<name>[A-Z0-9_]+)\s+(?P<value>0x[0-9a-fA-F]+)\s*$", re.MULTILINE)
+
+# A bit this file names that the header does not name on its own. Upstream folds
+# it into a composite mask, so it has no individual #define to compare against.
+# It is listed rather than dropped: an unnamed bit reported as unrecognised in
+# every capture would be noise, and silently accepting any unmatched name would
+# make the whole comparison worthless.
+LOCAL_BIT_NAMES = {
+    ("requester", 0x00000800):
+        "folded into SPDM_GET_CAPABILITIES_REQUEST_FLAGS_PSK_CAP upstream, "
+        "which has no per-bit #define for it",
+}
+
+
+def verify_tables(header: Path, repo_root: Path, write_pin: bool) -> int:
+    if not header.exists():
+        print(f"  no such header: {header}")
+        print("  it lives at libspdm/include/industry_standard/spdm.h inside a build tree")
+        return 2
+    text = header.read_text(encoding="utf-8", errors="replace")
+    digest = hashlib.sha256(header.read_bytes()).hexdigest()
+
+    upstream = {"requester": {}, "responder": {}}
+    for m in DEFINE_RE.finditer(text):
+        side = "requester" if m.group("side") == "REQUEST" else "responder"
+        value = int(m.group("value"), 16)
+        # A composite alias like MEAS_CAP is spelled with a `|` and never
+        # matches DEFINE_RE, so anything here is a single bit — but say so
+        # rather than assume it, because a future non-power-of-two would
+        # otherwise be filed as a bit and compared against one.
+        if value and value & (value - 1) == 0:
+            upstream[side][value] = m.group("name")
+
+    problems, accepted = [], []
+    print(f"  header  : {header}")
+    print(f"  sha256  : {digest}")
+    for side, table in (("requester", REQ_FLAGS), ("responder", RSP_FLAGS)):
+        mine = {bit: name for bit, name, _ver in table}
+        theirs = upstream[side]
+        for bit in sorted(set(mine) | set(theirs)):
+            here, there = mine.get(bit), theirs.get(bit)
+            if here == there:
+                continue
+            if there is None and (side, bit) in LOCAL_BIT_NAMES:
+                accepted.append(f"{side} 0x{bit:08x} {here}: {LOCAL_BIT_NAMES[(side, bit)]}")
+            elif here is None:
+                problems.append(f"{side} 0x{bit:08x}: header has {there}, this file has no entry")
+            elif there is None:
+                problems.append(f"{side} 0x{bit:08x}: this file has {here}, header has no such bit")
+            else:
+                problems.append(f"{side} 0x{bit:08x}: header says {there}, this file says {here}")
+        print(f"  {side:<9}: {len(theirs)} single-bit capabilities in the header, "
+              f"{len(mine)} in this file")
+    for line in accepted:
+        print(f"  --   accepted: {line}")
+    for line in problems:
+        print(f"  FAIL {line}")
+    if problems:
+        return 1
+
+    pin = repo_root / "third_party" / "spdm-h.pin"
+    emu = repo_root / "third_party" / "spdm-emu-pqc.pin"
+    libspdm = ""
+    if emu.exists():
+        for line in emu.read_text(encoding="utf-8").splitlines():
+            if line.startswith("libspdm="):
+                libspdm = line.split("=", 1)[1].strip()
+    if write_pin:
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        pin.write_text(
+            "source=libspdm/include/industry_standard/spdm.h\n"
+            "consumed-by=harness/fields.py REQ_FLAGS and RSP_FLAGS\n"
+            f"libspdm={libspdm}\n"
+            f"sha256={digest}\n"
+            f"requester-bits={len(upstream['requester'])}\n"
+            f"responder-bits={len(upstream['responder'])}\n"
+            f"verified-at={now}\n"
+            "# Written by: python3 harness/fields.py --verify-tables <spdm.h> --write-pin\n"
+            "# verify_repo.sh fails when libspdm= here is not libspdm= in\n"
+            "# spdm-emu-pqc.pin, because then the bit names were checked against a\n"
+            "# different source than the one the captures were produced from.\n",
+            encoding="utf-8", newline="\n")
+        print(f"  wrote {pin.relative_to(repo_root)} against libspdm {libspdm[:7] or '?'}")
+    print("  every capability bit in this file has the header's name for it")
+    return 0
+
+
 # ------------------------------------------------------------------ check ---
 
 CAPTURE_RE = re.compile(r"<!--\s*capture:\s*(?P<path>\S+)\s*-->")
@@ -1191,9 +1295,16 @@ def main() -> int:
                     help="verify every <!--claim k=v--> in DOC against the capture it names")
     ap.add_argument("--list-keys", action="store_true",
                     help="print every claimable key for this decode")
+    ap.add_argument("--verify-tables", type=Path, metavar="SPDM_H",
+                    help="compare the capability-bit tables against libspdm's spdm.h")
+    ap.add_argument("--write-pin", action="store_true",
+                    help="with --verify-tables, record the result in third_party/spdm-h.pin")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent
+
+    if args.verify_tables:
+        return verify_tables(args.verify_tables, repo_root, args.write_pin)
 
     if args.check:
         return check(args.check, repo_root)
