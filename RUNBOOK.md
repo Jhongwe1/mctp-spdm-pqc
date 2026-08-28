@@ -34,7 +34,7 @@
 | Gate | 主題 | 狀態 |
 |---|---|---|
 | G0 | 環境與版本基線 | ✅ 完成 |
-| G1 | 完整握手、逐欄位 | 🟡 **進行中** — 逐欄位文件已完成 7 個訊息對 |
+| G1 | 完整握手、逐欄位 | 🟡 **進行中** — 逐欄位文件已完成 7 個訊息對,128 個數字由 CI 驗證,其中 2 個訊息對的**位移**是從線上重建出來的 |
 | G2 | 憑證鏈與三點篡改 | ⬜ 未開始(W03~W05) |
 | G3 | RATS 驗證流水線 | ⬜ 未開始(W06~W07) |
 | G4 | 後量子成本 | ⬜ 未開始(W08) |
@@ -582,7 +582,7 @@ measurements: operation ALL, responder reports 8 block(s), record 528 bytes
 
 ```bash
 python3 harness/fields.py --check docs/handshake-walkthrough.md
-#   84/84 claims match the capture
+#   128/128 claims match the capture
 ```
 
 `harness/verify_repo.sh` 會跑這個檢查,CI 會跑 `verify_repo.sh`。
@@ -599,6 +599,58 @@ python3 harness/fields.py --check docs/handshake-walkthrough.md
 > | 把 capture 路徑改成不存在的檔案 | `FAIL: capture not found` |
 >
 > **第二種特別重要**:它讓你不能用「發明一個欄位名」來滿足檢查。
+
+### 8.3b ★ 位移(offset)沒辦法用同一招檢查,所以用另一招
+
+上面那招檢查的是**值**:「`DataTransferSize` 是 4608」可以從解碼結果重新算出來。
+
+但**位移**不行。`spdm_dump` 印的是「有哪些欄位、值是多少」,它從來不印「這個欄位
+在第幾個 byte」。所以逐欄位表格裡那一整欄 `offset`,原本全部是從 libspdm 的
+`spdm.h` 抄過來的 —— 而**抄錯的位移配上抄對的值,上面每一個檢查都會通過。**
+
+解法是換一種問法:**不要「檢查」位移,而是「重建」整則訊息,然後要求它剛好用完。**
+
+一則 SPDM 回應裡每個欄位的長度只會是四種來源之一:
+
+| 來源 | 例子 |
+|---|---|
+| 固定常數 | `Nonce` 永遠 32 bytes |
+| 前面協商到的東西 | `CertChainHash` = 這次選到的 hash 長度(這裡是 SHA-384,48) |
+| 訊息自己帶的長度欄位 | `MeasurementRecordLength`(offset 5 的 24-bit 小端數) |
+| 剩下的全部 | `Signature` |
+
+所以整則訊息可以被**重排一次**,而重排出來的結果有兩個地方會露餡:
+
+```
+CHALLENGE_AUTH,第 14 個封包,總長 238 bytes(從 hex dump 讀的)
+  4 標頭 + 48 CertChainHash + 32 Nonce + 48 MeasurementSummaryHash
+    + 2 OpaqueLength + 0 OpaqueData + 8 RequesterContext = 142
+  238 - 142 = 96
+```
+
+**96 剛好就是 ECDSA-P384 的簽章長度,而 ECDSA-P384 正是這次 `ALGORITHMS` 選到
+的演算法。** 前面任何一個欄位的長度排錯,這個減法就不會是 96。
+
+而且還有第二條式子。`RequesterContext` 那 8 個 byte 是**請求方自己選的,回應方
+原樣送回來**。所以到預測的位移 134 去讀那 8 個 byte,拿去跟請求裡的比對 ——
+**兩個未知數、兩條互相獨立的式子**。
+
+> ### 為什麼「多一條式子」才是重點
+>
+> 如果只有一條式子,它就只是把輸入重講一遍,永遠會成立。**多出來的那一條,
+> 才是讓 capture 有能力說「你排錯了」的東西。**
+>
+> 它立刻解決了一個原本文件答不出來的問題:`MeasurementSummaryHash` 到底是用
+> `BaseHashAlgo`(SHA-384,48)還是 `MeasurementHashAlgo`(SHA-512,64)?這次
+> 連線兩個都協商了。兩個假設差 16 bytes,**只有一個會閉合。**答案是前者,而且
+> 這個答案是算出來的,不是去翻規格翻到的。
+
+`verify_repo.sh` 會自己造一則正確的 `CHALLENGE_AUTH`,確認它閉合,然後**故意
+弄壞三次**(少一個 byte、context 對不上、換一個簽章演算法),要求三次都被拒絕。
+**一個永遠會通過的檢查不是檢查,是剛好對上的算術。**
+
+目前七個訊息對裡只有 2 個(`CHALLENGE_AUTH`、`MEASUREMENTS`)是這樣重建的,
+另外五個還是抄的 —— **文件 §10 自己寫出來是哪五個。**
 
 ### 8.4 每一個結果都有出處
 
@@ -623,6 +675,94 @@ python3 harness/fields.py --check docs/handshake-walkthrough.md
 > **每一個 manifest 提到的檔案都真的被 git 追蹤**。
 >
 > 通則:**忽略規則不准蓋過 manifest。**
+
+### 8.5 🔴 「檔案沒被動過」跟「檔案還是對的」是兩件事
+
+08-28 踩到的,而且它比前面兩個更難看見,因為**所有檢查全部通過**。
+
+`bench/data/<run>/` 裡有兩種東西,而它們長得一模一樣:
+
+| | 是什麼 | hash 對得上代表什麼 |
+|---|---|---|
+| `*.pcap`、`*.decode.txt`、`*.hex.txt` | **證據** —— 當時線上真的發生的事 | 代表全部。證據的意思不會改變 |
+| `*.fields.json` | **推導** —— 我們的工具在某個時間點對那份證據的讀法 | **只代表沒被人改過** |
+
+那天 `fields.py` 修掉了一個重複計算的 bug,`message_bytes.total` 從 15,803 變成
+11,291。但 repo 裡那份 `walkthrough.fields.json` 還寫著 15,803,而且 **manifest
+的 SHA-256 完全對得上** —— 因為沒有人動過那個檔案。
+
+> **雜湊只能告訴你「沒被竄改」,不能告訴你「還是對的」。**
+> 對輸入(證據)來說這兩句話一樣;對輸出(推導)來說永遠不一樣。
+
+**修法不是去改那個 JSON,也不是去改 manifest。** 一個可以被重寫的 manifest 什麼
+都證明不了,所以這個 repo 沒有「重新蓋章」的機制,也不該有。修法是**重跑一次,
+產生一個新的 run**:
+
+```bash
+# 1. 先把工作樹弄乾淨(manifest 會記 repo_dirty,乾淨的證據比較值錢)
+git status --short          # 應該是空的
+
+# 2. 重跑五臂
+bash harness/capture.sh --name w2-baseline
+#   -> bench/data/w2-baseline-<新時間戳>/
+
+# 3. 把文件指向新的 run(舊的 run 一個字都不要動,它是歷史)
+sed -i 's/w2-baseline-<舊時間戳>/w2-baseline-<新時間戳>/g' \
+    docs/handshake-walkthrough.md docs/transports.md docs/upstream/README.md
+#   ★ LOG.md 不要改。那裡面是「某天我觀察到什麼」,是日記不是主張。
+
+# 4. 確認文件的數字對得上新的 capture
+python3 harness/fields.py --check docs/handshake-walkthrough.md
+
+# 5. 把新 run 加進 git(不然 §8.4 那個「manifest 簽了但沒追蹤」的檢查會紅)
+git add bench/data/w2-baseline-<新時間戳>
+bash harness/verify_repo.sh
+```
+
+`verify_repo.sh` 現在會要求:**文件引用到的每一份 `*.fields.json`,都必須是今天
+的 `fields.py` 從旁邊那份 decode 重算得出來的。** 沒被任何文件引用的舊 run 不受
+這條約束 —— 它們的 manifest 只保證「沒被動過」,而這個 repo 對它們也只主張這件事。
+
+> ### 意外的收穫:重跑證明了「這些數字是量測,不是抓拍」
+>
+> 08-28 那次重跑,跟 08-16 那次隔了 11 天、機器重開過、pin 完全一樣:
+>
+> | 臂 | 封包 | bytes |
+> |---|--:|--:|
+> | `classical` | 554 | 20,549 |
+> | `pqc` | 584 | 114,751 |
+> | `classical-stable` | 566 | 20,396 |
+> | `walkthrough` | 30 | 11,441 |
+> | `single-algo` | 30 | 11,441 |
+>
+> **每一臂,一個 byte 都沒差。** nonce 跟時間戳當然不一樣,但這個 repo 主張的
+> 每一個大小、次數、位移都一樣。**所以那份 08-17 寫的逐欄位文件,128 個 claim
+> 全部對得上一份它從來沒看過的 capture。**
+>
+> 這就是為什麼位元組類的數字報單一值而不報範圍 —— 那不是一個慣例,是一個量到的
+> 性質。
+
+### 8.6 動過 pin 之後,capability 那張表要重讀
+
+`fields.py` 把 `Flags` 那個 32-bit 數字翻成 `CERT_CAP`、`CHUNK_CAP` 這些名字,
+靠的是一張**手抄**自 libspdm `spdm.h` 的表。上游改個名字,這張表會**永遠自洽地
+錯下去** —— 沒有任何 capture 會跟它牴觸。
+
+```bash
+python3 harness/fields.py --verify-tables \
+    ~/spdm-lab/work/spdm-emu-pqc/libspdm/include/industry_standard/spdm.h \
+    --write-pin
+#   requester: 19 single-bit capabilities in the header, 20 in this file
+#   responder: 32 single-bit capabilities in the header, 32 in this file
+#   every capability bit in this file has the header's name for it
+```
+
+這件事需要上游原始碼,CI 沒有,所以結果被釘進 `third_party/spdm-h.pin`。
+`verify_repo.sh` 檢查的是那份 pin:**它記的 libspdm commit,必須跟
+`spdm-emu-pqc.pin` 說的「capture 是哪個版本產的」一樣。**
+
+> **所以「換了 pin 卻沒重讀 header」會讓建置變紅。** 這就是 `CLAUDE.md` 那條
+> 「改完 pin 就順手 grep 一次舊版本號」,做成了不必靠記憶的東西。
 
 ---
 
@@ -793,6 +933,11 @@ python3 harness/fields.py <run>/walkthrough.decode.txt
 python3 harness/fields.py <run>/walkthrough.decode.txt --json
 python3 harness/fields.py <run>/walkthrough.decode.txt --list-keys   # 可以宣告的鍵
 python3 harness/fields.py --check docs/handshake-walkthrough.md      # ★ CI 也跑這個
+
+# ── 動過 third_party/*.pin 之後一定要跑(見 §8.6)────────
+python3 harness/fields.py --verify-tables \
+    ~/spdm-lab/work/spdm-emu-pqc/libspdm/include/industry_standard/spdm.h \
+    --write-pin
 
 # ── 手動解碼 ────────────────────────────────────────────
 ~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r <file>.pcap         # 摘要

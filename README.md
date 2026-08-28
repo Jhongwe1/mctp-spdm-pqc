@@ -123,6 +123,34 @@ pcap captured bytes  ==  SPDM message bytes  +  5 × messages
 [`docs/transports.md`](docs/transports.md). Four captures satisfy it exactly;
 the post-quantum arm is skipped and says why.
 
+**The walkthrough is checked against a capture it was not written from.** Every
+word of it was written on 2026-08-17 against one run. Eleven days later the five
+arms were re-taken on the same pins, and all 128 claims verify against the new
+one:
+
+| arm | packets | bytes | reproduced |
+|---|--:|--:|:--:|
+| `classical` | 554 | 20,549 | ✅ |
+| `pqc` | 584 | 114,751 | ✅ |
+| `classical-stable` | 566 | 20,396 | ✅ |
+| `walkthrough` | 30 | 11,441 | ✅ |
+| `single-algo` | 30 | 11,441 | ✅ |
+
+Identical on every arm, to the packet. Nonces and timestamps differ, as they
+must; nothing this repository states about sizes, counts or offsets does. That
+is why byte counts here are reported as single values rather than ranges — it is
+now a measured property of these captures and not a convention.
+
+The re-run happened for an unglamorous reason, and the reason is the more
+transferable half. `capture.sh` writes a `*.fields.json` beside each capture and
+hashes it into `manifest.json` next to the pcap — but a pcap is *evidence* and a
+`fields.json` is a *derivation*, and when the tool that produced it changed, the
+committed file became false while its hash still matched. **A digest tells you a
+file is unaltered. It does not tell you the file is still true.** There is no
+mechanism here for re-stamping a manifest and there should not be, so the repair
+was a new run rather than an edited old one. CI now requires every committed
+derivation to reproduce from its inputs.
+
 **A classical baseline is not build-independent.** Identical flags on
 `spdm-emu` 3.8.0 and 4.0.0-rc differ in five measurable ways, including a
 1,591-byte certificate chain against 1,655 and two round trips to fetch it
