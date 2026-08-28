@@ -170,6 +170,76 @@ else
     good "scope at line $scope, badge at line ${badge:-none}"
 fi
 
+step "two tools agree on how many bytes went down the wire"
+# pcapcount.py owns the capture file and fields.py never opens one. That
+# separation is what lets them check each other, because neither can be wrong in
+# a way the other would repeat.
+#
+# Every record in these captures carries five bytes of transport framing ahead
+# of the SPDM message — the four-byte mctp_header_t plus the MCTP message-type
+# byte, taken apart in docs/transports.md — and nothing is ever fragmented. So
+# for an MCTP capture whose decode is complete:
+#
+#     pcap captured bytes  ==  SPDM message bytes  +  5 x messages
+#
+# This is added after the double count it would have caught, not before, and it
+# is worth saying which: it finds nothing today. It is here so that the next
+# disagreement between these two tools is found by the build rather than by
+# someone noticing a number looks large.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys
+
+FRAMING = 5
+checked, skipped, problems = [], [], []
+
+
+def tool(script, *args):
+    out = subprocess.run([sys.executable, script, *args], capture_output=True, text=True)
+    if out.returncode != 0:
+        raise SystemExit(f"  {script} failed on {args[0]}: {out.stderr.strip()}")
+    return json.loads(out.stdout)
+
+
+for decode in sorted(pathlib.Path("bench/data").glob("*/*.decode.txt")):
+    name = f"{decode.parent.name}/{decode.name}"
+    hexfile = decode.with_name(decode.name.replace(".decode.txt", ".hex.txt"))
+    pcap = decode.with_name(decode.name.replace(".decode.txt", ".pcap"))
+    if not hexfile.exists() or not pcap.exists():
+        skipped.append(f"{name}: no hex dump or no capture beside it")
+        continue
+    f = tool("harness/fields.py", str(decode), "--json")
+    if f["source"]["decode_truncated"]:
+        skipped.append(f"{name}: {f['source']['truncation_reason']}")
+        continue
+    if f["transport"]["link_type"] != "MCTP":
+        skipped.append(f"{name}: link type is {f['transport']['link_type']}")
+        continue
+    p = tool("harness/pcapcount.py", str(pcap), "--json")["summary"]
+    if f["messages"]["decoded"] != p["packets"]:
+        problems.append(f"{name}: {p['packets']} packets but {f['messages']['decoded']} decoded")
+        continue
+    want = f["message_bytes"]["total"] + FRAMING * p["packets"]
+    if p["captured_bytes_total"] != want:
+        problems.append(f"{name}: capture holds {p['captured_bytes_total']} bytes, "
+                        f"{f['message_bytes']['total']} + {FRAMING} x {p['packets']} = {want}")
+        continue
+    checked.append(f"{name}: {p['captured_bytes_total']} = "
+                   f"{f['message_bytes']['total']} + {FRAMING} x {p['packets']}")
+
+for line in checked:
+    print("  " + line)
+for line in skipped:
+    print(f"  --   skipped {line}")
+for line in problems:
+    print("  " + line)
+if not checked:
+    print("  no capture could be cross-checked")
+    sys.exit(1)
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "the pcap layer and the SPDM layer account for the same bytes" \
+             || bad "pcapcount.py and fields.py disagree about a capture"
+
 step "the layout reconstruction can still fail"
 # The walkthrough's offsets are checked by rebuilding each signed response and
 # requiring the bytes left over to equal the signature size the negotiation
