@@ -33,7 +33,7 @@ exists today, not what is planned. Planned work is in
 | Gate | Subject | State |
 |:--|---|---|
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
-| G1 | full handshake, field by field | **in progress** — seven message pairs annotated, numbers asserted by CI |
+| G1 | full handshake, field by field | **in progress** — seven message pairs annotated, 128 values asserted by CI, two pairs reconstructed from the wire |
 | G2 | certificate chain, three tamper points | not started |
 | G3 | RATS verification pipeline | not started |
 | G4 | post-quantum cost quantification | not started |
@@ -74,9 +74,54 @@ because the sample responder's eight indices end at `0xFE`. Full derivation in
 **A field-by-field walkthrough whose numbers cannot rot.** Every value in that
 document is marked up in its source and re-derived from the capture it cites by
 `harness/fields.py --check`, which `harness/verify_repo.sh` and therefore CI
-run. 84 claims across five captures. The mechanism was deliberately broken three
+run. 128 claims across five captures. The mechanism was deliberately broken three
 ways — a byte count off by one, a claim naming a field the tool does not
 compute, a capture that has moved — and turns red on each.
+
+**And its offsets are measured for two of the seven message pairs.** A value can
+be re-derived from a decode; an offset cannot, because the decoder prints fields
+rather than positions. So `CHALLENGE_AUTH` and `MEASUREMENTS` are **rebuilt**
+instead — every field placed in turn, each size either constant, fixed by
+something negotiated several messages earlier, or carried in the message itself
+— and the reconstruction has to survive two independent contradictions:
+
+| | |
+|---|---|
+| **closure** | the bytes left after placing everything up to the signature must equal the signature size the negotiated algorithm implies. The total comes from the hex dump, the size from `ALGORITHMS`; neither is in the document |
+| **echo** | `RequesterContext` is chosen by the requester and returned unchanged, so it must be found at the predicted offset holding what the request sent — 130 bytes into the message, using no constant from the tool |
+
+`CHALLENGE_AUTH` is 238 bytes, the nonce is at 52, and 238 − 142 = 96, which is
+what ECDSA-P384 signs with. Being over-determined by one equation is the whole
+point: CI rebuilds a correct message and three broken ones — a byte short, a
+context that does not echo, a different signature algorithm — and requires each
+break to be rejected.
+
+The spare equation settled a question the document could not answer by reading:
+`MeasurementSummaryHash` is sized by `BaseHashAlgo`, not `MeasurementHashAlgo`.
+Both were negotiated here, they differ by 16 bytes, and only one closes.
+
+**A tool checking 84 facts correctly was wrong by 40% in a field nobody quoted.**
+`spdm_dump -x` prints a packet carrying mutual authentication as two hex blocks
+— the encapsulated message first, then the carrier that already contains it byte
+for byte — and `fields.py` summed both. The walkthrough capture's SPDM byte
+total read 15,803 against an actual 11,291.
+
+No published number moved, because every `message_bytes` claim in the document
+happens to concern a message that is never encapsulated. That is the
+uncomfortable part rather than the reassuring one: **the reach of a checking
+mechanism is the set of facts someone chose to state, not the set the tool
+produces.** Writing more claims would leave the next unquoted field in exactly
+the same position, so the answer is a second tool that has to agree.
+`harness/pcapcount.py` owns the capture file and never reads a decode;
+`fields.py` owns the decode and never opens a capture. CI now requires
+
+```
+pcap captured bytes  ==  SPDM message bytes  +  5 × messages
+```
+
+— the five being the MCTP framing taken apart in
+[`docs/transports.md`](docs/transports.md). Four captures satisfy it exactly;
+the post-quantum arm is skipped and says why.
 
 **A classical baseline is not build-independent.** Identical flags on
 `spdm-emu` 3.8.0 and 4.0.0-rc differ in five measurable ways, including a

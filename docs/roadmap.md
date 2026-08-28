@@ -13,7 +13,7 @@ table and the two are kept in step.
 | Gate | Weeks | Subject | Definition of done | Status |
 |:--|:--|---|---|---|
 | **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **complete** |
-| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **in progress** — seven pairs annotated in `docs/handshake-walkthrough.md`, 84 values asserted against their captures by CI |
+| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **in progress** — seven pairs annotated in `docs/handshake-walkthrough.md`, 128 values asserted against their captures by CI, and two pairs whose *offsets* are reconstructed from the wire rather than transcribed. The remaining five are named in §10 |
 | **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | not started |
 | **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | not started |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | not started |
@@ -97,6 +97,19 @@ it does.
    the capture on every CI run. Facts that are only stated are the ones that rot.
 10. **An ignore rule does not outrank a manifest.** Every artifact a manifest
     attests to must be present and tracked, and `verify_repo.sh` checks it.
+11. **A check is worth what it rejects, and something has to prove it rejects.**
+    Every mechanism here has a companion that feeds it something wrong and
+    requires it to fail: `pcapcount.py` against a capture built byte by byte,
+    `fields.py --check` against a drifted number and an invented field name, the
+    layout reconstruction against a message one byte short. A check that has
+    never been observed failing is arithmetic that happens to agree.
+12. **A number no document quotes is not checked by that document's checker.**
+    `--check` guards the values someone chose to state; a tool computing twenty
+    fields while seven are quoted is checked on seven, and 2026-08-28 in
+    `LOG.md` is what that cost. Where two tools can reach the same quantity by
+    different routes, they are made to agree — `pcapcount.py` owns the capture
+    file and never reads a decode, `fields.py` owns the decode and never opens
+    a capture, and CI requires their answers to reconcile.
 
 ## External dates that do not wait
 
