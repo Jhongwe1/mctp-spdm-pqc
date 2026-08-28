@@ -156,7 +156,7 @@ def decode_flags(value: int, table) -> tuple[list[str], list[str]]:
 
 class Message:
     __slots__ = ("seq", "direction", "name", "code", "hdr_version", "fields",
-                 "encapsulated", "reassembled", "carrier")
+                 "encapsulated", "reassembled", "carrier", "raw")
 
     def __init__(self, seq, direction, name, code, ver, fields):
         self.seq = seq
@@ -168,16 +168,18 @@ class Message:
         self.encapsulated = None    # a separate request travelling the other way
         self.reassembled = None     # this same message, delivered in chunks
         self.carrier = None
+        self.raw = None             # this message's bytes, if a hex dump was kept
 
     def field(self, key):
         return self.fields.get(key, {}).get("value")
 
 
 HEX_ROW_RE = re.compile(r"^\s*[0-9a-f]{4}:\s+((?:[0-9a-f]{2}\s*)+)$")
+HEX_BLOCK_RE = re.compile(r"^\s*(?P<label>[A-Za-z ]*SPDM Message):\s*$")
 
 
-def parse_hex(text: str) -> dict[int, int]:
-    """Byte count of each SPDM message, from `spdm_dump -x` output.
+def parse_hex_blocks(text: str) -> dict[int, list[tuple[str, bytes]]]:
+    """Every hex block of a `spdm_dump -x` dump, as raw bytes, by packet number.
 
     Message SIZE is not in the summary decode — spdm_dump prints the fields it
     understood, not how many bytes they occupied — and it is the primitive every
@@ -188,19 +190,107 @@ def parse_hex(text: str) -> dict[int, int]:
         5 (...) MCTP(5) REQ->RSP SPDM(14, 0xe3) SPDM_NEGOTIATE_ALGORITHMS (...)
           SPDM Message:
             0000: 14 e3 06 00 38 00 01 12 ...
+
+    A packet carrying mutual authentication prints TWO blocks, and the inner one
+    is printed FIRST:
+
+        21 (...) REQ->RSP SPDM(14, 0xeb) SPDM_DELIVER_ENCAPSULATED_RESPONSE (...)
+                                         SPDM(14, 0x03) SPDM_CHALLENGE_AUTH (...)
+          Encapsulated SPDM Message:
+            0000: 14 03 00 07 ...        <- the CHALLENGE_AUTH
+          SPDM Message:
+            0000: 14 eb 03 00 14 03 ...  <- the carrier, which CONTAINS it
+
+    So the blocks are returned with their labels rather than summed. The carrier
+    already holds the encapsulated message byte for byte; adding the two is
+    counting the same bytes twice, and `attach_raw` proves the containment
+    rather than assuming it.
     """
-    sizes: dict[int, int] = {}
-    current = None
+    out: dict[int, list[tuple[str, bytes]]] = {}
+    seq: int | None = None
+    label: str | None = None
+    acc: list[int] = []
+
+    def flush():
+        if seq is not None and label is not None and acc:
+            out.setdefault(seq, []).append((label, bytes(acc)))
+
     for line in text.splitlines():
         head = LINE_RE.match(line)
         if head:
-            current = int(head.group("seq"))
-            sizes.setdefault(current, 0)
+            flush()
+            acc, label = [], None
+            seq = int(head.group("seq"))
+            out.setdefault(seq, [])
+            continue
+        block = HEX_BLOCK_RE.match(line)
+        if block:
+            flush()
+            acc, label = [], block.group("label").strip()
             continue
         row = HEX_ROW_RE.match(line)
-        if row and current is not None:
-            sizes[current] += len(row.group(1).split())
-    return sizes
+        if row and label is not None:
+            acc.extend(int(b, 16) for b in row.group(1).split())
+    flush()
+    return out
+
+
+def attach_raw(messages, blocks) -> dict:
+    """Give every decoded message its bytes, and report what could not be paired.
+
+    The pairing rule is the wire, not the print order: byte 1 of an SPDM message
+    is its `RequestResponseCode`, so a block belongs to the message whose code it
+    carries. Pairing by position instead gives the carrier's bytes to the message
+    it carries — which is how a 466-byte CHALLENGE_AUTH becomes a 482-byte one,
+    silently, in the direction that flatters the number.
+    """
+    report = {"packets_with_multiple_blocks": 0, "encapsulated_blocks": 0,
+              "contained": 0, "not_contained": [], "unpaired": [], "wire_bytes": {}}
+
+    for msg in messages:
+        found = blocks.get(msg.seq, [])
+        if not found:
+            continue
+        if len(found) > 1:
+            report["packets_with_multiple_blocks"] += 1
+
+        outer = [raw for label, raw in found if label == "SPDM Message"]
+        inner = [raw for label, raw in found if label != "SPDM Message"]
+        report["encapsulated_blocks"] += len(inner)
+
+        # The carrier is the block on the wire. Its length is the packet's cost.
+        if len(outer) == 1:
+            report["wire_bytes"][msg.seq] = len(outer[0])
+        else:
+            report["unpaired"].append(f"packet {msg.seq}: {len(outer)} carrier blocks")
+            report["wire_bytes"][msg.seq] = sum(len(r) for _, r in found)
+
+        def take(candidates, code):
+            for raw in candidates:
+                if len(raw) >= 2 and raw[1] == code:
+                    return raw
+            return None
+
+        msg.raw = take(outer, msg.code)
+        if msg.raw is None and len(outer) == 1 and not inner:
+            # One block, one message, and the code disagrees: say so rather than
+            # accept it, because everything downstream reads offsets off this.
+            report["unpaired"].append(
+                f"packet {msg.seq}: {msg.name} expects code 0x{msg.code:02x}, "
+                f"block starts 0x{outer[0][1]:02x}")
+
+        for carried in (msg.encapsulated or []) + (msg.reassembled or []):
+            carried.raw = take(inner, carried.code) or take(outer, carried.code)
+            if carried.raw is None:
+                report["unpaired"].append(
+                    f"packet {msg.seq}: no block for carried {carried.name}")
+            elif outer and carried.raw is not outer[0]:
+                if carried.raw in outer[0]:
+                    report["contained"] += 1
+                else:
+                    report["not_contained"].append(
+                        f"packet {msg.seq}: {carried.name} is not a substring of its carrier")
+    return report
 
 
 def parse_decode(text: str) -> tuple[list[Message], dict]:
@@ -581,24 +671,42 @@ def extract(messages, meta, source: Path) -> dict:
     out["errors"] = {"total": len(errors), "by_code": by_code}
 
     # -- message sizes, if the hex dump was kept beside the decode ----------
+    #
+    # `total` is what went down the socket: the carrier's bytes, once. A packet
+    # carrying mutual authentication prints its encapsulated message as a second
+    # block, and that message is already inside the carrier — summing both
+    # inflated this figure by 40% in the walkthrough capture. `carried_by_type`
+    # keeps those bytes visible without adding them twice, and `consistent`
+    # asserts the split: the per-type totals must add back up to `total`.
     hexfile = source.with_name(source.name.replace(".decode.txt", ".hex.txt"))
     if hexfile.exists() and hexfile != source:
-        sizes = parse_hex(hexfile.read_text(encoding="utf-8", errors="replace"))
+        blocks = parse_hex_blocks(hexfile.read_text(encoding="utf-8", errors="replace"))
+        pairing = attach_raw(messages, blocks)
         # Not `first` — that is the name of the message lookup helper above, and
         # binding it here would shadow it for the whole function.
         first_bytes: dict[str, int] = {}
         total_bytes: dict[str, int] = {}
+        carried_bytes: dict[str, int] = {}
         for m in messages:
-            n = sizes.get(m.seq)
-            if n is None:
+            if m.raw is None:
                 continue
-            first_bytes.setdefault(m.name, n)
-            total_bytes[m.name] = total_bytes.get(m.name, 0) + n
+            first_bytes.setdefault(m.name, len(m.raw))
+            total_bytes[m.name] = total_bytes.get(m.name, 0) + len(m.raw)
+            for c in (m.encapsulated or []) + (m.reassembled or []):
+                if c.raw is not None:
+                    carried_bytes[c.name] = carried_bytes.get(c.name, 0) + len(c.raw)
+        wire_total = sum(len(m.raw) for m in messages if m.raw is not None)
         out["message_bytes"] = {
             "source": hexfile.name,
-            "total": sum(sizes.values()),
+            "total": wire_total,
+            "consistent": wire_total == sum(total_bytes.values()),
+            "carried_total": sum(carried_bytes.values()),
+            "carried_verified_inside_carrier": pairing["contained"],
+            "carried_not_inside_carrier": pairing["not_contained"],
+            "unpaired": pairing["unpaired"],
             "first_by_type": dict(sorted(first_bytes.items())),
             "total_by_type": dict(sorted(total_bytes.items(), key=lambda kv: -kv[1])),
+            "carried_by_type": dict(sorted(carried_bytes.items(), key=lambda kv: -kv[1])),
         }
     else:
         out["message_bytes"] = None
@@ -699,6 +807,16 @@ def render(data: dict) -> str:
                  f"(transport framing excluded), from {mb['source']}")
         for name, n in list(mb["total_by_type"].items())[:6]:
             L.append(f"              {n:>7}  {name}")
+        if mb["carried_total"]:
+            L.append(f"              {mb['carried_total']} more bytes travelled inside "
+                     f"those messages, encapsulated;")
+            L.append(f"              {mb['carried_verified_inside_carrier']} of them "
+                     f"confirmed byte for byte inside their carrier, so not added twice")
+        if not mb["consistent"]:
+            L.append("              ⚠ the per-type totals do not add up to the total")
+        for problem in mb["carried_not_inside_carrier"] + mb["unpaired"]:
+            L.append(f"              ⚠ {problem}")
+
     return "\n".join(L)
 
 
