@@ -388,6 +388,268 @@ def alg_list(msg, key):
     return [a.strip() for a in ann.split(",") if a.strip()]
 
 
+# ----------------------------------------------------------------- layout ---
+#
+# Everything above reads values. This section reads OFFSETS, and it exists
+# because the walkthrough's §10 says the offsets are the part nothing checks:
+# they are transcribed from the struct definitions in `spdm.h`, so a wrong
+# offset printed next to a right value passes every test in this file.
+#
+# The way out is that an SPDM response is exactly reconstructible. Every field
+# is one of four things — a constant size, a size fixed by something negotiated
+# several messages earlier, a size the message itself carries, or the remainder
+# — so the whole layout can be rebuilt and then FALSIFIED, twice over:
+#
+#   closure   the bytes left after placing everything up to the signature must
+#             equal the signature size implied by the negotiated algorithm. The
+#             total comes from the hex dump, the signature size from ALGORITHMS.
+#             Neither is in the document being checked.
+#
+#   echo      RequesterContext is chosen by the requester and returned
+#             unchanged. Reading it back at the offset the reconstruction
+#             predicts, hundreds of bytes in, and comparing it against the
+#             request is a second equation on the same unknowns — and it uses
+#             no constant from this file at all.
+#
+# Two independent equations, one free variable. That is enough to settle a
+# question the document could not: whether CHALLENGE_AUTH's
+# MeasurementSummaryHash is sized by BaseHashAlgo or by MeasurementHashAlgo.
+# Here they are SHA-384 and SHA-512, so the two hypotheses differ by 16 bytes
+# and exactly one of them closes.
+#
+# The two tables below are transcribed from DSP0274 and FIPS 204/186-5. Unlike
+# the capability-bit tables at the top of this file, they are not taken on
+# trust: a wrong entry makes the residue miss, so every closure that succeeds is
+# also a check on the number it used.
+
+HASH_BYTES = {
+    "SHA_256": 32, "SHA_384": 48, "SHA_512": 64,
+    "SHA3_256": 32, "SHA3_384": 48, "SHA3_512": 64,
+    "SM3_256": 32,
+}
+
+SIG_BYTES = {
+    "ECDSA_P256": 64, "ECDSA_P384": 96, "ECDSA_P521": 132,
+    "RSASSA_2048": 256, "RSAPSS_2048": 256,
+    "RSASSA_3072": 384, "RSAPSS_3072": 384,
+    "RSASSA_4096": 512, "RSAPSS_4096": 512,
+    "SM2_ECC_P256": 64, "EDDSA_ED25519": 64, "EDDSA_ED448": 114,
+    "ML_DSA_44": 2420, "ML_DSA_65": 3309, "ML_DSA_87": 4627,
+}
+
+SPDM_CHALLENGE = 0x83
+SPDM_CHALLENGE_AUTH = 0x03
+SPDM_GET_MEASUREMENTS = 0xE0
+SPDM_MEASUREMENTS = 0x60
+CONTEXT_BYTES = 8       # RequesterContext, SPDM 1.3 and later
+
+
+def _u16le(raw, off):
+    return raw[off] | raw[off + 1] << 8
+
+
+def _u24le(raw, off):
+    return raw[off] | raw[off + 1] << 8 | raw[off + 2] << 16
+
+
+def _sized(names, table):
+    """One negotiated algorithm's size, or None if zero or several were chosen."""
+    picked = [n for n in (names or []) if n in table]
+    return table[picked[0]] if len(picked) == 1 else None
+
+
+def on_the_wire(messages):
+    """Every message in wire order, carried ones before their carrier."""
+    for msg in messages:
+        for carried in (msg.encapsulated or []) + (msg.reassembled or []):
+            yield carried
+        yield msg
+
+
+def _request_before(ordered, index, code):
+    for msg in reversed(ordered[:index]):
+        if msg.code == code and msg.raw:
+            return msg
+    return None
+
+
+def _context_span(request, fixed):
+    """RequesterContext exists from SPDM 1.3. Derive its size from the request's
+    own length rather than from the version byte, and refuse anything else."""
+    span = len(request.raw) - fixed
+    return span if span in (0, CONTEXT_BYTES) else None
+
+
+def _place_challenge_auth(rsp, req, hashes, sig):
+    """Reconstruct CHALLENGE_AUTH. `hashes` is (BaseHashAlgo, MeasurementHashAlgo)."""
+    raw = rsp.raw
+    ctx = _context_span(req, 4 + 32)
+    if ctx is None:
+        return None, f"packet {req.seq}: CHALLENGE is {len(req.raw)} bytes, expected 36 or 44"
+
+    # HashType 0 means the requester asked for no measurement summary, and the
+    # field is then absent — which the mutual-authentication exchange uses.
+    hash_type = req.raw[3]
+    if hash_type == 0:
+        hypotheses = [(0, "absent (HashType 0)")]
+    else:
+        hypotheses = [(hashes[0], "BaseHashAlgo"), (hashes[1], "MeasurementHashAlgo")]
+
+    closed = []
+    chain = hashes[0]          # CertChainHash is always the negotiated BaseHashAlgo
+    for summary, source in hypotheses:
+        if chain is None or summary is None:
+            continue
+        off = 4
+        placed = {"cert_chain_hash_offset": off, "cert_chain_hash_bytes": chain}
+        off += chain
+        placed["nonce_offset"] = off
+        off += 32
+        placed["summary_hash_offset"] = off if summary else None
+        placed["summary_hash_bytes"] = summary
+        placed["summary_hash_sized_by"] = source
+        off += summary
+        if off + 2 > len(raw):
+            continue
+        placed["opaque_length_offset"] = off
+        placed["opaque_length"] = _u16le(raw, off)
+        off += 2 + placed["opaque_length"]
+        if off + ctx > len(raw):
+            continue
+        placed["requester_context_offset"] = off if ctx else None
+        off += ctx
+        placed["signature_offset"] = off
+        placed["signature_bytes"] = len(raw) - off
+        placed["total_bytes"] = len(raw)
+        if placed["signature_bytes"] == sig:
+            closed.append(placed)
+
+    return _settle(closed, rsp, req, ctx, sig, "CHALLENGE_AUTH", 4 + 32)
+
+
+def _place_measurements(rsp, req, sig):
+    raw = rsp.raw
+    gensig = bool(req.raw[2] & 0x01)
+    # Nonce and SlotIDParam are both present only when a signature was asked
+    # for. Without one there is no transcript to freshen and no key to name.
+    ctx = _context_span(req, 4 + (32 + 1 if gensig else 0))
+    if ctx is None:
+        return None, (f"packet {req.seq}: GET_MEASUREMENTS is {len(req.raw)} bytes, "
+                      f"expected {4 + (33 if gensig else 0)} or "
+                      f"{12 + (33 if gensig else 0)}")
+
+    off = 4
+    placed = {"blocks": raw[off], "blocks_offset": off}
+    off += 1
+    placed["record_length_offset"] = off
+    placed["record_bytes"] = _u24le(raw, off)
+    off += 3
+    placed["record_offset"] = off
+    off += placed["record_bytes"]
+    if off + 32 + 2 > len(raw):
+        return None, f"packet {rsp.seq}: MEASUREMENTS record length runs past the message"
+    placed["nonce_offset"] = off
+    off += 32
+    placed["opaque_length_offset"] = off
+    placed["opaque_length"] = _u16le(raw, off)
+    off += 2 + placed["opaque_length"]
+    if off + ctx > len(raw):
+        return None, f"packet {rsp.seq}: MEASUREMENTS OpaqueData runs past the message"
+    placed["requester_context_offset"] = off if ctx else None
+    off += ctx
+    placed["signature_offset"] = off if gensig else None
+    placed["signature_bytes"] = len(raw) - off
+    placed["signature_requested"] = gensig
+    placed["total_bytes"] = len(raw)
+
+    want = sig if gensig else 0
+    closed = [placed] if placed["signature_bytes"] == want else []
+    return _settle(closed, rsp, req, ctx, want, "MEASUREMENTS",
+                   4 + (33 if gensig else 0))
+
+
+def _settle(closed, rsp, req, ctx, sig, what, req_context_offset):
+    """Accept a reconstruction only if exactly one closes and the echo agrees."""
+    if not closed:
+        return None, (f"packet {rsp.seq}: {what} does not close — "
+                      f"{len(rsp.raw)} bytes, expected residue {sig}")
+    if len(closed) > 1:
+        return None, (f"packet {rsp.seq}: {what} closes under "
+                      f"{len(closed)} hypotheses; the capture cannot separate them")
+
+    placed = closed[0]
+    if ctx:
+        want = req.raw[req_context_offset:req_context_offset + ctx]
+        got = rsp.raw[placed["requester_context_offset"]:
+                      placed["requester_context_offset"] + ctx]
+        placed["requester_context"] = got.hex(" ")
+        placed["context_echoes_request"] = (got == want)
+        if not placed["context_echoes_request"]:
+            return None, (f"packet {rsp.seq}: {what} closes, but RequesterContext at "
+                          f"{placed['requester_context_offset']} is {got.hex(' ')} "
+                          f"and the request sent {want.hex(' ')}")
+    else:
+        placed["requester_context"] = None
+        placed["context_echoes_request"] = None
+    placed["closes"] = True
+    placed["packet"] = rsp.seq
+    return placed, None
+
+
+def reconstruct(messages, negotiated) -> dict:
+    """Rebuild the layout of every signed response, and report what did not."""
+    out = {
+        "hash_bytes": _sized(negotiated.get("Hash"), HASH_BYTES),
+        "measurement_hash_bytes": _sized(negotiated.get("MeasHash"), HASH_BYTES),
+        "responder_signature_bytes": (_sized(negotiated.get("Asym"), SIG_BYTES)
+                                      or _sized(negotiated.get("PqcAsym"), SIG_BYTES)),
+        "requester_signature_bytes": (_sized(negotiated.get("ReqAsym"), SIG_BYTES)
+                                      or _sized(negotiated.get("ReqPqcAsym"), SIG_BYTES)),
+        "attempted": 0, "closed": 0, "unexplained": [],
+        "challenge_auth": None, "challenge_auth_requester": None,
+        "measurements": None, "measurements_unsigned": None,
+    }
+    hashes = (out["hash_bytes"], out["measurement_hash_bytes"])
+
+    ordered = [m for m in on_the_wire(messages)]
+    for i, msg in enumerate(ordered):
+        if msg.code not in (SPDM_CHALLENGE_AUTH, SPDM_MEASUREMENTS) or not msg.raw:
+            continue
+        # Whoever sent the response signed it, so the direction on the wire —
+        # not the encapsulation — chooses which half of the negotiation applies.
+        sig = (out["responder_signature_bytes"] if msg.direction == "RSP->REQ"
+               else out["requester_signature_bytes"])
+        if sig is None:
+            out["unexplained"].append(
+                f"packet {msg.seq}: no single signature algorithm was negotiated "
+                f"for the {'responder' if msg.direction == 'RSP->REQ' else 'requester'}")
+            continue
+
+        want = SPDM_CHALLENGE if msg.code == SPDM_CHALLENGE_AUTH else SPDM_GET_MEASUREMENTS
+        req = _request_before(ordered, i, want)
+        if req is None:
+            out["unexplained"].append(f"packet {msg.seq}: no request precedes it")
+            continue
+
+        out["attempted"] += 1
+        if msg.code == SPDM_CHALLENGE_AUTH:
+            placed, why = _place_challenge_auth(msg, req, hashes, sig)
+            slot = ("challenge_auth" if msg.direction == "RSP->REQ"
+                    else "challenge_auth_requester")
+        else:
+            placed, why = _place_measurements(msg, req, sig)
+            slot = ("measurements" if placed and placed["signature_requested"]
+                    else "measurements_unsigned")
+        if placed is None:
+            out["unexplained"].append(why)
+            continue
+        out["closed"] += 1
+        if out[slot] is None:
+            out[slot] = placed
+
+    return out
+
+
 def extract(messages, meta, source: Path) -> dict:
     out: dict = {}
 
@@ -708,8 +970,10 @@ def extract(messages, meta, source: Path) -> dict:
             "total_by_type": dict(sorted(total_bytes.items(), key=lambda kv: -kv[1])),
             "carried_by_type": dict(sorted(carried_bytes.items(), key=lambda kv: -kv[1])),
         }
+        out["layout"] = reconstruct(messages, out["algorithms"]["negotiated"])
     else:
         out["message_bytes"] = None
+        out["layout"] = None
 
     return out
 
@@ -817,6 +1081,32 @@ def render(data: dict) -> str:
         for problem in mb["carried_not_inside_carrier"] + mb["unpaired"]:
             L.append(f"              ⚠ {problem}")
 
+    lay = data.get("layout")
+    if lay:
+        L.append("")
+        L.append(f"layout      : {lay['closed']}/{lay['attempted']} signed responses "
+                 f"reconstructed and closed")
+        L.append(f"              hash {lay['hash_bytes']} B, responder signature "
+                 f"{lay['responder_signature_bytes']} B, requester signature "
+                 f"{lay['requester_signature_bytes']} B")
+        for slot, label in (("challenge_auth", "CHALLENGE_AUTH"),
+                            ("challenge_auth_requester", "CHALLENGE_AUTH (requester)"),
+                            ("measurements", "MEASUREMENTS"),
+                            ("measurements_unsigned", "MEASUREMENTS (unsigned)")):
+            p = lay[slot]
+            if not p:
+                continue
+            echo = ("context echoes the request" if p["context_echoes_request"]
+                    else "no RequesterContext" if p["context_echoes_request"] is None
+                    else "CONTEXT DOES NOT MATCH")
+            L.append(f"              {label:<27} packet {p['packet']:>4}  "
+                     f"{p['total_bytes']:>6} B  nonce at {p['nonce_offset']}, "
+                     f"signature {p['signature_bytes']} B — {echo}")
+            if slot == "challenge_auth":
+                L.append(f"              {'':<27} MeasurementSummaryHash "
+                         f"{p['summary_hash_bytes']} B, sized by {p['summary_hash_sized_by']}")
+        for problem in lay["unexplained"]:
+            L.append(f"              ⚠ {problem}")
     return "\n".join(L)
 
 
