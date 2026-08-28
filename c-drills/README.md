@@ -66,7 +66,7 @@ it reports what has been finished and never claims anything else.
 | # | File | Boundary that breaks it | Where it shows up in the project |
 |:--|------|--------------------------|-----------------------------------|
 | D3 | `d3_queue_via_list.c` | dequeue the last element, then enqueue again — stale `tail` | transport glue holding received-but-unconsumed messages |
-| D1 | SPDM header parser | a buffer shorter than the header it claims to contain | first step of every capture-analysis script here |
+| D1 | `d1_spdm_header.c` | an offset whose bounds check overflows before it is checked | first step of every capture-analysis script here |
 | D5 | endianness conversion | sign extension when widening | the socket framing is big-endian, the payload little-endian |
 | D6 | packed struct layout | assuming the compiler laid it out the way it reads | wire formats are byte layouts, not struct layouts |
 | D4 | BST delete | deleting a node with two children | not used here — kept for the three-way pointer rewiring it forces |
@@ -77,3 +77,24 @@ it reports what has been finished and never claims anything else.
 Each file states its own contract, its boundaries, and its time box at the top.
 The tests are provided. The implementation is not, and should not be — the
 tests are the specification, and writing the implementation is the exercise.
+
+## Why D1 has two functions
+
+The lesson normally attached to a header parser is "do not cast the buffer to a
+struct pointer, it works on x86 and faults on ARM." With D1's struct that
+lesson is **false**, and finding out why was worth more than repeating it:
+every member is a `uint8_t`, so `_Alignof(spdm_hdr_t)` is 1 and the cast cannot
+be misaligned at any address. There is still a strict-aliasing argument against
+it, and padding would bite the moment a `uint16_t` is added, but neither faults
+and no sanitizer reports either.
+
+What does fault is reading a **multi-byte** field at an offset you do not
+control, which is why D1 also asks for `spdm_read_u32_le`. Its test reads
+`DataTransferSize` from an odd address, and `*(const uint32_t *)(buf + off)`
+stops there under `-fsanitize=alignment`. Same habit, a version of it that
+actually punishes.
+
+That second function overlaps D2 — its bound has to be written so `off + 4`
+cannot wrap — and the overlap is deliberate rather than an oversight. The
+arithmetic shows up first in a real message and gets its own drill afterwards.
+Paper time is 20 minutes rather than 15 for the same reason.

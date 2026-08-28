@@ -30,7 +30,7 @@ open, and the practice is not practising the thing it is supposed to practise.
 | # | Drill | Date | Paper time | Compile errors | Warnings | First sanitizer result | Error categories |
 |:--|-------|------|-----------:|---------------:|---------:|------------------------|------------------|
 | D3 | `d3_queue_via_list` | | / 20 min | | | | |
-| D1 | SPDM header parser | | / 15 min | | | | |
+| D1 | `d1_spdm_header` | | / 20 min | | | | |
 | D5 | endianness conversion | | / 15 min | | | | |
 | D6 | packed struct layout | | / 15 min | | | | |
 | D4 | BST delete | | / 25 min | | | | |
