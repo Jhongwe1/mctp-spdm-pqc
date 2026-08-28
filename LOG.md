@@ -831,3 +831,244 @@ track ran a week ahead and the drill track ran a week behind is the shape of the
 risk, not an accident of scheduling.**
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+---
+
+## 2026-08-28 · Day 3 · the offsets, and the field nobody quoted
+
+Eleven days after Day 2. The project track resumed where it stopped; the drill
+track had not moved, which is the risk Day 2 wrote down and then demonstrated.
+
+### A field that was wrong for eleven days inside a tool that checks 84 facts
+
+**現象** While building the layout reconstruction below, `message_bytes.total`
+for the walkthrough capture read **15,803**. That number is supposed to exclude
+transport framing. `harness/pcapcount.py` reports the same capture as **11,441**
+bytes *including* framing. A total that excludes something cannot exceed the
+total that includes it.
+
+**假設** (a) the hex dump repeats some bytes, (b) `pcapcount.py` is
+undercounting, (c) `parse_hex` is summing lines it should not.
+
+**先驗哪個、為什麼** (a), by printing the block structure of one packet — thirty
+seconds, no rebuild, and it separates all three at once. Deliberately not (b):
+`pcapcount.py` has a self-test in `verify_repo.sh` that builds a capture byte by
+byte and checks the parser against it, and `fields.py` had nothing equivalent.
+**Doubting the tool that is checked before the tool that is not is the wrong
+order**, and it would have cost an afternoon.
+
+**根因** `spdm_dump -x` prints a packet that carries mutual authentication as
+**two** hex blocks — the encapsulated message first, then the carrier — and the
+carrier already contains the encapsulated message byte for byte. `parse_hex`
+summed every hex row under a packet number, so those bytes were counted twice:
+**4,512 bytes, 40% of the total.**
+
+A second fault sat in the same place and was quieter. `fields.py` paired blocks
+to messages **by position**, and the print order is the reverse of the decode
+line's, which names the carrier first. So the carrier's bytes were being handed
+to the message it carries. Packet 21's `CHALLENGE_AUTH` measured 482 bytes. It
+is 478.
+
+**教訓** No number in `docs/handshake-walkthrough.md` moved. Every
+`message_bytes` claim there is a first-message size for `GET_CAPABILITIES`,
+`NEGOTIATE_ALGORITHMS` or `ALGORITHMS`, and none of those is ever encapsulated.
+So the mechanism was reporting 84/84 correct while a field it also computed was
+wrong by 40%.
+
+> **The reach of a checking mechanism is the set of facts someone chose to
+> state, not the set of facts the tool produces.** `fields.py` computes about
+> twenty fields; the document quotes seven. It was checked on seven.
+
+The response is not "write more claims" — the next unquoted field would sit in
+exactly the same position. It is a **second tool that has to agree.**
+`pcapcount.py` owns the capture file and never reads a decode; `fields.py` owns
+the decode and never opens a capture. `verify_repo.sh` now requires
+
+```
+pcap captured bytes == SPDM message bytes + 5 x messages
+```
+
+on every capture whose decode is complete — the five being the four-byte MCTP
+header plus the message-type byte, taken apart in `docs/transports.md` on Day 2
+for an entirely different reason. Four captures satisfy it exactly. It finds
+nothing today, and the source says that it finds nothing today, because a check
+added after the bug it would have caught should admit which side of that line it
+is on.
+
+### Two equations and one unknown, which is what makes an offset falsifiable
+
+**現象** §10 of the walkthrough states the hole in its own checking: the offset
+columns come from struct definitions in `spdm.h`, so **a wrong offset printed
+beside a right value passes every test in this repository.** The document's
+sharpest claim — that the responder's nonce sits at `4 + digest_size` rather
+than at a fixed offset — was arithmetic, not a measurement.
+
+**假設** for how to close it: (a) confirm each message against `spdm_dump -x` by
+eye, as three already were; (b) write a second SPDM parser and diff it against
+`spdm_dump`; (c) reconstruct each message's layout and require it to close on a
+quantity that appears nowhere in the document.
+
+**先驗哪個、為什麼** (c). (a) checks this document once and not the next capture,
+so it decays the moment anything is re-run. (b) is the thing `fields.py`'s own
+header warns against — a second parser is a second thing to keep correct, and it
+would be the wrong one. (c) costs an afternoon and then runs on every build.
+
+**根因** Not a bug; a property. Every field of an SPDM response is a constant
+size, a size fixed by something negotiated several messages earlier, a size the
+message itself carries, or the remainder — so the layout can be **rebuilt** and
+then contradicted:
+
+```
+CHALLENGE_AUTH, packet 14, 238 bytes from the hex dump
+  4 header + 48 CertChainHash + 32 Nonce + 48 MeasurementSummaryHash
+    + 2 OpaqueLength + 0 OpaqueData + 8 RequesterContext = 142
+  238 - 142 = 96 = ECDSA-P384, which is what ALGORITHMS negotiated
+```
+
+The total comes from the hex dump and the signature size from `ALGORITHMS`.
+Neither is typed into the document, so the equation is between two independent
+readings of the capture. And there is a second one: `RequesterContext` is chosen
+by the requester and echoed back unchanged, so reading eight bytes at the
+predicted offset 134 and comparing them against the request constrains the same
+unknowns again — using no constant from the tool at all.
+
+**教訓** A reconstruction that closes proves nothing unless it could have failed,
+so `verify_repo.sh` now builds a correct `CHALLENGE_AUTH` and three broken ones
+— a byte short, a context that does not echo, a different signature algorithm —
+and requires every break to be rejected.
+
+> **The value is in being over-determined by one.** A determined system restates
+> its inputs. One spare equation is what turns "the layout is this" from an
+> assertion into something the capture is able to refuse.
+
+What the spare equation bought immediately: `MeasurementSummaryHash` is sized by
+`BaseHashAlgo`, not by `MeasurementHashAlgo`. This connection negotiated both —
+SHA-384 and SHA-512 — and the document could not say which applied. The two
+hypotheses differ by 16 bytes and only one closes. **A question answered by
+arithmetic on bytes already in hand, rather than by the specification section I
+had not read.**
+
+Three more things fell out unasked. The mutual-authentication `CHALLENGE_AUTH`
+closes on a 384-byte RSAPSS-3072 signature against the responder's 96-byte
+ECDSA-P384 — the 08-17 lesson about a two-halved independent variable, restated
+as a byte count that nobody had to be looking for. The `ONE_BY_ONE` first pass
+closes on a residue of **0** and the second on **96**, which is the two-pass
+structure measured rather than argued from a source comment. And the request
+length settled the next entry.
+
+### The request is 12 bytes, so the answer is both
+
+**現象** §7 has carried an open question since 08-17: is `Nonce` present in
+`GET_MEASUREMENTS` when `GenerateSignature` is clear? libspdm's struct has it
+unconditionally, and where DSP0274 stands was unread.
+
+**假設** (a) always present, (b) conditional on the signature bit, (c) present,
+but `SlotIDParam` is not.
+
+**先驗哪個、為什麼** None of them by reading. The request's **total length** was
+already in a hex dump committed on 08-16, and it separates all three at once:
+with `GenerateSignature` the request is 45 bytes, without it **12**. The missing
+33 is 32 + 1, which is `Nonce` **and** `SlotIDParam` together — no other subset
+of those fields sums to 33.
+
+**根因** Both are conditional on that bit. Which reads as deliberate once it is
+visible: with no signature to produce there is no transcript to keep fresh, so
+no nonce, and no key to select, so no slot.
+
+**教訓** The question sat filed as "specification unread" for eleven days, and
+the answer was in a file that had already been committed.
+
+> **Re-ask an open question against the evidence accumulated since, not only
+> against the source you meant to read.** The blocker was never access to
+> DSP0274.
+
+The answer is recorded in §7 as the weaker kind it is — arithmetic on one
+emulator's bytes rather than a specification requirement — and the question is
+left standing above it, per §10's rule.
+
+### The alignment lesson that this struct cannot teach
+
+**現象** Writing `c-drills/d1`, whose stated pitfall is "do not cast the buffer
+to a struct pointer — it works on x86 and faults on ARM." The test hands the
+parser a deliberately odd address, and a reference implementation that does cast
+was written to confirm the test catches it. UndefinedBehaviorSanitizer said
+nothing.
+
+**假設** (a) the sanitizer flag is not actually on, (b) the address was not odd,
+(c) the cast is legal here.
+
+**先驗哪個、為什麼** (c), by `_Alignof`. One line, and no rebuild of anything.
+(a) and (b) both blame the apparatus, and the apparatus had just caught a
+misaligned load in a different test inside the same binary, so it was demonstrably
+working. **A tool that has just been observed working is the last thing to
+suspect, not the first.**
+
+**根因** `struct { uint8_t version, code, param1, param2; }` has an alignment
+requirement of **1**. Every member is a byte, so a cast to it cannot be
+misaligned at any address on any architecture. Strict aliasing still argues
+against the cast, and padding would bite the moment someone adds a `uint16_t`,
+but neither faults and no sanitizer reports either.
+
+**教訓** The lesson is true for structs with multi-byte members and false for
+this one — and it would have been taught here as though it were true, then
+repeated in an interview.
+
+> **A drill whose failure mode cannot occur teaches a superstition, and a
+> superstition is worse than a gap, because it gets repeated with confidence.**
+
+So `d1` gained a second function: reading a 32-bit little-endian field at a
+caller-supplied offset, which is where the fault actually lives, and which is
+`DataTransferSize` at offset 12 of this project's own `GET_CAPABILITIES`. The
+tests were then run against **two** wrong implementations before being
+committed. `off + 4 > len` is caught by AddressSanitizer as a buffer overflow,
+because the sum wraps at an offset near `SIZE_MAX` and the bound passes; the
+`uint32_t` cast is caught by UBSan as a misaligned load. A test suite that a
+wrong implementation also passes is not a specification, and there is no way to
+know which one you have written without trying it.
+
+### A prerequisite for the certificate work, checked early and already failing
+
+**現象** The next stage needs the *system* OpenSSL to sign ML-DSA certificates.
+Measured today rather than in the week that needs it:
+
+```
+$ openssl version
+OpenSSL 3.0.13 30 Jan 2024
+$ openssl list -signature-algorithms | grep -i ml-dsa
+(no output)
+```
+
+**根因** Ubuntu 24.04 LTS ships OpenSSL 3.0.x. Which release first offers ML-DSA
+is **not checked here**, and should not be repeated from memory until it is.
+What is measured is that this one does not offer it.
+
+**教訓** This is unrelated to `libspdm`, which builds its own OpenSSL submodule —
+so the emulator signs ML-DSA happily while the command line on the same machine
+cannot produce a post-quantum certificate at all.
+
+> **Two OpenSSLs in one project, and only one of them is pinned.** The pinned one
+> is in `third_party/*.pin`. The other is whatever the distribution shipped, and
+> until today nothing in this repository recorded that it exists.
+
+The options — a newer OpenSSL from source, the provider route, or generating the
+chain with `libspdm`'s own tooling — are unresearched. Recorded now so the week
+that needs it starts from a known constraint instead of discovering one.
+
+**`TODO(me)`** — 緯穎 whitepaper, still unread. Carried from Day 1 and Day 2.
+That is two carries, which is the point where a carried item gets scheduled or
+dropped honestly rather than carried a third time.
+
+**`TODO(me)`** — `c-drills`. `d1` now exists with a contract, tests and a stub,
+and `d3` has existed since week one. **`DONE.txt` is still empty and
+`SCORECARD.md` still has eight blank rows.** Three working days have gone into
+mechanisms that check themselves; the track that measures whether *I* can still
+write C with no compiler to ask has produced nothing. Day 2 wrote that down as a
+risk. Eleven days later it is not a risk, it is a fact, and it is the largest
+gap in this repository.
+
+**`TODO(me)`** — `CERTIFICATE` is the next message worth reconstructing:
+`PortionLength` is carried in the message, so header + lengths + portion ought to
+account for every byte. "Ought to" is not a measurement, which is why it is
+written in §10 as a task and not in §5 as a fact.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
