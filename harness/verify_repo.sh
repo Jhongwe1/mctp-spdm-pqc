@@ -297,6 +297,80 @@ PY
 [ $? -eq 0 ] && good "the pcap layer and the SPDM layer account for the same bytes" \
              || bad "pcapcount.py and fields.py disagree about a capture"
 
+step "every fields.json a document cites is still reproducible"
+# harness/capture.sh writes a *.fields.json beside each capture, and
+# prov_finish hashes it into manifest.json alongside the pcap. But a pcap is
+# evidence and a fields.json is a DERIVATION, and a derivation committed beside
+# its inputs can disagree with the tool that produced it. It did: after the
+# double count was fixed on 2026-08-28, the committed JSON still said 15,803
+# where fields.py had begun saying 11,291, and the manifest attested to the
+# stale one. Nothing noticed, because the manifest checks that a file has not
+# been altered, which is a different question from whether it is still true.
+#
+# So a derivation has to be reproducible from its inputs, and this checks it.
+# `source.decode_file` is excluded because it records the absolute path the
+# capture ran from, which is a property of the machine and not of the result.
+#
+# Scope, deliberately: the run directories that a document actually cites,
+# found by reading their <!-- capture: --> directives rather than from a list
+# that would go stale exactly the way this did. Runs no document cites keep the
+# guarantee their manifest gives them — that they are unaltered — which is all
+# this repository has ever claimed about them.
+python3 - <<'PY'
+import json, pathlib, re, subprocess, sys
+
+CAPTURE_RE = re.compile(r"<!--\s*capture:\s*(?P<path>\S+)\s*-->")
+
+cited = set()
+for doc in sorted(pathlib.Path("docs").rglob("*.md")):
+    fenced = False
+    for line in doc.read_text(encoding="utf-8").splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        found = CAPTURE_RE.search(line)
+        if found:
+            path = pathlib.Path(found.group("path"))
+            if path.parts[:2] == ("bench", "data") and path.parent.is_dir():
+                cited.add(path.parent)
+
+if not cited:
+    print("  no document cites a run directory — nothing to check")
+    sys.exit(0)
+
+problems, checked = [], 0
+for run in sorted(cited):
+    for stored in sorted(run.glob("*.fields.json")):
+        decode = stored.with_name(stored.name.replace(".fields.json", ".decode.txt"))
+        if not decode.exists():
+            problems.append(f"{stored}: no decode beside it to reproduce it from")
+            continue
+        out = subprocess.run([sys.executable, "harness/fields.py", str(decode), "--json"],
+                             capture_output=True, text=True)
+        if out.returncode != 0:
+            problems.append(f"{stored}: fields.py failed on its decode")
+            continue
+        fresh, old = json.loads(out.stdout), json.loads(stored.read_text(encoding="utf-8"))
+        for side in (fresh, old):
+            side.get("source", {}).pop("decode_file", None)
+        if fresh == old:
+            checked += 1
+            continue
+        keys = sorted({k for k in set(fresh) | set(old) if fresh.get(k) != old.get(k)})
+        problems.append(f"{stored}: differs in {', '.join(keys)}")
+        problems.append("          re-run: bash harness/capture.sh --name "
+                        f"{run.name.rsplit('-', 1)[0]}, then point the document at the new run")
+
+print(f"  {checked} derivation(s) across {len(cited)} cited run(s) reproduce exactly")
+for line in problems:
+    print("  " + line)
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "a committed derivation still equals what the tool produces" \
+             || bad "a committed fields.json no longer matches its own decode"
+
 step "the layout reconstruction can still fail"
 # The walkthrough's offsets are checked by rebuilding each signed response and
 # requiring the bytes left over to equal the signature size the negotiation
