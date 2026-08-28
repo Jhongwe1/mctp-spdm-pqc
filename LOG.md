@@ -1054,6 +1054,65 @@ The options — a newer OpenSSL from source, the provider route, or generating t
 chain with `libspdm`'s own tooling — are unresearched. Recorded now so the week
 that needs it starts from a known constraint instead of discovering one.
 
+### A manifest says a file is unaltered. It does not say the file is still true.
+
+**現象** After the double count above was fixed, `verify_repo.sh` passed every
+check — including the one that re-hashes every artifact against its manifest.
+And `bench/data/w2-baseline-20260816T172221Z/walkthrough.fields.json`, committed
+and attested, still contained `"total": 15803`, a number `fields.py` had stopped
+producing an hour earlier.
+
+**假設** (a) the file was never actually committed, (b) the re-hashing check is
+broken, (c) the re-hashing check is answering a different question than the one
+I was asking of it.
+
+**先驗哪個、為什麼** (c), by re-reading the check's own output line: *present,
+tracked, and unaltered.* Thirty seconds, and it is the cheapest of the three by
+an order of magnitude — (a) and (b) both require going and looking at a
+mechanism that had just been extended and was demonstrably working on 76 other
+files. **When a check passes and the world looks wrong, read what the check
+actually claims before doubting that it does it.**
+
+**根因** `capture.sh` writes a `*.fields.json` beside each capture, and
+`prov_finish` hashes it into `manifest.json` alongside the pcap. But those two
+files are not the same kind of thing. A pcap is **evidence**: its meaning cannot
+change, so knowing it is unaltered is knowing everything. A `fields.json` is a
+**derivation** — this project's tool's reading of a decode at one moment — and
+when the tool changes, a file that nobody touched becomes false while its hash
+still matches perfectly.
+
+**教訓**
+
+> **Integrity and currency are different properties, and a digest only gives you
+> the first.** "This file has not been altered" and "this file is still true"
+> are the same sentence only for inputs, never for outputs.
+
+Two consequences, and the second was unplanned.
+
+`verify_repo.sh` now requires every committed derivation to **reproduce**: run
+`fields.py` on the decode beside it and demand equality. Scoped to the run
+directories a document cites, discovered by reading their `<!-- capture: -->`
+directives rather than from a list — a list is the same failure one level up.
+
+And the repair itself. There is no mechanism here for re-stamping a manifest,
+and there should not be: a manifest that can be rewritten attests to nothing. So
+the fix was a **new run**, not an edited old one — which meant re-taking all five
+captures on the same pins, eleven days after the first set. Every arm reproduced
+**to the byte**: 554/20,549, 584/114,751, 566/20,396, 30/11,441, 30/11,441.
+Nonces and timestamps differ. Nothing this repository states does.
+
+So `docs/handshake-walkthrough.md` can now say something it could not say this
+morning: **every word of it was written against one capture and all 128 of its
+claims verify against a different one.** That is the difference between a capture
+and a measurement, and it is the evidence for a rule the roadmap had been
+asserting since week one — that byte counts are deterministic and are reported
+as single values rather than ranges.
+
+Worth noticing about the order this happened in: the reproducibility result was
+not an experiment anyone designed. It fell out of refusing to edit a manifest.
+**A constraint that makes the cheap repair impossible is sometimes the reason
+the expensive one produces something.**
+
 **`TODO(me)`** — 緯穎 whitepaper, still unread. Carried from Day 1 and Day 2.
 That is two carries, which is the point where a carried item gets scheduled or
 dropped honestly rather than carried a third time.
