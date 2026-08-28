@@ -40,7 +40,17 @@ python3 harness/fields.py --check docs/handshake-walkthrough.md
 A claim whose key is not something the tool computes fails too, so the markup
 cannot be satisfied by inventing a field name.
 
-What that mechanism does **not** cover is stated beside it in §10, because a
+**The offsets are checked the same way, for two of the seven message pairs.**
+A value can be re-derived from a decode; an offset cannot, because the decoder
+prints fields rather than positions. So `CHALLENGE_AUTH` and `MEASUREMENTS` are
+instead **rebuilt** — every field placed in turn, each size either constant,
+fixed by something negotiated earlier, or carried in the message itself — and
+the reconstruction is required to close twice over: the bytes left at the end
+must equal the signature size the negotiated algorithm implies, and
+`RequesterContext` must be found at the predicted offset holding what the
+request sent. Details in §6; which five pairs this does *not* cover, in §10.
+
+What the mechanism does **not** cover is stated beside it in §10, because a
 check that is trusted beyond its reach is worse than no check.
 
 ---
@@ -536,6 +546,65 @@ about reading the negotiated result back rather than asserting it is usually
 made about honest measurement. It is also, quite literally, about being able to
 find the bytes.
 
+### That offset is now read off the wire, not off a header
+
+Everything in the table above came from a struct definition in `spdm.h`, and
+§10 said so: a wrong offset printed beside a right value passes every check this
+repository has. The offsets below are instead **rebuilt from the message and
+required to close.**
+
+The message is <!--claim layout.challenge_auth.total_bytes=238--> **238 bytes**.
+Placing each field in turn:
+
+| offset | field | size | where the size comes from |
+|--:|---|--:|---|
+| <!--claim layout.challenge_auth.cert_chain_hash_offset=4--> 4 | `CertChainHash` | <!--claim layout.challenge_auth.cert_chain_hash_bytes=48--> 48 | the negotiated hash |
+| **<!--claim layout.challenge_auth.nonce_offset=52--> 52** | **`Nonce`** | 32 | fixed by the specification |
+| <!--claim layout.challenge_auth.summary_hash_offset=84--> 84 | `MeasurementSummaryHash` | <!--claim layout.challenge_auth.summary_hash_bytes=48--> 48 | the negotiated hash — see below |
+| <!--claim layout.challenge_auth.opaque_length_offset=132--> 132 | `OpaqueLength` | 2 | fixed |
+| 134 | `OpaqueData` | <!--claim layout.challenge_auth.opaque_length=0--> 0 | **read out of the message** |
+| <!--claim layout.challenge_auth.requester_context_offset=134--> 134 | `RequesterContext` | 8 | 1.3 and later |
+| <!--claim layout.challenge_auth.signature_offset=142--> 142 | `Signature` | <!--claim layout.challenge_auth.signature_bytes=96--> **96** | whatever is left |
+
+**96 is exactly what ECDSA-P384 signs with, and §3 negotiated ECDSA-P384.** The
+residue was free to be any number and it is the right one. Get any earlier
+offset wrong and it is not.
+
+Two things make that more than a coincidence worth one sentence.
+
+**The signature size is not in this document.** It comes from `ALGORITHMS`,
+three messages earlier, through a table of algorithm sizes. The total comes from
+the hex dump. Neither number was typed here, so the equation is between two
+independent readings of the capture.
+
+**And there is a second equation.** `RequesterContext` is chosen by the
+requester and returned unchanged. Reading eight bytes at offset 134 of the
+response gives <!--claim layout.challenge_auth.requester_context=11 22 33 44 55 66 77 88--> `11 22 33 44 55 66 77 88`,
+and the `CHALLENGE` request sent exactly that, at its own offset 36 — an offset
+confirmed by that request being 44 bytes, which is 4 + 32 + 8 and nothing else.
+<!--claim layout.challenge_auth.context_echoes_request=True--> They match. A
+reconstruction can close by luck once; closing *and* landing on the right eight
+bytes 130 bytes in is a different claim.
+
+### What the closure settled that reading could not
+
+`MeasurementSummaryHash` is a digest, and this connection negotiated **two**
+hashes — `BaseHashAlgo` is SHA-384 and `MeasurementHashAlgo` is SHA-512. Which
+one sizes this field was an open question in the paragraph below until the
+arithmetic answered it. The two hypotheses differ by 16 bytes, so they cannot
+both close:
+
+| if `MeasurementSummaryHash` is | fields before the signature | residue | 96? |
+|---|--:|--:|:--:|
+| SHA-384, 48 B — `BaseHashAlgo` | 142 | **96** | ✅ |
+| SHA-512, 64 B — `MeasurementHashAlgo` | 158 | 80 | ❌ |
+
+<!--claim layout.challenge_auth.summary_hash_sized_by=BaseHashAlgo-->
+**`BaseHashAlgo`.** Not looked up — the capture had only one consistent answer.
+`harness/verify_repo.sh` rebuilds this on every run and rejects a message that
+is one byte short, whose context does not echo, or whose signature algorithm
+changed.
+
 **What problem it solves.** Proving the peer holds the private key for the chain
 it just sent.
 
@@ -581,16 +650,28 @@ raises and does not answer.
 
 ### Response — packet 30
 
+The whole message is
+<!--claim layout.measurements.total_bytes=674--> **674 bytes**, and every offset
+below is derived from it rather than transcribed — the same reconstruction §6
+uses, closing on the same residue.
+
 | offset | field | size | observed |
 |--:|---|--:|---|
 | 2 | `Param1` | 1 | `TotalNumberOfMeasurements`, or reserved when `MeasOp` ≠ 0 |
 | 3 | `Param2` | 1 | `0x20` — slot 0, `ContentChanged = NoChange` |
-| 4 | `NumberOfBlocks` | 1 | `0x08` |
-| **5–7** | **`MeasurementRecordLength`** | **3** | `0x000210` = 528 |
-| 8… | `MeasurementRecord` | 528 | |
-| … | `Nonce` | 32 | |
-| … | `OpaqueLength`, `OpaqueData`, `RequesterContext` | var | |
-| … | `Signature` | var | |
+| <!--claim layout.measurements.blocks_offset=4--> 4 | `NumberOfBlocks` | 1 | <!--claim layout.measurements.blocks=8--> `0x08` |
+| **<!--claim layout.measurements.record_length_offset=5--> 5–7** | **`MeasurementRecordLength`** | **3** | `0x000210` = <!--claim layout.measurements.record_bytes=528--> 528 |
+| <!--claim layout.measurements.record_offset=8--> 8 | `MeasurementRecord` | 528 | ← read out of the message |
+| **<!--claim layout.measurements.nonce_offset=536--> 536** | **`Nonce`** | 32 | |
+| <!--claim layout.measurements.opaque_length_offset=568--> 568 | `OpaqueLength` | 2 | <!--claim layout.measurements.opaque_length=0--> 0 |
+| <!--claim layout.measurements.requester_context_offset=570--> 570 | `RequesterContext` | 8 | <!--claim layout.measurements.requester_context=aa bb cc dd ee ff 00 ff--> `aa bb cc dd ee ff 00 ff`, echoing the request |
+| <!--claim layout.measurements.signature_offset=578--> 578 | `Signature` | <!--claim layout.measurements.signature_bytes=96--> **96** | the remainder — ECDSA-P384 |
+
+**The nonce is at 536 here and at 52 in `CHALLENGE_AUTH`, and neither number is
+a property of the message type.** §6's moves with the negotiated hash; this one
+moves with a length the message carries in three bytes at offset 5. Two
+different reasons the same field is in two different places, and neither is
+knowable from the message code alone.
 
 | | |
 |---|---|
@@ -682,6 +763,20 @@ when `GenerateSignature` is clear. The libspdm struct has it unconditionally;
 whether DSP0274 makes it conditional is unread, and it changes where
 `SlotIDParam` sits.
 
+> **Answered 2026-08-28 — by the capture, not by the specification.** Neither is
+> present. The request above, with `GenerateSignature` set, is
+> <!--claim message_bytes.first_by_type.SPDM_GET_MEASUREMENTS=45--> **45 bytes**
+> = 4 + 32 + 1 + 8. The same request without that bit, in §9.1's capture, is
+> **12 bytes** = 4 + 8. Thirty-three bytes are missing, which is `Nonce` *and*
+> `SlotIDParam` together — not one or the other, and the arithmetic cannot be
+> read any other way.
+>
+> Which reads as a design decision once it is visible: with no signature to
+> make there is no transcript to keep fresh, so no nonce, and no key to choose,
+> so no slot. **The two-pass structure is legible in the request, not only in
+> the response.** The question stays above because the answer came from one
+> emulator's bytes and not from DSP0274, which is a weaker kind of answer.
+
 ---
 
 ## 8. What else is in the capture, that nobody asked for
@@ -704,6 +799,59 @@ sending a request backwards down a connection whose direction is already fixed.
 The requester's chain is **3,794 bytes**, more than twice the responder's 1,655,
 because §3 negotiated `ReqAsym = RSAPSS_3072` for it while the responder uses
 ECDSA-P384. An RSA-3072 chain is simply bigger than an EC one.
+
+### The requester's `CHALLENGE_AUTH` closes on a different signature
+
+Packet 21 carries the requester's own `CHALLENGE_AUTH` back to the responder.
+Reconstructed the same way as §6, it is
+<!--claim layout.challenge_auth_requester.total_bytes=478--> **478 bytes** and
+its residue is <!--claim layout.challenge_auth_requester.signature_bytes=384--> **384**
+— which is RSAPSS-3072, against
+<!--claim layout.responder_signature_bytes=96--> **96** for the responder's
+message seven packets earlier. Same message type, same capture, two signature
+sizes, **because the two directions of the negotiation are separate and each
+side signs with its own.**
+
+That is [`LOG.md`](../LOG.md)'s 2026-08-17 entry — an independent variable with
+two halves of which only one was pinned — stated as a byte count instead of as a
+lesson. Nothing here was configured to make the point; it falls out of requiring
+the layout to close.
+
+Two smaller things fall out with it. This message asked `HashType = NoHash`, so
+`MeasurementSummaryHash` is
+<!--claim layout.challenge_auth_requester.summary_hash_bytes=0--> **absent**,
+and `RequesterContext` lands at
+<!--claim layout.challenge_auth_requester.requester_context_offset=86--> **86**
+rather than 134 — 48 bytes earlier, exactly the field that is missing. And its
+context is <!--claim layout.challenge_auth_requester.requester_context=00 00 00 00 00 00 00 00--> `00 00 00 00 00 00 00 00`:
+the responder, acting as requester here, sends a context of zeros, and the echo
+check passes on that just as it does on a distinctive one.
+
+### Counting these messages twice, and how long that went unnoticed
+
+`spdm_dump -x` prints an encapsulating packet as **two** hex blocks — the
+encapsulated message first, then the carrier that contains it byte for byte.
+`harness/fields.py` summed both, so every encapsulated message was counted
+twice. The walkthrough capture's SPDM byte total read 15,803 when it is
+<!--claim message_bytes.total=11291--> **11,291**: an overstatement of
+<!--claim message_bytes.carried_total=4512--> **4,512 bytes**, 40%.
+
+**No number in this document moved.** Every `message_bytes` claim here is a
+first-message size for `GET_CAPABILITIES`, `NEGOTIATE_ALGORITHMS` or
+`ALGORITHMS`, none of which is ever encapsulated. The field that was wrong was
+the one nothing cited — which is the uncomfortable half of the mechanism this
+document is built on. `--check` guards the numbers a document happens to quote.
+A tool that computes twenty fields while six are quoted is checked on six.
+
+Two things now hold it. Each encapsulated block is confirmed to be a substring
+of its carrier rather than assumed to be —
+<!--claim message_bytes.carried_verified_inside_carrier=6--> **6** of 6 here,
+<!--claim message_bytes.carried_not_inside_carrier#=0--> **0** exceptions — and
+`harness/verify_repo.sh` requires the corrected total to satisfy
+`pcap bytes = SPDM bytes + 5 × messages`, the five being the MCTP framing taken
+apart in [`transports.md`](transports.md). `harness/pcapcount.py` never reads a
+decode and `fields.py` never opens a capture, so that identity is two tools that
+cannot be wrong the same way agreeing on one number.
 
 **Why this matters beyond being a curiosity.** Any "total handshake bytes" figure
 from a default `spdm-emu` run includes 3,794 bytes of RSA that have nothing to
@@ -735,6 +883,23 @@ each checked against its own decode.
 528 here, 528 in §7. **263 round trips and 1 round trip deliver the same
 measurement bytes**, and both halves of that sentence are re-derived from
 captures by CI.
+
+**Both passes reconstruct, and they close on different numbers.** All
+<!--claim layout.closed=19--> **19** signed responses in this capture rebuild and
+close. The first `GET_MEASUREMENTS` is
+<!--claim message_bytes.first_by_type.SPDM_GET_MEASUREMENTS=12--> **12 bytes** —
+4 + `RequesterContext`, with no `Nonce` and no `SlotIDParam`, which is what
+answers §7's open question — and the response to it is
+<!--claim layout.measurements_unsigned.total_bytes=50--> **50 bytes** with a
+residue of <!--claim layout.measurements_unsigned.signature_bytes=0--> **0**:
+no signature, because none was asked for. The response keeps its 32-byte nonce
+at offset <!--claim layout.measurements_unsigned.nonce_offset=8--> **8** even so.
+The second pass asks with `GenerateSignature`, and the residue becomes
+<!--claim layout.measurements.signature_bytes=96--> **96**.
+
+**A residue of 0 against 96 is the two-pass structure measured rather than
+argued.** The `ONE_BY_ONE` walk is the emulator's choice; needing an unsigned
+pass first is not, and here that distinction is a number.
 
 ### 9.2 Classical on the released pair — the control
 
@@ -841,25 +1006,51 @@ default is how a run ends up signing with two different ML-DSA parameter sets.
 
 Stated here because a check trusted beyond its reach is worse than none.
 
-1. **The capability-bit names are transcribed, not parsed.** `harness/fields.py`
-   carries the bit tables from `libspdm/include/industry_standard/spdm.h` by
-   hand. If upstream renames a bit or adds one, `--check` will keep passing on a
-   stale name, because a wrong name is still self-consistent. Re-read the header
-   after a version bump. Bits the table does not know about are reported as
-   `flags_unrecognised` rather than dropped, so a *new* bit is visible; a
-   *renamed* one is not.
+1. **The capability-bit names are transcribed, and the comparison that checks
+   them cannot run in CI.** `harness/fields.py` carries the bit tables from
+   `libspdm/include/industry_standard/spdm.h` by hand, and a bit upstream
+   renamed would keep passing `--check` forever, because a wrong name stays
+   consistent with itself and no capture disagrees with it.
 
-2. **Most of the offsets are read from headers, not from the wire.** The offset
-   columns come from the struct definitions in `spdm.h`. The values beside them
-   come from the capture and are checked, but a wrong offset next to a right
-   value would still pass.
+   *Closed as far as it can be, 2026-08-28.*
+   `fields.py --verify-tables <spdm.h>` now compares the two directly and
+   requires them to agree in both directions. At libspdm 4.0.0-rc: 19 requester
+   and 32 responder single-bit capabilities, every name matching, one
+   deliberate local name (`PSK_CAP_RESERVED`, bit `0x800`, which upstream folds
+   into the two-bit `PSK_CAP` mask) accepted by being listed rather than waved
+   through.
 
-   Three messages have been confirmed byte for byte against `spdm_dump -x` and
-   are shown that way above: `GET_VERSION` (§0), `GET_CAPABILITIES` (§2) and
-   `NEGOTIATE_ALGORITHMS` (§3). The rest have not. The two that would repay it
-   most are `CHALLENGE_AUTH` — because §6 claims the nonce sits at
-   `4 + digest_size` and that is the document's sharpest claim — and
-   `MEASUREMENTS`, for the 24-bit length field.
+   **What is still not covered:** that comparison needs the upstream source and
+   CI has none. What CI checks is `third_party/spdm-h.pin` — that the header was
+   read at the same libspdm commit the captures came from, and that the tables
+   still hold as many entries as the comparison found. Move the emulator pin
+   without re-reading the header and the build goes red, but CI never reads the
+   header itself. Only single-bit `#define`s are compared; composite masks such
+   as `MEAS_CAP` and everything else in that 70 KB header are not.
+
+2. **Two of the seven message pairs now have their offsets read off the wire.
+   Five do not.**
+
+   *Changed 2026-08-28.* `CHALLENGE_AUTH` (§6) and `MEASUREMENTS` (§7) are
+   reconstructed field by field and required to close: the bytes left after
+   placing everything up to the signature must equal the size the negotiated
+   algorithm implies, and `RequesterContext` must be found, at the predicted
+   offset, equal to what the request sent. `verify_repo.sh` rebuilds a correct
+   message and three broken ones on every run and requires the broken ones to be
+   rejected. The requests are covered too, by their own total length —
+   `CHALLENGE` is 44 bytes and nothing else, `GET_MEASUREMENTS` 45 or 12.
+
+   **What is still not covered:** §1, §2 and §3 were confirmed byte for byte
+   against `spdm_dump -x` **by eye**, not by machine, and are shown that way
+   above. §4 (`DIGESTS`) and §5 (`CERTIFICATE`) are neither — their offset
+   columns are still transcribed from `spdm.h`, and a wrong offset next to a
+   right value would still pass.
+
+   `CERTIFICATE` is the one worth doing next, and it looks tractable for the
+   same reason the other two were: `PortionLength` is carried in the message, so
+   header + lengths + portion ought to account for every byte. That it *ought
+   to* is not a measurement, which is why it is written here as the next task
+   and not in §5 as a fact.
 
 3. **Sizes marked as computed are computed.** Where a length is derived from the
    negotiated hash size (§6's offset 52, §4's 48-byte digests) it is arithmetic
@@ -873,6 +1064,17 @@ Stated here because a check trusted beyond its reach is worse than none.
    §7 are mine as of 2026-08-17. When one is answered, the answer goes here with
    the date, and the question stays. A document in which every question was
    always answered is not a record of learning anything.
+
+   **Answered so far:**
+
+   | § | question | answered | how |
+   |:--|---|:--|---|
+   | 6 | is `MeasurementSummaryHash` sized by `BaseHashAlgo` or `MeasurementHashAlgo`? | 2026-08-28 | `BaseHashAlgo` — only that hypothesis closes; the other misses by 16 bytes |
+   | 7 | is `Nonce` present in `GET_MEASUREMENTS` without `GenerateSignature`? | 2026-08-28 | no, and neither is `SlotIDParam` — the request is 12 bytes against 45 |
+
+   Both came from arithmetic on one emulator's bytes rather than from DSP0274,
+   which is a weaker kind of answer than reading the specification would be, and
+   they are recorded as such where they appear. Five questions remain open.
 
 ---
 
