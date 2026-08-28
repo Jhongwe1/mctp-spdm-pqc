@@ -170,6 +170,88 @@ else
     good "scope at line $scope, badge at line ${badge:-none}"
 fi
 
+step "the layout reconstruction can still fail"
+# The walkthrough's offsets are checked by rebuilding each signed response and
+# requiring the bytes left over to equal the signature size the negotiation
+# implies. A check is worth exactly what it rejects, so this builds a correct
+# CHALLENGE_AUTH by hand, confirms it closes at the offsets the document
+# publishes, and then breaks it three ways — one byte short, a RequesterContext
+# that does not echo the request, and a different signature algorithm — and
+# requires every one to be reported rather than accepted.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys, tempfile
+
+H, S = 48, 96                       # SHA-384, ECDSA-P384
+CTX = bytes(range(0x11, 0x19))      # the RequesterContext the request sends
+
+ALGS = ("1 (1) MCTP(5) RSP->REQ SPDM(14, 0x63) SPDM_ALGORITHMS "
+        "(Hash=0x00000002(SHA_384), MeasHash=0x00000008(SHA_512), "
+        "Asym={asym}, ReqAsym=0x0008(RSAPSS_3072)) ")
+CHAL = ("2 (1) MCTP(5) REQ->RSP SPDM(14, 0x83) SPDM_CHALLENGE "
+        "(SlotID=0x00, HashType=0xff(AllHash)) ")
+AUTH = ("3 (1) MCTP(5) RSP->REQ SPDM(14, 0x03) SPDM_CHALLENGE_AUTH "
+        "(Attr=0x80(BasicMutAuth, SlotID=0x00), SlotMask=0x13) ")
+
+
+def block(raw):
+    return "\n".join(f"    {i:04x}: " + " ".join(f"{b:02x}" for b in raw[i:i + 32])
+                     for i in range(0, len(raw), 32))
+
+
+def reconstruct(asym, chal_raw, auth_raw):
+    d = pathlib.Path(tempfile.mkdtemp())
+    algs, algs_raw = ALGS.format(asym=asym), bytes([0x14, 0x63]) + bytes(34)
+    (d / "t.decode.txt").write_text(
+        "spdm_dump version 0.1\n"
+        "PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP),"
+        " MaxPacketSize - 65536\n" + algs + "\n" + CHAL + "\n" + AUTH + "\n",
+        encoding="utf-8")
+    (d / "t.hex.txt").write_text(
+        algs + "\n  SPDM Message:\n" + block(algs_raw) + "\n"
+        + CHAL + "\n  SPDM Message:\n" + block(chal_raw) + "\n"
+        + AUTH + "\n  SPDM Message:\n" + block(auth_raw) + "\n", encoding="utf-8")
+    out = subprocess.run([sys.executable, "harness/fields.py",
+                          str(d / "t.decode.txt"), "--json"],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        print("  fields.py failed:", out.stderr.strip())
+        return None
+    return json.loads(out.stdout)["layout"]
+
+
+good_chal = bytes([0x14, 0x83, 0x00, 0xFF]) + bytes(32) + CTX
+good_auth = (bytes([0x14, 0x03, 0x80, 0x13]) + bytes(H) + bytes(32) + bytes(H)
+             + b"\x00\x00" + CTX + bytes(S))
+
+lay = reconstruct("0x00000080(ECDSA_P384)", good_chal, good_auth)
+if lay is None or lay["closed"] != 1:
+    print("  a correct CHALLENGE_AUTH did not close:", lay and lay["unexplained"])
+    sys.exit(1)
+ca = lay["challenge_auth"]
+if (ca["nonce_offset"], ca["signature_bytes"],
+        ca["summary_hash_sized_by"]) != (52, 96, "BaseHashAlgo"):
+    print("  the intact reconstruction disagrees with the document:", ca)
+    sys.exit(1)
+print(f"  intact: closes — nonce at {ca['nonce_offset']}, "
+      f"signature {ca['signature_bytes']} B, summary hash by {ca['summary_hash_sized_by']}")
+
+for name, asym, chal, auth in (
+    ("one byte short", "0x00000080(ECDSA_P384)", good_chal, good_auth[:-1]),
+    ("context does not echo", "0x00000080(ECDSA_P384)", good_chal,
+     good_auth[:134] + bytes([good_auth[134] ^ 0xFF]) + good_auth[135:]),
+    ("signature algorithm changed", "0x00000010(ECDSA_P256)", good_chal, good_auth),
+):
+    lay = reconstruct(asym, chal, auth)
+    if lay is None:
+        sys.exit(1)
+    if lay["closed"] != 0 or not lay["unexplained"]:
+        print(f"  ACCEPTED A BROKEN CASE: {name} -> closed={lay['closed']}")
+        sys.exit(1)
+    print(f"  {name}: rejected")
+PY
+[ $? -eq 0 ] && good "the reconstruction closes on a correct message and on nothing else" \
+             || bad "the layout reconstruction accepted a message it should have rejected"
+
 step "the handshake walkthrough still agrees with its capture"
 # The walkthrough is a document made almost entirely of stated facts, which is
 # the category this project has twice caught itself getting wrong. So its
