@@ -55,13 +55,13 @@ check that is trusted beyond its reach is worse than no check.
 
 ---
 
-<!-- capture: bench/data/w2-baseline-20260816T172221Z/walkthrough.decode.txt -->
+<!-- capture: bench/data/w2-baseline-20260828T110130Z/walkthrough.decode.txt -->
 
 ## 0. The capture this describes
 
 | | |
 |---|---|
-| run | `bench/data/w2-baseline-20260816T172221Z/`, arm `walkthrough` |
+| run | `bench/data/w2-baseline-20260828T110130Z/`, arm `walkthrough` |
 | build | `spdm-emu` 4.0.0-rc → `libspdm` 4.0.0-rc (`third_party/spdm-emu-pqc.pin`) |
 | decoder | `spdm-dump` `9d91f21` (`third_party/spdm-dump.pin`) |
 | transport | pcap link type <!--claim transport.pcap_datalink=291--> 291 (MCTP) |
@@ -869,7 +869,7 @@ each checked against its own decode.
 
 ### 9.1 Classical, `--meas_op ONE_BY_ONE` — the stock flow
 
-<!-- capture: bench/data/w2-baseline-20260816T172221Z/classical.decode.txt -->
+<!-- capture: bench/data/w2-baseline-20260828T110130Z/classical.decode.txt -->
 
 | | |
 |---|---|
@@ -903,7 +903,7 @@ pass first is not, and here that distinction is a number.
 
 ### 9.2 Classical on the released pair — the control
 
-<!-- capture: bench/data/w2-baseline-20260816T172221Z/classical-stable.decode.txt -->
+<!-- capture: bench/data/w2-baseline-20260828T110130Z/classical-stable.decode.txt -->
 
 Identical flags, `spdm-emu` 3.8.0 → `libspdm` 3.8.0 instead of 4.0.0-rc. This arm
 exists to answer whether the classical arm above can stand in for the baseline
@@ -935,7 +935,7 @@ anyone writes it down.
 
 ### 9.3 Post-quantum — ML-DSA-65 both directions
 
-<!-- capture: bench/data/w2-baseline-20260816T172221Z/pqc.decode.txt -->
+<!-- capture: bench/data/w2-baseline-20260828T110130Z/pqc.decode.txt -->
 
 | | |
 |---|---|
@@ -973,7 +973,7 @@ short on purpose.**
 
 ### 9.4 One algorithm per group — the control for §3
 
-<!-- capture: bench/data/w2-baseline-20260816T172221Z/single-algo.decode.txt -->
+<!-- capture: bench/data/w2-baseline-20260828T110130Z/single-algo.decode.txt -->
 
 Identical to the `walkthrough` arm except that `--hash`, `--asym`, `--dhe`,
 `--aead`, `--req_asym` and `--meas_hash` are each pinned to a single value
@@ -1078,6 +1078,45 @@ Stated here because a check trusted beyond its reach is worse than none.
 
 ---
 
-*Written against `bench/data/w2-baseline-20260816T172221Z/`. Regenerate with
+## 11. The capture this is checked against is not the one it was written from
+
+Every word above was written on 2026-08-17 against
+`bench/data/w2-baseline-20260816T172221Z/`. The claims are checked against
+`bench/data/w2-baseline-20260828T110130Z/` — the same five arms, the same pins,
+re-run eleven days later, and the run that supersedes it for this document.
+
+The re-run was not done to prove anything. It was done because `fields.py`
+changed, and `capture.sh` writes a `*.fields.json` beside each capture: a
+**derived** artifact, hashed into `manifest.json` like the evidence next to it,
+and therefore able to disagree with the tool that produced it. After the byte
+count above was corrected, the committed JSON still said 15,803. There is no
+mechanism here for re-stamping a manifest, and there should not be, so the
+answer was a new run rather than an edited old one. The 08-16 run is untouched.
+
+What fell out of doing it is worth more than the tidying:
+
+| arm | packets | bytes | 08-16 | 08-28 |
+|---|--:|--:|:--:|:--:|
+| `classical` | 554 | 20,549 | ✅ | ✅ |
+| `pqc` | 584 | 114,751 | ✅ | ✅ |
+| `classical-stable` | 566 | 20,396 | ✅ | ✅ |
+| `walkthrough` | 30 | 11,441 | ✅ | ✅ |
+| `single-algo` | 30 | 11,441 | ✅ | ✅ |
+
+**Identical, on every arm, to the packet.** Nonces and timestamps differ, as
+they must; nothing this document states about sizes, counts or offsets does.
+That is the difference between a capture and a measurement, and it is the reason
+byte counts here are reported as single values rather than as ranges — a
+convention [`docs/roadmap.md`](roadmap.md) states and this is the evidence for.
+
+`harness/verify_repo.sh` now requires every committed `*.fields.json` in a run
+that a document cites to be exactly what `fields.py` produces from the decode
+beside it. Runs no document cites keep whatever their manifest signed for: that
+they are unaltered, which is all this repository ever claimed about them.
+
+---
+
+*Written against `bench/data/w2-baseline-20260816T172221Z/`, checked against
+`bench/data/w2-baseline-20260828T110130Z/`. Regenerate with
 `bash harness/capture.sh --name w2-baseline`; re-check with
 `python3 harness/fields.py --check docs/handshake-walkthrough.md`.*

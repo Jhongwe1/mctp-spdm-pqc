@@ -1,0 +1,6 @@
+arm	flavor	exit	packets	bytes	note
+classical	pqc	0	554	20549	stock algorithms, pqc build
+pqc	pqc	0	584	114751	ML-DSA-65 + ML-KEM-768, both directions pinned
+classical-stable	stable	0	566	20396	stock algorithms, stable build — the control
+walkthrough	pqc	0	30	11441	stock algorithms + --meas_op ALL — the annotated capture
+single-algo	pqc	0	30	11441	one algorithm per group — does offering more cost bytes?

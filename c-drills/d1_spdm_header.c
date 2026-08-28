@@ -23,7 +23,7 @@
  * short. Both are below, in C, with nothing to ask.
  *
  * The bytes in the tests are not invented. They are packet 3 of
- * bench/data/w2-baseline-20260816T172221Z/walkthrough.pcap, the 20-byte
+ * bench/data/w2-baseline-20260828T110130Z/walkthrough.pcap, the 20-byte
  * GET_CAPABILITIES that docs/handshake-walkthrough.md §2 takes apart.
  *
  * Two functions, not one, and why

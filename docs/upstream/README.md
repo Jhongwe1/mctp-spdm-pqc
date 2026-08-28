@@ -168,7 +168,7 @@ merely noticed:**
 1. the two source locations above,
 2. the `Flags` word on the wire — `0x8882F7C6` and `0xB99AFBF7`, both with bit
    17 (`CHUNK_CAP`) set, in
-   `bench/data/w2-baseline-20260816T172221Z/walkthrough.decode.txt`,
+   `bench/data/w2-baseline-20260828T110130Z/walkthrough.decode.txt`,
 3. behaviour that could not happen otherwise: the post-quantum arm of the same
    run performs four `CHUNK_GET`/`CHUNK_RESPONSE` round trips. Chunking is not
    reachable unless both sides negotiated `CHUNK_CAP`.

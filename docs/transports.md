@@ -175,7 +175,7 @@ it is the order the evidence should always end in.
 ---
 
 *Verified against `spdm-emu` 4.0.0-rc (`third_party/spdm-emu-pqc.pin`) and the
-captures in `bench/data/w2-baseline-20260816T172221Z/`. The socket framing was
+captures in `bench/data/w2-baseline-20260828T110130Z/`. The socket framing was
 read from source and is **not** observed on the wire here — nothing in this
 repository captures the TCP stream itself, only what the emulator writes to the
 pcap. If that ever matters, it is one `tcpdump -i lo port 2323` away.*
