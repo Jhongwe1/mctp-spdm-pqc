@@ -26,24 +26,95 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 2 of a 14-week programme. The table below is the truth about what
+This is week 3 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
 | Gate | Subject | State |
 |:--|---|---|
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
-| G1 | full handshake, field by field | **in progress** — seven message pairs annotated, 128 values asserted by CI, two pairs reconstructed from the wire |
-| G2 | certificate chain, three tamper points | not started |
+| G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
+| G2 | certificate chain, three tamper points | **in progress** — a three-layer chain of my own, generated, checked from its DER, accepted by the responder and measured on the wire. **No tamper point exists yet** |
 | G3 | RATS verification pipeline | not started |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | agreements and account done; two candidate changes with evidence, neither submitted |
+| G7 | upstream contribution | agreements and account done; two candidate changes with evidence, neither submitted. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 3 established
+
+**A certificate chain that predicted its own size on the wire, before it was
+sent.** `certs/gen_chain.sh` builds a three-layer chain — root, intermediate,
+leaf — and `certs/check_chain.py` computes what SPDM will carry from the files
+on disk:
+
+```
+4 + 48 + (504 + 573 + 768)  =  1897 bytes
+```
+
+Then the handshake ran, and `harness/fields.py` read **1,897** out of the
+capture, recovered **504 + 573 + 768** by walking DER, and confirmed that the
+48-byte `RootHash` at offset 20 is `sha384` of the root certificate. Neither
+tool was told the other's answer: `check_chain.py` never opens a capture,
+`fields.py` never opens a certificate.
+
+**`CERTIFICATE` is now over-determined by three equations, not one.** Week 2
+rebuilt `CHALLENGE_AUTH` and `MEASUREMENTS` and required each to close on one
+spare equation. This message has four, and no two share an input:
+
+| | equation | checked against |
+|---|---|---|
+| closure | message length = 16 + `LargePortionLength` | the hex dump |
+| agreement | chain `Length` = `PortionLength` + `RemainderLength` | three fields the responder wrote separately |
+| structure | the certificates parse as DER `SEQUENCE`s consuming the chain exactly | nothing else |
+| **digest** | `RootHash` = SHA-384 of the first certificate | computed, from bytes in the same message |
+
+The fourth is the one worth having. Two lengths can agree because both came from
+the same wrong assumption; a 48-byte digest cannot. CI breaks the reconstruction
+four ways and requires four *different* checks to reject them.
+
+**And the chain found something it was not built to find.** Replacing the
+responder's chain replaced one of **three** trust anchors that a single
+mutually-authenticating handshake carries:
+
+| packet | direction | slot | bytes | root |
+|--:|---|--:|--:|---|
+| 10 | RSP→REQ | 0 | 1,897 | mine |
+| 12 | RSP→REQ | 4 | 1,660 | upstream's `ecp384` root |
+| 19 | REQ→RSP | 0 | 3,794 | upstream's `rsa3072` root |
+
+SPDM negotiates the requester's signature algorithm separately, and libspdm's
+sample library picks its certificate directory from the negotiated algorithm —
+so a chain installed for `ECDSA_P384` never serves the direction that settled on
+`RSAPSS_3072`. The handshake completes, every signature verifies, and nothing in
+the flow says which anchor was used. On a reference design, the one still in
+place is the reference implementation's, whose private keys are published.
+
+`fields.py` now reports `layout.distinct_root_hashes` so that count is
+something CI checks rather than something someone noticed once. The full
+write-up is [`docs/certchain.md`](docs/certchain.md).
+
+**Two controlled arms, and both differences fully explained.** `sample-1slot`
+and `selfsigned` differ in one thing — whose certificates the responder serves —
+and `walkthrough` differs from `sample-1slot` in one flag:
+
+| arm | packets | SPDM bytes | against the arm above |
+|---|--:|--:|---|
+| `walkthrough` | 30 | 11,291 | — |
+| `sample-1slot` | 30 | 11,187 | **−104** = 2 × (48 + 4), two of the requester's slots dropped from `DIGESTS` |
+| `selfsigned` | 30 | 11,671 | **+484** = 2 × (1,897 − 1,655), a larger chain fetched twice |
+
+Both deltas are arithmetic the tool re-derives, not observations. `DIGESTS`'s
+per-slot size is established by its own length under two hypotheses that differ
+by four bytes per slot, exactly one of which can close.
+
+**And the five original arms reproduced a third time.** 554/20,549,
+584/114,751, 566/20,396, 30/11,441, 30/11,441 — identical on 08-16, 08-28 and
+08-31, to the packet.
 
 ### What week 2 established
 
@@ -74,7 +145,8 @@ because the sample responder's eight indices end at `0xFE`. Full derivation in
 **A field-by-field walkthrough whose numbers cannot rot.** Every value in that
 document is marked up in its source and re-derived from the capture it cites by
 `harness/fields.py --check`, which `harness/verify_repo.sh` and therefore CI
-run. 128 claims across five captures. The mechanism was deliberately broken three
+run. 128 claims across five captures at the end of week 2, 164 across seven
+today. The mechanism was deliberately broken three
 ways — a byte count off by one, a claim naming a field the tool does not
 compute, a capture that has moved — and turns red on each.
 
@@ -125,7 +197,8 @@ the post-quantum arm is skipped and says why.
 
 **The walkthrough is checked against a capture it was not written from.** Every
 word of it was written on 2026-08-17 against one run. Eleven days later the five
-arms were re-taken on the same pins, and all 128 claims verify against the new
+arms were re-taken on the same pins, and all 128 claims of the time verify
+against the new
 one:
 
 | arm | packets | bytes | reproduced |
@@ -255,7 +328,8 @@ docs/          baseline, design notes, decision records, roadmap
 bench/data/    experiment runs, one directory each, each with manifest.json
 c-drills/      eight C exercises drawn from problems this project hits
 third_party/   upstream commit pins only; no vendored source
-certs/         certificate chain material                        (from W03)
+certs/         this project's own three-layer chain, and the checker that
+               reads it out of DER rather than out of a pretty-printer
 device/        device secret / measurement modifications         (from W04)
 rats/          reference values and verification policy          (from W06)
 transport/     real-transport glue                               (from W09)

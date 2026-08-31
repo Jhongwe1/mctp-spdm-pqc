@@ -13,13 +13,13 @@ table and the two are kept in step.
 | Gate | Weeks | Subject | Definition of done | Status |
 |:--|:--|---|---|---|
 | **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **complete** |
-| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **in progress** — seven pairs annotated in `docs/handshake-walkthrough.md`, 128 values asserted against their captures by CI, and two pairs whose *offsets* are reconstructed from the wire rather than transcribed. The remaining five are named in §10 |
-| **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | not started |
+| **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **complete** — seven pairs annotated in `docs/handshake-walkthrough.md`, 164 values asserted against their captures by CI, and four pairs whose *offsets* are reconstructed from the wire rather than transcribed. The three that are not, and why they are harder rather than merely undone, are in §10 |
+| **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | **in progress** — the chain exists, is checked from its DER, is served by the responder and is measured on the wire (`docs/certchain.md`). **Zero of the three tamper points exist**, and Table 1 is absent rather than sketched |
 | **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | not started |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | not started |
 | **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | not started |
 | **G6** | 10–11 | conformance and negative testing | upstream responder validator run with a root cause for every failure; negative tests reproducing three 2026 advisory *classes* | not started |
-| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared; **two candidates with evidence** — `openbmc/spdm` prerequisites, and `DMTF/spdm-emu` help text that disagrees with its own defaults |
+| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared; **two candidates with evidence** — `openbmc/spdm` prerequisites, and `DMTF/spdm-emu` help text that disagrees with its own defaults. Separately, DMTF's SPDM 1.5 hybrid-PQC review was read during its window and feedback drafted; **not sent**, and filed as evidence of timing rather than of contribution |
 | **G8** | 12–14 | delivery and write-up | README, limitations, threat scope, demo, one-page summary | not started |
 
 ## Dependencies
@@ -51,7 +51,7 @@ Those three are not on the list.
 | # | Artifact | Gate | Kind |
 |:--|---|:--:|---|
 | 1 | field-by-field handshake annotation | G1 | written from captures |
-| 2 | three-layer self-signed certificate chain + `openssl x509 -text` output | G2 | reproducible |
+| 2 | three-layer self-signed certificate chain, read from its DER rather than from a pretty-printer | G2 | evidence — [ADR 0005](decisions/0005-generated-inputs-are-evidence.md) says why it is not reproducible |
 | 3 | **Table 1** — three tamper points, before/after, with three captures | G2 | measured |
 | 4 | `pcapstat.py` — capture statistics, written here, no dependencies | G2 | tool |
 | 5 | **Table 2** — post-quantum cost at four levels | G4 | measured |
@@ -109,7 +109,30 @@ it does.
     `LOG.md` is what that cost. Where two tools can reach the same quantity by
     different routes, they are made to agree — `pcapcount.py` owns the capture
     file and never reads a decode, `fields.py` owns the decode and never opens
-    a capture, and CI requires their answers to reconcile.
+    a capture, `certs/check_chain.py` owns the certificate files and never
+    opens either, and CI requires their answers to reconcile.
+13. **Two breaks caught by the same check are one check.** Rule 11 requires
+    every mechanism to be observed rejecting something. That is not enough on
+    its own: a suite where four broken inputs are all refused by the cheapest
+    check reports four times the coverage it has, and one of the checks between
+    them has still never done anything. So the negative tests assert that the
+    rejections come through *distinct* mechanisms, and 2026-08-31 in `LOG.md`
+    is the day that assertion found a redundant check in the suite that had
+    just been written to demonstrate the rule.
+14. **A generated input is evidence, and regenerating it is not reproducing
+    it.** Some artifacts are neither captures nor derivations: the certificate
+    chain is an *input* the captures depend on, and it cannot be reproduced —
+    fresh keys, and an ECDSA signature whose DER length depends on its own
+    integers. It is committed, the generator refuses to overwrite it, and what
+    has to hold on any machine is the *relationship* rather than the bytes.
+    [ADR 0005](decisions/0005-generated-inputs-are-evidence.md).
+15. **A drill whose failure mode cannot occur teaches a superstition.** Before a
+    C drill is committed, its tests are compiled against a correct
+    implementation, which must pass, and against the wrong one the drill exists
+    to teach, which must be caught. Twice now a drill has been written whose
+    trap could not fire — 2026-08-28's `d1` and 2026-08-31's first `d6` — and
+    both times reasoning about whether it would fire was the same reasoning
+    that produced it.
 
 ## External dates that do not wait
 
