@@ -428,6 +428,19 @@ HASH_BYTES = {
     "SM3_256": 32,
 }
 
+# The certificate chain carries a digest of its own root, so one field of one
+# message can be checked against another field of the same message by computing
+# it. That is a stronger kind of agreement than any length arithmetic: two
+# lengths can agree because both were derived from the same mistake, and a
+# 48-byte digest cannot. SM3 is deliberately absent rather than approximated —
+# a missing entry makes the check say "not verified", which is true, while a
+# wrong one would make it say "verified", which would not be.
+HASH_FUNCS = {
+    "SHA_256": hashlib.sha256, "SHA_384": hashlib.sha384, "SHA_512": hashlib.sha512,
+    "SHA3_256": hashlib.sha3_256, "SHA3_384": hashlib.sha3_384,
+    "SHA3_512": hashlib.sha3_512,
+}
+
 SIG_BYTES = {
     "ECDSA_P256": 64, "ECDSA_P384": 96, "ECDSA_P521": 132,
     "RSASSA_2048": 256, "RSAPSS_2048": 256,
@@ -441,7 +454,15 @@ SPDM_CHALLENGE = 0x83
 SPDM_CHALLENGE_AUTH = 0x03
 SPDM_GET_MEASUREMENTS = 0xE0
 SPDM_MEASUREMENTS = 0x60
+SPDM_GET_CERTIFICATE = 0x82
+SPDM_CERTIFICATE = 0x02
 CONTEXT_BYTES = 8       # RequesterContext, SPDM 1.3 and later
+
+# DSP0274 1.4.0, Table 46. Param1 bit 7 selects between the 16-bit length pair
+# and the 32-bit one; bits [3:0] are the slot.
+CERT_LARGE_BIT = 0x80
+CERT_SLOT_MASK = 0x0F
+CERT_MODEL_MASK = 0x07          # Table 47, CertificateInfo
 
 
 def _u16le(raw, off):
@@ -450,6 +471,16 @@ def _u16le(raw, off):
 
 def _u24le(raw, off):
     return raw[off] | raw[off + 1] << 8 | raw[off + 2] << 16
+
+
+def _u32le(raw, off):
+    return int.from_bytes(bytes(raw[off:off + 4]), "little")
+
+
+def _picked(names, table):
+    """The one negotiated algorithm's name, or None if zero or several were."""
+    chosen = [n for n in (names or []) if n in table]
+    return chosen[0] if len(chosen) == 1 else None
 
 
 def _sized(names, table):
@@ -568,6 +599,190 @@ def _place_measurements(rsp, req, sig):
                    4 + (33 if gensig else 0))
 
 
+# ------------------------------------------------------- the chain itself ---
+#
+# CHALLENGE_AUTH is over-determined by one equation. CERTIFICATE is over-
+# determined by four, and they do not share an input:
+#
+#   closure     the message's length must equal its header plus the
+#               PortionLength it declares.
+#   agreement   the chain's own Length field must equal PortionLength plus
+#               RemainderLength. Three numbers the responder wrote separately.
+#   structure   the certificates must parse as a whole number of DER SEQUENCEs
+#               that consume the chain to the last byte, with nothing over.
+#   digest      RootHash must be the hash of the first certificate — computed
+#               here, from bytes in the same message, using the hash the
+#               connection negotiated.
+#
+# The fourth is the one worth having. Lengths can agree because both were
+# derived from the same wrong assumption; a 48-byte digest cannot. And it is
+# not an assumption that it holds: DSP0274 allows a chain whose root is not
+# among its certificates, so the answer is recorded as an observation either
+# way rather than enforced. What is enforced is the other three.
+
+
+def _der_sequences(buf):
+    """Walk `buf` as a concatenation of DER SEQUENCEs.
+
+    Returns (list of (offset, total_length), None) if the buffer is consumed
+    exactly, or (None, reason).
+
+    Deliberately strict. This is not a parser that has to cope with the world's
+    certificates — it is an equation that has to be capable of failing, so
+    anything it cannot account for is reported rather than skipped.
+    """
+    out, i, n = [], 0, len(buf)
+    while i < n:
+        if buf[i] != 0x30:
+            return None, f"byte {i} is 0x{buf[i]:02x}, not a SEQUENCE tag"
+        if i + 1 >= n:
+            return None, f"a SEQUENCE tag at {i} with no length byte after it"
+        lead = buf[i + 1]
+        if lead < 0x80:
+            body, header = lead, 2
+        elif lead == 0x80:
+            return None, f"an indefinite length at {i}, which DER forbids"
+        else:
+            count = lead & 0x7F
+            if count > 4:
+                return None, f"a {count}-byte length field at {i}"
+            if i + 2 + count > n:
+                return None, f"a length field at {i} that runs past the end"
+            body = int.from_bytes(bytes(buf[i + 2:i + 2 + count]), "big")
+            header = 2 + count
+            # DER admits exactly one encoding of each length. Accepting a
+            # padded one would let a corrupted chain still parse.
+            if body < 0x80 or count != max(1, (body.bit_length() + 7) // 8):
+                return None, f"a non-minimal DER length at {i}"
+        if i + header + body > n:
+            return None, (f"the certificate at {i} declares {body} content bytes, "
+                          f"{i + header + body - n} past the end of the chain")
+        out.append((i, header + body))
+        i += header + body
+    if not out:
+        return None, "no certificates at all"
+    return out, None
+
+
+def _place_certificate(rsp, req, hash_bytes, hash_name):
+    """Reconstruct a CERTIFICATE response and require it to close four ways."""
+    raw = rsp.raw
+    if len(raw) < 8:
+        return None, f"packet {rsp.seq}: CERTIFICATE is {len(raw)} bytes, shorter than its header"
+
+    large_rsp = bool(raw[2] & CERT_LARGE_BIT)
+    large_req = bool(req.raw[2] & CERT_LARGE_BIT)
+    if large_rsp != large_req:
+        return None, (f"packet {rsp.seq}: CERTIFICATE Param1 bit 7 is {int(large_rsp)} "
+                      f"but the request that asked for it sent {int(large_req)}; "
+                      f"Table 46 requires them to be the same")
+
+    # Table 44 against Table 46, and they are not symmetric. In the REQUEST the
+    # large pair is *absent* when bit 7 is clear; in the RESPONSE the small pair
+    # is *reserved*, meaning still there. So the request's total length is an
+    # equation on its own — 8 bytes or 16, nothing between.
+    want_req = 16 if large_req else 8
+    if len(req.raw) != want_req:
+        return None, (f"packet {req.seq}: GET_CERTIFICATE is {len(req.raw)} bytes; "
+                      f"Param1 bit 7 = {int(large_req)} makes it exactly {want_req}")
+
+    placed = {
+        "packet": rsp.seq,
+        "request_packet": req.seq,
+        "request_bytes": len(req.raw),
+        "slot": raw[2] & CERT_SLOT_MASK,
+        "cert_model": raw[3] & CERT_MODEL_MASK,
+        "large_form": large_rsp,
+        "total_bytes": len(raw),
+    }
+
+    if large_rsp:
+        placed["portion_length_offset"] = 8
+        placed["remainder_length_offset"] = 12
+        placed["reserved_16bit_pair"] = bytes(raw[4:8]).hex(" ")
+        portion, remainder = _u32le(raw, 8), _u32le(raw, 12)
+        chain_off, offset_requested = 16, _u32le(req.raw, 8)
+    else:
+        placed["portion_length_offset"] = 4
+        placed["remainder_length_offset"] = 6
+        placed["reserved_16bit_pair"] = None
+        portion, remainder = _u16le(raw, 4), _u16le(raw, 6)
+        chain_off, offset_requested = 8, _u16le(req.raw, 4)
+
+    placed.update({"portion_length": portion, "remainder_length": remainder,
+                   "chain_offset": chain_off, "offset_requested": offset_requested,
+                   "first_portion": offset_requested == 0})
+
+    # (1) closure
+    if len(raw) != chain_off + portion:
+        return None, (f"packet {rsp.seq}: CERTIFICATE does not close — {len(raw)} bytes "
+                      f"against header {chain_off} + PortionLength {portion} = "
+                      f"{chain_off + portion}")
+
+    for key in ("chain_length", "chain_length_offset", "root_hash_offset", "root_hash",
+                "certificates_offset", "certificates", "certificate_bytes",
+                "root_hash_matches_first_certificate", "length_fields_agree"):
+        placed[key] = None
+    placed["closes"] = True
+
+    # Only the first portion carries the chain header; a continuation is raw
+    # chain bytes from wherever the last one stopped.
+    if offset_requested != 0:
+        placed["header_present"] = False
+        return placed, None
+    placed["header_present"] = True
+
+    if hash_bytes is None:
+        placed["note"] = "RootHash cannot be placed: no single hash algorithm was negotiated"
+        return placed, None
+    if chain_off + 4 + hash_bytes > len(raw):
+        return None, (f"packet {rsp.seq}: the first portion is {portion} bytes, too short "
+                      f"for a 4-byte Length and a {hash_bytes}-byte RootHash")
+
+    # DSP0274 1.4.0 Table 39: Length is FOUR bytes and little endian, and
+    # RootHash starts at 4. Not a 2-byte length beside a 2-byte reserved, which
+    # is what a chain under 65,536 bytes lets you get away with believing.
+    chain_len = _u32le(raw, chain_off)
+    placed["chain_length"] = chain_len
+    placed["chain_length_offset"] = chain_off
+
+    # (2) agreement
+    if chain_len != portion + remainder:
+        return None, (f"packet {rsp.seq}: the chain says it is {chain_len} bytes while the "
+                      f"response delivers {portion} with {remainder} still to come")
+    placed["length_fields_agree"] = True
+
+    placed["root_hash_offset"] = chain_off + 4
+    root = bytes(raw[chain_off + 4:chain_off + 4 + hash_bytes])
+    placed["root_hash"] = root.hex()
+
+    if remainder != 0:
+        placed["note"] = "the certificates are not all in this portion"
+        return placed, None
+
+    # (3) structure
+    certs_off = chain_off + 4 + hash_bytes
+    body = bytes(raw[certs_off:chain_off + chain_len])
+    seqs, why = _der_sequences(body)
+    if seqs is None:
+        return None, f"packet {rsp.seq}: the certificates do not parse — {why}"
+    placed["certificates_offset"] = certs_off
+    placed["certificates"] = len(seqs)
+    placed["certificate_bytes"] = [n for _, n in seqs]
+
+    # (4) digest. A chain may legally omit its own root, so this is reported,
+    # not required — but the document that quotes it is checked on it.
+    fn = HASH_FUNCS.get(hash_name or "")
+    if fn is None:
+        placed["note"] = f"no hash function available here for {hash_name}"
+        return placed, None
+    off0, len0 = seqs[0]
+    digest = fn(body[off0:off0 + len0]).hexdigest()
+    placed["first_certificate_digest"] = digest
+    placed["root_hash_matches_first_certificate"] = (digest == placed["root_hash"])
+    return placed, None
+
+
 def _settle(closed, rsp, req, ctx, sig, what, req_context_offset):
     """Accept a reconstruction only if exactly one closes and the echo agrees."""
     if not closed:
@@ -599,6 +814,7 @@ def _settle(closed, rsp, req, ctx, sig, what, req_context_offset):
 def reconstruct(messages, negotiated) -> dict:
     """Rebuild the layout of every signed response, and report what did not."""
     out = {
+        "hash_name": _picked(negotiated.get("Hash"), HASH_BYTES),
         "hash_bytes": _sized(negotiated.get("Hash"), HASH_BYTES),
         "measurement_hash_bytes": _sized(negotiated.get("MeasHash"), HASH_BYTES),
         "responder_signature_bytes": (_sized(negotiated.get("Asym"), SIG_BYTES)
@@ -608,11 +824,32 @@ def reconstruct(messages, negotiated) -> dict:
         "attempted": 0, "closed": 0, "unexplained": [],
         "challenge_auth": None, "challenge_auth_requester": None,
         "measurements": None, "measurements_unsigned": None,
+        "certificate": None, "certificate_requester": None,
     }
     hashes = (out["hash_bytes"], out["measurement_hash_bytes"])
 
     ordered = [m for m in on_the_wire(messages)]
     for i, msg in enumerate(ordered):
+        # CERTIFICATE first: it carries no signature, so none of the signature
+        # bookkeeping below applies to it. What determines its layout is the
+        # request that asked for it and the hash the connection negotiated.
+        if msg.code == SPDM_CERTIFICATE and msg.raw:
+            req = _request_before(ordered, i, SPDM_GET_CERTIFICATE)
+            if req is None:
+                out["unexplained"].append(
+                    f"packet {msg.seq}: CERTIFICATE with no GET_CERTIFICATE before it")
+                continue
+            out["attempted"] += 1
+            placed, why = _place_certificate(msg, req, out["hash_bytes"], out["hash_name"])
+            if placed is None:
+                out["unexplained"].append(why)
+                continue
+            out["closed"] += 1
+            slot = "certificate" if msg.direction == "RSP->REQ" else "certificate_requester"
+            if out[slot] is None:
+                out[slot] = placed
+            continue
+
         if msg.code not in (SPDM_CHALLENGE_AUTH, SPDM_MEASUREMENTS) or not msg.raw:
             continue
         # Whoever sent the response signed it, so the direction on the wire —
@@ -1089,6 +1326,29 @@ def render(data: dict) -> str:
         L.append(f"              hash {lay['hash_bytes']} B, responder signature "
                  f"{lay['responder_signature_bytes']} B, requester signature "
                  f"{lay['requester_signature_bytes']} B")
+        for slot, label in (("certificate", "CERTIFICATE"),
+                            ("certificate_requester", "CERTIFICATE (requester)")):
+            p = lay.get(slot)
+            if not p:
+                continue
+            L.append(f"              {label:<27} packet {p['packet']:>4}  "
+                     f"{p['total_bytes']:>6} B  = {p['chain_offset']} header + "
+                     f"PortionLength {p['portion_length']}"
+                     + ("  [32-bit length pair]" if p["large_form"] else ""))
+            if p["chain_length"] is not None:
+                L.append(f"              {'':<27} chain Length {p['chain_length']} "
+                         f"= {p['portion_length']} + {p['remainder_length']}, "
+                         f"RootHash at {p['root_hash_offset']}")
+            if p["certificates"] is not None:
+                L.append(f"              {'':<27} {p['certificates']} certificate(s), "
+                         f"{' + '.join(str(n) for n in p['certificate_bytes'])} bytes, "
+                         f"parsed to the last byte")
+            m = p["root_hash_matches_first_certificate"]
+            if m is not None:
+                L.append(f"              {'':<27} RootHash "
+                         + ("IS" if m else "IS NOT")
+                         + f" the {lay['hash_name']} of the first certificate"
+                         + (f" — {p['root_hash'][:16]}…" if m else ""))
         for slot, label in (("challenge_auth", "CHALLENGE_AUTH"),
                             ("challenge_auth_requester", "CHALLENGE_AUTH (requester)"),
                             ("measurements", "MEASUREMENTS"),
