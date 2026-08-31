@@ -253,12 +253,12 @@ else
     fi
 fi
 
-section "8. system OpenSSL — only affects signing our own certificate chain (W03)"
+section "8. system OpenSSL — only affects signing a POST-QUANTUM chain (W07-W08)"
 openssl version 2>&1 | sed 's/^/  /'
 if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
     verdict PASS 8 "system OpenSSL offers ML-DSA"
 else
-    verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5) — affects W03 only, not the handshake"
+    verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5) — the W03 chain is ECDSA-P384 and did not need it; a PQC chain will"
 fi
 
 section "9. QEMU with an SPDM-capable device (W09 transport work)"

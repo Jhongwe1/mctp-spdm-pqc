@@ -1,0 +1,176 @@
+SPDM attestation lab — environment baseline
+flavor : pqc
+binary : /home/key/spdm-lab/work/spdm-emu-pqc/build/bin
+run    : healthcheck-pqc-20260831T151018Z
+date   : 2026-08-31T15:10:19Z
+
+=== 0. version pins (the caption source for every table in this repo) ===
+flavor=pqc
+spdm-emu=5f01d2f38931e7c75388a43932d6569b4743b7b8
+spdm-emu-short=5f01d2f
+libspdm=8a92317f9510543b1a31d849c80cadbc23a5593d
+libspdm-short=8a92317
+libspdm-ref=4.0.0-rc
+libspdm-version=libspdm version 4.0.0 (release candidate)
+crypto=openssl
+arch=x64
+target=Release
+toolchain=GCC
+cc=13.3.0
+cmake=3.28.3
+host=Ubuntu 24.04.4 LTS
+kernel=6.6.87.2-microsoft-standard-WSL2
+built-at=2026-08-11T05:18:34Z
+  [PASS] BUILD_PIN.txt present
+
+=== 1. which algorithms the CLI exposes (decides which experiments exist) ===
+  --ver 1.0|1.1|1.2|1.3|1.4
+  --hash SHA_256|SHA_384|SHA_512|SHA3_256|SHA3_384|SHA3_512|SM3_256
+  --asym NONE|RSASSA_2048|RSASSA_3072|RSASSA_4096|RSAPSS_2048|RSAPSS_3072|RSAPSS_4096|ECDSA_P256|ECDSA_P384|ECDSA_P521|SM2_P256|EDDSA_25519|EDDSA_448
+  --dhe NONE|FFDHE_2048|FFDHE_3072|FFDHE_4096|SECP_256_R1|SECP_384_R1|SECP_521_R1|SM2_P256
+  --aead AES_128_GCM|AES_256_GCM|CHACHA20_POLY1305|SM4_128_GCM
+  --pqc_asym NONE|ML_DSA_44|ML_DSA_65|ML_DSA_87|SLH_DSA_SHA2_128S|SLH_DSA_SHAKE_128S|SLH_DSA_SHA2_128F|SLH_DSA_SHAKE_128F|SLH_DSA_SHA2_192S|SLH_DSA_SHAKE_192S|SLH_DSA_SHA2_192F|SLH_DSA_SHAKE_192F|SLH_DSA_SHA2_256S|SLH_DSA_SHAKE_256S|SLH_DSA_SHA2_256F|SLH_DSA_SHAKE_256F
+  --kem NONE|ML_KEM_512|ML_KEM_768|ML_KEM_1024
+  --pqc_first FALSE|TRUE
+  --verbose | -v
+  --ver
+  --hash
+  --asym
+  --dhe
+  --aead
+  --pqc_asym
+  --kem
+  --pqc_first
+  --verbose | -v
+  [PASS] --pqc_asym exposed by this build
+
+=== 2. SPDM versions this build negotiates ===
+  --ver 1.0|1.1|1.2|1.3|1.4
+  --verbose | -v
+  --ver
+  --verbose | -v
+
+=== 3. sample certificates and keys (make copy_sample_key) ===
+  ecp256/
+  ecp384/
+  ecp521/
+  ed25519/
+  ed448/
+  long_chains/
+  mldsa44/
+  mldsa65/
+  mldsa87/
+  rsa2048/
+  rsa3072/
+  rsa3072_Expiration/
+  rsa4096/
+  slh-dsa-sha2-128f/
+  slh-dsa-sha2-128s/
+  slh-dsa-sha2-192f/
+  slh-dsa-sha2-192s/
+  slh-dsa-sha2-256f/
+  slh-dsa-sha2-256s/
+  slh-dsa-shake-128f/
+  slh-dsa-shake-128s/
+  slh-dsa-shake-192f/
+  slh-dsa-shake-192s/
+  slh-dsa-shake-256f/
+  slh-dsa-shake-256s/
+  sm2/
+  test_csr/
+  test_web_cert/
+  [PASS] 28 sample key directories present
+
+=== 4. minimal handshake  ★ go / no-go for the whole project ===
+  --exe_conn DIGEST,CERT,CHAL,MEAS  --exe_session NO_END
+  exit=0  error lines=0  packets=554
+  [PASS] minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)
+
+=== 5. capture file produced, and how many packets are in it ===
+  file       : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260831T151018Z/minimal.pcap (29437 bytes)
+  format     : classic pcap v2.4, little-endian, microsecond timestamps
+  linktype   : 291 (MCTP)
+  snaplen    : 65536
+  packets    : 554
+  bytes      : 20549 captured / 20549 on the wire
+  duration   : 25.0 s
+  [PASS] pcap written and parsed by harness/pcapcount.py
+
+=== 6. spdm_dump (offline capture decoding — the only way to read a negotiation) ===
+  [PASS] spdm_dump available: /home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump
+
+=== 7. post-quantum handshake  ★ decides whether PQC is measured or estimated ===
+  --pqc_asym ML_DSA_65  --req_pqc_asym ML_DSA_65  --kem ML_KEM_768  --pqc_first TRUE  --asym NONE --dhe NONE
+  [PASS] post-quantum handshake completed with no errors
+  requested: asym - 0x00000000
+  requested: dhe - 0x0000
+  requested: pqc_asym - 0x00000002
+  requested: kem - 0x00000002
+  requested: pqc_first - 0x01
+
+=== 8. system OpenSSL — only affects signing our own certificate chain (W03) ===
+  OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+  [INFO] system OpenSSL has no ML-DSA (needs >= 3.5) — affects W03 only, not the handshake
+
+=== 9. QEMU with an SPDM-capable device (W09 transport work) ===
+  [INFO] no QEMU installed — W09 transport path degrades, main line unaffected
+
+=== 10. kernel MCTP support (W09 AF_MCTP path) ===
+  # CONFIG_MCTP is not set
+  [INFO] no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
+
+=== 11. what the captures actually contain  ★ verified, not requested ===
+
+  --- minimal.pcap ---
+  decoded 554 messages of 554 packets
+  SPDM_VERSION (1.0.0.0, 1.1.0.0, 1.2.0.0, 1.3.0.0, 1.4.0.0)
+    negotiated Hash=0x00000002(SHA_384)
+    negotiated MeasHash=0x00000008(SHA_512)
+    negotiated Asym=0x00000080(ECDSA_P384)
+    negotiated PqcAsym=0x00(<Unknown>)
+    negotiated DHE=0x0010(SECP_384_R1)
+    negotiated KEM=0x0000(<Unknown>)
+    negotiated AEAD=0x0002(AES_256_GCM)
+    negotiated ReqAsym=0x0008(RSAPSS_3072)
+    negotiated ReqPqcAsym=0x0000(<Unknown>)
+    chunk round trips: 0
+    SPDM_ERROR responses: 246 — SPDM_ERROR (ErrCode=0x01(InvalidRequset)
+
+  --- pqc.pcap ---
+  decoded 18 messages of 584 packets
+  SPDM_VERSION (1.0.0.0, 1.1.0.0, 1.2.0.0, 1.3.0.0, 1.4.0.0)
+    negotiated Hash=0x00000002(SHA_384)
+    negotiated MeasHash=0x00000008(SHA_512)
+    negotiated Asym=0x00000000(<Unknown>)
+    negotiated PqcAsym=0x02(ML_DSA_65)
+    negotiated KEM=0x0002(ML_KEM_768)
+    negotiated AEAD=0x0002(AES_256_GCM)
+    negotiated ReqAsym=0x0000(<Unknown>)
+    negotiated ReqPqcAsym=0x0002(ML_DSA_65)
+    chunk round trips: 4
+    SPDM_ERROR responses: 1 — SPDM_ERROR (ErrCode=0x0f(LargeResponse)
+    ⚠ decode TRUNCATED: spdm_dump hit LIBSPDM_MAX_CERT_CHAIN_SIZE.
+      The handshake is not short; the decoder stopped. Counts above
+      cover only the decoded prefix.
+
+  certificate chain, classical vs post-quantum: 1655 vs 16853 bytes (10.2x)
+  Both read from the same decoded protocol field, with the negotiated
+  algorithm confirmed above. This one is a measurement.
+  [PASS] negotiated algorithms and certificate sizes read back from the captures
+
+=== summary ===
+  PASS #0   BUILD_PIN.txt present
+  PASS #1   --pqc_asym exposed by this build
+  PASS #3   28 sample key directories present
+  PASS #4   minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)
+  PASS #5   pcap written and parsed by harness/pcapcount.py
+  PASS #6   spdm_dump available: /home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump
+  PASS #7   post-quantum handshake completed with no errors
+  INFO #8   system OpenSSL has no ML-DSA (needs >= 3.5) — affects W03 only, not the handshake
+  INFO #9   no QEMU installed — W09 transport path degrades, main line unaffected
+  INFO #10  no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
+  PASS #11  negotiated algorithms and certificate sizes read back from the captures
+
+  PASS=8  FAIL=0  INFO=3
+
+  GATE 0 (minimal handshake): PASS — the project can proceed.
