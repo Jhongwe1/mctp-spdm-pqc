@@ -184,15 +184,27 @@ arm single-algo pqc "one algorithm per group — does offering more cost bytes?"
 # algorithms. Everything the pair is used to say is a difference between them,
 # so anything else varying would be a second explanation nobody could rule out.
 #
-# --slot_count 1 rather than the default 3 is what makes that true. With three
-# slots the responder also serves slot 1 and slot 4, whose chains descend from
-# DMTF's roots and which certs/stage_chain.sh deliberately does not replace —
-# so the capture would hold a mixture and "whose chain is this" would stop
-# having one answer. The control arm carries the same flag for the same reason.
+# --slot_count 1 was added believing it would leave only this project's own
+# certificates on the wire. THAT IS WRONG, and the first capture taken with it
+# said so: the responder's DIGESTS still reports ProvisionedSlotMask=0x13 and
+# still serves slot 4 from DMTF's chain. What the flag actually moves is the
+# REQUESTER's own provisioned slots, 0x07 to 0x01 — visible only in the DIGESTS
+# that travels encapsulated the other way.
 #
-# What the pair measures, beyond "it was accepted": the chain is fetched twice
-# in this flow, so a chain that is N bytes larger costs 2N on the wire, and the
-# two arms are what turns that from arithmetic into a measurement.
+# The flag is kept, because what it does is worth measuring and both arms carry
+# it identically, so the pair is still a one-variable comparison. But the reason
+# written here was a claim that nothing in that commit could check, and it was
+# the one thing in it that was false. See LOG.md, 2026-08-31.
+#
+# What the pair measures:
+#   * a chain N bytes larger costs 2N on the wire, because this flow fetches the
+#     responder's chain twice;
+#   * dropping two of the requester's slots costs 2 x (48 + 4) = 104 bytes of
+#     DIGESTS, which fields.py reconstructs rather than asserts;
+#   * and the self-signed capture carries THREE distinct roots — this project's
+#     on responder slot 0, DMTF's ecp384 root on responder slot 4, and DMTF's
+#     rsa3072 root for the requester, whose chain is selected by ReqAsym and so
+#     was never in the directory that was replaced.
 
 arm sample-1slot pqc "upstream chain, one slot — the control for 'selfsigned'" \
     --meas_op ALL --slot_count 1
