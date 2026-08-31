@@ -13,8 +13,16 @@ name: CI
 # arrives — rather than stubbing four red jobs on day one — keeps the badge
 # meaningful: green here has always meant "everything that exists, passes".
 #
-#   now      verify    lint, parser self-test, provenance completeness,
-#                      scope-statement placement
+#   now      verify    lint; parser self-test; provenance completeness and
+#                      re-hashing; every committed derivation reproduces from
+#                      its inputs; no tracked file carries a private-key
+#                      header; the certificate chain links to its root and its
+#                      checker is observed rejecting four breaks through four
+#                      DIFFERENT checks; the DIGESTS, CERTIFICATE and
+#                      CHALLENGE_AUTH reconstructions are each fed something
+#                      broken and required to refuse it; every document that
+#                      asserts a number is re-derived against its capture;
+#                      scope-statement placement; private material untracked
 #   now      drills    every C drill compiles under -Werror + sanitizers;
 #                      the ones marked complete in c-drills/DONE.txt run
 #   G2/G3    rats      rebuild, re-run clean and tampered captures, assert the

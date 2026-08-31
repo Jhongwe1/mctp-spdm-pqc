@@ -95,7 +95,7 @@ if command -v openssl >/dev/null 2>&1; then
     if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
         pass "openssl (system)" "$OSSL — has ML-DSA"
     else
-        info "openssl (system)" "$OSSL — no ML-DSA (needs >= 3.5). Affects W03 certificate signing only."
+        info "openssl (system)" "$OSSL — no ML-DSA (needs >= 3.5). The W03 chain is ECDSA-P384 and did not need it; a post-quantum chain (W07-W08) will."
         info "" "libspdm builds its OWN OpenSSL, so the handshake and PQC work are unaffected."
     fi
 fi
