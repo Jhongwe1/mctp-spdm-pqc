@@ -735,20 +735,36 @@ PY
 [ $? -eq 0 ] && good "the certificate reconstruction closes on a correct chain and on nothing else" \
              || bad "the certificate reconstruction accepted a chain it should have rejected"
 
-step "the handshake walkthrough still agrees with its capture"
-# The walkthrough is a document made almost entirely of stated facts, which is
-# the category this project has twice caught itself getting wrong. So its
-# numbers are not typed in: each is marked up as <!--claim key=value--> and
-# re-derived here from the decode file the document names. A number that drifts
-# from its capture is a failed build, not something a reader might notice.
-if [ -f docs/handshake-walkthrough.md ]; then
-    if python3 harness/fields.py --check docs/handshake-walkthrough.md; then
-        good "every claim in the walkthrough matches the capture it cites"
+step "every document that cites a capture still agrees with it"
+# These documents are made almost entirely of stated facts, which is the
+# category this project has twice caught itself getting wrong. So their numbers
+# are not typed in: each is marked up as <!--claim key=value--> and re-derived
+# here from the decode file the document names. A number that drifts from its
+# capture is a failed build, not something a reader might notice.
+#
+# Discovered by reading which documents make claims, not from a list. A list is
+# how docs/certchain.md would have been added and left unchecked, which is the
+# same failure docs/decisions/0004 is about, one level up.
+#
+# Selected on the CLAIM marker rather than the capture directive, and the
+# difference matters. The obvious selector was the capture directive, and it
+# picked up ADR 0004 — which quotes the directive's syntax in prose while
+# asserting nothing, so it failed for having no claims. Selecting on claims is
+# also the complete rule: no claim can escape, because any document containing
+# one is selected by containing it.
+found=0
+while IFS= read -r doc; do
+    found=$((found + 1))
+    if python3 harness/fields.py --check "$doc"; then
+        good "$doc"
     else
-        bad "docs/handshake-walkthrough.md contradicts its own capture"
+        bad "$doc contradicts a capture it cites"
     fi
+done < <(grep -rl '<!--claim ' docs --include='*.md' | sort)
+if [ "$found" -eq 0 ]; then
+    bad "no document asserts anything against a capture — the mechanism reaches nothing"
 else
-    printf '  --   docs/handshake-walkthrough.md not written yet — skipped\n'
+    good "$found document(s) checked against their captures"
 fi
 
 step "planning material is not tracked"
