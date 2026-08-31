@@ -776,14 +776,18 @@ else
     good "$found document(s) checked, $skipped that only quote the markup"
 fi
 
-step "planning material is not tracked"
+step "private material is not tracked"
+# plan/ and archive/ hold the schedule this work is executed against; study/
+# holds a question bank and its answers, which is a record of what one person
+# does not yet know. All three are the author's, none is the repository's, and
+# `git add -A` does not distinguish. So the mechanism does.
 if git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-    leaked="$(git ls-files plan archive 2>/dev/null)"
+    leaked="$(git ls-files plan archive study 2>/dev/null)"
     if [ -n "$leaked" ]; then
         printf '%s\n' "$leaked" | sed 's/^/  /'
-        bad "private planning files are staged or tracked"
+        bad "private material is staged or tracked"
     else
-        good "plan/ and archive/ are untracked"
+        good "plan/, archive/ and study/ are untracked"
     fi
 fi
 

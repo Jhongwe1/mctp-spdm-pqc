@@ -8,6 +8,14 @@
 plan/
 archive/
 
+# study/ holds the oral-exam question bank — the questions asked during a
+# working session and the answers, kept so they can be digested slowly and
+# self-scored. Same category as plan/: material this work is executed against,
+# and specifically a record of what one person does not yet know. That is
+# useful to him and to nobody else, and it is not the kind of thing a portfolio
+# publishes. verify_repo.sh refuses to let it become tracked.
+study/
+
 # CLAUDE.md is working instructions for an assistant, not documentation of the
 # system: local absolute paths, how to talk to me, what not to do for me. It
 # belongs in the same category as plan/ — material this work is executed
