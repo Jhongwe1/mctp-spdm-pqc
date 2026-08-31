@@ -40,28 +40,35 @@ python3 harness/fields.py --check docs/handshake-walkthrough.md
 A claim whose key is not something the tool computes fails too, so the markup
 cannot be satisfied by inventing a field name.
 
-**The offsets are checked the same way, for two of the seven message pairs.**
+**The offsets are checked the same way, for four of the seven message pairs.**
 A value can be re-derived from a decode; an offset cannot, because the decoder
-prints fields rather than positions. So `CHALLENGE_AUTH` and `MEASUREMENTS` are
-instead **rebuilt** — every field placed in turn, each size either constant,
-fixed by something negotiated earlier, or carried in the message itself — and
-the reconstruction is required to close twice over: the bytes left at the end
-must equal the signature size the negotiated algorithm implies, and
-`RequesterContext` must be found at the predicted offset holding what the
-request sent. Details in §6; which five pairs this does *not* cover, in §10.
+prints fields rather than positions. So `DIGESTS`, `CERTIFICATE`,
+`CHALLENGE_AUTH` and `MEASUREMENTS` are instead **rebuilt** — every field placed
+in turn, each size either constant, fixed by something negotiated earlier, or
+carried in the message itself — and each reconstruction is required to close on
+more equations than it has unknowns:
+
+| § | message | equations it has to satisfy |
+|:--|---|---|
+| 4 | `DIGESTS` | its length under two per-slot hypotheses that differ by 4*n*; exactly one may close |
+| 5 | `CERTIFICATE` | **four** — closure against `LargePortionLength`, the chain's own `Length` against the two portion fields, a DER walk that consumes the certificates exactly, and `RootHash` recomputed from the first certificate |
+| 6 | `CHALLENGE_AUTH` | the residue must equal the negotiated signature size, and `RequesterContext` must echo the request at the predicted offset |
+| 7 | `MEASUREMENTS` | the same two, with the record length read from the message |
+
+Details in §5 and §6; which three pairs this does *not* cover, in §10.
 
 What the mechanism does **not** cover is stated beside it in §10, because a
 check that is trusted beyond its reach is worse than no check.
 
 ---
 
-<!-- capture: bench/data/w2-baseline-20260828T110130Z/walkthrough.decode.txt -->
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/walkthrough.decode.txt -->
 
 ## 0. The capture this describes
 
 | | |
 |---|---|
-| run | `bench/data/w2-baseline-20260828T110130Z/`, arm `walkthrough` |
+| run | `bench/data/w3-baseline-20260831T143123Z/`, arm `walkthrough` |
 | build | `spdm-emu` 4.0.0-rc → `libspdm` 4.0.0-rc (`third_party/spdm-emu-pqc.pin`) |
 | decoder | `spdm-dump` `9d91f21` (`third_party/spdm-dump.pin`) |
 | transport | pcap link type <!--claim transport.pcap_datalink=291--> 291 (MCTP) |
@@ -409,6 +416,28 @@ negotiated to SHA-384 in §3. Nothing in `DIGESTS` says so. A parser that has no
 kept the negotiation result cannot find the end of this message, let alone the
 fields after it.
 
+### Which is why the message's length is an equation
+
+Everything after the four-byte header is *n* copies of a per-slot record, and
+*n* is the population count of `ProvisionedSlotMask`. So there are two readings
+and the message's own length separates them:
+
+```
+4 + n x 48            digests alone
+4 + n x (48 + 4)      plus KeyPairID(1) + CertificateInfo(1) + KeyUsageBitMask(2)
+```
+
+Here *n* = <!--claim layout.digests.slots=3--> **3** and the message is
+<!--claim layout.digests.total_bytes=160--> **160 bytes**, so
+4 + 3 × 52 = 160 closes and 4 + 3 × 48 = 148 does not. The per-slot record is
+<!--claim layout.digests.per_slot_bytes=52--> **52 bytes**, established by
+arithmetic rather than by trusting that `MULTI_KEY_CAP` meant what it looked
+like it meant. `harness/fields.py` refuses a `DIGESTS` whose length matches
+neither, and `verify_repo.sh` feeds it one.
+
+This becomes a measurement rather than a curiosity in §9.5, where an arm that
+changes nothing but a slot count differs by exactly 2 × 52 bytes.
+
 **What problem it solves.** Bandwidth and time. A certificate chain is kilobytes
 and may take several round trips; a digest is 48 bytes. A requester that already
 holds a chain compares the digest and skips fetching it again.
@@ -452,13 +481,63 @@ largest answer the requester could accept.
 
 ### Response — packet 10
 
+**These offsets are measured, not transcribed.** §6 and §7 are reconstructed and
+required to close on one spare equation. This message has four, and no two of
+them share an input:
+
 | offset | field | size | observed |
 |--:|---|--:|---|
-| 2 | `Param1` | 1 | `0x80` — slot 0, `LargeCertChain` |
-| 3 | `Param2` | 1 | `0x01` (`DEVICE`) |
-| 8–11 | `LargePortionLength` | 4 | `0x00000677` = 1,655 |
-| 12–15 | `LargeRemainderLength` | 4 | `0x00000000` |
-| 16… | `CertChain` | 1,655 | |
+| 2 | `Param1` | 1 | `0x80` — slot <!--claim layout.certificate.slot=0--> 0, `LargeCertChain` <!--claim layout.certificate.large_form=True--> set |
+| 3 | `Param2` | 1 | `0x01` — `CertificateInfo` = <!--claim layout.certificate.cert_model=1--> 1 (`DEVICE`) |
+| 4–7 | `PortionLength`, `RemainderLength` | 4 | <!--claim layout.certificate.reserved_16bit_pair=00 00 00 00--> `00 00 00 00` — **reserved, and still there** |
+| 8–11 | `LargePortionLength` | 4 | `0x00000677` = <!--claim layout.certificate.portion_length=1655--> **1,655** |
+| 12–15 | `LargeRemainderLength` | 4 | <!--claim layout.certificate.remainder_length=0--> `0x00000000` |
+| 16… | `CertChain` | 1,655 | begins at <!--claim layout.certificate.chain_offset=16--> **16** |
+
+Bytes 4–7 are the interesting row. DSP0274 Table 44 says the request's
+`LargeOffset` and `LargeLength` **shall be absent** when `Param1` bit 7 is
+clear; Table 46 says the response's 16-bit `PortionLength` and
+`RemainderLength` are **reserved** when it is set. Absent and reserved are not
+the same word and here they are not the same bytes: the request is
+<!--claim layout.certificate.request_bytes=16--> **16 bytes** because its large
+pair is present, and the response still carries four zero bytes for a pair it is
+not using. A parser that treats "reserved" as "absent" reads the whole chain
+four bytes early, and the message is long enough that it would not obviously
+break.
+
+### Four equations, and a chain that cannot satisfy them by accident
+
+| | equation | from |
+|---|---|---|
+| **closure** | <!--claim layout.certificate.total_bytes=1671--> 1,671 = 16 + 1,655 | the hex dump against the message's own `LargePortionLength` |
+| **agreement** | <!--claim layout.certificate.chain_length=1655--> 1,655 = 1,655 + 0 | the *chain's* `Length` field against the two portion fields — three numbers the responder wrote separately |
+| **structure** | <!--claim layout.certificate.certificate_bytes=472,512,619--> 472 + 512 + 619 = <!--claim layout.certificate.certificates_bytes_total=1603--> 1,603, consumed to the last byte | walking the certificates as DER `SEQUENCE`s |
+| **digest** | `RootHash` = SHA-384 of the first certificate: <!--claim layout.certificate.root_hash_matches_first_certificate=True--> **true** | computed here, over bytes from the same message |
+
+The chain's own header is DSP0274 Table 39:
+
+```
+16   Length     4 bytes, little endian   0x0677 = 1655 = 4 + 48 + 1603
+20   RootHash   H = 48 (SHA-384)         ed79ce9a 32e4ac43 ae6ad40d …
+68   Certificates                        472 + 512 + 619
+```
+
+`RootHash` sits at offset <!--claim layout.certificate.root_hash_offset=20--> **20**
+and <!--claim layout.certificate.certificates=3--> **3** certificates follow at 68.
+
+**The fourth equation is the one worth having.** Two lengths can agree because
+both were derived from the same wrong assumption. A 48-byte digest cannot: the
+tool hashes the first certificate it found by walking DER and compares the
+result against 48 bytes it read at a predicted offset, and the two have no input
+in common except the message. It is reported rather than enforced, because
+DSP0274 permits a chain whose root is *not* among its certificates — so a
+mismatch would be a fact about the chain, not a refusal of the message.
+
+**And `Length` is four bytes, not two beside two reserved.** Table 39 is
+explicit, and libspdm agrees — `spdm_cert_chain_t` declares `uint32_t length`.
+The two readings produce identical bytes for every chain under 65,536 and
+diverge above it, which is exactly the size at which a post-quantum chain stops
+being hypothetical.
 
 | | |
 |---|---|
@@ -468,6 +547,10 @@ largest answer the requester could accept.
 | responder slot 4 chain | <!--claim certificate.responder_chains.4.bytes=1660--> 1,660 bytes |
 | `GET_CERTIFICATE` messages | <!--claim certificate.get_certificate_count=3--> 3 |
 | …of which encapsulated | <!--claim certificate.get_certificate_encapsulated=1--> 1 |
+| chains fetched in this handshake | <!--claim layout.chains#=4--> **4** |
+| **distinct roots among them** | <!--claim layout.distinct_root_hashes=2--> **2** |
+
+The last row is not decoration. §9.6 is what it turned into.
 
 ### `PortionLength` is not the chain's length
 
@@ -862,14 +945,14 @@ whole-exchange numbers rather than as the cost of one algorithm.
 
 ---
 
-## 9. The same handshake on three configurations
+## 9. The same handshake on the other arms of this run
 
-Everything above is one capture. These are the other three arms of the same run,
+Everything above is one capture. These are the other six arms of the same run,
 each checked against its own decode.
 
 ### 9.1 Classical, `--meas_op ONE_BY_ONE` — the stock flow
 
-<!-- capture: bench/data/w2-baseline-20260828T110130Z/classical.decode.txt -->
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/classical.decode.txt -->
 
 | | |
 |---|---|
@@ -885,8 +968,8 @@ measurement bytes**, and both halves of that sentence are re-derived from
 captures by CI.
 
 **Both passes reconstruct, and they close on different numbers.** All
-<!--claim layout.closed=19--> **19** signed responses in this capture rebuild and
-close. The first `GET_MEASUREMENTS` is
+<!--claim layout.closed=27--> **27** reconstructable responses in this capture
+rebuild and close. The first `GET_MEASUREMENTS` is
 <!--claim message_bytes.first_by_type.SPDM_GET_MEASUREMENTS=12--> **12 bytes** —
 4 + `RequesterContext`, with no `Nonce` and no `SlotIDParam`, which is what
 answers §7's open question — and the response to it is
@@ -903,7 +986,7 @@ pass first is not, and here that distinction is a number.
 
 ### 9.2 Classical on the released pair — the control
 
-<!-- capture: bench/data/w2-baseline-20260828T110130Z/classical-stable.decode.txt -->
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/classical-stable.decode.txt -->
 
 Identical flags, `spdm-emu` 3.8.0 → `libspdm` 3.8.0 instead of 4.0.0-rc. This arm
 exists to answer whether the classical arm above can stand in for the baseline
@@ -935,7 +1018,7 @@ anyone writes it down.
 
 ### 9.3 Post-quantum — ML-DSA-65 both directions
 
-<!-- capture: bench/data/w2-baseline-20260828T110130Z/pqc.decode.txt -->
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/pqc.decode.txt -->
 
 | | |
 |---|---|
@@ -973,7 +1056,7 @@ short on purpose.**
 
 ### 9.4 One algorithm per group — the control for §3
 
-<!-- capture: bench/data/w2-baseline-20260828T110130Z/single-algo.decode.txt -->
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/single-algo.decode.txt -->
 
 Identical to the `walkthrough` arm except that `--hash`, `--asym`, `--dhe`,
 `--aead`, `--req_asym` and `--meas_hash` are each pinned to a single value
@@ -999,6 +1082,111 @@ the second half of the point: the defaults were not costing bytes *and* were not
 changing the outcome here. What they cost is knowing the outcome in advance —
 and §9.3 is the case where that mattered, since leaving `--req_pqc_asym` at its
 default is how a run ends up signing with two different ML-DSA parameter sets.
+
+### 9.5 One slot instead of three — the control for §9.6
+
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/sample-1slot.decode.txt -->
+
+The `walkthrough` arm with `--slot_count 1` added and nothing else changed. It
+exists to be subtracted from §9.6, and on its own it settles what the flag does —
+which is not what it was added believing.
+
+| | `walkthrough` | this arm |
+|---|--:|--:|
+| responder `ProvisionedSlotMask` | `0x13` | <!--claim layout.digests.provisioned_slot_mask=0x13--> `0x13` |
+| **requester** `ProvisionedSlotMask` | `0x07` | <!--claim layout.digests_requester.provisioned_slot_mask=0x01--> **`0x01`** |
+| responder `DIGESTS` | 160 B | <!--claim layout.digests.total_bytes=160--> 160 B |
+| requester `DIGESTS` | 160 B | <!--claim layout.digests_requester.total_bytes=56--> **56 B** |
+| SPDM bytes on the wire | 11,291 | <!--claim message_bytes.total=11187--> **11,187** |
+
+**`--slot_count` moves the requester's slots, not the responder's.** The
+responder still advertises slots 0, 1 and 4, and still serves slot 4 from
+upstream's chain. The flag was added to this run's arms in the belief that it
+would leave only one chain on the wire; the first capture taken with it said
+otherwise, and the comment that claimed it has been corrected in
+`harness/capture.sh`.
+
+And the 104-byte difference is not an observation, it is §4's equation applied
+twice:
+
+```
+160 - 56  =  (3 - 1) x (48 + 4)  =  104
+```
+
+Two slots' worth of digest, `KeyPairID`, `CertificateInfo` and `KeyUsageBitMask`.
+11,291 − 11,187 = 104 as well, because nothing else moved.
+
+### 9.6 A chain I signed myself — and the two it did not replace
+
+<!-- capture: bench/data/w3-baseline-20260831T143123Z/selfsigned.decode.txt -->
+
+Identical to §9.5 in every flag. The one difference is the directory the
+responder was run from: `certs/stage_chain.sh` builds a sandbox whose `ecp384/`
+holds this project's own three-layer chain instead of upstream's. libspdm's
+sample device-secret library opens its certificates by relative path, so the
+working directory *is* the independent variable — no flag selects them.
+
+**The prediction came first.** `certs/check_chain.py` reads the certificate
+files on disk and computes what the chain will be on the wire, before any of it
+is sent:
+
+```
+4 + 48 + (504 + 573 + 768)  =  4 + 48 + 1845  =  1897
+```
+
+**And the capture agrees, read by a tool that never opens a certificate file.**
+
+| | upstream chain (§9.5) | this chain |
+|---|--:|--:|
+| `CERTIFICATE` message | 1,671 B | <!--claim layout.certificate.total_bytes=1913--> **1,913 B** |
+| chain `Length` | 1,655 | <!--claim layout.certificate.chain_length=1897--> **1,897** |
+| certificates | 472 + 512 + 619 | <!--claim layout.certificate.certificate_bytes=504,573,768--> **504 + 573 + 768** |
+| …summing to | 1,603 | <!--claim layout.certificate.certificates_bytes_total=1845--> **1,845** |
+| `RootHash` = SHA-384 of the first certificate | true | <!--claim layout.certificate.root_hash_matches_first_certificate=True--> **true** |
+| SPDM bytes on the wire | 11,187 | <!--claim message_bytes.total=11671--> **11,671** |
+
+Those three certificate sizes are the sizes of `certs/out/*.cert.der` on disk,
+recovered from the wire by walking DER. The 48-byte `RootHash` at offset 20 is
+`sha384(certs/out/ca.cert.der)`. Neither tool was told the other's answer:
+`check_chain.py` never opens a capture, `fields.py` never opens a certificate.
+
+11,671 − 11,187 = **484**, which is 2 × (1,897 − 1,655): a chain 242 bytes
+larger costs twice that, because this flow fetches the responder's chain twice
+(§5). Packet count is unchanged at <!--claim messages.decoded=30--> 30 — the
+extra bytes bought no extra round trips, because 1,897 is still comfortably
+under the negotiated `DataTransferSize` of 4,608. The arm where that stops being
+true is §9.3.
+
+#### The half I did not replace, and the third one I had not counted
+
+I set out to replace "the certificate chain". This handshake carries
+<!--claim layout.chains#=4--> **four** chain fetches under
+<!--claim layout.distinct_root_hashes=3--> **three distinct roots**:
+
+| packet | direction | slot | bytes | root | whose |
+|--:|---|--:|--:|---|---|
+| 10 | RSP→REQ | 0 | 1,897 | `df0ee8f9…` | **mine** |
+| 12 | RSP→REQ | 4 | 1,660 | `ed79ce9a…` | upstream `ecp384` |
+| 19 | REQ→RSP | 0 | 3,794 | `e59ee211…` | upstream `rsa3072` |
+| 26 | RSP→REQ | 0 | 1,897 | `df0ee8f9…` | **mine** |
+
+The requester's chain is <!--claim layout.certificate_requester.chain_length=3794-->
+**3,794 bytes** and still descends from
+<!--claim layout.certificate_requester.root_hash=e59ee211027416a3a62aae64702e8fff8e0169dab66c1954a177ce4d623806bd4add3a744e30fc9b69e9870318361f14-->
+upstream's RSA-3072 root, because SPDM negotiates the requester's signature
+separately — `ReqAsym` settled on `RSAPSS_3072`, which selects `rsa3072/`, a
+directory the sandbox never touched. Slot 4 is upstream's for the same kind of
+reason: `--slot_count` did not depopulate it.
+
+**This is 2026-08-17's lesson in a different mechanism.** That day the
+independent variable had two halves and only one was pinned. Here the
+certificate material has three, and replacing one of them produced a handshake
+that looks entirely self-signed until something counts the roots. On an emulator
+that is a curiosity. On a product it is a device shipped with the vendor's
+sample trust anchor still reachable in the direction nobody looked at.
+
+`layout.distinct_root_hashes` exists so that the count is a number CI checks
+rather than something I noticed once.
 
 ---
 
@@ -1028,29 +1216,51 @@ Stated here because a check trusted beyond its reach is worse than none.
    header itself. Only single-bit `#define`s are compared; composite masks such
    as `MEAS_CAP` and everything else in that 70 KB header are not.
 
-2. **Two of the seven message pairs now have their offsets read off the wire.
-   Five do not.**
+2. **Four of the seven message pairs now have their offsets read off the wire.
+   Three do not.**
 
-   *Changed 2026-08-28.* `CHALLENGE_AUTH` (§6) and `MEASUREMENTS` (§7) are
-   reconstructed field by field and required to close: the bytes left after
-   placing everything up to the signature must equal the size the negotiated
-   algorithm implies, and `RequesterContext` must be found, at the predicted
-   offset, equal to what the request sent. `verify_repo.sh` rebuilds a correct
-   message and three broken ones on every run and requires the broken ones to be
-   rejected. The requests are covered too, by their own total length —
-   `CHALLENGE` is 44 bytes and nothing else, `GET_MEASUREMENTS` 45 or 12.
+   *Changed 2026-08-28, extended 2026-08-31.* `CHALLENGE_AUTH` (§6) and
+   `MEASUREMENTS` (§7) are reconstructed field by field and required to close:
+   the bytes left after placing everything up to the signature must equal the
+   size the negotiated algorithm implies, and `RequesterContext` must be found,
+   at the predicted offset, equal to what the request sent. The requests are
+   covered by their own total length — `CHALLENGE` is 44 bytes and nothing else,
+   `GET_MEASUREMENTS` 45 or 12.
+
+   `CERTIFICATE` (§5) was named here as the next task and is now done, on four
+   equations rather than one: closure against `LargePortionLength`, the chain's
+   own `Length` against the two portion fields, a DER walk that must consume the
+   certificates exactly, and `RootHash` recomputed from the first certificate in
+   the same message. Its request is covered by the same kind of length equation
+   — 8 bytes or 16, decided by `Param1` bit 7 and nothing between.
+
+   `DIGESTS` (§4) followed, because its per-slot record size is settled by the
+   message's length under two hypotheses that differ by 4*n*.
+
+   `verify_repo.sh` breaks each of these and requires the break to be reported:
+   three for `CHALLENGE_AUTH`, four for `CERTIFICATE` through four *different*
+   checks, two for `DIGESTS` plus one case that must still be accepted. A suite
+   in which two breaks are caught by the same check is claiming more than it
+   has, and for one revision of the chain checker that was exactly true.
 
    **What is still not covered:** §1, §2 and §3 were confirmed byte for byte
    against `spdm_dump -x` **by eye**, not by machine, and are shown that way
-   above. §4 (`DIGESTS`) and §5 (`CERTIFICATE`) are neither — their offset
-   columns are still transcribed from `spdm.h`, and a wrong offset next to a
-   right value would still pass.
+   above. Their offset columns are still transcribed from `spdm.h`, and a wrong
+   offset next to a right value would still pass.
 
-   `CERTIFICATE` is the one worth doing next, and it looks tractable for the
-   same reason the other two were: `PortionLength` is carried in the message, so
-   header + lengths + portion ought to account for every byte. That it *ought
-   to* is not a measurement, which is why it is written here as the next task
-   and not in §5 as a fact.
+   These three look harder than the four that are done, and it is worth being
+   precise about why: `VERSION`, `CAPABILITIES` and `ALGORITHMS` have no
+   signature, no echoed nonce and no self-declared inner length, so there is no
+   spare equation to be over-determined by. `ALGORITHMS` may be reachable
+   through its `AlgStructure` count; `VERSION` through its version-entry count.
+   Neither has been tried, and neither is claimed.
+
+   **One thing the `CERTIFICATE` reconstruction reports rather than enforces:**
+   whether `RootHash` matches the first certificate. DSP0274 permits a chain
+   whose root is not among its certificates, so a mismatch is a fact about the
+   chain and not a malformed message. Every chain seen so far matches; a
+   document that quotes the field is checked on it, and CI feeds the tool an
+   altered `RootHash` to confirm the field can still turn false.
 
 3. **Sizes marked as computed are computed.** Where a length is derived from the
    negotiated hash size (§6's offset 52, §4's 48-byte digests) it is arithmetic
@@ -1071,10 +1281,17 @@ Stated here because a check trusted beyond its reach is worse than none.
    |:--|---|:--|---|
    | 6 | is `MeasurementSummaryHash` sized by `BaseHashAlgo` or `MeasurementHashAlgo`? | 2026-08-28 | `BaseHashAlgo` — only that hypothesis closes; the other misses by 16 bytes |
    | 7 | is `Nonce` present in `GET_MEASUREMENTS` without `GenerateSignature`? | 2026-08-28 | no, and neither is `SlotIDParam` — the request is 12 bytes against 45 |
+   | 5 | is the chain's `Length` four bytes, or two beside two reserved? | 2026-08-31 | **four**, DSP0274 Table 39 — read from the specification, and libspdm's `spdm_cert_chain_t` agrees. The two readings are indistinguishable below 65,536 bytes |
+   | 4 | does the per-slot record in `DIGESTS` carry the 1.3 key information here? | 2026-08-31 | yes — 52 bytes per slot, because 4 + 3 × 52 closes and 4 + 3 × 48 does not |
 
-   Both came from arithmetic on one emulator's bytes rather than from DSP0274,
-   which is a weaker kind of answer than reading the specification would be, and
-   they are recorded as such where they appear. Five questions remain open.
+   The first two came from arithmetic on one emulator's bytes rather than from
+   DSP0274, which is a weaker kind of answer than reading the specification
+   would be, and they are recorded as such where they appear. The third is the
+   opposite case and worth naming: it came from the specification, and the
+   arithmetic could never have found it, because both readings produce the same
+   bytes for every chain this project has captured. **Some questions are only
+   answerable by reading, and the way to tell is whether the alternatives differ
+   on the evidence in hand.** Three questions remain open.
 
 ---
 
@@ -1082,32 +1299,42 @@ Stated here because a check trusted beyond its reach is worse than none.
 
 Every word above was written on 2026-08-17 against
 `bench/data/w2-baseline-20260816T172221Z/`. The claims are checked against
-`bench/data/w2-baseline-20260828T110130Z/` — the same five arms, the same pins,
-re-run eleven days later, and the run that supersedes it for this document.
+`bench/data/w3-baseline-20260831T143123Z/` — the same five arms plus two more,
+the same pins, and the third independent execution of those five.
 
-The re-run was not done to prove anything. It was done because `fields.py`
-changed, and `capture.sh` writes a `*.fields.json` beside each capture: a
-**derived** artifact, hashed into `manifest.json` like the evidence next to it,
-and therefore able to disagree with the tool that produced it. After the byte
-count above was corrected, the committed JSON still said 15,803. There is no
-mechanism here for re-stamping a manifest, and there should not be, so the
-answer was a new run rather than an edited old one. The 08-16 run is untouched.
+The re-runs were not done to prove anything. Each was forced by the same rule:
+`capture.sh` writes a `*.fields.json` beside each capture, and that is a
+**derived** artifact, hashed into `manifest.json` like the evidence next to it
+and therefore able to disagree with the tool that produced it. Change
+`fields.py` and the committed derivations become false while their digests still
+match. There is no mechanism here for re-stamping a manifest and there should
+not be, so the answer is a new run rather than an edited old one. The 08-16 and
+08-28 runs are untouched.
 
-What fell out of doing it is worth more than the tidying:
+What falls out of doing it is worth more than the tidying:
 
-| arm | packets | bytes | 08-16 | 08-28 |
-|---|--:|--:|:--:|:--:|
-| `classical` | 554 | 20,549 | ✅ | ✅ |
-| `pqc` | 584 | 114,751 | ✅ | ✅ |
-| `classical-stable` | 566 | 20,396 | ✅ | ✅ |
-| `walkthrough` | 30 | 11,441 | ✅ | ✅ |
-| `single-algo` | 30 | 11,441 | ✅ | ✅ |
+| arm | packets | bytes | 08-16 | 08-28 | 08-31 |
+|---|--:|--:|:--:|:--:|:--:|
+| `classical` | 554 | 20,549 | ✅ | ✅ | ✅ |
+| `pqc` | 584 | 114,751 | ✅ | ✅ | ✅ |
+| `classical-stable` | 566 | 20,396 | ✅ | ✅ | ✅ |
+| `walkthrough` | 30 | 11,441 | ✅ | ✅ | ✅ |
+| `single-algo` | 30 | 11,441 | ✅ | ✅ | ✅ |
+| `sample-1slot` | 30 | 11,337 | — | — | new |
+| `selfsigned` | 30 | 11,821 | — | — | new |
 
-**Identical, on every arm, to the packet.** Nonces and timestamps differ, as
-they must; nothing this document states about sizes, counts or offsets does.
-That is the difference between a capture and a measurement, and it is the reason
-byte counts here are reported as single values rather than as ranges — a
-convention [`docs/roadmap.md`](roadmap.md) states and this is the evidence for.
+**Identical, on every arm, to the packet, three times over fifteen days.**
+Nonces and timestamps differ, as they must; nothing this document states about
+sizes, counts or offsets does. That is the difference between a capture and a
+measurement, and it is the reason byte counts here are reported as single values
+rather than as ranges — a convention [`docs/roadmap.md`](roadmap.md) states and
+this is the evidence for.
+
+The cost is worth stating too, because it is the recurring one: extending
+`fields.py` twice on 2026-08-31 meant taking the whole run twice. That is the
+rule working, not the rule being expensive — but it does mean a tool change and
+an evidence run are one unit of work, and planning them as two is how a stale
+derivation gets committed.
 
 `harness/verify_repo.sh` now requires every committed `*.fields.json` in a run
 that a document cites to be exactly what `fields.py` produces from the decode
@@ -1119,6 +1346,6 @@ decision, and the four alternatives rejected to reach it, are
 ---
 
 *Written against `bench/data/w2-baseline-20260816T172221Z/`, checked against
-`bench/data/w2-baseline-20260828T110130Z/`. Regenerate with
-`bash harness/capture.sh --name w2-baseline`; re-check with
+`bench/data/w3-baseline-20260831T143123Z/`. Regenerate with
+`bash harness/capture.sh --name w3-baseline`; re-check with
 `python3 harness/fields.py --check docs/handshake-walkthrough.md`.*
