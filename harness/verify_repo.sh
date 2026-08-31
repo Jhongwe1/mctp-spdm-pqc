@@ -24,7 +24,7 @@ cd "$REPO_ROOT" || exit 1
 
 step "shellcheck"
 if command -v shellcheck >/dev/null 2>&1; then
-    if shellcheck -x -S warning harness/*.sh; then
+    if shellcheck -x -S warning harness/*.sh certs/*.sh; then
         good "no warnings or errors"
     else
         bad "shellcheck reported problems"
@@ -34,10 +34,85 @@ else
 fi
 
 step "python syntax"
-if python3 -m py_compile harness/pcapcount.py harness/lib/_manifest.py; then
+if python3 -m py_compile harness/pcapcount.py harness/lib/_manifest.py certs/check_chain.py; then
     good "harness python compiles"
 else
     bad "python syntax error"
+fi
+
+step "no private key material is tracked"
+# .gitignore excludes *.key, and for one commit's worth of time it also did not
+# exclude end_responder.key.pem, because that pattern matches the END of a name
+# and gen_chain.sh had written a second spelling. The rule looked like it
+# covered the case and did not.
+#
+# So the guarantee is not a pattern any more. This reads every file git is
+# actually tracking and refuses a PEM private-key header in any of them. A
+# pattern describes what someone expected to write; this describes what is
+# there. Costs about a second.
+python3 - <<'PY'
+import pathlib, subprocess, sys
+
+# Assembled rather than written out, and the first version of this check was not
+# — so it found a private-key header in the only file that had one: itself. A
+# checker that spells out what it forbids becomes an instance of it. Built from
+# pieces, the header never appears as a byte sequence in any tracked file, and
+# the check's answer about this file is the true one.
+RULE = b"-" * 5
+def marker(kind: bytes) -> bytes:
+    return RULE + b"BEGIN " + kind + b"PRIVATE KEY" + RULE
+
+MARKERS = tuple(marker(k) for k in
+                (b"", b"RSA ", b"EC ", b"DSA ", b"OPENSSH ", b"ENCRYPTED "))
+MARKERS += (RULE + b"BEGIN PGP " + b"PRIVATE KEY BLOCK" + RULE,)
+
+tracked = subprocess.run(["git", "ls-files", "-z"], capture_output=True, check=False)
+names = [n for n in tracked.stdout.split(b"\0") if n]
+found, scanned = [], 0
+for raw in names:
+    path = pathlib.Path(raw.decode("utf-8", "surrogateescape"))
+    if not path.is_file():
+        continue
+    try:
+        blob = path.read_bytes()
+    except OSError:
+        continue
+    scanned += 1
+    for marker in MARKERS:
+        if marker in blob:
+            found.append(f"{path}  contains {marker.decode()}")
+            break
+
+for line in found:
+    print("  " + line)
+print(f"  {scanned} tracked file(s) scanned")
+sys.exit(1 if found else 0)
+PY
+[ $? -eq 0 ] && good "no tracked file carries a private-key header" \
+             || bad "a private key is committed — remove it and rotate it"
+
+step "the certificate chain is well formed, and the checker can still reject"
+# certs/gen_chain.sh builds this project's own three-layer chain, and
+# certs/check_chain.py reads it out of DER rather than out of a pretty-printer.
+# Both halves run here: the committed chain has to pass, and the checker has to
+# be observed rejecting four different breaks through four different checks —
+# because a suite where two breaks are caught by the same check is claiming
+# more coverage than it has, and this one was, until the order of two checks
+# was swapped.
+if [ -f certs/out/bundle_responder.certchain.der ]; then
+    if python3 certs/check_chain.py certs/out >/dev/null 2>&1; then
+        good "the committed chain links to its root and carries both identity OIDs"
+    else
+        python3 certs/check_chain.py certs/out 2>&1 | sed 's/^/  /' | tail -20
+        bad "certs/out does not pass its own checker"
+    fi
+    if python3 certs/check_chain.py certs/out --self-test 2>&1 | sed 's/^/  /'; then
+        good "four breaks, four distinct checks, every one rejected"
+    else
+        bad "the chain checker accepted something it should have refused"
+    fi
+else
+    printf '  --   certs/out holds no chain — skipped (bash certs/gen_chain.sh)\n'
 fi
 
 step "pcapcount self-test"
@@ -452,6 +527,169 @@ for name, asym, chal, auth in (
 PY
 [ $? -eq 0 ] && good "the reconstruction closes on a correct message and on nothing else" \
              || bad "the layout reconstruction accepted a message it should have rejected"
+
+step "the certificate reconstruction can still fail"
+# CHALLENGE_AUTH is over-determined by one equation. CERTIFICATE is over-
+# determined by four, and each of the four has to be shown rejecting something
+# on its own or it is decoration:
+#
+#   closure     the message length against its header plus PortionLength
+#   agreement   the chain's own Length against PortionLength + RemainderLength
+#   structure   the certificates as a whole number of DER SEQUENCEs, consumed
+#               to the last byte
+#   digest      RootHash against the hash of the first certificate, computed
+#
+# The fourth is reported rather than enforced, because DSP0274 permits a chain
+# whose root is not among its certificates — so the test requires the field to
+# turn FALSE rather than requiring the message to be refused. A check that
+# cannot say "no" and a check that says "no" wrongly are different failures and
+# this suite has to distinguish them.
+python3 - <<'PY'
+import hashlib, json, pathlib, subprocess, sys, tempfile
+
+H = 48                                   # SHA-384, which the ALGORITHMS line below negotiates
+
+ALGS = ("1 (1) MCTP(5) RSP->REQ SPDM(14, 0x63) SPDM_ALGORITHMS "
+        "(Hash=0x00000002(SHA_384), MeasHash=0x00000008(SHA_512), "
+        "Asym=0x00000080(ECDSA_P384), ReqAsym=0x0008(RSAPSS_3072)) ")
+GET = ("2 (1) MCTP(5) REQ->RSP SPDM(14, 0x82) SPDM_GET_CERTIFICATE "
+       "(SlotID=0x00, LargeCert=0x80, Attr=0x00(), Offset=0x00000000, "
+       "Length=0x00027ff0) ")
+CERT = ("3 (1) MCTP(5) RSP->REQ SPDM(14, 0x02) SPDM_CERTIFICATE "
+        "(SlotID=0x00, LargeCert=0x80, Attr=0x01(DEVICE), PortLen=0x00000295, "
+        "RemLen=0x00000000) ")
+
+
+def seq(body: bytes) -> bytes:
+    """A DER SEQUENCE with a minimally encoded length — a stand-in certificate."""
+    n = len(body)
+    if n < 0x80:
+        return bytes([0x30, n]) + body
+    width = (n.bit_length() + 7) // 8
+    return bytes([0x30, 0x80 | width]) + n.to_bytes(width, "big") + body
+
+
+def _stretched(cert: bytes) -> bytes:
+    """The same bytes, declaring one more content byte than it carries.
+
+    Byte 3 is the low half of the two-byte DER length in `30 82 01 2C ...`, so
+    raising it turns 300 into 301 without moving anything. Same buffer length,
+    same chain length, one certificate that no longer fits.
+    """
+    out = bytearray(cert)
+    out[3] += 1
+    return bytes(out)
+
+
+CERTS = [seq(b"\xAA" * 100), seq(b"\xBB" * 200), seq(b"\xCC" * 300)]
+BLOB = b"".join(CERTS)
+ROOT = hashlib.sha384(CERTS[0]).digest()
+
+
+def build(chain_len=None, portion=None, remainder=0, root=None, blob=None,
+          trim=0, req_len=16):
+    blob = BLOB if blob is None else blob
+    root = ROOT if root is None else root
+    chain = (chain_len if chain_len is not None else 4 + H + len(blob))
+    body = chain.to_bytes(4, "little") + root + blob
+    port = portion if portion is not None else len(body)
+    rsp = (bytes([0x14, 0x02, 0x80, 0x01]) + bytes(4)
+           + port.to_bytes(4, "little") + remainder.to_bytes(4, "little") + body)
+    if trim:
+        rsp = rsp[:-trim]
+    req = (bytes([0x14, 0x82, 0x80, 0x00]) + bytes(4)
+           + (0).to_bytes(4, "little") + (0x27FF0).to_bytes(4, "little"))[:req_len]
+    return req, rsp
+
+
+def block(raw):
+    return "\n".join(f"    {i:04x}: " + " ".join(f"{b:02x}" for b in raw[i:i + 32])
+                     for i in range(0, len(raw), 32))
+
+
+def run(req, rsp):
+    d = pathlib.Path(tempfile.mkdtemp())
+    algs_raw = bytes([0x14, 0x63]) + bytes(34)
+    (d / "t.decode.txt").write_text(
+        "spdm_dump version 0.1\n"
+        "PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP),"
+        " MaxPacketSize - 65536\n" + ALGS + "\n" + GET + "\n" + CERT + "\n",
+        encoding="utf-8")
+    (d / "t.hex.txt").write_text(
+        ALGS + "\n  SPDM Message:\n" + block(algs_raw) + "\n"
+        + GET + "\n  SPDM Message:\n" + block(req) + "\n"
+        + CERT + "\n  SPDM Message:\n" + block(rsp) + "\n", encoding="utf-8")
+    out = subprocess.run([sys.executable, "harness/fields.py",
+                          str(d / "t.decode.txt"), "--json"],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        print("  fields.py failed:", out.stderr.strip())
+        return None
+    return json.loads(out.stdout)["layout"]
+
+
+lay = run(*build())
+if lay is None:
+    sys.exit(1)
+cert = lay["certificate"]
+if not cert or not cert.get("closes"):
+    print("  a correct CERTIFICATE did not close:", lay["unexplained"])
+    sys.exit(1)
+want = {"chain_offset": 16, "chain_length": 4 + H + len(BLOB),
+        "root_hash_offset": 20, "certificates": 3,
+        "certificate_bytes": [len(c) for c in CERTS],
+        "root_hash_matches_first_certificate": True, "large_form": True}
+wrong = {k: (cert.get(k), v) for k, v in want.items() if cert.get(k) != v}
+if wrong:
+    print("  the intact reconstruction disagrees with the document:", wrong)
+    sys.exit(1)
+print(f"  intact: closes — chain at {cert['chain_offset']}, Length "
+      f"{cert['chain_length']} = {cert['portion_length']} + {cert['remainder_length']}, "
+      f"{cert['certificates']} certificates "
+      f"{'+'.join(str(n) for n in cert['certificate_bytes'])}, RootHash verified")
+
+caught = {}
+for name, kwargs, expect in (
+    ("one byte short", dict(trim=1), "reject"),
+    ("chain Length disagrees with the two portion fields",
+     dict(chain_len=4 + H + len(BLOB) + 8), "reject"),
+    # The declared length is raised by one and the buffer is left alone, so the
+    # chain is still exactly as long as both length fields say it is: only the
+    # DER walk can find this. Written the other way round first — a byte
+    # removed and a byte appended — which changed nothing at all, because the
+    # byte removed and the byte appended were the same value. The test passed
+    # by not testing anything.
+    ("a certificate declaring one byte too many",
+     dict(blob=CERTS[0] + CERTS[1] + _stretched(CERTS[2])), "reject"),
+    ("GET_CERTIFICATE the wrong length for its Param1", dict(req_len=8), "reject"),
+    ("RootHash altered", dict(root=bytes(48)), "flip"),
+):
+    lay = run(*build(**kwargs))
+    if lay is None:
+        sys.exit(1)
+    got = lay["certificate"]
+    if expect == "reject":
+        if got is not None or not lay["unexplained"]:
+            print(f"  ACCEPTED A BROKEN CASE: {name}")
+            sys.exit(1)
+        caught[name] = lay["unexplained"][0].split(":", 1)[1].strip()[:44]
+        print(f"  {name}: rejected")
+    else:
+        if got is None:
+            print(f"  {name}: refused the message instead of reporting the mismatch")
+            sys.exit(1)
+        if got["root_hash_matches_first_certificate"] is not False:
+            print(f"  {name}: RootHash mismatch was not noticed")
+            sys.exit(1)
+        print(f"  {name}: reported as a mismatch, message still parsed")
+
+if len(set(caught.values())) != len(caught):
+    print("  two breaks are caught by the same check:", caught)
+    sys.exit(1)
+print(f"  {len(caught)} rejections through {len(set(caught.values()))} distinct checks")
+PY
+[ $? -eq 0 ] && good "the certificate reconstruction closes on a correct chain and on nothing else" \
+             || bad "the certificate reconstruction accepted a chain it should have rejected"
 
 step "the handshake walkthrough still agrees with its capture"
 # The walkthrough is a document made almost entirely of stated facts, which is
