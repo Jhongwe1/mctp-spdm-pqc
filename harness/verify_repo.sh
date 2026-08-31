@@ -245,6 +245,53 @@ else
     good "scope at line $scope, badge at line ${badge:-none}"
 fi
 
+step "every document quoting a specification quotes the pinned one"
+# A pin carrying `sha256=` and `quoted-in=` names a document that is NOT
+# vendored — the DMTF specifications this week cites live outside the repo,
+# because they are not ours to redistribute. What is inside the repo is the
+# digest of the exact file that was read, and the documents that cite it.
+#
+# Those two can drift apart in the direction that matters: someone re-downloads
+# a specification, updates the pin, and six documents keep quoting the old
+# digest. CLAUDE.md asks a person to grep for the old version number after
+# moving a pin, because that has already happened once on 2026-08-16. This is
+# the same instruction with the remembering taken out.
+python3 - <<'PY'
+import pathlib, sys
+
+problems, checked = [], 0
+pins = sorted(pathlib.Path("third_party").glob("*.pin"))
+for pin in pins:
+    fields = {}
+    for line in pin.read_text(encoding="utf-8").splitlines():
+        if line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        fields[k.strip()] = v.strip()
+    digest, quoted = fields.get("sha256"), fields.get("quoted-in")
+    if not digest or not quoted:
+        continue
+    for rel in (q.strip() for q in quoted.split(",") if q.strip()):
+        target = pathlib.Path(rel)
+        if not target.exists():
+            problems.append(f"{pin.name}: quoted-in names {rel}, which does not exist")
+            continue
+        if digest not in target.read_text(encoding="utf-8", errors="replace"):
+            problems.append(f"{rel} does not carry the sha256 in {pin.name}")
+            problems.append(f"          pin says {digest}")
+            continue
+        checked += 1
+        print(f"  {rel} quotes {pin.name} at {digest[:16]}…")
+
+if checked == 0:
+    print("  no pin declares a quoted-in= file")
+for line in problems:
+    print("  " + line)
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "no document quotes a specification digest the pin disagrees with" \
+             || bad "a pinned specification and a document that cites it have drifted apart"
+
 step "the capability-bit names were checked against the pinned libspdm"
 # fields.py names capability bits from a table transcribed by hand out of
 # libspdm's spdm.h, and section 10 of the walkthrough names what that leaves

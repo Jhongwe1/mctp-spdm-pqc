@@ -1,0 +1,18 @@
+source=DSP0274 Security Protocol and Data Model (SPDM) Specification
+version=1.4.0
+url=https://www.dmtf.org/sites/default/files/standards/documents/DSP0274_1.4.0.pdf
+sha256=a2035c64f614640ba34133ad255589269bf13c9d816414638fb22d89eb5369d9
+bytes=1838236
+pages=306
+retrieved-at=2026-08-31T13:55:36Z
+quoted-in=docs/certchain.md,certs/openssl.cnf
+sections-read=Table 39 (certificate chain format); Table 44/46/47 (GET_CERTIFICATE and CERTIFICATE); Table 48 (leaf field requirements); 414 and 425 (subjectAltName otherName, DMTFOtherName); 10.9.2.2.1 (hardware identity OID)
+# Not vendored — the PDF is not this repository's to redistribute, and lives
+# outside it under LAB_DIR/spec/. What is pinned is the digest of the exact
+# file that was read, so a claim attributed to a specification names a
+# specific document rather than a title.
+#
+# verify_repo.sh requires every file listed in quoted-in= to contain the
+# sha256= above. That is the check CLAUDE.md asks a person to do by hand after
+# moving any pin ("grep for the old version number"), made into something that
+# does not depend on remembering.

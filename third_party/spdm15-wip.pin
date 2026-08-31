@@ -1,0 +1,18 @@
+source=SPDM WG - Plan of Hybrid Support for Traditional Crypto and Post Quantum Crypto (PQC) in SPDM 1.5
+version=June 2026 public review draft
+url=https://www.dmtf.org/sites/default/files/SPDM1.5_PQC_Hybrid_public_review_WIP.pdf
+sha256=3e5366a386b9b340cb389ac1c8126ba96079f2df8391de68efd19eba02f39a25
+bytes=337583
+pages=8
+retrieved-at=2026-08-31T13:55:35Z
+quoted-in=docs/upstream/spdm15-hybrid-feedback.md
+sections-read=read in full (8 pages): Background; Requirements; Hybrid Signature and Key Exchange combination lists; Guidelines for Changes to Support Hybrid; Request for Industry Feedback
+# Not vendored — the PDF is not this repository's to redistribute, and lives
+# outside it under LAB_DIR/spec/. What is pinned is the digest of the exact
+# file that was read, so a claim attributed to a specification names a
+# specific document rather than a title.
+#
+# verify_repo.sh requires every file listed in quoted-in= to contain the
+# sha256= above. That is the check CLAUDE.md asks a person to do by hand after
+# moving any pin ("grep for the old version number"), made into something that
+# does not depend on remembering.
