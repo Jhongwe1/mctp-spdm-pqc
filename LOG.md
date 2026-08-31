@@ -14,7 +14,7 @@ grounds, is the difference between an entry the next reader can reuse and one
 they can only re-run.
 
 Entries marked **`TODO(me)`** are placeholders for things only I can write —
-what I read, what I concluded, how the drill went. They are left blank rather
+what I read, what I concluded, how the drill went. They are left blank rathe
 than filled with something plausible.
 
 ---
@@ -84,7 +84,7 @@ in the same window. Dates and evidence are in
 
 So the item that was supposed to be day one's urgent one — the thing with a
 queue in front of it — was already finished before this project started. Worth
-noticing why: the queue was not shortened, it was simply entered earlier, for
+noticing why: the queue was not shortened, it was simply entered earlier, fo
 a different reason. Gate 7's remaining risk here is entirely technical.
 
 One detail from that setup is worth carrying because it is the same mistake
@@ -147,12 +147,12 @@ file's content.
 
 **教訓** Do not edit a script that is currently executing; wait, or copy it
 first. And a pipeline's exit status is the *last* command's — checking a build
-through `| tee` without `set -o pipefail` or `PIPESTATUS` reports success for
+through `| tee` without `set -o pipefail` or `PIPESTATUS` reports success fo
 a build that failed. That second point is worth more than the first: it is a
 silent-wrong-answer class of bug, and it is the same class as the reason
 `bench/data/*/manifest.json` exists.
 
-### Things the environment cannot do, recorded now rather than discovered later
+### Things the environment cannot do, recorded now rather than discovered late
 
 | Capability | State | Consequence |
 |---|---|---|
@@ -177,10 +177,10 @@ ERROR: do_session_via_spdm - 80010001
 parsed the way I read it, (c) something outside `--exe_conn` is running.
 
 **先驗哪個、為什麼** (b) first — one line of output settles it, and if the
-argument had not taken, nothing else is worth investigating. The emulator
+argument had not taken, nothing else is worth investigating. The emulato
 echoes `exe_conn - 0x0000001e`, and the header defines
 `DIGEST 0x2 | CERT 0x4 | CHAL 0x8 | MEAS 0x10` = `0x1e`. Parsed correctly.
-That eliminated (b) and made (c) the only hypothesis consistent with an error
+That eliminated (b) and made (c) the only hypothesis consistent with an erro
 inside `set_certificate`, which is `SET_CERT` — a flag that is *not* in `0x1e`.
 
 Reading the source rather than guessing at flags:
@@ -262,7 +262,7 @@ error: passing argument 11 of 'libspdm_vendor_send_request_receive_response'
 mismatch between the pinned `libspdm` and the current `spdm-emu`.
 
 **先驗哪個、為什麼** (b), because the error names a specific argument of a
-specific function and gives its type — a stale cache produces missing files or
+specific function and gives its type — a stale cache produces missing files o
 link errors, not a type mismatch at a named parameter. (a) would also have been
 cheap to test, but the evidence already pointed one way.
 
@@ -301,7 +301,7 @@ output: 554 decoded messages for the classical capture, **18** for the
 post-quantum one — despite the two captures holding 554 and 590 packets. The
 post-quantum decode showed no `CHALLENGE` and no `MEASUREMENTS` at all.
 
-**假設** (a) the post-quantum handshake genuinely stopped after
+**假設** (a) the post-quantum handshake genuinely stopped afte
 `GET_CERTIFICATE`, and exit status 0 was hiding it; (b) the decoder stopped.
 
 **先驗哪個、為什麼** Compared packet counts first, because it needs no tools
@@ -372,9 +372,9 @@ replaces it, and is sound for a specific reason — it is one protocol field,
 read from both captures, with the negotiated algorithm confirmed in each.
 
 Open for G1: the classical run issues 263 `GET_MEASUREMENTS` and receives 246
-`InvalidRequset` errors and 17 `MEASUREMENTS`. That looks like the emulator
+`InvalidRequset` errors and 17 `MEASUREMENTS`. That looks like the emulato
 walking measurement indices and being told most do not exist. Whether that is
-the emulator's choice or something the specification implies is a question for
+the emulator's choice or something the specification implies is a question fo
 the field-by-field pass, and it dominates the packet count of every capture
 this project will take.
 
@@ -423,7 +423,7 @@ solves isolation; attestation is how you know the isolation held.
 
 ## 2026-08-16 · the README named a version the repo does not build
 
-**現象** `README.md` states the `stable` flavor is libspdm 3.8.2. So do four
+**現象** `README.md` states the `stable` flavor is libspdm 3.8.2. So do fou
 places in `RUNBOOK.md`, the usage comment of `harness/build_spdm_emu.sh`, and
 an INFO verdict in `harness/healthcheck.sh`. What the build actually produces
 is **3.8.0** — `third_party/spdm-emu-stable.pin` records it, and
@@ -453,7 +453,7 @@ job could see it. It survived five days precisely because it was inert.
 1. When a mechanism changes, grep for the old value before closing the change.
    The ADR is not the deliverable — the documents a reader actually opens are.
 2. **This repository's whole claim is that every number points at its source, so
-   a number that contradicts its own source is the most expensive kind of error
+   a number that contradicts its own source is the most expensive kind of erro
    it can carry** — more expensive than a wrong measurement, because it
    discredits the mechanism rather than one result. The failure mode is
    specific: facts that are only ever *stated* have nothing checking them,
@@ -464,7 +464,7 @@ Fixed here, and the correction was not only the digit. The tables now name both
 `spdm-emu` and `libspdm`, because naming only the one that is not pinned is
 what made the drift possible; and the cost of the pinning rule — which ADR 0001
 gave as "3.8.0 lacks the two 2026 advisory fixes" — was moved into `README.md`
-and `RUNBOOK.md` next to the table, rather than left in ADR 0001 for a reader
+and `RUNBOOK.md` next to the table, rather than left in ADR 0001 for a reade
 who goes looking.
 
 **That last sentence was itself wrong, and the next entry is about that.**
@@ -503,7 +503,7 @@ history actually shows:
 | 3.8.1 → 3.8.2 | 2026-04-03 | 10 | **one**, `Fix security vulnerability in GET_CSR parsing code` |
 
 Not two, not spread over both releases, and no commit message in either range
-names a CVE or GHSA identifier at all. Two further things fell out that matter
+names a CVE or GHSA identifier at all. Two further things fell out that matte
 more than the correction:
 
 - **`git cherry -v 4.0.0-rc 3.8.2` marks that security commit `-`.** It is a
@@ -528,12 +528,12 @@ more than the correction:
    the whole investigation.
 3. **Moving a claim makes it mine.** The sentence had sat in ADR 0001 for five
    days without being examined; copying it into `README.md` put it on the page
-   a stranger reads first, and that is the act that made it my assertion rather
+   a stranger reads first, and that is the act that made it my assertion rathe
    than an inherited one. **I wrote the previous entry — about facts that are
    only ever stated having nothing to check them — and then committed exactly
    that failure one commit later.** Knowing the failure mode is not the same as
    being immune to it, which is the argument for mechanisms over intentions and
-   is the reason `prov_begin` exists. There is no equivalent mechanism for
+   is the reason `prov_begin` exists. There is no equivalent mechanism fo
    prose, so the substitute is a rule: **a claim that moves to a more prominent
    place gets re-checked at the moment it moves.**
 
@@ -562,7 +562,7 @@ they appeared to answer, and all three were reporting success while doing it:
 3. `third_party/` pinned two emulator builds and **not `spdm-dump`** — through
    which every statement about what was *negotiated* is read.
 
-**假設** For (1): (a) the files were deleted after the run, (b) they were never
+**假設** For (1): (a) the files were deleted after the run, (b) they were neve
 added, (c) an ignore rule excluded them. For (2): (a) the tree really was dirty
 every time, (b) the check runs at the wrong moment.
 
@@ -708,7 +708,7 @@ Read the implementation first; it either names the alternative or rules it out.
 - **The two-pass structure is required by the specification.** The source
   comment says why: *"In SPDM 1.2 spec, the L1/L2 will be reset in case of
   MEASUREMENT error. That impacts 1-by-1 calculation… The solution is: get the
-  existing measurement list, then query measurement one by one."* A requester
+  existing measurement list, then query measurement one by one."* A requeste
   building a signed transcript has to learn which indices exist before it
   starts, and the discovery pass is the one that absorbs the errors.
 - **Walking the index space is the emulator's choice.** `--meas_op ALL` sends
@@ -727,7 +727,7 @@ Measured: `--meas_op ALL` gives **30 packets** instead of 554. And summing
 1. **"Is this the protocol or the implementation" is answered by reading the
    implementation, not the specification.** The implementation names the
    specification's constraint where it is subject to one — this comment cites
-   the SPDM 1.2 transcript rule directly — and where it does not, the behaviour
+   the SPDM 1.2 transcript rule directly — and where it does not, the behaviou
    is its own. Reading DSP0274 first would have found the L1/L2 rule and still
    not explained the 246 errors.
 2. **A question left open in a log is an asset, not a debt**, provided it is
@@ -761,7 +761,7 @@ The second claim fell to a measurement rather than an argument. One arm offering
 a single algorithm per group, against the stock arm offering two to four:
 `NEGOTIATE_ALGORITHMS` is **56 bytes in both**, byte for byte the same `Length`
 field, differing only in the values of fixed-width bitmasks. What does change
-the size is a whole group being dropped (`--dhe NONE`: one fewer
+the size is a whole group being dropped (`--dhe NONE`: one fewe
 `AlgStructure` table, 4 bytes) and the protocol version (1.3 is 48 bytes; 1.4's
 two extra tables are the difference, while `PQCAsymAlgo` was carved out of
 reserved space and cost nothing).
@@ -900,7 +900,7 @@ is on.
 **現象** §10 of the walkthrough states the hole in its own checking: the offset
 columns come from struct definitions in `spdm.h`, so **a wrong offset printed
 beside a right value passes every test in this repository.** The document's
-sharpest claim — that the responder's nonce sits at `4 + digest_size` rather
+sharpest claim — that the responder's nonce sits at `4 + digest_size` rathe
 than at a fixed offset — was arithmetic, not a measurement.
 
 **假設** for how to close it: (a) confirm each message against `spdm_dump -x` by
@@ -988,7 +988,7 @@ left standing above it, per §10's rule.
 
 ### The alignment lesson that this struct cannot teach
 
-**現象** Writing `c-drills/d1`, whose stated pitfall is "do not cast the buffer
+**現象** Writing `c-drills/d1`, whose stated pitfall is "do not cast the buffe
 to a struct pointer — it works on x86 and faults on ARM." The test hands the
 parser a deliberately odd address, and a reference implementation that does cast
 was written to confirm the test catches it. UndefinedBehaviorSanitizer said
@@ -1009,7 +1009,7 @@ misaligned at any address on any architecture. Strict aliasing still argues
 against the cast, and padding would bite the moment someone adds a `uint16_t`,
 but neither faults and no sanitizer reports either.
 
-**教訓** The lesson is true for structs with multi-byte members and false for
+**教訓** The lesson is true for structs with multi-byte members and false fo
 this one — and it would have been taught here as though it were true, then
 repeated in an interview.
 
@@ -1069,7 +1069,7 @@ I was asking of it.
 **先驗哪個、為什麼** (c), by re-reading the check's own output line: *present,
 tracked, and unaltered.* Thirty seconds, and it is the cheapest of the three by
 an order of magnitude — (a) and (b) both require going and looking at a
-mechanism that had just been extended and was demonstrably working on 76 other
+mechanism that had just been extended and was demonstrably working on 76 othe
 files. **When a check passes and the world looks wrong, read what the check
 actually claims before doubting that it does it.**
 
@@ -1114,7 +1114,7 @@ not an experiment anyone designed. It fell out of refusing to edit a manifest.
 the expensive one produces something.**
 
 **`TODO(me)`** — 緯穎 whitepaper, still unread. Carried from Day 1 and Day 2.
-That is two carries, which is the point where a carried item gets scheduled or
+That is two carries, which is the point where a carried item gets scheduled o
 dropped honestly rather than carried a third time.
 
 **`TODO(me)`** — `c-drills`. `d1` now exists with a contract, tests and a stub,
@@ -1129,5 +1129,421 @@ gap in this repository.
 `PortionLength` is carried in the message, so header + lengths + portion ought to
 account for every byte. "Ought to" is not a measurement, which is why it is
 written in §10 as a task and not in §5 as a fact.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
+
+## 2026-08-31 · Day 4 · a chain of my own, and the two it did not replace
+
+Week three. The plan asked for a three-layer certificate chain accepted by the
+responder, a diagram naming who holds each private key, the PCIe SAN, and a
+submission to DMTF's SPDM 1.5 review before it closed today. All of that is
+here. What is worth writing down is mostly the six things that were not planned,
+four of which are mistakes I made and one of which I had already documented
+eleven days ago and made again.
+
+### The plan told me to cite a specification I cannot read
+
+**現象** `plan/W03` §2.2 is unambiguous: the leaf certificate must carry a
+`subjectAltName` `otherName` under OID `2.23.147` holding Vendor, Device, Class
+Code, Revision and Subsystem IDs, per PCIe r6.1 §6.31.3, and a QEMU DOE endpoint
+rejects a certificate without it. The obvious move is to add it and continue.
+
+**假設** (a) the plan is right and this is simply what an SPDM leaf carries;
+(b) the plan is right about PCIe but PCIe is not the only specification with an
+opinion; (c) the plan is wrong.
+
+**先驗哪個、為什麼** (b), and by the cheapest possible test: `grep`. The pinned
+`libspdm` and `spdm-emu` trees are on this machine, and `spdm-emu`'s own
+`openssl.cnf` — the one that generates the sample certificates every capture in
+this repository has read — is thirty lines long. Reading it cost nothing and
+answered the question before any certificate was generated. **Checking what the
+reference implementation already does is faster than checking what a
+specification says, and it is available first.**
+
+**根因** Both. `2.23.147` appears **zero** times in `libspdm`, zero times in
+`spdm-emu`, and zero times in DSP0274 1.4.0's 306 pages. What the reference
+implementation emits is `1.3.6.1.4.1.412.274.1` — `id-DMTF-device-info`, defined
+in DSP0274 §425 as a UTF8String of exactly three colon-separated fields,
+`Manufacturer:Product:SerialNumber`, with no field permitted to contain a colon.
+The sample leaf carries `ACME:WIDGET:1234567890`.
+
+So there are two device-identity OIDs, from two specifications, answering the
+same question for two different stacks. A PCIe device speaking SPDM is subject to
+both. Carrying only the PCIe one would have produced a certificate that satisfies
+the transport and ignores the protocol — and I would have had no idea, because
+nothing in this project's toolchain reads either.
+
+**教訓** The leaf carries both, and only one of them is claimed to be verified.
+DSP0274 is a public PDF; the PCIe Base Specification is behind PCI-SIG
+membership and was not read. So `2.23.147` is labelled *asserted by the plan, not
+checked against its primary source* everywhere it appears — in `openssl.cnf`, in
+`certs/README.md`, in `docs/certchain.md`, and in the checker's own output.
+
+> **A repository that says "nothing is cited that has not been checked" has to be
+> able to carry something unchecked, labelled, rather than either dropping it o
+> quietly promoting it.** Dropping it loses a W09 prerequisite for a rule that
+> was not about that. Promoting it makes every other citation worth less.
+
+What *was* checked about the unverifiable one is stated as its own fact: the
+string appears nowhere in the specification the project does have, and nowhere in
+the code the project runs. That is a smaller claim than "PCIe requires this", and
+it is true.
+
+### 1897 bytes, computed twice, by two tools that share no input
+
+**現象** The self-signed chain needed some way to be more than "it was accepted".
+Acceptance is a boolean and this repository does not publish booleans.
+
+**假設** (a) report the file sizes and the handshake's exit code; (b) diff the
+capture against the sample-chain capture and report the delta; (c) predict the
+chain's size on the wire from the files on disk, then read it back out of the
+capture with a tool that never opens a certificate.
+
+**先驗哪個、為什麼** (c), because it is the only one that can be **wrong**.
+(a) restates its inputs. (b) measures a difference without explaining it. (c)
+makes a claim before the evidence exists, and the evidence can refuse it.
+
+**根因** DSP0274 Table 39: the chain on the wire is a 4-byte little-endian
+`Length`, then `RootHash` of H bytes, then the DER certificates. So
+
+```
+certs/check_chain.py, from the files:   4 + 48 + (504 + 573 + 768) = 1897
+harness/fields.py, from the capture:                                 1897
+```
+
+and the second tool recovered `504 + 573 + 768` by walking DER through bytes it
+read off the wire, and confirmed that the 48 bytes at offset 20 are `sha384` of
+`certs/out/ca.cert.der`. `check_chain.py` never opens a capture. `fields.py`
+never opens a certificate. Neither was told the other's answer.
+
+**教訓** `CERTIFICATE` turned out to be over-determined by three rather than by
+one, and the fourth equation is a different kind from the other three:
+
+| | equation | |
+|---|---|---|
+| closure | message length = 16 + `LargePortionLength` | length |
+| agreement | chain `Length` = `PortionLength` + `RemainderLength` | length |
+| structure | the certificates parse as DER, consuming the chain exactly | length |
+| **digest** | `RootHash` = SHA-384 of the first certificate | **not a length** |
+
+> **Two lengths can agree because both were derived from the same wrong
+> assumption. A 48-byte digest cannot.** Where a message carries a hash of
+> something else it carries, that is the cheapest independent equation available,
+> and it is worth going looking for.
+
+It is reported rather than enforced, because DSP0274 permits a chain whose root
+is not among its certificates — so a mismatch is a fact about the chain, not a
+malformed message. CI feeds the tool an altered `RootHash` and requires the field
+to turn false, which is a different assertion from requiring a refusal and had to
+be written as one.
+
+Two things the specification settled that the captures could not, and the
+distinction is worth keeping. Table 39 makes `Length` **four bytes**, not two
+beside two reserved — indistinguishable below 65,536 bytes, which is every chain
+this project has captured. And Table 44 against Table 46 is asymmetric: the
+request's large offset/length pair is **absent** when `Param1` bit 7 is clear,
+while the response's 16-bit pair is **reserved**, meaning still present. Fou
+zero bytes that a parser reading "reserved" as "absent" would swallow.
+
+> **Arithmetic on the evidence answers the questions whose alternatives differ on
+> the evidence. The others need reading, and the way to tell them apart is to ask
+> whether the hypotheses produce different bytes here.**
+
+### I replaced the certificate chain and replaced one third of it
+
+**現象** The self-signed capture is 11,821 SPDM bytes against the control's
+11,337. The chain is 242 bytes larger. 484 is not 242.
+
+**假設** (a) my arithmetic is wrong; (b) the chain is fetched more than once;
+(c) something else changed between the two arms.
+
+**先驗哪個、為什麼** (b), because `fields.py` already prints
+`responder slot 0: … fetched 2x` and had been printing it since week two. Zero
+cost, and a factor of exactly two is the shape of a repetition rather than of an
+error. **When a number is wrong by an integer multiple, check for a repetition
+before checking the arithmetic.**
+
+**根因** Confirmed in one line — this flow fetches the responder's chain twice,
+once before `CHALLENGE` and once after mutual authentication, so 2 × 242 = 484.
+That took a minute and was not the finding.
+
+The finding was in the next line of the same output. In the arm running **my**
+chain, the requester's certificate chain is still 3,794 bytes with a root hash of
+`e59ee211…` — which is `sha384` of upstream's `rsa3072/ca.cert.der`. And slot 4
+is still 1,660 bytes under `ed79ce9a…`, upstream's `ecp384` root.
+
+**Four chain fetches, three distinct roots, one handshake.** Mine on responde
+slot 0. Upstream's `ecp384` root on responder slot 4, because `--slot_count`
+depopulates the *requester's* slots and not the responder's — which is itself a
+thing I had written a wrong comment about, below. And upstream's `rsa3072` root
+for the requester, because SPDM negotiates the requester's signature algorithm
+separately, `ReqAsym` settled on `RSAPSS_3072`, and libspdm's sample library
+picks its certificate directory from the negotiated algorithm. A chain installed
+in `ecp384/` never serves the direction that chose `rsa3072/`.
+
+**教訓** This is 2026-08-17 again, in a mechanism that has nothing to do with the
+first one. That day the independent variable had two halves and only one was
+pinned. Today the certificate material has three parts and I replaced one.
+
+> **The shape of the mistake is not "I forgot a flag". It is "I described a thing
+> in the singular that the system implements in the plural".** "The certificate
+> chain", "the signature algorithm", "the measurement" — every one of those is a
+> set in SPDM, and the singular is where the error hides.
+
+The failure mode outside an emulator is worth stating plainly. A vendo
+provisioning "the device certificate" replaces one chain, for one slot, under one
+algorithm. Everything else keeps what it had, and on a reference design what it
+had is the reference implementation's sample chain, whose private keys are
+published in the upstream repository. The handshake completes. Every signature
+verifies. Nothing in the flow says which anchor was used.
+
+So the count is now a field: `layout.distinct_root_hashes`, re-derived from the
+capture on every CI run. **The difference between having noticed something and
+having measured it is whether it can go wrong again without anyone being told.**
+
+### The one thing in that commit nothing could check was the comment
+
+**現象** `harness/capture.sh` gained two arms with `--slot_count 1`, and a
+comment explaining that the flag leaves only this project's certificates on the
+wire. It was committed. The capture taken about an hour later shows the
+responder's `ProvisionedSlotMask` is `0x13` and slot 4 is served from upstream's
+chain, exactly as before.
+
+**假設** (a) the flag did not take effect; (b) the flag does something other than
+what I assumed; (c) the capture is of the wrong binary.
+
+**先驗哪個、為什麼** (b), by diffing the two arms' `DIGESTS` lines, which is one
+`grep`. (a) and (c) both accuse the apparatus, and the apparatus had just
+produced six other arms that reproduced to the byte. **A tool that has just been
+observed working is the last thing to suspect** — the same reasoning as the
+alignment entry on 2026-08-28, and it was right for the same reason.
+
+**根因** `--slot_count` sets the **requester's** provisioned slot count. Its
+`DIGESTS` mask went `0x07` to `0x01`; the responder's stayed `0x13`. The flag is
+worth keeping, both arms carry it identically, and the pair is still a
+one-variable comparison — but the sentence explaining *why* it was there was
+false.
+
+**教訓** Every number in that commit was checked by something. The byte counts by
+`fields.py`, the artifacts by a manifest, the claims by `--check`. The one
+sentence that was wrong was the prose, and prose is the only thing in this
+repository with no mechanism behind it.
+
+> **The parts of a commit that nothing can check are exactly the parts most
+> likely to be wrong, because they are the only parts where being wrong is
+> free.** Rule 9 says a published number is marked up so a machine can re-derive
+> it. There is no equivalent for a justification, and there probably cannot be —
+> so the answer is to notice that a justification is a claim, and to be as
+> suspicious of it as of a number.
+
+The comment now says what the flag does, what it was believed to do, and which
+capture refuted it. That is longer than the original and it is the useful length.
+
+### A checking suite is a thing that has to be checked
+
+Two of today's mechanisms failed on their first run, in different ways, and both
+failures were about the suite's relationship to itself rather than to its
+subject.
+
+**現象 (i)** A new check reads every tracked file and refuses a PEM private-key
+header in any of them. It failed immediately. The file it found one in was
+`harness/verify_repo.sh` — the check itself, which lists the headers it forbids.
+
+**現象 (ii)** `certs/check_chain.py --self-test` breaks the chain four ways and
+requires each to be rejected. All four were rejected. Two of them by the same
+message.
+
+**先驗哪個、為什麼** Neither needed a hypothesis. (i) prints the offending path.
+(ii) prints the rejecting message, and reading four lines was enough to see that
+two were identical. Both were found by looking at output that was already there —
+which is the point: **a suite that reports only pass or fail hides this class of
+defect completely, and one that prints what it did shows it for free.**
+
+**根因** (i) A checker that spells out what it forbids becomes an instance of it.
+The markers are assembled from pieces at run time now, so no tracked file
+contains the byte sequence and the check's answer about this file is the true
+one.
+
+(ii) The bundle was compared against the concatenation of the individual
+certificate files *before* being walked as DER. That comparison catches
+everything the walk would catch, so the walk had never rejected anything — it was
+arithmetic that happened to agree, which is precisely what rule 11 exists to
+prevent, inside the suite written to demonstrate rule 11. Swapping the two gave
+each check something only it can find: the walk catches a malformed bundle, the
+comparison catches a well-formed bundle holding the wrong certificates.
+
+**教訓** Rule 11 is not sufficient on its own, and rule 13 is now written down:
+
+> **Two breaks caught by the same check are one check.** A suite where fou
+> broken inputs are all refused by the cheapest check reports four times the
+> coverage it has. So the self-test asserts that the rejections arrive through
+> *distinct* mechanisms, and prints how many.
+
+The same assertion is in the `CERTIFICATE` negative test — four rejections
+through four distinct checks — and it is cheap enough that it should probably be
+in all of them.
+
+### I wrote d1's mistake again, eleven days after documenting it
+
+**現象** `d6` is the packed-struct drill. Its first version was built on the
+five-byte MCTP transport framing, on the reasoning that `harness/verify_repo.sh`
+asserts `pcap bytes == SPDM bytes + 5 × messages`, and that taking the 5 from
+`sizeof` would be the classic padding mistake. Compiled against a correct
+reference implementation, two checks failed. Compiled against the *wrong* one,
+the same two failed.
+
+**假設** (a) the reference implementation is wrong; (b) the tests are wrong;
+(c) the premise is wrong.
+
+**先驗哪個、為什麼** (c), by one `printf` of `sizeof` and `_Alignof`. Cheape
+than reading either the tests or the implementation, and it is the assumption
+that both of the others rest on. **When a correct implementation and a wrong one
+fail identically, the thing they have in common is the suspect, and what they
+have in common is the premise.**
+
+**根因** Upstream's `mctp_header_t` is four `uint8_t` members. Its alignment is
+1, `sizeof` is exactly 4, the framing struct is exactly 5, and there is no
+padding to be wrong about. The trap could not fire.
+
+This is the same defect `d1` had on 2026-08-28 — "do not cast the buffer to a
+struct pointer, it faults on ARM", for a struct whose alignment is 1 — and it was
+written a second time by the person who wrote that entry.
+
+**教訓** `d6` moved to `spdm_measurement_block_dmtf_header_t`: a `uint8_t`
+followed by a `uint16_t`, three bytes on the wire and four in C, where the
+padding moves a **field** as well as a **size**. Beside it in the same drill sits
+`{uint8_t, uint8_t, uint16_t}`, which is identical packed or not, so the contrast
+is the lesson instead of the rule that packing is always needed. `spdm.h` opens
+with `#pragma pack(1)` on line 14 and closes it 1,813 lines later, which settles
+what upstream thinks.
+
+The test bytes are 38 real bytes from packet 30 of this week's capture, and they
+close: `MeasurementSize` 11 = 3 + `ValueSize` 8, and 19 = 3 + 16. With `sizeof`
+the first test reads 11 = 4 + 8 and the walk stops.
+
+> **Knowing a lesson is not the same as being able to recognise the situation it
+> applies to.** I could recite d1's finding. I did not notice I was constructing
+> it again, because the two structs look nothing alike and the reasoning that
+> produced the error was the reasoning I would use to check it.
+
+The mechanism that caught it is the one written *because* of d1: every drill's
+tests are compiled against a correct implementation and against the wrong one the
+drill exists to teach, in a scratch directory, before the drill is committed.
+That is now rule 15. The general form is worth more than the drill:
+
+> **Before writing a check, compile the failure. Reasoning about whether a trap
+> fires is exactly the reasoning that produced the trap.**
+
+`d5` passed the same gate for a different reason, and it is worth noting because
+the outcome looked identical. Its wrong version — `p[0] << 24` on a `uint8_t`
+promoted to a signed `int` — produces the **correct value** on every compile
+anyone will use. Only UndefinedBehaviorSanitizer separates it from the right
+answer. A drill that checked values alone would have taught nothing and passed.
+
+### A tool change and an evidence run are one unit of work
+
+**現象** Today's baseline was captured twice, forty minutes apart, and only the
+second is committed.
+
+**根因** Not a mistake, a cost. `capture.sh` writes a `*.fields.json` beside each
+capture, and ADR 0004 requires a committed derivation to reproduce from its
+inputs. Extending `fields.py` after a run makes every derivation in it false
+while its digest still matches — the 2026-08-28 finding, arriving this time as a
+scheduled expense rather than as a surprise. I extended `fields.py` twice: once
+for `CERTIFICATE`, and again for `DIGESTS` and the chain list, after the first
+capture had already been taken.
+
+**教訓** The first run was moved out of `bench/data/` rather than deleted, and it
+was never committed, never cited, and is not evidence of anything. But the
+sequencing lesson is real:
+
+> **A tool change and the evidence run that follows it are one unit of work.
+> Planning them as two is how a stale derivation gets committed** — and the only
+> reason one did not is that the check added on 2026-08-28 went red.
+
+Which is the more useful half of this entry. The check that made today cost an
+extra six minutes is the same check that made 08-28 cost a re-run of five arms.
+It has now been observed working twice, on the same failure, and both times the
+alternative was publishing a number that was quietly false.
+
+### The 08/31 window, and what it is honestly worth
+
+DMTF's SPDM 1.5 hybrid-PQC industry review closed today. The WIP is eight pages
+and was read in full; DSP0274 1.4.0 was read only where a captured field name led.
+Both PDFs' digests are recorded, and the WIP's own page 8 gives the deadline and
+the channel — which is what `plan/W03` said to verify rather than assume, and it
+was worth doing, because the page asks **two specific questions** rather than
+inviting general comment. One of them is *does your company require algorithm
+combinations besides the highlighted ones*, which a graduate project cannot
+answer and should not pretend to.
+
+The angle chosen is a tension inside the WIP's own text. The hybrid guideline
+says message fields carrying a certificate chain will hold "the concatenation of
+two pieces of data for the two algorithms". Requirement 2 says a 1.4 device that
+already has a Traditional chain and a PQC chain is upgradeable. But such a device
+holds them in **two slots**, each fetched and cached independently through
+`GET_DIGESTS`, and concatenation puts them in one. This project has measured both
+sides — 1,655 bytes and no chunking classically, 16,853 bytes and fou
+`CHUNK_GET` round trips with ML-DSA-65, on one binary against a negotiated
+`DataTransferSize` of 4,608.
+
+The draft is 297 words, asks rather than asserts, and every number in it names
+the run and the claim key that checks it. The one figure that is arithmetic
+rather than measurement — the rough size of a concatenated hybrid chain — says so
+in the draft itself.
+
+**`TODO(me)`** — it is not sent. It needs a DMTF portal account and it has to be
+in your own words rather than a draft's. If it goes unsent, that is recorded as a
+missed window and not quietly dropped: *"I read the WIP during the review period
+and wrote a question I did not send"* is a true sentence and *"I submitted
+feedback"* would not be.
+
+Evidence strength was written down before anyone could ask: **lower than a GitHub
+pull request.** A portal submission may produce no public URL, no review thread
+and no confirmation it was read. It is evidence of **timing** — that the
+implementation and the standards draft were being worked on in the same weeks —
+and G7 still rests on the two repository candidates.
+
+### What is measured, and what is still a claim about myself
+
+**`TODO(me)`** — `c-drills`. `d5` and `d6` now exist with contracts, tests and
+stubs, both validated against reference implementations that were deliberately
+not committed. That makes **four** drills waiting and **zero** finished.
+`DONE.txt` is empty for the fourth working day running and `SCORECARD.md` has
+eight blank rows.
+
+Day 2 called this a risk. Day 3 called it a fact and the largest gap in the
+repository. Today it is the same fact with two more rows in front of it, and the
+honest description has changed shape: the project track is not merely running
+ahead, it is **generating work for a track that has never started**. Two more
+specifications for an implementer who has not written one yet is not progress on
+that track; on some readings it is the opposite.
+
+There is no mechanism that can fix this, and that is the point of it. Every othe
+gap in this repository got closed by writing a check. This one measures whether I
+can write C with nothing to ask, and the only thing that moves it is sitting down
+with paper for twenty minutes.
+
+**`TODO(me)`** — 緯穎 whitepaper, still unread. Third carry. Day 3 said a
+carried item gets scheduled or dropped honestly at the second carry rather than
+carried a third time, and this is the third. **Dropped**, not carried: it is not
+on the W04 plan and pretending otherwise has cost three lines a week for three
+weeks.
+
+**`TODO(me)`** — W04 prerequisite, checked today rather than on the morning it is
+needed: `os_stub/spdm_device_secret_lib_sample/` holds 21 files and `meas.c` is
+33,452 bytes, exactly as `plan/W03` §8 predicted. And the hard-coded security
+version number it warns about is not only in the source — it is on the wire. It
+is `07 00 00 00 00 00 00 00`, the eight-byte value of measurement block index
+`0x10`, `ValueType 0x87`, and it is now the test data in `c-drills/d6`. **A
+constant that has to become configurable before any RATS policy can be tested
+against more than one input, measured before the week that has to change it.**
+
+**`TODO(me)`** — `CERTIFICATE` and `DIGESTS` are reconstructed; `VERSION`,
+`CAPABILITIES` and `ALGORITHMS` are not, and §10 now says why rather than just
+that. They have no signature, no echoed nonce and no self-declared inner length,
+so there is no spare equation. `ALGORITHMS` may be reachable through its
+`AlgStructure` count and `VERSION` through its version-entry count. Neither has
+been tried, and neither is claimed.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
