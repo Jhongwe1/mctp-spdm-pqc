@@ -30,7 +30,9 @@ needs a date attached to it.
 | Community channel joined, reading only | **`TODO`** | | |
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
-| **This project's** first change submitted | not started | | scheduled W03 |
+| SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
+| …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
+| **This project's** first change submitted | not started | | scheduled W03 → **slipped**, see below |
 | Reviewer response received | not started | | |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
@@ -217,6 +219,47 @@ place and assumed everywhere else. The same shape turned up again on
 2026-08-11 on this machine, where the Windows and WSL git configurations
 carried different `user.name` values and only one of them would have satisfied
 the DCO.
+
+## A window that closes rather than a repository — 2026-08-31
+
+Not a contribution, and filed under G7 only because it is the same kind of
+activity: engaging with something outside this repository that will not wait.
+
+DMTF's SPDM working group put *Plan of Hybrid Support for Traditional Crypto and
+Post Quantum Crypto (PQC) in SPDM 1.5* out for industry feedback in June 2026,
+closing **2026-08-31** — today. Both the WIP and DSP0274 1.4.0 were fetched and
+their digests recorded; the WIP is eight pages and was read in full, DSP0274 was
+read only in the sections a captured field name led to.
+
+**What the WIP asks for is narrower than "feedback".** Page 8 asks two
+questions, and one of them — *does your company require algorithm combinations
+besides the highlighted ones* — is not answerable by a graduate project. Saying
+so, and answering only the other one, is the whole difference between a useful
+submission and noise.
+
+The draft, the angle chosen, the two angles rejected, and the provenance of
+every number in it are in
+[`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md). In one line: the WIP
+says hybrid message fields will carry *the concatenation of two pieces of data*,
+and its second requirement says a 1.4 device that already holds a Traditional
+chain and a PQC chain is upgradeable — but such a device holds them in two
+slots, and concatenation puts them in one. This project has measured both sides
+of the resulting cost, so the submission asks about it rather than asserting
+anything.
+
+**Evidence strength, stated before anyone asks.** Lower than a GitHub pull
+request. A portal submission may produce no public URL, no review thread, and no
+external confirmation it was read. It is evidence of **timing** — that the
+implementation and the standards draft were being worked on in the same weeks —
+and not evidence of contribution. G7 still rests on the two repository
+candidates above.
+
+**And the actual submission is not done.** It needs a DMTF Feedback Portal
+account and it has to go in the author's own words, not a draft's. If the
+deadline passes without it, that is recorded as a missed window rather than
+quietly dropped: the draft and the reading are real either way, and *"I read the
+WIP during the review period and wrote up a question I did not send"* is a true
+sentence, while the alternative is not.
 
 ## Why this target
 
