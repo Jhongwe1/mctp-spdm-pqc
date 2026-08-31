@@ -34,5 +34,15 @@ Dockerfile  text eol=lf
 *.png       binary
 *.pdf       binary
 
+# A certificate exists in this repository in two encodings and they are not the
+# same kind of file. The .der is the certificate as it goes on the wire, and one
+# normalised byte changes the SHA-384 that a capture's RootHash is checked
+# against. The .cert is its base64 PEM wrapper, which is text and should be
+# normalised like every other text file. Stated rather than left to text=auto's
+# NUL-byte heuristic, because "git guessed right" is not a property this repo
+# reports numbers on top of.
+*.cert      text eol=lf
+*.certchain binary
+
 # Keep generated evidence out of diff noise but still reviewable.
 docs/env-baseline.md    linguist-generated=true

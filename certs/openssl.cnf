@@ -1,0 +1,142 @@
+# certs/openssl.cnf — extensions for the three-layer chain gen_chain.sh builds.
+#
+# This file is deliberately close to the openssl.cnf that spdm-emu ships in its
+# build/bin directory. Where it differs, it differs in one place and says so, so
+# that a handshake failure can be attributed to the difference rather than to a
+# reformatting nobody meant.
+#
+# ---------------------------------------------------------------------------
+# The two device-identity OIDs, and why there are two
+# ---------------------------------------------------------------------------
+#
+# 1.3.6.1.4.1.412.274.1  id-DMTF-device-info
+#
+#   Defined by DSP0274 1.4.0 §425 ("Definition of otherName using the DMTF
+#   OID"). Its content is a UTF8String of exactly three colon-separated fields:
+#
+#       ub-DMTF-device-info ::= UTF8String({ DMTF-manufacturer ":"
+#                                            DMTF-product ":"
+#                                            DMTF-serialNumber })
+#       DMTF-device-string  ::= UTF8String (ALL EXCEPT ":")
+#
+#   §414 makes it RECOMMENDED, not mandatory: "the Subject Alternative Name
+#   certificate extension otherName field is recommended for providing device
+#   information." This is the OID the reference implementation actually emits —
+#   spdm-emu's own leaf certificates carry ACME:WIDGET:1234567890 under it.
+#
+#   Checked against the primary source: DSP0274_1.4.0.pdf, sha256
+#   a2035c64f614640ba34133ad255589269bf13c9d816414638fb22d89eb5369d9.
+#
+# 2.23.147  PCI-SIG device identity
+#
+#   plan/W03 §2.2 states that PCIe r6.1 §6.31.3 requires a leaf certificate for
+#   a CMA/SPDM endpoint to carry an otherName under this OID holding
+#   Vendor / Device / Class Code / Revision / Subsystem IDs, and that a QEMU DOE
+#   endpoint rejects a certificate without it.
+#
+#   NOT CHECKED. The PCIe Base Specification is behind PCI-SIG membership and
+#   was not read for this repository. What was checked is that the string
+#   "2.23.147" appears zero times in DSP0274 1.4.0 and zero times in the pinned
+#   libspdm and spdm-emu source trees — so nothing in this project's own
+#   toolchain reads it, requires it, or would notice if it were wrong.
+#
+#   It is here because W09 needs it and it costs nothing to carry now. It is
+#   labelled everywhere it appears, because an unverifiable citation that is not
+#   labelled is the most expensive kind of mistake this repository can make.
+#
+# The two are not alternatives. A PCIe device speaking SPDM is subject to both
+# specifications, so its leaf carries both names; the SPDM stack reads the first
+# and the PCIe stack reads the second. Carrying only the PCIe one would produce
+# a certificate that satisfies the transport and ignores the protocol.
+#
+# ---------------------------------------------------------------------------
+
+[ req ]
+distinguished_name = req_dn
+prompt             = no
+string_mask        = utf8only
+
+[ req_dn ]
+O  = Chung-Wei Lan SPDM Lab
+CN = SPDM Lab ECP384 leaf
+
+# --------------------------------------------------------------- root CA ----
+#
+# The trust anchor. In a real deployment this key lives offline and its public
+# key (or a hash of it) is burned into fuses, which is exactly why the chain has
+# three layers rather than two: replacing this certificate means replacing the
+# trust anchor, which means touching every device that was provisioned against
+# it. See docs/certchain.md.
+
+[ v3_root ]
+basicConstraints     = critical,CA:true
+keyUsage             = critical, cRLSign, keyCertSign, digitalSignature
+subjectKeyIdentifier = hash
+
+# ------------------------------------------------------------ intermediate --
+#
+# Identical to spdm-emu's [ v3_inter ], field for field. Do not "improve" it:
+# holding it constant is what makes a chain-validation failure attributable to
+# the leaf, which is the only layer this project changes.
+
+[ v3_inter ]
+basicConstraints     = CA:true
+keyUsage             = cRLSign, keyCertSign, digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
+subjectKeyIdentifier = hash
+extendedKeyUsage     = critical, serverAuth, clientAuth
+
+# -------------------------------------------------------------------- leaf --
+#
+# spdm-emu's [ v3_end ] plus one extra otherName. Everything else — the
+# basicConstraints, the keyUsage set, the extendedKeyUsage set, and the
+# id-DMTF-spdm-extension carrying id-DMTF-hardware-identity — is copied from it
+# unchanged, so the one difference is the one under test.
+#
+# DSP0274 Table 48 makes Basic Constraints (CA:FALSE), Version (v3) and a
+# positive Serial Number mandatory for a DeviceCert leaf. All three are here:
+# the first explicitly, the second because `openssl x509` emits v3 whenever an
+# extension is present, and the third from gen_chain.sh's -set_serial.
+
+[ v3_leaf_responder ]
+basicConstraints     = critical,CA:false
+keyUsage             = nonRepudiation, digitalSignature, keyEncipherment
+subjectKeyIdentifier = hash
+extendedKeyUsage     = critical, serverAuth, clientAuth, OCSPSigning
+subjectAltName       = @san_responder
+1.3.6.1.4.1.412.274.6 = ASN1:SEQUENCE:spdm_cert_oids
+
+[ san_responder ]
+# DSP0274 1.4.0 §425 — Manufacturer:Product:SerialNumber, no colons within a field
+otherName.0 = 1.3.6.1.4.1.412.274.1;UTF8:SPDM-Lab:emulated-responder:0000000001
+# plan/W03 §2.2, attributed to PCIe r6.1 §6.31.3 — NOT verified against that spec.
+# The values name QEMU's virtual NVMe controller because that is the W09 target:
+# 1b36 is Red Hat/QEMU's PCI vendor ID, 0010 its NVMe device ID, and class code
+# 010802 is mass-storage / NVM / NVMe.
+otherName.1 = 2.23.147;UTF8:Vendor=1b36:Device=0010:CC=010802:REV=02:SSVID=1af4:SSID=1100
+
+[ v3_leaf_requester ]
+basicConstraints     = critical,CA:false
+keyUsage             = nonRepudiation, digitalSignature, keyEncipherment
+subjectKeyIdentifier = hash
+extendedKeyUsage     = critical, serverAuth, clientAuth, OCSPSigning
+subjectAltName       = @san_requester
+1.3.6.1.4.1.412.274.6 = ASN1:SEQUENCE:spdm_cert_oids
+
+[ san_requester ]
+otherName.0 = 1.3.6.1.4.1.412.274.1;UTF8:SPDM-Lab:emulated-requester:0000000002
+otherName.1 = 2.23.147;UTF8:Vendor=1b36:Device=0010:CC=010802:REV=02:SSVID=1af4:SSID=1101
+
+# ------------------------------------------------- id-DMTF-spdm-extension ---
+#
+# DSP0274 §10.9.2.2.1: id-DMTF-hardware-identity ::= { id-DMTF-spdm 2 }, that is
+# 1.3.6.1.4.1.412.274.2, carried inside id-DMTF-spdm-extension
+# (1.3.6.1.4.1.412.274.6). It marks which certificate in the chain is the one
+# bound to the hardware, independently of whether the DeviceCert or AliasCert
+# model is in use. The spec forbids it in alias certificates; this chain is a
+# DeviceCert chain, so it belongs on the leaf.
+
+[ spdm_cert_oids ]
+field1 = SEQUENCE:spdm_cert_oid
+
+[ spdm_cert_oid ]
+field1 = OID:1.3.6.1.4.1.412.274.2

@@ -82,8 +82,25 @@ desktop.ini
 
 # Secrets. Nothing here should ever be committed, but make it explicit —
 # W03 generates a private certificate chain and it is easy to be careless.
+#
+# It was. The first version of certs/gen_chain.sh also wrote
+# end_responder.key.pem, and `*.key` does not match it, because a glob without
+# a slash matches the END of a name. The rule looked like it covered the case
+# and a private key sat one `git add` away from being published.
+#
+# Both spellings are listed now, and the real guarantee is not either of them:
+# harness/verify_repo.sh reads every file git is tracking and refuses a PEM
+# private-key header in any of them. A pattern says what someone expected to
+# write; the grep says what is there.
 *.key
+*.key.pem
+*.key.p8
 !certs/**/*.key.example
 id_ed25519*
 *.pem.private
 .env
+
+# Intermediate certificate material. The CSRs and the curve parameters are
+# reproducible from the certificates and carry nothing the chain does not.
+certs/out/*.req
+certs/out/param.pem
