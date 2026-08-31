@@ -1592,6 +1592,14 @@ def verify_tables(header: Path, repo_root: Path, write_pin: bool) -> int:
 CAPTURE_RE = re.compile(r"<!--\s*capture:\s*(?P<path>\S+)\s*-->")
 CLAIM_RE = re.compile(r"<!--\s*claim\s+(?P<key>[A-Za-z0-9_.#]+)\s*=\s*(?P<val>.*?)\s*-->")
 
+# A marker inside a fenced block is an example, not an assertion, and `check`
+# has skipped those since the mechanism was written. A marker inside an INLINE
+# code span is the same thing and was not skipped — so a document explaining the
+# syntax in a sentence became a document making a claim with no capture behind
+# it. LOG.md and RUNBOOK.md both did, the moment the checker was pointed at
+# every tracked Markdown file instead of at docs/ alone.
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+
 
 def normalise(value: str) -> str:
     v = value.strip()
@@ -1617,6 +1625,7 @@ def check(doc_path: Path, repo_root: Path) -> int:
             continue
         if in_fence:
             continue
+        line = INLINE_CODE_RE.sub("", line)
 
         cap = CAPTURE_RE.search(line)
         if cap:
@@ -1651,7 +1660,16 @@ def check(doc_path: Path, repo_root: Path) -> int:
                 failures += 1
 
     if checked == 0:
-        print("  FAIL no claims found — the document asserts nothing against its capture")
+        if capture_name is None:
+            # Nothing outside a code fence or an inline code span. The document
+            # talks about the markup rather than using it, which is what LOG.md
+            # and RUNBOOK.md do. Exit 2 so a caller can count it as "did not
+            # participate" instead of either failing it or silently treating it
+            # as verified — those are different facts and one status cannot
+            # carry both.
+            print("  cites no capture and asserts nothing — not a checked document")
+            return 2
+        print("  FAIL a capture is named but nothing is asserted against it")
         return 1
     print(f"  {checked - failures}/{checked} claims match the capture")
     return 1 if failures else 0

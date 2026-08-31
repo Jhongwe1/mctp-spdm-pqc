@@ -752,19 +752,28 @@ step "every document that cites a capture still agrees with it"
 # asserting nothing, so it failed for having no claims. Selecting on claims is
 # also the complete rule: no claim can escape, because any document containing
 # one is selected by containing it.
+# Three outcomes, not two. A document that merely QUOTES the markup — LOG.md
+# explaining what a claim looks like, RUNBOOK.md showing the syntax in a
+# sentence — asserts nothing and must not be failed for it; a document that
+# names a capture and asserts nothing is a different thing and is failed.
+# fields.py --check says which with exit 2 against exit 1, because "verified"
+# and "did not participate" are different facts and one status cannot carry
+# both. The first version of this step had two outcomes and reported LOG.md as
+# contradicting a capture.
 found=0
+skipped=0
 while IFS= read -r doc; do
-    found=$((found + 1))
-    if python3 harness/fields.py --check "$doc"; then
-        good "$doc"
-    else
-        bad "$doc contradicts a capture it cites"
-    fi
-done < <(grep -rl '<!--claim ' docs --include='*.md' | sort)
+    python3 harness/fields.py --check "$doc"
+    case $? in
+        0) found=$((found + 1)); good "$doc" ;;
+        2) skipped=$((skipped + 1)) ;;
+        *) bad "$doc contradicts a capture it cites" ;;
+    esac
+done < <(git ls-files '*.md' | xargs grep -l '<!--claim ' 2>/dev/null | sort)
 if [ "$found" -eq 0 ]; then
     bad "no document asserts anything against a capture — the mechanism reaches nothing"
 else
-    good "$found document(s) checked against their captures"
+    good "$found document(s) checked, $skipped that only quote the markup"
 fi
 
 step "planning material is not tracked"
