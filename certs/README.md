@@ -32,7 +32,7 @@ committed chain and the committed captures, but cannot take a *new* capture with
 this chain, because it has no private key. It has to generate its own with
 `gen_chain.sh --force`, which produces different certificates — fresh keys, and
 an ECDSA signature whose DER length depends on whether its integers happen to
-have a leading zero. RUNBOOK §11 says so where someone will read it.
+have a leading zero. RUNBOOK §8.7 says so where someone will read it.
 
 ## The two device-identity OIDs
 

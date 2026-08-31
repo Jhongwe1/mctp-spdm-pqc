@@ -35,7 +35,7 @@
 # to important keys is not a habit. The consequence is stated rather than
 # worked around: a fresh clone can verify the committed chain and the committed
 # captures, but must run this script (getting a different chain) to take a new
-# capture of its own. RUNBOOK §11 says so where someone will read it.
+# capture of its own. RUNBOOK §8.7 says so where someone will read it.
 
 set -euo pipefail
 

@@ -228,7 +228,7 @@ else
     # clone. Say so in the run's own record rather than leaving a gap that
     # looks like a failure.
     warn "certs/out has no chain with a private key — the selfsigned arm is skipped"
-    warn "  bash certs/gen_chain.sh --force   (produces a DIFFERENT chain; see RUNBOOK §11)"
+    warn "  bash certs/gen_chain.sh --force   (produces a DIFFERENT chain; see RUNBOOK §8.7)"
     printf 'selfsigned\tpqc\t-\t0\t0\tSKIPPED: no private key in certs/out\n' >> "$RESULTS"
     prov_note selfsigned_skipped "certs/out holds no private key on this machine"
 fi

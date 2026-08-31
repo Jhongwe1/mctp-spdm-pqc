@@ -280,5 +280,5 @@ ECDSA signature's DER length depends on whether its integers happen to have a
 leading zero, so even the byte counts move. The chain is evidence; regenerating
 it is the certificate equivalent of re-stamping a manifest, which
 [`decisions/0004`](decisions/0004-derivations-must-reproduce.md) explains why
-this repository does not do. `RUNBOOK.md` §11 says the same thing in the place
+this repository does not do. `RUNBOOK.md` §8.7 says the same thing in the place
 someone will hit it.

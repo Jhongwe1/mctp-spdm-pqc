@@ -80,7 +80,7 @@ which, in the place a reader would otherwise assume the stronger claim.
 re-hash every artifact, re-derive every claim in `docs/certchain.md` from the
 committed capture, and re-run `check_chain.py` against the committed
 certificates. It cannot take a *new* capture with this chain, because it has no
-private key. `RUNBOOK.md` §11 states this where someone will hit it, rather than
+private key. `RUNBOOK.md` §8.7 states this where someone will hit it, rather than
 leaving them to discover it from a missing-file error.
 
 **This is a real reduction in reproducibility and it is the right trade.** The
