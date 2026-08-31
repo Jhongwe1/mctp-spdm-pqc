@@ -100,15 +100,21 @@ prov_pin_file "${WORK_DIR}/spdm-dump/BUILD_PIN.txt" BUILD_PIN.spdm-dump.txt spdm
 RESULTS="${PROV_RUN_DIR}/arms.tsv"
 printf 'arm\tflavor\texit\tpackets\tbytes\tnote\n' > "$RESULTS"
 
-# arm <label> <flavor> <note> [emulator args...]
-arm() {
-    local label="$1" flavor="$2" note="$3"; shift 3
+# arm_in <bin_dir> <label> <flavor> <note> [emulator args...]
+#
+# The directory is a parameter because it is the independent variable of one of
+# the arms below. libspdm's sample device-secret library opens its certificates
+# by relative path, so which certificates an emulator serves is decided by the
+# directory it runs from and by nothing else — no flag selects them.
+arm_in() {
+    local bin="$1" label="$2" flavor="$3" note="$4"; shift 4
     local prefix="${PROV_RUN_DIR}/${label}"
     local rc=0 pkts bytes
 
     log "arm '${label}'  (flavor=${flavor})"
+    dim "    cwd ${bin}"
     dim "    --exe_conn ${CONN} --exe_session ${SESSION} $*"
-    hs_run "$(flavor_bin "$flavor")" "$prefix" \
+    hs_run "$bin" "$prefix" \
         --exe_conn "$CONN" --exe_session "$SESSION" "$@" || rc=$?
 
     pkts="$(pcap_field "${prefix}.pcap" packets)"
@@ -134,6 +140,12 @@ arm() {
         prov_cmd "$SPDM_DUMP" -r "${prefix}.pcap" -x
         "$SPDM_DUMP" -r "${prefix}.pcap" -x > "${prefix}.hex.txt" 2>&1
     fi
+}
+
+# arm <label> <flavor> <note> [emulator args...] — from the flavor's own build.
+arm() {
+    local label="$1" flavor="$2" note="$3"; shift 3
+    arm_in "$(flavor_bin "$flavor")" "$label" "$flavor" "$note" "$@"
 }
 
 # ---------------------------------------------------------------------------
@@ -164,6 +176,50 @@ arm single-algo pqc "one algorithm per group — does offering more cost bytes?"
     --hash SHA_384 --asym ECDSA_P384 --dhe SECP_384_R1 --aead AES_256_GCM \
     --req_asym RSAPSS_3072 --meas_hash SHA_512 \
     --meas_op ALL
+
+# ── the self-signed chain, and the control it is subtracted from ────────────
+#
+# These two arms differ in exactly one thing: whose certificates the responder
+# serves from slot 0. Same build, same flags, same slot count, same negotiated
+# algorithms. Everything the pair is used to say is a difference between them,
+# so anything else varying would be a second explanation nobody could rule out.
+#
+# --slot_count 1 rather than the default 3 is what makes that true. With three
+# slots the responder also serves slot 1 and slot 4, whose chains descend from
+# DMTF's roots and which certs/stage_chain.sh deliberately does not replace —
+# so the capture would hold a mixture and "whose chain is this" would stop
+# having one answer. The control arm carries the same flag for the same reason.
+#
+# What the pair measures, beyond "it was accepted": the chain is fetched twice
+# in this flow, so a chain that is N bytes larger costs 2N on the wire, and the
+# two arms are what turns that from arithmetic into a measurement.
+
+arm sample-1slot pqc "upstream chain, one slot — the control for 'selfsigned'" \
+    --meas_op ALL --slot_count 1
+
+SELFSIGNED_DIR=""
+if [ -f "${REPO_ROOT}/certs/out/bundle_responder.certchain.der" ] \
+   && [ -f "${REPO_ROOT}/certs/out/end_responder.key" ]; then
+    if SELFSIGNED_DIR="$(bash "${REPO_ROOT}/certs/stage_chain.sh" pqc 2>/dev/null)"; then
+        prov_note selfsigned_sandbox "$SELFSIGNED_DIR"
+        prov_note selfsigned_chain_sha256 \
+            "$(sha256sum "${REPO_ROOT}/certs/out/bundle_responder.certchain.der" | cut -d' ' -f1)"
+        arm_in "$SELFSIGNED_DIR" selfsigned pqc \
+            "this project's own three-layer chain in slot 0" \
+            --meas_op ALL --slot_count 1
+    else
+        warn "could not stage certs/out — the selfsigned arm is skipped"
+        printf 'selfsigned\tpqc\t-\t0\t0\tSKIPPED: staging failed\n' >> "$RESULTS"
+    fi
+else
+    # Private keys are not committed, so this is the normal state of a fresh
+    # clone. Say so in the run's own record rather than leaving a gap that
+    # looks like a failure.
+    warn "certs/out has no chain with a private key — the selfsigned arm is skipped"
+    warn "  bash certs/gen_chain.sh --force   (produces a DIFFERENT chain; see RUNBOOK §11)"
+    printf 'selfsigned\tpqc\t-\t0\t0\tSKIPPED: no private key in certs/out\n' >> "$RESULTS"
+    prov_note selfsigned_skipped "certs/out holds no private key on this machine"
+fi
 
 # ---------------------------------------------------------------------------
 
