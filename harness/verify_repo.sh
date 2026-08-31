@@ -586,6 +586,16 @@ BLOB = b"".join(CERTS)
 ROOT = hashlib.sha384(CERTS[0]).digest()
 
 
+DIG = ("4 (1) MCTP(5) RSP->REQ SPDM(14, 0x01) SPDM_DIGESTS "
+       "(SupportedSlotMask=0x01, ProvisionedSlotMask=0x01) ")
+
+
+def digests(slots=1, extra=4, pad=0):
+    """4 + n x (H + extra) bytes, plus `pad` the reconstruction must not accept."""
+    return (bytes([0x14, 0x01, (1 << slots) - 1, (1 << slots) - 1])
+            + bytes(slots * (H + extra) + pad))
+
+
 def build(chain_len=None, portion=None, remainder=0, root=None, blob=None,
           trim=0, req_len=16):
     blob = BLOB if blob is None else blob
@@ -607,18 +617,20 @@ def block(raw):
                      for i in range(0, len(raw), 32))
 
 
-def run(req, rsp):
+def run(req, rsp, dig=None):
+    dig = digests() if dig is None else dig
     d = pathlib.Path(tempfile.mkdtemp())
     algs_raw = bytes([0x14, 0x63]) + bytes(34)
     (d / "t.decode.txt").write_text(
         "spdm_dump version 0.1\n"
         "PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP),"
-        " MaxPacketSize - 65536\n" + ALGS + "\n" + GET + "\n" + CERT + "\n",
+        " MaxPacketSize - 65536\n" + ALGS + "\n" + GET + "\n" + CERT + "\n" + DIG + "\n",
         encoding="utf-8")
     (d / "t.hex.txt").write_text(
         ALGS + "\n  SPDM Message:\n" + block(algs_raw) + "\n"
         + GET + "\n  SPDM Message:\n" + block(req) + "\n"
-        + CERT + "\n  SPDM Message:\n" + block(rsp) + "\n", encoding="utf-8")
+        + CERT + "\n  SPDM Message:\n" + block(rsp) + "\n"
+        + DIG + "\n  SPDM Message:\n" + block(dig) + "\n", encoding="utf-8")
     out = subprocess.run([sys.executable, "harness/fields.py",
                           str(d / "t.decode.txt"), "--json"],
                          capture_output=True, text=True)
@@ -647,6 +659,38 @@ print(f"  intact: closes — chain at {cert['chain_offset']}, Length "
       f"{cert['chain_length']} = {cert['portion_length']} + {cert['remainder_length']}, "
       f"{cert['certificates']} certificates "
       f"{'+'.join(str(n) for n in cert['certificate_bytes'])}, RootHash verified")
+
+# DIGESTS is reconstructed from two hypotheses that differ by 4 bytes per slot,
+# and only one can close. That is what turns "the requester dropped two slots"
+# into an exact 104 bytes rather than an observation, so it needs a length that
+# neither hypothesis explains and a refusal to guess between them.
+d = lay["digests"]
+if not d or (d["slots"], d["per_slot_bytes"], d["total_bytes"]) != (1, H + 4, 4 + H + 4):
+    print("  a correct DIGESTS did not close:", d)
+    sys.exit(1)
+print(f"  intact: DIGESTS {d['total_bytes']} B = 4 + {d['slots']} x "
+      f"({d['digest_bytes']} + {d['per_slot_extra']}), "
+      f"per-slot extra read as {d['per_slot_extra_is']}")
+for pad, why in ((1, "one byte more than either hypothesis"),
+                 (-2, "two bytes short, matching neither")):
+    lay2 = run(*build(), dig=digests(pad=pad))
+    if lay2 is None:
+        sys.exit(1)
+    if lay2["digests"] is not None:
+        print(f"  ACCEPTED A BROKEN DIGESTS: {why}")
+        sys.exit(1)
+    print(f"  DIGESTS {why}: rejected")
+
+# And the second hypothesis has to be live, or the first is hard-coded and the
+# "two hypotheses, one closes" claim is decoration. A DIGESTS four bytes shorter
+# is not broken: it is the same message without the per-slot key information,
+# and the reconstruction has to read it as that rather than refuse it.
+lay2 = run(*build(), dig=digests(extra=0))
+if lay2 is None or not lay2["digests"] or lay2["digests"]["per_slot_extra"] != 0:
+    print("  the digests-only hypothesis never closes:", lay2 and lay2["digests"])
+    sys.exit(1)
+print(f"  DIGESTS without per-slot key information: read as "
+      f"{lay2['digests']['total_bytes']} B = 4 + 1 x ({H} + 0)")
 
 caught = {}
 for name, kwargs, expect in (

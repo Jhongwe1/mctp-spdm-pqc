@@ -456,6 +456,7 @@ SPDM_GET_MEASUREMENTS = 0xE0
 SPDM_MEASUREMENTS = 0x60
 SPDM_GET_CERTIFICATE = 0x82
 SPDM_CERTIFICATE = 0x02
+SPDM_DIGESTS = 0x01
 CONTEXT_BYTES = 8       # RequesterContext, SPDM 1.3 and later
 
 # DSP0274 1.4.0, Table 46. Param1 bit 7 selects between the 16-bit length pair
@@ -664,6 +665,58 @@ def _der_sequences(buf):
     return out, None
 
 
+def _place_digests(rsp, hash_bytes):
+    """Reconstruct DIGESTS, and let its length say what it carries per slot.
+
+    DSP0274 Table 42. Param2 is the provisioned slot mask, so the number of
+    digests is that mask's population count and the message is
+
+        4 + n x H            digests alone
+        4 + n x (H + 4)      digests, plus KeyPairID, CertificateInfo and a
+                             two-byte KeyUsageMask for each slot
+
+    Two hypotheses that differ by 4n bytes, exactly one of which can close for
+    any n above zero. So the message's own length settles whether the
+    per-slot key information is present, without reading a capability bit —
+    and the difference between two captures whose slot counts differ becomes
+    arithmetic rather than an observation.
+    """
+    raw = rsp.raw
+    if hash_bytes is None:
+        return None, f"packet {rsp.seq}: DIGESTS with no single hash algorithm negotiated"
+    if len(raw) < 4:
+        return None, f"packet {rsp.seq}: DIGESTS is {len(raw)} bytes"
+
+    provisioned, supported = raw[3], raw[2]
+    slots = bin(provisioned).count("1")
+    if slots == 0:
+        return None, f"packet {rsp.seq}: DIGESTS reports no populated slot"
+
+    closed = []
+    for per_slot_extra, what in ((4, "KeyPairID, CertificateInfo, KeyUsageMask"),
+                                 (0, "digests only")):
+        if len(raw) == 4 + slots * (hash_bytes + per_slot_extra):
+            closed.append((per_slot_extra, what))
+    if len(closed) != 1:
+        return None, (f"packet {rsp.seq}: DIGESTS is {len(raw)} bytes; "
+                      f"{slots} slot(s) of {hash_bytes}-byte digests close under "
+                      f"{len(closed)} hypotheses")
+
+    extra, what = closed[0]
+    return {
+        "packet": rsp.seq,
+        "supported_slot_mask": f"0x{supported:02x}",
+        "provisioned_slot_mask": f"0x{provisioned:02x}",
+        "slots": slots,
+        "digest_bytes": hash_bytes,
+        "per_slot_bytes": hash_bytes + extra,
+        "per_slot_extra": extra,
+        "per_slot_extra_is": what,
+        "total_bytes": len(raw),
+        "closes": True,
+    }, None
+
+
 def _place_certificate(rsp, req, hash_bytes, hash_name):
     """Reconstruct a CERTIFICATE response and require it to close four ways."""
     raw = rsp.raw
@@ -721,6 +774,7 @@ def _place_certificate(rsp, req, hash_bytes, hash_name):
 
     for key in ("chain_length", "chain_length_offset", "root_hash_offset", "root_hash",
                 "certificates_offset", "certificates", "certificate_bytes",
+                "certificates_bytes_total",
                 "root_hash_matches_first_certificate", "length_fields_agree"):
         placed[key] = None
     placed["closes"] = True
@@ -769,6 +823,11 @@ def _place_certificate(rsp, req, hash_bytes, hash_name):
     placed["certificates_offset"] = certs_off
     placed["certificates"] = len(seqs)
     placed["certificate_bytes"] = [n for _, n in seqs]
+    # As a scalar too, because it is the quantity certs/check_chain.py predicts
+    # from the files on disk before anything goes on the wire. The two tools
+    # reach it by routes that share no input, and a document can quote either
+    # end of that agreement.
+    placed["certificates_bytes_total"] = sum(n for _, n in seqs)
 
     # (4) digest. A chain may legally omit its own root, so this is reported,
     # not required — but the document that quotes it is checked on it.
@@ -825,12 +884,35 @@ def reconstruct(messages, negotiated) -> dict:
         "challenge_auth": None, "challenge_auth_requester": None,
         "measurements": None, "measurements_unsigned": None,
         "certificate": None, "certificate_requester": None,
+        "digests": None, "digests_requester": None,
+        # Every certificate chain the handshake carried, in wire order. The
+        # named slots above hold the first of each direction, which is what a
+        # document quotes; this holds all of them, which is what answers "how
+        # many DIFFERENT roots did this connection trust". Replacing a device's
+        # certificate replaces one chain, and a mutually authenticating
+        # handshake with more than one populated slot carries several.
+        "chains": [],
+        "distinct_root_hashes": 0,
     }
     hashes = (out["hash_bytes"], out["measurement_hash_bytes"])
 
     ordered = [m for m in on_the_wire(messages)]
     for i, msg in enumerate(ordered):
-        # CERTIFICATE first: it carries no signature, so none of the signature
+        # DIGESTS carries no signature either, and its length is what says how
+        # much per-slot information the connection negotiated.
+        if msg.code == SPDM_DIGESTS and msg.raw:
+            out["attempted"] += 1
+            placed, why = _place_digests(msg, out["hash_bytes"])
+            if placed is None:
+                out["unexplained"].append(why)
+                continue
+            out["closed"] += 1
+            slot = "digests" if msg.direction == "RSP->REQ" else "digests_requester"
+            if out[slot] is None:
+                out[slot] = placed
+            continue
+
+        # CERTIFICATE next: it carries no signature, so none of the signature
         # bookkeeping below applies to it. What determines its layout is the
         # request that asked for it and the hash the connection negotiated.
         if msg.code == SPDM_CERTIFICATE and msg.raw:
@@ -848,6 +930,17 @@ def reconstruct(messages, negotiated) -> dict:
             slot = "certificate" if msg.direction == "RSP->REQ" else "certificate_requester"
             if out[slot] is None:
                 out[slot] = placed
+            if placed["root_hash"]:
+                out["chains"].append({
+                    "packet": placed["packet"],
+                    "direction": msg.direction,
+                    "slot": placed["slot"],
+                    "chain_length": placed["chain_length"],
+                    "certificates": placed["certificates"],
+                    "root_hash": placed["root_hash"],
+                    "root_hash_matches_first_certificate":
+                        placed["root_hash_matches_first_certificate"],
+                })
             continue
 
         if msg.code not in (SPDM_CHALLENGE_AUTH, SPDM_MEASUREMENTS) or not msg.raw:
@@ -884,6 +977,7 @@ def reconstruct(messages, negotiated) -> dict:
         if out[slot] is None:
             out[slot] = placed
 
+    out["distinct_root_hashes"] = len({c["root_hash"] for c in out["chains"]})
     return out
 
 
@@ -1326,6 +1420,18 @@ def render(data: dict) -> str:
         L.append(f"              hash {lay['hash_bytes']} B, responder signature "
                  f"{lay['responder_signature_bytes']} B, requester signature "
                  f"{lay['requester_signature_bytes']} B")
+        for slot, label in (("digests", "DIGESTS"),
+                            ("digests_requester", "DIGESTS (requester)")):
+            p = lay.get(slot)
+            if not p:
+                continue
+            L.append(f"              {label:<27} packet {p['packet']:>4}  "
+                     f"{p['total_bytes']:>6} B  = 4 + {p['slots']} x "
+                     f"({p['digest_bytes']} + {p['per_slot_extra']}), "
+                     f"mask {p['provisioned_slot_mask']}")
+            if p["per_slot_extra"]:
+                L.append(f"              {'':<27} the {p['per_slot_extra']} extra bytes "
+                         f"per slot are {p['per_slot_extra_is']}")
         for slot, label in (("certificate", "CERTIFICATE"),
                             ("certificate_requester", "CERTIFICATE (requester)")):
             p = lay.get(slot)
@@ -1365,6 +1471,13 @@ def render(data: dict) -> str:
             if slot == "challenge_auth":
                 L.append(f"              {'':<27} MeasurementSummaryHash "
                          f"{p['summary_hash_bytes']} B, sized by {p['summary_hash_sized_by']}")
+        if lay.get("chains"):
+            L.append(f"              {'chains carried':<27} {len(lay['chains'])} fetched, "
+                     f"{lay['distinct_root_hashes']} distinct root(s)")
+            for c in lay["chains"]:
+                L.append(f"              {'':<27} packet {c['packet']:>4}  "
+                         f"{c['direction']}  slot {c['slot']}  "
+                         f"{c['chain_length']:>6} B  root {c['root_hash'][:16]}…")
         for problem in lay["unexplained"]:
             L.append(f"              ⚠ {problem}")
     return "\n".join(L)
