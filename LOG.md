@@ -1504,6 +1504,73 @@ and no confirmation it was read. It is evidence of **timing** — that the
 implementation and the standards draft were being worked on in the same weeks —
 and G7 still rests on the two repository candidates.
 
+### The same comment was wrong twice in one day, in two files
+
+**現象** After everything above was committed and pushed, I re-read every tracked
+document against what the day had actually produced. Twenty-six markdown files,
+**zero dangling links**, and the two gate tables agreeing row for row — and five
+things stale, one of which had been stale since before the day started.
+
+**假設** for the one that mattered: `docs/threat-scope.md` says the certificate
+chain is "self-signed and trusted by configuration". Is that (a) still true,
+(b) true but now incomplete, or (c) false?
+
+**先驗哪個、為什麼** (b), because the day's own finding decides it and no new
+work was needed to check. Three roots were measured; the document describes one
+chain. **A statement that was true when written and is now a weaker version of
+what was measured is worse than no statement**, because it reads as the current
+state and a reader has no reason to doubt it.
+
+**根因** The other four have one shape between them, and it is the shape of an
+entry written six hours earlier on this same page:
+
+| file | what was stale |
+|---|---|
+| `.github/workflows/ci.yml` | a comment listing what the `verify` job does — four checks, where it now runs twelve |
+| `harness/doctor.sh` | "affects W03 certificate signing only", the twin of a message already corrected in `healthcheck.sh` |
+| `docs/transports.md` | a footer naming the 08-28 run as though it were the current one |
+| `RUNBOOK.md` | an interview line quoting 128/128 in the present tense |
+
+**Every one of them is prose.** Not a number — `--check` re-derives 174 of those
+against captures. Not an artifact — the manifests re-hash 258 tracked files. Not
+a version — the pins compare themselves. **Prose.**
+
+**教訓** The entry above says the parts of a commit nothing can check are the
+parts most likely to be wrong, because being wrong there is free. That entry was
+written about one comment. The re-read found four more, in files nobody had
+touched, including one describing a CI job whose contents had roughly tripled.
+
+> **There is no mechanism for prose, and the honest consequence is not to invent
+> a weak one — it is to schedule the re-read.** The claim checker, the manifest
+> re-hash and the pin comparison all exist because a person cannot be relied on
+> to remember. Documentation drift has no equivalent, so the only tool left is
+> going back and looking, on purpose, at a fixed point in the week.
+
+Two things were also **missing** rather than stale, and both are the same
+omission. Every citation of DSP0274 and of the SPDM 1.5 draft named a title and
+a version and nothing else — but a version number does not identify a document,
+since a working draft, a published revision and an errata update can all be
+"1.4.0" to someone who found the PDF by searching. So both specifications are
+now pinned by SHA-256, with the **list of sections actually read**, which is the
+part that bounds the claim: DSP0274 is 306 pages and this project has opened
+five tables and four clauses of it.
+
+`quoted-in=` makes it a mechanism rather than a note: `verify_repo.sh` requires
+every file a pin names to carry that pin's digest, so moving a pin without
+moving the documents turns the build red. That is `CLAUDE.md`'s standing
+instruction to grep for the old version number after touching a pin, with the
+remembering removed — and 2026-08-16 is the day that instruction was needed and
+not followed.
+
+The check was broken twice before being believed: a digest moved by one
+character, and a `quoted-in=` naming a file that does not exist. Both rejected.
+
+**`TODO(me)`** — the re-read is currently a thing that happened once because
+somebody asked. It should be the last item of the end-of-day list, not the
+thing after it, and `CLAUDE.md` should say so. Until it does, this is a
+discipline, and the whole argument of this repository is that disciplines are
+the things that fail in week six.
+
 ### What is measured, and what is still a claim about myself
 
 **`TODO(me)`** — `c-drills`. `d5` and `d6` now exist with contracts, tests and
