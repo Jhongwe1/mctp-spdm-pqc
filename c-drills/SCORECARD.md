@@ -31,8 +31,8 @@ open, and the practice is not practising the thing it is supposed to practise.
 |:--|-------|------|-----------:|---------------:|---------:|------------------------|------------------|
 | D3 | `d3_queue_via_list` | | / 20 min | | | | |
 | D1 | `d1_spdm_header` | | / 20 min | | | | |
-| D5 | endianness conversion | | / 15 min | | | | |
-| D6 | packed struct layout | | / 15 min | | | | |
+| D5 | `d5_endian` | | / 15 min | | | | |
+| D6 | `d6_packed_struct` | | / 15 min | | | | |
 | D4 | BST delete | | / 25 min | | | | |
 | D2 | offset + length overflow check | | / 10 min | | | | |
 | D7 | ring buffer | | / 20 min | | | | |

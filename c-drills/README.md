@@ -67,8 +67,8 @@ it reports what has been finished and never claims anything else.
 |:--|------|--------------------------|-----------------------------------|
 | D3 | `d3_queue_via_list.c` | dequeue the last element, then enqueue again — stale `tail` | transport glue holding received-but-unconsumed messages |
 | D1 | `d1_spdm_header.c` | an offset whose bounds check overflows before it is checked | first step of every capture-analysis script here |
-| D5 | endianness conversion | sign extension when widening | the socket framing is big-endian, the payload little-endian |
-| D6 | packed struct layout | assuming the compiler laid it out the way it reads | wire formats are byte layouts, not struct layouts |
+| D5 | `d5_endian.c` | a top byte of 0x80 or above, shifted on a signed int | the socket framing is big-endian, the payload little-endian |
+| D6 | `d6_packed_struct.c` | one byte of padding that moves a field AND a size | wire formats are byte layouts, not struct layouts |
 | D4 | BST delete | deleting a node with two children | not used here — kept for the three-way pointer rewiring it forces |
 | D2 | offset + length overflow | `offset + length` wrapping past the end of the buffer | the arithmetic behind a real advisory class |
 | D7 | ring buffer | full and empty are indistinguishable by indices alone | proxy and transport buffering |
@@ -77,6 +77,58 @@ it reports what has been finished and never claims anything else.
 Each file states its own contract, its boundaries, and its time box at the top.
 The tests are provided. The implementation is not, and should not be — the
 tests are the specification, and writing the implementation is the exercise.
+
+## Every drill's tests are checked against a correct implementation first
+
+The tests are the specification, and a specification has two ways of being
+useless: a correct implementation can fail it, or a wrong implementation can
+pass it. Both are silent.
+
+So before a drill is committed, its tests are compiled three ways in a scratch
+directory outside this repository — against the stub, which must fail; against
+a correct implementation, which must pass; and against a deliberately wrong one,
+which must be caught. The wrong version is chosen to be the mistake the drill
+exists to teach, so if the suite accepts it the drill has no subject.
+
+Those reference implementations are never written into `c-drills/`. They would
+delete the only measurement this directory produces.
+
+It is worth saying what this catches, because both drills added in week three
+failed it on the first attempt:
+
+- **D5**'s wrong version — shifting a `uint8_t` on a signed `int` — produces the
+  *correct value* on every compiler anyone will use. Only
+  UndefinedBehaviourSanitizer separates it from the right answer, so a drill
+  that checked values alone would have taught nothing.
+- **D6** was written against the five-byte MCTP transport framing and the trap
+  could not fire. See below.
+
+## Why D6 is not about the transport framing
+
+The obvious subject for a packing drill was `harness/verify_repo.sh`'s
+
+```
+pcap captured bytes == SPDM message bytes + 5 x messages
+```
+
+where the 5 is a four-byte MCTP header plus a message-type byte, and taking it
+from `sizeof` would be the classic mistake. It is not a mistake. Upstream's
+`mctp_header_t` is four `uint8_t` members, so its alignment is 1 and `sizeof`
+gives exactly 5. There is no padding to be wrong about.
+
+That is the same defect D1 had, eleven days earlier, and it was written a second
+time by the same person who documented the first one. A drill whose failure mode
+cannot occur teaches a superstition, and a superstition gets repeated with
+confidence, so D6 moved to the struct where the padding is real:
+`spdm_measurement_block_dmtf_header_t`, a `uint8_t` followed by a `uint16_t`,
+three bytes on the wire and four in C — where the padding moves a **field** as
+well as a **size**. The common header beside it, `{uint8_t, uint8_t, uint16_t}`,
+is identical packed or not, and both are in the drill so the contrast is the
+lesson rather than the rule.
+
+The general form, which is the part worth keeping: **before writing a drill,
+compile the wrong implementation and confirm it fails.** Reasoning about whether
+a trap fires is exactly the kind of reasoning that produced the trap.
 
 ## Why D1 has two functions
 
