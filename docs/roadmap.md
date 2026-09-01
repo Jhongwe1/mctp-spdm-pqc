@@ -14,12 +14,12 @@ table and the two are kept in step.
 |:--|:--|---|---|---|
 | **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **complete** |
 | **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **complete** — seven pairs annotated in `docs/handshake-walkthrough.md`, 164 values asserted against their captures by CI, and four pairs whose *offsets* are reconstructed from the wire rather than transcribed. The three that are not, and why they are harder rather than merely undone, are in §10 |
-| **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | **in progress** — the chain exists, is checked from its DER, is served by the responder and is measured on the wire (`docs/certchain.md`). **Zero of the three tamper points exist**, and Table 1 is absent rather than sketched |
-| **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | not started |
+| **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | **in progress** — the chain, a tamper harness that runs its cases as controlled pairs against a prior baseline, and **two of the three points measured** (`docs/tamper.md`). Point 2 needs a proxy between the emulators and is absent rather than stubbed, so Table 1 has no row yet showing a signature verification actually failing |
+| **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | not started — and 2026-09-01 measured why it is not optional: a tampered measurement completes the handshake with every signature verifying. Its two prerequisites are now met, since the secure version number takes three values on the wire instead of one |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | not started |
 | **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | not started |
 | **G6** | 10–11 | conformance and negative testing | upstream responder validator run with a root cause for every failure; negative tests reproducing three 2026 advisory *classes* | not started |
-| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared; **two candidates with evidence** — `openbmc/spdm` prerequisites, and `DMTF/spdm-emu` help text that disagrees with its own defaults. Separately, DMTF's SPDM 1.5 hybrid-PQC review was read during its window and feedback drafted; **not sent**, and filed as evidence of timing rather than of contribution |
+| **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | environment prepared; **four candidates with evidence** — `openbmc/spdm` prerequisites, `DMTF/spdm-emu` help text that disagrees with its own defaults, and two found on 2026-09-01 while explaining a tamper capture: a discarded slot-0 certificate read result, and a requester that never inspects `LIBSPDM_STATUS_VERIF_NO_AUTHORITY`. Separately, DMTF's SPDM 1.5 hybrid-PQC review was read during its window and feedback drafted; **not sent**, and filed as evidence of timing rather than of contribution |
 | **G8** | 12–14 | delivery and write-up | README, limitations, threat scope, demo, one-page summary | not started |
 
 ## Dependencies
@@ -52,8 +52,8 @@ Those three are not on the list.
 |:--|---|:--:|---|
 | 1 | field-by-field handshake annotation | G1 | written from captures |
 | 2 | three-layer self-signed certificate chain, read from its DER rather than from a pretty-printer | G2 | evidence — [ADR 0005](decisions/0005-generated-inputs-are-evidence.md) says why it is not reproducible |
-| 3 | **Table 1** — three tamper points, before/after, with three captures | G2 | measured |
-| 4 | `pcapstat.py` — capture statistics, written here, no dependencies | G2 | tool |
+| 3 | **Table 1** — three tamper points, before/after, with three captures | G2 | measured — two of three; `docs/tamper.md` |
+| 4 | `pcapstat.py` — capture statistics, written here, no dependencies | G2 | tool — exists, and CI requires it to agree with `fields.py` per message type |
 | 5 | **Table 2** — post-quantum cost at four levels | G4 | measured |
 | 6 | **Figure 2** — total handshake bytes and certificate round trips | G4 | measured |
 | 7 | reference values, policy, and verdicts | G3 | reproducible |
@@ -133,6 +133,15 @@ it does.
     trap could not fire — 2026-08-28's `d1` and 2026-08-31's first `d6` — and
     both times reasoning about whether it would fire was the same reasoning
     that produced it.
+16. **A category is not a prefix of a sentence.** Rule 13 requires distinct
+    breaks to be refused by distinct checks, and something has to decide what
+    "distinct" means. Comparing the refusal *messages* is not enough: on
+    2026-09-01 two broken measurement records were caught by the same length
+    test and passed the distinctness check anyway, because the two sentences
+    differed in a number they had interpolated. Every mechanism that has to
+    report *which* check rejected something returns a stable code beside the
+    prose — `ms_status_t` in `device/`, `why_kind` in `fields.py` — and the
+    tests compare codes.
 
 ## External dates that do not wait
 

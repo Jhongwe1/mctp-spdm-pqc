@@ -30,6 +30,7 @@ needs a date attached to it.
 | Community channel joined, reading only | **`TODO`** | | |
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
+| Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
 | **This project's** first change submitted | not started | | scheduled W03 → **slipped**, see below |
@@ -194,6 +195,83 @@ riskier one: five blockers, no README, and a change that argues for a minimum
 compiler version is a change that invites disagreement. This one is a factual
 correction with the wire as its witness. Two targets, one high-value and one
 high-probability, is a better bet than one of either.
+
+## Two more, found by running the tamper cases — 2026-09-01
+
+Both on `DMTF/spdm-emu` at `5f01d2f` (tag `4.0.0-rc`), and both found the same
+way as the second candidate: reading the source to explain a capture that had
+not done what was expected. Neither is submitted. Both are recorded with the
+capture that produced them, which is the part that makes them worth submitting
+rather than worth mentioning.
+
+### A slot-0 certificate read whose failure is discarded
+
+`spdm_emu/spdm_responder_emu/spdm_responder_spdm.c:495-553`
+
+```c
+res = libspdm_read_responder_public_certificate_chain(..., &data, ...);       /* slot 0 */
+res = libspdm_read_responder_public_certificate_chain_per_slot(1, ..., &data1, ...);
+res = libspdm_read_responder_public_certificate_chain_per_slot(4, ..., &data4, ...);
+...
+if (res) { /* uses data, data1, data4 */ }
+```
+
+`res` is assigned three times and tested once, so a failure to read slot 0's
+chain is not reported anywhere. `data` stays `NULL`, `libspdm_set_data(...,
+LOCAL_PUBLIC_CERT_CHAIN, slot 0, NULL, 0)` leaves the slot unprovisioned, and
+the responder starts normally.
+
+**How it was found.** `bench/data/w4-tamper-*/t3_cert` flips one byte inside
+the intermediate certificate of the chain the responder serves.
+`libspdm_read_responder_public_certificate_chain` calls
+`libspdm_verify_cert_chain_data` and correctly refuses it
+(`read_pub_cert.c:447`). The only trace on the wire is `ProvisionedSlotMask`
+falling from `0x13` to `0x12`; the only trace in the log is a requester saying
+`do_authentication_via_spdm - 8001000a` several messages later. Nothing says
+which file was rejected or why.
+
+**Shape of a change.** Test each read, and emit `EMU_ERR` naming the slot when
+one fails. Small, local, no behaviour change on the working path.
+
+### The requester never asks whether the chain it accepted was authoritative
+
+`spdm_emu/spdm_requester_emu/spdm_requester_spdm.c` calls
+`libspdm_get_certificate()`, the form that discards the `trust_anchor`
+out-parameters, and tests `LIBSPDM_STATUS_IS_ERROR`. `grep -rn 'NO_AUTHORITY\|
+trust_anchor' spdm_emu` returns nothing.
+
+libspdm does the work and reports it as a warning, which is the correct
+division of labour:
+
+```c
+/* Provided cert is valid but is not authoritative(mismatch the root cert). */
+#define LIBSPDM_STATUS_VERIF_NO_AUTHORITY \
+    LIBSPDM_STATUS_CONSTRUCT(LIBSPDM_SEVERITY_WARNING, LIBSPDM_SOURCE_CRYPTO, 0x0003)
+```
+
+and `libspdm_try_get_certificate` deliberately does **not** `goto done` on it,
+unlike the integrity check three lines above
+(`libspdm_req_get_certificate.c:483-496`). So the decision is handed to the
+application, and the sample application does not take it.
+
+**How it was found.** `bench/data/w4-tamper-*/t3b_foreign` has the responder
+serve DMTF's own `ecp384` chain while the requester's trust anchor is this
+project's root. The handshake completes, exit 0, every signature verified. The
+same acceptance is visible in `w3-baseline-20260831T143123Z/selfsigned`, packet
+12: slot 4's chain roots in `ed79ce9a…`, which is neither of the two roots that
+requester provisioned.
+
+**Shape of a change.** Use `libspdm_get_certificate_ex`, and print the trust
+anchor or a warning when the status is `NO_AUTHORITY`. A sample that shows an
+integrator where the decision is teaches more than one that hides it.
+
+**What this is worth, stated before anyone asks.** Both are small, both are
+documentation-adjacent rather than protocol changes, and neither is a
+vulnerability — the second is explicitly a design decision by the library
+underneath. What they demonstrate is reading a reference implementation closely
+enough to find where its samples stop being examples, with a committed capture
+behind each. That is the claim; "I found a security bug in libspdm" is not, and
+would not survive review.
 
 ## Three identity traps, all of which are silent until they are not
 

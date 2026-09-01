@@ -1,0 +1,16 @@
+flavor=pqc
+spdm-emu=5f01d2f38931e7c75388a43932d6569b4743b7b8
+spdm-emu-short=5f01d2f
+libspdm=8a92317f9510543b1a31d849c80cadbc23a5593d
+libspdm-short=8a92317
+libspdm-ref=4.0.0-rc
+libspdm-version=libspdm version 4.0.0 (release candidate)
+crypto=openssl
+arch=x64
+target=Release
+toolchain=GCC
+cc=13.3.0
+cmake=3.28.3
+host=Ubuntu 24.04.4 LTS
+kernel=6.6.87.2-microsoft-standard-WSL2
+built-at=2026-08-11T05:18:34Z

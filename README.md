@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 3 of a 14-week programme. The table below is the truth about what
+This is week 4 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -34,16 +34,103 @@ exists today, not what is planned. Planned work is in
 |:--|---|---|
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
 | G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
-| G2 | certificate chain, three tamper points | **in progress** — a three-layer chain of my own, generated, checked from its DER, accepted by the responder and measured on the wire. **No tamper point exists yet** |
-| G3 | RATS verification pipeline | not started |
+| G2 | certificate chain, three tamper points | **in progress** — the chain, plus a tamper harness and **two of the three points measured** ([`docs/tamper.md`](docs/tamper.md)). Point 2 needs a proxy between the emulators and is absent rather than stubbed, so **Table 1 is incomplete** |
+| G3 | RATS verification pipeline | not started — and week 4 measured why it is not optional |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | agreements and account done; two candidate changes with evidence, neither submitted. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
+| G7 | upstream contribution | agreements and account done; **four** candidate changes with evidence, none submitted — the two newest each carry a committed capture. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 4 established
+
+**A byte was changed in a device's own measurement, and SPDM did not notice.**
+That is not a defect. It is the boundary of what the protocol claims, and it is
+the reason Gate 3 exists.
+
+`libspdm`'s sample device secret library invents its measurements — index 1 is
+the SHA-512 of 72 bytes of `0x01`, and the secure version number is the constant
+`0x7` — so before anything could be tampered with, the values had to become an
+input. [`device/`](device/) does that in **sixteen added lines of upstream, three
+of which are code**:
+
+```c
+    libspdm_set_mem(data, sizeof(data), (uint8_t)(measurements_index));
++   (void)ms_get_block(measurements_index, data, sizeof(data));
+
+    svn = 0x7;
++   (void)ms_get_svn(&svn);
+```
+
+Both sit on the line *after* upstream computes its own value and leave the
+buffer alone when they decline, so the diff is purely additive and hashing,
+block assembly and signing are untouched. What a capture measures is still
+libspdm's behaviour.
+
+Then one byte of measurement index 1's pre-image was flipped:
+
+| | `t0_clean` | `t1_meas` | `t3_cert` | `t3b_foreign` |
+|---|--:|--:|--:|--:|
+| `CERTIFICATE` messages | 3 | 3 | **0** | 3 |
+| `CHALLENGE_AUTH` | 1 | 1 | **0** | 1 |
+| measurement record | 528 B | 528 B | — | 528 B |
+| blocks that changed | — | **1 of 8** | — | 0 |
+| requester exit | 0 | **0** | 1 | **0** |
+
+**`t1_meas` completed.** Every signature verified, because the responder signs
+the record it actually sent — change what it reads and it signs the new value.
+For a signature check to fail, the bytes signed and the bytes verified have to
+differ, and changing the source is not one of the two ways to arrange that. The
+certificate chain is different only because the requester holds an anchor it was
+given out of band; there is no equivalent for a measurement.
+
+> SPDM proves a measurement came from this device. It does not prove the
+> measurement is correct. The second needs reference values, and reference
+> values are not in the protocol.
+
+**`t3_cert` failed earlier than expected, and for a different reason than
+expected.** One byte inside the intermediate certificate's own ECDSA `s` value —
+located by `certs/check_chain.py --locate`, so the certificate still parses and
+exactly one link breaks. The obvious sentence is "the requester rejected the
+chain". The capture refutes it: there is **no `CERTIFICATE` message at all**, and
+`ProvisionedSlotMask` drops from `0x13` to `0x12`. The responder validates its
+own chain when it loads it, could not, and stopped advertising the slot. A byte
+flipped on the device's disk cannot reach the requester's verifier.
+
+**So a case had to be added, and it is the one that did not fail.**
+`t3b_foreign` serves a chain that is internally perfect and belongs to somebody
+else — DMTF's own root, while the requester is configured to trust this
+project's. The handshake **completed**. libspdm detects it and reports
+`LIBSPDM_STATUS_VERIF_NO_AUTHORITY`, which is `SEVERITY_WARNING`; the sample
+requester tests `LIBSPDM_STATUS_IS_ERROR` and a warning is not an error. That is
+a deliberate hand-off to the integrator, and the transferable half is:
+
+> An integrator who checks only `IS_ERROR` has accepted every certificate chain
+> that parses.
+
+The same acceptance is visible in a capture committed a week earlier: slot 4's
+chain, root `ed79ce9a…`, is in neither of the two roots the requester was
+provisioned with, and nothing minded.
+
+**The secure version number now takes more than one value on the wire** — 5, 7
+and 9, each changing exactly one of the eight measurement blocks. Gate 3's
+rollback rule cannot be tested against a constant, and until this week it was
+one.
+
+Two new tools, and both exist to disagree with something.
+[`bench/pcapstat.py`](bench/pcapstat.py) walks the capture file itself and
+totals bytes per message type; `fields.py` reaches the same totals from
+`spdm_dump`'s output. Neither opens the other's input, and CI requires them to
+agree across **43 captures** — eighteen equations on the walkthrough instead of
+one. The one capture where they cannot agree measures something new: the
+reference decoder sees **12.0%** of the post-quantum capture, 13,441 SPDM bytes
+of 111,831.
+
+Full write-up, with every number re-derived from its capture on every CI run:
+[`docs/tamper.md`](docs/tamper.md).
 
 ### What week 3 established
 
@@ -112,9 +199,12 @@ Both deltas are arithmetic the tool re-derives, not observations. `DIGESTS`'s
 per-slot size is established by its own length under two hypotheses that differ
 by four bytes per slot, exactly one of which can close.
 
-**And the five original arms reproduced a third time.** 554/20,549,
-584/114,751, 566/20,396, 30/11,441, 30/11,441 — identical on 08-16, 08-28 and
-08-31, to the packet.
+**And the five original arms reproduced a fourth time.** 554/20,549,
+584/114,751, 566/20,396, 30/11,441, 30/11,441 — identical on 08-16, 08-28,
+08-31 and 09-01, to the packet, the last of those from a binary rebuilt twice in
+between. The 528-byte measurement record inside them is identical too, and CI
+now asserts that invariant over every baseline run rather than leaving it as a
+remark: one SHA-256 across **fourteen arms in five runs**.
 
 ### What week 2 established
 
@@ -318,19 +408,24 @@ not allowed to outrank a manifest.
 ```
 harness/       build, capture, health-check and analysis scripts
   capture.sh   take a run's captures, all arms, with provenance
+  tamper.sh    the tamper cases, as controlled pairs against a prior baseline
+  apply_device_patch.sh   put device/ into the pinned tree, with three guards
   fields.py    read protocol fields out of a decode; assert a document's numbers
   lib/         shared shell helpers; provenance stamping; the handshake runner
 docs/          baseline, design notes, decision records, roadmap
   handshake-walkthrough.md   every message, field by field, numbers checked by CI
+  tamper.md                  what each changed byte did, and which layer noticed
   transports.md              what --trans MCTP is, and what it is not
   decisions/   architecture decision records — why, not what
   upstream/    upstream contribution tracking
 bench/data/    experiment runs, one directory each, each with manifest.json
+  pcapstat.py  SPDM messages counted from the capture, never from a decode
 c-drills/      eight C exercises drawn from problems this project hits
 third_party/   upstream commit pins only; no vendored source
 certs/         this project's own three-layer chain, and the checker that
                reads it out of DER rather than out of a pretty-printer
-device/        device secret / measurement modifications         (from W04)
+device/        where a measurement value comes from: a loader, its file
+               format, and a sixteen-line patch to libspdm     (W04)
 rats/          reference values and verification policy          (from W06)
 transport/     real-transport glue                               (from W09)
 negative/      negative and conformance tests                    (from W10)

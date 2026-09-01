@@ -1,0 +1,12 @@
+PASS	0	BUILD_PIN.txt present
+INFO	0	device/meas-from-file.patch IS APPLIED — the pin alone no longer describes this binary
+PASS	1	--pqc_asym exposed by this build
+PASS	3	28 sample key directories present
+PASS	4	minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)
+PASS	5	pcap written and parsed by harness/pcapcount.py
+PASS	6	spdm_dump available: /home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump
+PASS	7	post-quantum handshake completed with no errors
+INFO	8	system OpenSSL has no ML-DSA (needs >= 3.5) — the W03 chain is ECDSA-P384 and did not need it; a PQC chain will
+INFO	9	no QEMU installed — W09 transport path degrades, main line unaffected
+INFO	10	no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
+PASS	11	negotiated algorithms and certificate sizes read back from the captures
