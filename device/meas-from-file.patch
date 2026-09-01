@@ -1,0 +1,52 @@
+diff --git a/os_stub/spdm_device_secret_lib_sample/CMakeLists.txt b/os_stub/spdm_device_secret_lib_sample/CMakeLists.txt
+index da8b33c..f2caf0a 100644
+--- a/os_stub/spdm_device_secret_lib_sample/CMakeLists.txt
++++ b/os_stub/spdm_device_secret_lib_sample/CMakeLists.txt
+@@ -19,6 +19,7 @@ target_sources(spdm_device_secret_lib_sample
+         key_ex.c
+         key_pair.c
+         meas.c
++        measurement_source.c
+         psk.c
+         read_priv_key_pem.c
+         read_priv_key_pem_pqc.c
+diff --git a/os_stub/spdm_device_secret_lib_sample/meas.c b/os_stub/spdm_device_secret_lib_sample/meas.c
+index 968066e..f7de7f3 100644
+--- a/os_stub/spdm_device_secret_lib_sample/meas.c
++++ b/os_stub/spdm_device_secret_lib_sample/meas.c
+@@ -18,6 +18,18 @@
+ #include "internal/libspdm_device_secret_lib.h"
+ #include "internal/libspdm_common_lib.h"
+ 
++/* device/measurement_source.h — an addition by
++ * https://github.com/Jhongwe1/mctp-spdm-pqc, not part of libspdm.
++ *
++ * The entire change to this file is two calls that OFFER to replace a value
++ * upstream has already computed, on the line right after it computes it. They
++ * do nothing at all unless SPDM_MEASUREMENTS_FILE names a fixture that carries
++ * that measurement, and on refusal they do not touch the destination, so
++ * upstream's own statement stands. Hash computation, block assembly, record
++ * sizing and signing are untouched — which is what keeps a measured capture a
++ * property of libspdm rather than of that project. */
++#include "measurement_source.h"
++
+ #if (LIBSPDM_ENABLE_CAPABILITY_MEL_CAP) || (LIBSPDM_ENABLE_CAPABILITY_MEAS_CAP)
+ 
+ #define LIBSPDM_MAX_MEASUREMENT_EXTENSION_LOG_SIZE 0x1000
+@@ -114,6 +126,8 @@ size_t libspdm_fill_measurement_image_hash_block (
+         SPDM_MEASUREMENT_SPECIFICATION_DMTF;
+ 
+     libspdm_set_mem(data, sizeof(data), (uint8_t)(measurements_index));
++    /* ...and then let a fixture override it. Refusal leaves `data` alone. */
++    (void)ms_get_block(measurements_index, data, sizeof(data));
+ 
+     if (!use_bit_stream) {
+         measurement_block->measurement_block_dmtf_header
+@@ -176,6 +190,7 @@ size_t libspdm_fill_measurement_svn_block (
+         SPDM_MEASUREMENT_SPECIFICATION_DMTF;
+ 
+     svn = 0x7;
++    (void)ms_get_svn(&svn);   /* same rule as above: refusal keeps 0x7 */
+ 
+     measurement_block->measurement_block_dmtf_header
+     .dmtf_spec_measurement_value_type =
