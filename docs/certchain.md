@@ -8,7 +8,7 @@ on every CI run. Sources: DSP0274 1.4.0 (`sha256
 a2035c64f614640ba34133ad255589269bf13c9d816414638fb22d89eb5369d9`), and the
 pinned `libspdm` / `spdm-emu` trees named in `third_party/*.pin`.
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/selfsigned.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt -->
 
 ---
 

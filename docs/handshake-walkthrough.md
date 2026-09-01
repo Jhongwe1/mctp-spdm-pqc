@@ -62,13 +62,13 @@ check that is trusted beyond its reach is worse than no check.
 
 ---
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/walkthrough.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/walkthrough.decode.txt -->
 
 ## 0. The capture this describes
 
 | | |
 |---|---|
-| run | `bench/data/w3-baseline-20260831T143123Z/`, arm `walkthrough` |
+| run | `bench/data/w4-baseline-20260901T054208Z/`, arm `walkthrough` |
 | build | `spdm-emu` 4.0.0-rc → `libspdm` 4.0.0-rc (`third_party/spdm-emu-pqc.pin`) |
 | decoder | `spdm-dump` `9d91f21` (`third_party/spdm-dump.pin`) |
 | transport | pcap link type <!--claim transport.pcap_datalink=291--> 291 (MCTP) |
@@ -952,7 +952,7 @@ each checked against its own decode.
 
 ### 9.1 Classical, `--meas_op ONE_BY_ONE` — the stock flow
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/classical.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/classical.decode.txt -->
 
 | | |
 |---|---|
@@ -986,7 +986,7 @@ pass first is not, and here that distinction is a number.
 
 ### 9.2 Classical on the released pair — the control
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/classical-stable.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/classical-stable.decode.txt -->
 
 Identical flags, `spdm-emu` 3.8.0 → `libspdm` 3.8.0 instead of 4.0.0-rc. This arm
 exists to answer whether the classical arm above can stand in for the baseline
@@ -1018,7 +1018,7 @@ anyone writes it down.
 
 ### 9.3 Post-quantum — ML-DSA-65 both directions
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/pqc.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/pqc.decode.txt -->
 
 | | |
 |---|---|
@@ -1056,7 +1056,7 @@ short on purpose.**
 
 ### 9.4 One algorithm per group — the control for §3
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/single-algo.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/single-algo.decode.txt -->
 
 Identical to the `walkthrough` arm except that `--hash`, `--asym`, `--dhe`,
 `--aead`, `--req_asym` and `--meas_hash` are each pinned to a single value
@@ -1085,7 +1085,7 @@ default is how a run ends up signing with two different ML-DSA parameter sets.
 
 ### 9.5 One slot instead of three — the control for §9.6
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/sample-1slot.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/sample-1slot.decode.txt -->
 
 The `walkthrough` arm with `--slot_count 1` added and nothing else changed. It
 exists to be subtracted from §9.6, and on its own it settles what the flag does —
@@ -1118,7 +1118,7 @@ Two slots' worth of digest, `KeyPairID`, `CertificateInfo` and `KeyUsageBitMask`
 
 ### 9.6 A chain I signed myself — and the two it did not replace
 
-<!-- capture: bench/data/w3-baseline-20260831T143123Z/selfsigned.decode.txt -->
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt -->
 
 Identical to §9.5 in every flag. The one difference is the directory the
 responder was run from: `certs/stage_chain.sh` builds a sandbox whose `ecp384/`
@@ -1299,7 +1299,7 @@ Stated here because a check trusted beyond its reach is worse than none.
 
 Every word above was written on 2026-08-17 against
 `bench/data/w2-baseline-20260816T172221Z/`. The claims are checked against
-`bench/data/w3-baseline-20260831T143123Z/` — the same five arms plus two more,
+`bench/data/w4-baseline-20260901T054208Z/` — the same five arms plus two more,
 the same pins, and the third independent execution of those five.
 
 The re-runs were not done to prove anything. Each was forced by the same rule:
@@ -1346,6 +1346,6 @@ decision, and the four alternatives rejected to reach it, are
 ---
 
 *Written against `bench/data/w2-baseline-20260816T172221Z/`, checked against
-`bench/data/w3-baseline-20260831T143123Z/`. Regenerate with
+`bench/data/w4-baseline-20260901T054208Z/`. Regenerate with
 `bash harness/capture.sh --name w3-baseline`; re-check with
 `python3 harness/fields.py --check docs/handshake-walkthrough.md`.*

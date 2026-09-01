@@ -1,0 +1,11 @@
+exe_conn - 0x0000001e
+exe_session - 0x00000004
+hash - 0x00000002
+asym - 0x00000080
+dhe - 0x0010
+aead - 0x0002
+req_asym - 0x0008
+meas_hash - 0x00000008
+meas_op - 0xff
+connect success!
+Client stopped

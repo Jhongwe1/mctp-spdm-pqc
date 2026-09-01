@@ -96,7 +96,7 @@ difference is exactly what this project measures.
 
 | number | source | checked by |
 |---|---|---|
-| 1,655 bytes | `bench/data/w3-baseline-20260831T143123Z/walkthrough` | `certificate.responder_slot0_bytes` |
+| 1,655 bytes | `bench/data/w4-baseline-20260901T054208Z/walkthrough` | `certificate.responder_slot0_bytes` |
 | 16,853 bytes | same run, `pqc` arm | `certificate.responder_slot0_bytes` |
 | 4 round trips | same run, `pqc` arm | `chunking.chunk_get_count` |
 | 4,608 bytes | same run | `capabilities.requester.data_transfer_size` |

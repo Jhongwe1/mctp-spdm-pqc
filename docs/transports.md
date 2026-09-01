@@ -176,7 +176,7 @@ it is the order the evidence should always end in.
 
 *Verified against `spdm-emu` 4.0.0-rc (`third_party/spdm-emu-pqc.pin`), first
 against the captures in `bench/data/w2-baseline-20260828T110130Z/` and since
-2026-08-31 against `bench/data/w3-baseline-20260831T143123Z/`, where the same
+2026-09-01 against `bench/data/w4-baseline-20260901T054208Z/`, where the same
 five bytes of framing per record are what makes `harness/verify_repo.sh`'s
 `pcap bytes == SPDM bytes + 5 x messages` cross-check close. The socket framing was
 read from source and is **not** observed on the wire here — nothing in this

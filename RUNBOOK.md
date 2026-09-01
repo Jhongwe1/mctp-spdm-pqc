@@ -828,7 +828,7 @@ python3 certs/check_chain.py certs/out --self-test
 **★ 那條鏈上有幾個信任錨?** 這是 08-31 撞到、而且原本不在計畫裡的東西:
 
 ```bash
-python3 harness/fields.py bench/data/w3-baseline-20260831T143123Z/selfsigned.decode.txt
+python3 harness/fields.py bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt
 #   chains carried              4 fetched, 3 distinct root(s)
 #                               packet 10  RSP->REQ  slot 0    1897 B  root df0ee8f9…  <- 我的
 #                               packet 12  RSP->REQ  slot 4    1660 B  root ed79ce9a…  <- 上游 ecp384
@@ -869,6 +869,141 @@ python3 harness/fields.py --verify-tables \
 
 > **所以「換了 pin 卻沒重讀 header」會讓建置變紅。** 這就是 `CLAUDE.md` 那條
 > 「改完 pin 就順手 grep 一次舊版本號」,做成了不必靠記憶的東西。
+
+---
+
+## 8.8 ★ 改一個 byte,然後看是哪一層發現
+
+這一節是 W04 做出來的東西。**如果你只讀一節,讀這節。**
+
+### 為什麼要先改上游
+
+上游那份範例裝置程式庫的量測值是**憑空造出來的**:index 1 就是「72 個 0x01
+取 SHA-512」,安全版本號寫死成 `0x7`。你可以自己驗:
+
+```bash
+python3 -c "import hashlib;print(hashlib.sha512(bytes([1])*72).hexdigest()[:32])"
+#   8d531d77d821e167114d1eb07e0ae19c      <- 這就是封包裡 index 1 的前 16 bytes
+```
+
+這對範例程式來說完全合理,但它讓兩件事做不到:
+
+1. **沒有一個 byte 可以翻。** 篡改測試要有輸入,寫死在函式裡的常數不是輸入。
+2. **降版政策只有一個輸入值。** W07 那條 `evidence_svn >= reference_svn`
+   如果永遠只被餵 `7`,那條規則等於從來沒被測過 —— 不管你怎麼寫它都會過。
+
+### 改了什麼(全部就這三行)
+
+```bash
+cat device/meas-from-file.patch     # 16 行新增,0 行刪除,跨兩個檔案
+```
+
+```c
+    libspdm_set_mem(data, sizeof(data), (uint8_t)(measurements_index));
++   (void)ms_get_block(measurements_index, data, sizeof(data));   /* 新增 */
+
+    svn = 0x7;
++   (void)ms_get_svn(&svn);                                       /* 新增 */
+```
+
+**兩行都加在上游算完自己的值之後,而且拒絕時不碰那個 buffer。** 所以 diff 是
+純新增 —— 上游那兩行還在、還會跑。hash、組區塊、簽章一個字都沒動。
+
+> ★ 面試時你要能指著這個 diff 說:**「我沒有改 libspdm 的邏輯,我改的是一個
+> buffer 的內容從哪裡來,而且是加在上游填完它的下一行。capture 量到的仍然是
+> 上游的行為,不是我的。」**
+
+### 怎麼裝、怎麼拆
+
+```bash
+bash harness/apply_device_patch.sh pqc --build     # 裝上去並重建
+bash harness/apply_device_patch.sh pqc --status    # 現在到底裝了沒
+bash harness/apply_device_patch.sh pqc --revert    # 拆掉(要再重建一次)
+```
+
+它會擋三種錯:build tree 的 libspdm commit 跟 `third_party/*.pin` 對不上、
+`meas.c` 或 `CMakeLists.txt` 的 sha256 不是這份 patch 當初對著做的那一版、
+以及重複安裝(第二次是 no-op,不是錯誤)。
+
+> 🔴 **第二種擋法為什麼重要:** `git apply` 只看上下文對不對得上。上游可以改了
+> 一堆東西但那兩行上下文剛好沒動 —— 那時 `git apply` 會成功,而你 patch 到的
+> 是一個你沒讀過的檔案。**digest 擋得住,上下文擋不住。**
+
+### 跑那七個 case
+
+```bash
+bash harness/tamper.sh          # 約一分鐘
+```
+
+`SPDM_MEASUREMENTS_FILE` 這個環境變數是開關,**而且只給 responder**
+(`HS_RESPONDER_ENV`)。沒設 → 連檔案都不 open,行為跟上游完全一樣。
+
+看它印出來的表,四欄最重要:
+
+| 欄 | 它在回答什麼 |
+|---|---|
+| `cert` / `chal` / `meas` | 這次握手**走到哪裡**。比 exit code 誠實 |
+| `slots` | responder 到底**願不願意提供** slot 0 的憑證 |
+| `anchor` | responder 送的鏈,root 是不是 requester 被設定去信的那一張 |
+| `record_sha256` | 那 528 bytes 的量測記錄 |
+
+### 三個你應該自己看一次的結果
+
+**① 改量測值 → 握手成功。** 不是 bug。responder 是拿「它剛剛送出去的東西」去
+簽名的,你改了它讀進來的資料,它就對新的資料簽名 —— requester 收到的是自洽的
+一對。**要讓簽章驗證失敗,必須讓「被簽的」跟「被驗的」不一樣**,只有兩條路:
+線上改(W05 的 ②),或用不匹配的鑰匙簽。改來源不在這兩條路上。
+
+憑證鏈為什麼擋得住?因為 requester 手上有一個**它自己從別處拿到的錨點**(root)。
+量測沒有這種東西 —— requester 根本不知道這台裝置的韌體 hash 應該長什麼樣。
+
+> **SPDM 證明的是「這份量測確實出自這台裝置」,不是「這份量測是對的」。**
+> 後者要參考值,而參考值不在協定裡 —— 那就是 G3 存在的理由。
+
+**② 改 Sub CA 的一個 byte → 比預期更早失敗,而且原因不是預期的那個。**
+pcap 裡**連 `CERTIFICATE` 訊息都沒有**,而 `ProvisionedSlotMask` 從 `0x13`
+掉到 `0x12`。responder 讀自己的鏈時會驗,驗不過就不再提供那個 slot。
+**壞掉的位元組根本沒上線。**
+
+```bash
+R=$(ls -d bench/data/w4-tamper-* | tail -1)
+grep -h 'SPDM_DIGESTS' "$R/t0_clean.decode.txt" "$R/t3_cert.decode.txt"
+#   看 ProvisionedSlotMask 那一格
+```
+
+> 🔴 **這一題是本週最好的一課:log 說「do_authentication_via_spdm 失敗」,
+> exit code 說 1,而順手寫下「requester 拒絕了被篡改的憑證鏈」會是錯的。**
+> 是 pcap 裡少了一個訊息、加上一個 bit 的變化,把真正的原因指出來的。
+
+**③ 換成別人的鏈(內容完全合法)→ 握手成功。** responder 送 DMTF 自己的
+`ecp384` 鏈,requester 被設定去信的是我們的 root。libspdm **有**發現,而且回報
+`LIBSPDM_STATUS_VERIF_NO_AUTHORITY` —— 但那是 `SEVERITY_WARNING`,而
+`spdm_requester_emu` 只檢查 `LIBSPDM_STATUS_IS_ERROR`。
+
+這不是 libspdm 的缺陷:它刻意把「要不要信這個 CA」交給整合者決定,還提供了
+`trust_anchor` 讓你拿。**是那支範例程式沒有去接。**
+
+> **一個只檢查 `IS_ERROR` 的整合者,等於接受了每一條 parse 得過的憑證鏈。**
+> 在真的 BMC 上,這就是「這台裝置是真的」跟「這台裝置文件齊全」的差別。
+
+### 產生 fixture
+
+```bash
+python3 device/gen_measurements.py --out /tmp/m.bin            # 預設 = 重現上游
+python3 device/gen_measurements.py --svn 5 --out /tmp/m5.bin
+python3 device/gen_measurements.py --flip-block 1 --flip-offset 36 --out /tmp/t.bin
+python3 device/gen_measurements.py --describe /tmp/m.bin
+```
+
+**預設輸出是對照組而不是輸入** —— 它產生的內容就是上游會合成的那些 bytes,
+所以 responder 讀了它之後送出去的 528 bytes 必須跟「完全沒有這個檔案」時一模
+一樣。那個 sha256 是 `f2a14684…`,而且它在 08-16、08-28、08-31、09-01 四次
+run、兩條不同的憑證鏈裡都一樣。**先用一個 256-bit 的目標證明管線接對了,再開始
+故意改東西。**
+
+> ⚠️ `--flip-byte 12` 會被**拒絕**,而且它會告訴你為什麼:那個位移落在 svn
+> 欄位裡,翻它是改了檔案「怎麼被讀」而不是「它說了什麼」。log 裡看起來會一模
+> 一樣,意思卻完全不同。
 
 ---
 
