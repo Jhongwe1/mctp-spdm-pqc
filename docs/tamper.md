@@ -111,6 +111,22 @@ the hash on the wire — the pre-image. Upstream then computes the SHA-512 of th
 changed input, assembles the block, sizes the record and signs the transcript,
 all with code this project did not touch.
 
+Exactly which byte, so the input is stated rather than described:
+
+| | |
+|---|---|
+| file | `t1_meas.measurements.bin`, 336 bytes, `sha256 04c0f6dd…` |
+| offset | **84** (`0x54`), XOR `0x01` |
+| what it is | byte 36 of the 72-byte value for measurement index `0x01` |
+| the clean file | `t0_clean.measurements.bin`, `sha256 8844b46e…` — identical but for that byte |
+
+Both are committed in the run directory and hashed into its `manifest.json`,
+with the generator's own output beside them as `t1_meas.fixture.txt`. The tool
+refuses a `--flip-byte` that would land outside a measurement value: offset 12,
+the example in this project's own week-four plan, is inside the secure version
+number, and flipping it would change how the fixture is *read* rather than what
+it *says* — while looking identical in a log.
+
 The prediction written down before the run was that the handshake would
 **succeed**. It did.
 

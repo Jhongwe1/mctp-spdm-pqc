@@ -1929,6 +1929,48 @@ immediately, so a drill whose stub does not build turns the badge red on the
 day it is committed, with nothing written down. Validating a drill means three
 compilations, not two, and only two of them are about the exercise.
 
+
+### Four places this week left the plan, and what each cost
+
+**現象** `CLAUDE.md` says every deviation from the plan goes in this file with
+the reason, and the entries above record two — the secure version number being
+a `uint64_t` rather than the plan's `uint32`, and `--flip-byte 12` landing in
+that field instead of in a measurement. Re-reading `plan/W04` against what was
+actually built found two more that had gone unrecorded, plus one shape change
+worth stating.
+
+**根因** All four have the same origin: the plan was written on 2026-08-11,
+before the code it describes existed, and its specifics are guesses about an
+interface nobody had designed yet. That is not a defect in the plan. It is what
+a plan is.
+
+| the plan says | what exists | why |
+|---|---|---|
+| `./harness/run_pair.sh t0_clean …` | `harness/tamper.sh` | `run_pair.sh` has never existed. `capture.sh` and `lib/handshake.sh` already own "start a responder, wait for the socket, run a requester, keep the evidence", and a second copy would be a second place for its four failure modes to be wrong differently |
+| `docs/meas-c.patch` | `device/meas-from-file.patch` | it is source, not documentation, and `device/README.md` already declared patches to be this directory's artifact kind. `docs/` links to it |
+| `bench/data/{t0_clean,t1_meas,t3_cert}/` — three run directories | one run directory, seven cases by prefix | a run directory is one `prov_begin`/`prov_finish` pair, and these seven cases share a control, a chain, a build and a set of flags. Splitting them would produce seven manifests attesting to the same provenance and no place for `cases.tsv` to live |
+| `--svn N` and `--flip-byte N` | both, plus `--flip-block/--flip-offset` | `--flip-byte` alone makes the caller compute a file offset by hand, and the offset that matters is *inside a value*. The by-block form reports the absolute offset, which is what `docs/tamper.md` has to state |
+
+**教訓** Three of the four are the same decision made three times: **use the
+mechanism that already exists rather than the name the plan happened to use.**
+The fourth is the one the plan could not have got right, because the file
+format it addresses did not exist when it was written.
+
+What is worth extracting is the failure mode I nearly had. Deviations one and
+three were made without being noticed as deviations at all — `run_pair.sh` was
+absent, `tamper.sh` was obviously the right shape, and the plan's sentence
+simply stopped being read. **An unrecorded deviation is not a decision, it is
+drift**, and the difference between them is entirely whether somebody wrote
+down the alternative that was rejected. The two that did get recorded were
+recorded because the plan was *wrong* and being wrong is loud. The two that did
+not were recorded nowhere because the plan was merely *stale*, and stale is
+quiet.
+
+So the re-read that found them is the same instrument as the one on
+2026-08-31, pointed at a different target: that one compared documents against
+the day's results, this one compares the day's results against the plan. Both
+exist because there is no mechanism for either, and the honest response to that
+is to schedule the reading rather than to invent a weak check.
 ### What is measured, and what is still a claim about myself
 
 **`TODO(me)`** — `c-drills`. `d4` now exists with a contract, tests and a stub,
