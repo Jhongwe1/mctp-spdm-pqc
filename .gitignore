@@ -112,3 +112,12 @@ id_ed25519*
 # reproducible from the certificates and carry nothing the chain does not.
 certs/out/*.req
 certs/out/param.pem
+
+# device/: the loader's self-test binary and the scratch fixtures it writes.
+# The FIXTURES THAT MATTER are not here — harness/tamper.sh writes each one
+# into the run directory it belongs to, so every manifest records the exact
+# bytes the responder read. A fixture in device/ would be a fixture with no run
+# attached to it.
+device/measurement_source_test
+device/.ms_case.bin
+device/.interop_*.bin
