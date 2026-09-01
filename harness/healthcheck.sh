@@ -138,6 +138,24 @@ else
     verdict FAIL 0 "BUILD_PIN.txt missing — results cannot be attributed"
 fi
 
+# A pin describes upstream. From W04 the tree can also carry this project's own
+# patch, and then the pin alone no longer describes the binary. Say so here, in
+# the report a person actually reads before trusting a number, and not only in
+# the manifest a machine reads afterwards.
+DEVICE_PATCH="$(flavor_dir "$FLAVOR")/DEVICE_PATCH.txt"
+if [ -f "$DEVICE_PATCH" ]; then
+    printf '\n'
+    cat "$DEVICE_PATCH"
+    prov_pin_file "$DEVICE_PATCH" DEVICE_PATCH.txt device_patch
+    printf '  Without SPDM_MEASUREMENTS_FILE this binary behaves as upstream does,\n'
+    printf '  and bench/data/w4-tamper-*/t0_none is the capture that says so. With\n'
+    printf '  it, the measurements come from a file. To remove the patch:\n'
+    printf '      bash harness/apply_device_patch.sh %s --revert\n' "$FLAVOR"
+    verdict INFO 0 "device/meas-from-file.patch IS APPLIED — the pin alone no longer describes this binary"
+else
+    verdict INFO 0 "no device patch — this tree is upstream's alone"
+fi
+
 section "1. which algorithms the CLI exposes (decides which experiments exist)"
 HELP="$("${BIN}/spdm_requester_emu" --help 2>&1 || true)"
 printf '%s\n' "$HELP" | grep -oE '\-\-(pqc_asym|kem|pqc_first|asym|hash|dhe|aead|ver)[^]]*' \

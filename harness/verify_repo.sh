@@ -151,11 +151,159 @@ else
 fi
 
 step "python syntax (analysis tools)"
-if python3 -m py_compile harness/fields.py; then
-    good "harness/fields.py compiles"
+if python3 -m py_compile harness/fields.py bench/pcapstat.py device/gen_measurements.py; then
+    good "fields.py, pcapstat.py and gen_measurements.py compile"
 else
-    bad "harness/fields.py has a syntax error"
+    bad "an analysis tool has a syntax error"
 fi
+
+step "the measurement source module compiles, rejects, and agrees with its writer"
+# device/measurement_source.c is compiled twice: here on its own under two
+# sanitizers, and inside libspdm's sample secret library where nothing can run
+# it. Only the first of those fits in CI, which is why the module takes no
+# libspdm dependency at all.
+#
+# `test` runs 66 checks, of which the ones that matter feed the loader eleven
+# malformed fixtures and require ELEVEN DIFFERENT reason codes — standing rule
+# 13 — and then require every value of ms_status_t to have been observed, so an
+# error code nothing provokes is a failing build.
+#
+# `interop` byte-compares what the C builder writes with what
+# device/gen_measurements.py writes for the same defaults. The format has two
+# implementations and standing rule 12 says two routes to one quantity are made
+# to agree; without this the drift would surface as a responder quietly serving
+# upstream's synthetic values during a tamper run.
+if make -C device --no-print-directory test 2>&1 | tail -2 | sed 's/^/  /'; then
+    good "the loader's self-test passes under -Werror + ASan + UBSan"
+else
+    make -C device --no-print-directory test 2>&1 | tail -25 | sed 's/^/  /'
+    bad "the measurement source self-test failed"
+fi
+if make -C device --no-print-directory interop 2>&1 | head -2 | sed 's/^/  /'; then
+    good "the C reader and the Python writer produce identical bytes"
+else
+    bad "gen_measurements.py and the C builder disagree about the file format"
+fi
+make -C device --no-print-directory clean >/dev/null 2>&1 || true
+
+step "the measurement record walk can still fail"
+# fields.py now reports what is INSIDE a measurement record, not just its
+# length, because "the record is still 528 bytes" is exactly what a successful
+# tamper looks like. The walk is over-determined three ways — the block count
+# must equal NumberOfBlocks, the walk must consume MeasurementRecordLength
+# exactly, and each block's MeasurementSize must equal 3 plus its own DMTF
+# value size — so a correct record is built here and then broken once per
+# equation, and each break must be REPORTED rather than turned into eight
+# plausible blocks.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys, tempfile
+
+# ALGORITHMS has to be here even though nothing below is signed: reconstruct()
+# refuses to place a MEASUREMENTS message for a connection whose signature
+# algorithm it cannot name, and refusing is the right behaviour — an offset
+# derived from an unknown signature size is a guess. Leaving it out made this
+# test report "a correct record did not close", which was true and was about
+# the fixture rather than the code.
+ALGS = ("1 (1) MCTP(5) RSP->REQ SPDM(14, 0x63) SPDM_ALGORITHMS "
+        "(Hash=0x00000002(SHA_384), MeasHash=0x00000008(SHA_512), "
+        "Asym=0x00000080(ECDSA_P384), ReqAsym=0x0008(RSAPSS_3072)) ")
+GM = ("2 (1) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS "
+      "(Attr=0x00(), MeasOp=0xff(All), SlotID=0x00) ")
+MS = ("3 (1) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS "
+      "(NumOfBlocks=0x02, MeasRecordLen=0x00000000, ContentChange=0x20(NoChange), "
+      "SlotID=0x00) ")
+
+
+def block(raw):
+    return "\n".join(f"    {i:04x}: " + " ".join(f"{b:02x}" for b in raw[i:i + 32])
+                     for i in range(0, len(raw), 32))
+
+
+def mblock(index, vtype, value, size=None, vsize=None):
+    size = 3 + len(value) if size is None else size
+    vsize = len(value) if vsize is None else vsize
+    return (bytes([index, 0x01, size & 0xFF, size >> 8, vtype,
+                   vsize & 0xFF, vsize >> 8]) + value)
+
+
+def message(nblocks, record):
+    body = bytes([0x14, 0x60, 0x00, 0x20, nblocks,
+                  len(record) & 0xFF, (len(record) >> 8) & 0xFF,
+                  (len(record) >> 16) & 0xFF]) + record
+    return body + bytes(32) + b"\x00\x00"        # nonce, OpaqueLength = 0
+
+
+def walk(nblocks, record):
+    d = pathlib.Path(tempfile.mkdtemp())
+    algs = bytes([0x14, 0x63]) + bytes(34)
+    req = bytes([0x14, 0xE0, 0x00, 0xFF])
+    rsp = message(nblocks, record)
+    (d / "t.decode.txt").write_text(
+        "spdm_dump version 0.1\n"
+        "PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP),"
+        " MaxPacketSize - 65536\n" + ALGS + "\n" + GM + "\n" + MS + "\n",
+        encoding="utf-8")
+    (d / "t.hex.txt").write_text(
+        ALGS + "\n  SPDM Message:\n" + block(algs) + "\n"
+        + GM + "\n  SPDM Message:\n" + block(req) + "\n"
+        + MS + "\n  SPDM Message:\n" + block(rsp) + "\n", encoding="utf-8")
+    out = subprocess.run([sys.executable, "harness/fields.py",
+                          str(d / "t.decode.txt"), "--json"],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        print("  fields.py failed:", out.stderr.strip())
+        return None
+    return json.loads(out.stdout)["layout"]["measurement_record"]
+
+
+good_record = (mblock(0x01, 0x00, bytes(range(8)))
+               + mblock(0x10, 0x87, (7).to_bytes(8, "little")))
+
+rec = walk(2, good_record)
+if rec is None or not rec["closes"]:
+    print("  a correct record did not close:", rec and rec["why"])
+    sys.exit(1)
+if rec["blocks"]["0x10"]["value_uint64"] != 7 or rec["blocks_walked"] != 2:
+    print("  the intact walk disagrees with what was built:", rec)
+    sys.exit(1)
+print(f"  intact: closes — {rec['blocks_walked']} blocks, svn "
+      f"{rec['secure_version_number']}, {rec['record_bytes']} bytes")
+
+seen = {}
+for name, nblocks, record in (
+    ("NumberOfBlocks disagrees", 3, good_record),
+    # MeasurementSize 11 FITS in the record — it is the same size the first
+    # block legitimately has — but says 3 + 4 rather than 3 + 8. If this case
+    # is written with a size that overflows the record instead, the length
+    # check catches it first and the equation being tested here never runs.
+    # That is what the first version of this test did, and the distinctness
+    # check below did not notice because the two sentences differed by a digit.
+    ("MeasurementSize disagrees with the value size", 2,
+     mblock(0x01, 0x00, bytes(8), vsize=4) + mblock(0x10, 0x87, bytes(8))),
+    ("a block runs past the record", 2,
+     mblock(0x01, 0x00, bytes(8), size=900) + mblock(0x10, 0x87, bytes(8))),
+    ("a block header is cut short", 2, good_record + b"\x01\x01"),
+):
+    rec = walk(nblocks, record)
+    if rec is None:
+        sys.exit(1)
+    if rec["closes"]:
+        print(f"  ACCEPTED A BROKEN RECORD: {name}")
+        sys.exit(1)
+    key = rec["why_kind"]
+    if key is None:
+        print(f"  {name}: refused without saying which check refused it")
+        sys.exit(1)
+    if key in seen:
+        print(f"  BOTH '{seen[key]}' and '{name}' are caught by '{key}';")
+        print("  one of the equations between them has never rejected anything")
+        sys.exit(1)
+    seen[key] = name
+    print(f"  {name}: rejected by {key} — {rec['why']}")
+print(f"  4 breaks, {len(seen)} distinct checks — none redundant")
+PY
+[ $? -eq 0 ] && good "the record walk closes on a correct record and on nothing else" \
+             || bad "the measurement record walk accepted something it should have rejected"
 
 step "every experiment run is attributed"
 missing=0
@@ -418,6 +566,100 @@ sys.exit(1 if problems else 0)
 PY
 [ $? -eq 0 ] && good "the pcap layer and the SPDM layer account for the same bytes" \
              || bad "pcapcount.py and fields.py disagree about a capture"
+
+step "a second parser reaches the same per-message byte counts"
+# The step above compares one total against another total, which is one
+# equation over a whole capture: a message counted 200 bytes too large and
+# another 200 too small would satisfy it.
+#
+# bench/pcapstat.py closes that gap. It walks the capture file itself, strips
+# the five bytes of MCTP framing, reads the RequestResponseCode out of each
+# SPDM header and totals per message type — never opening a decode.
+# fields.py reaches the same per-type totals from spdm_dump's hex output and
+# never opens a capture. Requiring agreement PER TYPE is eighteen equations on
+# the walkthrough capture instead of one.
+#
+# A truncated decode is reported rather than failed: spdm_dump stops partway
+# through the post-quantum arm, so the two tools are genuinely not looking at
+# the same thing there, and pcapstat prints how much of the capture the decoder
+# does not see instead of demanding that a prefix equal a whole.
+fails=0
+total=0
+shopt -s nullglob
+for pcap in bench/data/*/*.pcap; do
+    total=$((total + 1))
+    if ! out="$(python3 bench/pcapstat.py "$pcap" --check 2>&1)"; then
+        printf '%s\n' "$out" | grep -E '^\s+FAIL' | sed 's/^/  /'
+        printf '  in %s\n' "$pcap"
+        fails=$((fails + 1))
+    fi
+done
+if [ "$total" -eq 0 ]; then
+    bad "no capture to cross-check"
+elif [ "$fails" -eq 0 ]; then
+    good "$total capture(s): pcapstat.py and fields.py agree message type by message type"
+else
+    bad "$fails capture(s) where the two parsers disagree"
+fi
+
+step "the stock measurement record is the same in every baseline ever taken"
+# docs/tamper.md's whole argument rests on one digest: the 528-byte measurement
+# record a responder produces when nothing has been done to it. Two claims lean
+# on it — "the added lines change nothing when no fixture is named", and "a
+# fixture holding upstream's own values reproduces upstream's own record" — and
+# both are comparisons against a number that would be worthless if it drifted.
+#
+# It has not drifted. The record holds no nonce and no timestamp, so it is a
+# run-invariant, and this asserts that over every baseline run in the
+# repository plus the two tamper arms that must equal them. Four runs, four
+# dates, both certificate chains, and a binary built before the patch existed
+# alongside one built after it.
+#
+# Derived from the DECODES rather than from the committed fields.json, so it
+# keeps working on runs whose derivations predate a change to fields.py — which
+# is precisely the situation this repository was in on 2026-09-01.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys
+
+seen = {}
+for decode in sorted(pathlib.Path("bench/data").glob("*/*.decode.txt")):
+    run = decode.parent.name
+    arm = decode.name.replace(".decode.txt", "")
+    stock = ("baseline" in run) or (arm in ("t0_none", "t0_clean"))
+    if not stock:
+        continue
+    if not decode.with_name(arm + ".hex.txt").exists():
+        continue
+    out = subprocess.run([sys.executable, "harness/fields.py", str(decode), "--json"],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        continue
+    got = json.loads(out.stdout)
+    if got["source"]["decode_truncated"]:
+        continue
+    rec = (got.get("layout") or {}).get("measurement_record")
+    if not rec or rec["blocks_walked"] != 8:
+        continue
+    if not rec["closes"]:
+        print(f"  {run}/{arm}: the record does not close — {rec['why']}")
+        sys.exit(1)
+    seen.setdefault(rec["sha256"], []).append(f"{run}/{arm}")
+
+if not seen:
+    print("  no eight-block measurement record found in any baseline")
+    sys.exit(1)
+for digest, where in sorted(seen.items(), key=lambda kv: -len(kv[1])):
+    print(f"  {digest[:16]}…  {len(where)} arm(s)")
+    for w in where:
+        print(f"      {w}")
+if len(seen) != 1:
+    print("  the stock measurement record is NOT the same everywhere")
+    sys.exit(1)
+runs = {w.split("/")[0] for w in next(iter(seen.values()))}
+print(f"  one digest across {len(runs)} run(s)")
+PY
+[ $? -eq 0 ] && good "every untampered capture carries the same measurement record" \
+             || bad "the stock measurement record differs between runs"
 
 step "every fields.json a document cites is still reproducible"
 # harness/capture.sh writes a *.fields.json beside each capture, and
