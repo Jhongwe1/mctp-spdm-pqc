@@ -43,6 +43,18 @@ HS_TIMEOUT="${SPDM_HS_TIMEOUT:-120}"
 
 HS_RESPONDER_PID=""
 
+# Environment applied to the RESPONDER only, as NAME=VALUE strings. Empty by
+# default, so every existing caller is unaffected.
+#
+# Why not simply export the variable around hs_run: both emulators link the
+# same device secret library, so an exported SPDM_MEASUREMENTS_FILE would be
+# read by the requester too. Nothing in the flows this project runs asks the
+# requester for a measurement, so the capture would very probably be identical
+# — and "very probably" is the wrong standard for the independent variable of
+# a tamper experiment. The claim being made is that ONE side's measurements
+# came from a file, so only one side is given the file.
+HS_RESPONDER_ENV=()
+
 hs_cleanup() {
     if [ -n "$HS_RESPONDER_PID" ] && kill -0 "$HS_RESPONDER_PID" 2>/dev/null; then
         kill "$HS_RESPONDER_PID" 2>/dev/null || true
@@ -94,8 +106,13 @@ hs_run() {
 
     cd "$bin" || return 90
 
-    hs_note_cmd "./spdm_responder_emu" "$@"
-    ./spdm_responder_emu "$@" >"$rsp_log" 2>&1 &
+    if [ "${#HS_RESPONDER_ENV[@]}" -gt 0 ]; then
+        hs_note_cmd env "${HS_RESPONDER_ENV[@]}" "./spdm_responder_emu" "$@"
+        env "${HS_RESPONDER_ENV[@]}" ./spdm_responder_emu "$@" >"$rsp_log" 2>&1 &
+    else
+        hs_note_cmd "./spdm_responder_emu" "$@"
+        ./spdm_responder_emu "$@" >"$rsp_log" 2>&1 &
+    fi
     HS_RESPONDER_PID=$!
 
     if ! hs_wait_for_responder "$HS_RESPONDER_PID" 10; then
