@@ -1614,3 +1614,345 @@ so there is no spare equation. `ALGORITHMS` may be reachable through its
 been tried, and neither is claimed.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+
+## 2026-09-01 · Day 5 · one byte, three places, and the layer that was not there
+
+### Two predictions were written down, and the capture chose the other one
+
+**現象** `plan/W04` §3 says tamper point ① — flip one byte of the device's own
+measurement — makes the requester fail at **measurement signature
+verification**. Before touching anything I read `meas.c` and predicted the
+opposite: the handshake would complete, exit 0, every signature verifying.
+Both predictions went into the record before the run.
+
+The capture: `t1_meas`, exit 0, 30 packets, `CHALLENGE_AUTH` present,
+`MEASUREMENTS` present, and the 528-byte measurement record differing from the
+control in **exactly one of its eight blocks** — index `0x01`, the one whose
+pre-image was changed.
+
+**假設** Three, before running:
+
+1. the signature check fails, because the record no longer matches — the plan's
+   answer;
+2. the handshake completes, because the responder signs what it actually sent,
+   so the pair the requester verifies is self-consistent;
+3. it completes but something else complains — the `MeasurementSummaryHash` in
+   `CHALLENGE_AUTH` disagreeing with the blocks, say.
+
+**先驗哪個、為什麼** (3) first, and by reading rather than running, because it
+was the only one that could have been settled the wrong way by an accident of
+this emulator's flags. It falls immediately:
+`libspdm_generate_measurement_summary_hash` obtains its blocks by calling
+`libspdm_measurement_collection` — the same function — so both sides of that
+comparison move together. That also answered a design question I had been about
+to get wrong, which is whether the summary hash needed a third hook. It did not.
+
+With (3) gone, (1) and (2) differ on one question — *whose bytes does the
+signature cover* — and that is a question the capture answers definitively. So
+the run was worth doing rather than arguing about.
+
+**根因** The responder signs a transcript of the messages it has sent, with its
+own key. Change the input and it computes a new record and signs **that**. For
+a signature check to fail, the bytes signed and the bytes verified have to
+differ, and there are exactly two ways to arrange that: change them in flight,
+or sign with a key that does not match the presented certificate. Changing the
+source is neither.
+
+The certificate chain behaves differently for a reason that is easy to say and
+easy to skip past: the requester holds an **anchor it was given out of band**. A
+measurement has no anchor. The requester has no idea what this device's firmware
+hash should be, and nothing in SPDM gives it one.
+
+**教訓** The plan's own diagram draws reference-value comparison *outside* the
+protocol, and its table then predicted the protocol would do it. Both were
+written by the same person on the same day. **A document can contradict itself
+across two representations of the same thing, and the prose is the half that
+will be believed**, because a table row is a sentence and a diagram is work.
+
+The transferable version, and the sentence this whole week exists to be able to
+say:
+
+> SPDM proves that a measurement came from this device. It does not prove that
+> the measurement is correct. The first is a signature; the second needs
+> reference values, and reference values are not in the protocol.
+
+A tampered measurement passing every check this repository currently owns is
+not a disappointing result. It is the empirical case for Gate 3, and it is
+stronger than the argument for Gate 3 was yesterday.
+
+### The certificate byte flip failed earlier than expected, and for the wrong reason
+
+**現象** `t3_cert` flips one byte inside the intermediate certificate's ECDSA
+`s` value — chosen by `certs/check_chain.py --locate` so the certificate still
+parses and exactly one link breaks. Result: exit 1, 10 packets, no
+`CHALLENGE_AUTH`. The week's DoD is met and the pcap proves it.
+
+I nearly wrote "the requester rejected the tampered certificate chain". That
+sentence is false.
+
+**假設** Why did it stop?
+
+1. the requester verified the chain and refused it — the expected path;
+2. the responder never served the chain at all;
+3. the responder crashed at startup and the requester found nothing listening.
+
+**先驗哪個、為什麼** (2), because it is the one the capture can settle without
+any further runs, and because the decode already contained the thing that
+settles it — I had simply read the error line first. There is **no
+`CERTIFICATE` message anywhere in the capture**, and the last message is
+`SPDM_ERROR(InvalidRequset)` in answer to `GET_CERTIFICATE`. (3) dies at the
+same time: the responder answered eight messages before that.
+
+Then one field: `ProvisionedSlotMask` is `0x13` in the clean run and **`0x12`**
+here. Slot 0 is gone.
+
+**根因** `libspdm_read_responder_public_certificate_chain` calls
+`libspdm_verify_cert_chain_data` on the file it just read and returns false
+(`read_pub_cert.c:447`). The device refused to serve a chain it could not
+itself validate — which is good behaviour, and is not the certificate-chain
+*verification* the tamper point was meant to exercise.
+
+And the failure is silent. `spdm_responder_emu` assigns `res` three times —
+slot 0, slot 1, slot 4 — and tests it once
+(`spdm_responder_spdm.c:495-553`), so the slot-0 failure is discarded. `data`
+stays `NULL`, the slot is left unprovisioned, and the responder starts
+normally. **The only trace anywhere is one bit in a mask field on the wire.**
+
+**教訓** Three artifacts described this run and they answered three different
+questions: the exit code said 1, the requester's log said
+`do_authentication_via_spdm - 8001000a`, and the pcap said *no certificate was
+ever sent*. Only the third is about the thing being tested. That is the same
+shape as 2026-08-11, where `tee`, the requester and `spdm_dump` each answered a
+slightly different question and the plausible summary was wrong — and the rule
+from it held again today: **look at the evidence, not at `$?`.**
+
+The narrower lesson is worth keeping separately: **a byte flipped on the
+device's own disk cannot reach the requester's verifier, because the device
+checks first.** Reaching that verifier requires corrupting bytes after the
+device has loaded them — which is tamper point ②, and this is now an argument
+for building the proxy rather than a plan item that says to.
+
+### The case that had to be added, and the one that did not fail
+
+**現象** If corrupted bytes cannot reach the requester's chain verification,
+then nothing measured this week exercises it. So: leave the chain internally
+perfect and change *whose* it is. `t3b_foreign` has the responder serve DMTF's
+own `ecp384` chain, signing with DMTF's leaf key, while the requester's trust
+anchor is still this project's root — a different file, left alone.
+
+The handshake **completed**. Exit 0, 30 packets, every signature verified,
+against a device whose entire chain descends from a CA the requester was never
+given.
+
+**假設** 1. the swap did not take effect and our chain was served anyway;
+2. the requester does not check the root at all in this configuration;
+3. it checks, and does not treat the answer as fatal.
+
+**先驗哪個、為什麼** (1) first, because it is the cheapest and because a
+harness bug that looks like a finding is the worst outcome available. The
+capture: slot 0 carried **1,655 bytes rooted at `ed79ce9a…`** where the clean
+run carried 1,897 rooted at `df0ee8f9…`, and `distinct_root_hashes` fell from 3
+to 2. The swap took.
+
+Then (2) against (3), by reading libspdm rather than inferring from behaviour.
+`libspdm_verify_peer_cert_chain_buffer_authority` exists, walks every
+provisioned root, and returns false when none matches. So it checks.
+
+**根因**
+
+```c
+/* Provided cert is valid but is not authoritative(mismatch the root cert). */
+#define LIBSPDM_STATUS_VERIF_NO_AUTHORITY \
+    LIBSPDM_STATUS_CONSTRUCT(LIBSPDM_SEVERITY_WARNING, LIBSPDM_SOURCE_CRYPTO, 0x0003)
+```
+
+`SEVERITY_WARNING`. And `libspdm_try_get_certificate` sets that status without
+a `goto done` — unlike the integrity check three lines above it, which has one
+(`libspdm_req_get_certificate.c:483-496`). The status survives to the return,
+and `spdm_requester_emu` calls the API form that discards the trust anchor and
+tests `LIBSPDM_STATUS_IS_ERROR`. A warning is not an error.
+
+**This is a design decision, not a defect.** libspdm returns a distinct status
+and an out-parameter naming the anchor precisely so an integrator can apply
+policy — a device may legitimately present a chain from a CA the verifier
+learns about by other means. What the sample application does with it is what a
+sample does.
+
+**教訓** The finding is not "libspdm accepts untrusted chains". It is:
+
+> An integrator who checks only `LIBSPDM_STATUS_IS_ERROR` has silently accepted
+> every certificate chain that parses. On a real BMC that is the difference
+> between "this device is genuine" and "this device presented well-formed
+> papers".
+
+Two things about how this arrived. First, **the experiment that failed to
+measure what it was designed to measure is what produced the experiment that
+did.** `t3b_foreign` is not in any plan; it exists because `t3_cert`'s result
+made the gap visible. That is the sequence worth being able to describe.
+
+Second, and less comfortable: **the same acceptance is in a capture I committed
+a week ago.** `w3-baseline-20260831T143123Z/selfsigned`, packet 12, slot 4's
+chain, root `ed79ce9a…` — in neither of the two roots that requester
+provisioned. Week 3 counted three trust anchors and called it a finding. It did
+not ask whether the requester had been given all three. The number was on the
+page and the question was not, which is a more useful description of how this
+was missed than "I did not notice".
+
+### A distinctness check that could not distinguish
+
+**現象** `docs/roadmap.md` standing rule 13, added on 2026-08-31, says two
+breaks caught by the same check are one check. So the new measurement-record
+walk got a suite: four malformed records, each required to be refused, and a
+check requiring the four refusals to be *distinct*. It passed on the first run.
+It should not have.
+
+**假設** The four cases were caught by 1. four different checks; 2. fewer, with
+the distinctness test too weak to notice; 3. fewer, and the test was right but
+I misread it.
+
+**先驗哪個、為什麼** (2), because the distinctness test was mine and written
+ten minutes earlier, and because reading four lines is cheaper than reasoning
+about four code paths. It keyed on the refusal **message**:
+
+```python
+key = (rec["why"] or "").split(":")[0].split(",")[0][:28]
+```
+
+Two of the four cases produced *the same check* — a block whose declared size
+runs past the record — and two different sentences, because the sentences
+interpolate the size. `...declares 99 bytes` and `...declares 900 bytes` differ
+in the twenty-eighth character. The keys differed; the checks did not.
+
+**根因** The case meant to exercise "MeasurementSize disagrees with the DMTF
+value size" used a size of 99 in a 30-byte record, so the length test caught it
+first and the equation being tested never ran. Fixing the fixture is one line —
+use a size that fits and still disagrees. Fixing the *test* is the real repair:
+every mechanism that has to report which check rejected something now returns a
+stable code beside the prose (`why_kind` in `fields.py`, `ms_status_t` in
+`device/`), and the suite compares codes.
+
+**教訓** Rule 13 was written to stop a suite from reporting more coverage than
+it has. Its first implementation reported more coverage than it had, in the
+same way, one day after being written. **A rule about redundant checks needs a
+mechanism to decide what "distinct" means, and a prefix of a formatted string
+is not one** — it is a fingerprint of the interpolated data, not of the code
+path.
+
+That is now rule 16, and the shape it generalises to is worth more than the
+instance: **when a check's answer is going to be compared, the thing compared
+has to be a category the code chose, not a rendering the code produced.** It is
+the same reason this repository asserts on `layout.*` keys rather than on
+`fields.py`'s printed table.
+
+### Changing one tool made every derivation it had ever produced false
+
+**現象** Adding the measurement-record walk to `fields.py` turned
+`verify_repo.sh` red in a step that had nothing to do with it: seven committed
+`*.fields.json` under `w3-baseline-20260831T143123Z` no longer reproduce from
+their own decodes. Nothing about those captures changed. The tool did.
+
+**假設** 1. regenerate the seven files in place; 2. re-stamp the manifest that
+attests to them; 3. take a new run.
+
+**先驗哪個、為什麼** None of them, first — check what the repository already
+decided. `docs/decisions/0004` and the 2026-08-28 entry cover this exact case
+and reject (1) and (2) in as many words: a manifest says a file is unaltered,
+not that it is still true, and *"there is no mechanism here for re-stamping a
+manifest and there should not be"*. So (3), and the question left was which
+binary should take it.
+
+**根因** The patched responder was in the tree. A baseline taken from it would
+still be correct — with no fixture named, the added lines do nothing — but the
+control for `docs/tamper.md` would then come from a binary carrying the code
+under test. So the patch was reverted, the tree rebuilt, `w4-baseline` taken
+from a binary with no patch in it, and the patch re-applied and rebuilt after.
+Two rebuilds to keep one sentence honest.
+
+All seven arms reproduced to the packet: 554/20,549, 584/114,751, 566/20,396,
+30/11,441, 30/11,441, 30/11,337, 30/11,821 — the same numbers as 08-16, 08-28
+and 08-31, now from a binary that had been rebuilt twice in between.
+
+**教訓** The cost is not the rerun; it is that the cost is **invisible when the
+tool is changed**. `fields.py` grew one key and that was a four-minute
+consequence in a repository with eleven runs. At thirty it is not four minutes,
+and nothing warns you at the moment of writing the key.
+
+So the invariant that mattered got a mechanism rather than a re-run. The
+528-byte stock measurement record is the number both of `docs/tamper.md`'s
+control claims rest on, and `verify_repo.sh` now re-derives it **from the
+decodes** — not from the committed derivations — across every baseline run in
+the repository: one SHA-256, fourteen arms, five runs, four dates, two
+certificate chains, and binaries built before and after the patch existed.
+**A derivation goes stale when its tool changes. A capture does not.** Checks
+that have to survive a tool change should be written against the capture.
+
+### Two upstream candidates, found the same way as the last one
+
+**`TODO(me)`** Both are in `docs/upstream/README.md` with the capture that
+produced them: the discarded slot-0 read result above, and the requester that
+never inspects `NO_AUTHORITY`. Neither is submitted. Both are small,
+documentation-adjacent, and neither is a vulnerability — the second is
+explicitly a hand-off the library underneath designed on purpose.
+
+Stating what they are worth before anyone asks: what they demonstrate is
+reading a reference implementation closely enough to find where its samples
+stop being examples, with a committed capture behind each. *"I found a security
+bug in libspdm"* is not the claim, would not survive review, and is the version
+of this that a portfolio is tempted into.
+
+G7 now has **four** candidates and **zero** submissions. Four candidates is not
+four times better than one. The count going up while the submission count stays
+at zero is the thing to watch, and this is the second week it has done that.
+
+### The stub that did not compile, and the third condition nobody had written down
+
+**現象** `c-drills/d4_bst_delete.c` was validated the way rule 15 requires:
+compiled against a correct implementation (30/30 pass, no leaks) and against
+the wrong one the drill exists to teach (caught by six checks *and* by
+LeakSanitizer, which the lost subtree also leaks). Then the committed version —
+the stubbed one, the one that actually goes in — **failed to compile**, twice,
+under `-Werror`.
+
+**根因** Both were the test harness reasoning about a stub that returns
+`(size_t)-1`. `-Wmaybe-uninitialized` on a buffer the stub never fills, and
+then `-Wstringop-overread` on a `memcmp` whose bound gcc could prove was
+`(size_t)-1` — because the only path past `if (k != n)` while `bst_inorder`
+always returns `(size_t)-1` is one where `n` is also `(size_t)-1`. gcc was
+right both times, and the second one found a helper that could not state its
+own limit.
+
+**教訓** Rule 15 names two conditions — the correct implementation passes, the
+wrong one is caught — and CI enforces a third that the rule does not mention:
+**the stub compiles.** `make` builds every drill so a syntax error is caught
+immediately, so a drill whose stub does not build turns the badge red on the
+day it is committed, with nothing written down. Validating a drill means three
+compilations, not two, and only two of them are about the exercise.
+
+### What is measured, and what is still a claim about myself
+
+**`TODO(me)`** — `c-drills`. `d4` now exists with a contract, tests and a stub,
+validated three ways. That makes **five** drills waiting and **zero** finished.
+`DONE.txt` is empty for the fifth working day running.
+
+Day 2 called this a risk, Day 3 a fact, Day 4 "the project track is generating
+work for a track that has never started". Today is the fifth day and the
+description has not needed to change, which is itself the finding. There is no
+mechanism that can close this one and that is the point of it: it measures
+whether C can still be written with nothing to ask, and the only thing that
+moves it is twenty-five minutes with paper.
+
+**`TODO(me)`** — Table 1 has no row showing a signature verification actually
+failing. Two of three tamper points are measured and **neither of them is
+detected by a signature**: one is not detected at all, and one never reaches
+the wire. Point ② is now the only case that would produce that row, which makes
+next week's proxy load-bearing in a way the plan did not anticipate.
+
+**`TODO(me)`** — `--flip-byte 12`, the example in `plan/W04`'s own text, lands
+inside the secure version number rather than in a measurement value. The
+generator refuses it and says so. Worth noting because the plan was written
+before the file format existed, and it is the second thing this week where the
+plan's specifics were overtaken by reading the source — the first being that
+the secure version number is a `uint64_t`, not the `uint32` the plan describes.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
