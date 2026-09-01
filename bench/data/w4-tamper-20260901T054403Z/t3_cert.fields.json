@@ -1,0 +1,332 @@
+{
+  "source": {
+    "decode_file": "/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w4-tamper-20260901T054403Z/t3_cert.decode.txt",
+    "sha256": "b09643fc087af5f7bfeb3173ea73d5c65f312440f89bb27d6f9c9aa9318154d2",
+    "tool": "spdm_dump version 0.1",
+    "decode_truncated": false,
+    "truncation_reason": null
+  },
+  "transport": {
+    "link_type": "MCTP",
+    "pcap_datalink": 291
+  },
+  "messages": {
+    "decoded": 10,
+    "encapsulating": 0,
+    "by_type": {
+      "SPDM_ALGORITHMS": 1,
+      "SPDM_CAPABILITIES": 1,
+      "SPDM_DIGESTS": 1,
+      "SPDM_ERROR": 1,
+      "SPDM_GET_CAPABILITIES": 1,
+      "SPDM_GET_CERTIFICATE": 1,
+      "SPDM_GET_DIGESTS": 1,
+      "SPDM_GET_VERSION": 1,
+      "SPDM_NEGOTIATE_ALGORITHMS": 1,
+      "SPDM_VERSION": 1
+    },
+    "encapsulated_by_type": {}
+  },
+  "version": {
+    "offered": [
+      "1.0.0.0",
+      "1.1.0.0",
+      "1.2.0.0",
+      "1.3.0.0",
+      "1.4.0.0"
+    ],
+    "offered_count": 5,
+    "get_version_header": "1.0",
+    "post_negotiation_header": "1.4"
+  },
+  "capabilities": {
+    "requester": {
+      "flags_raw": "0x8882f7c6",
+      "flags": [
+        "CERT_CAP",
+        "CHAL_CAP",
+        "ENCRYPT_CAP",
+        "MAC_CAP",
+        "MUT_AUTH_CAP",
+        "KEY_EX_CAP",
+        "PSK_CAP_REQUESTER",
+        "ENCAP_CAP",
+        "HBEAT_CAP",
+        "KEY_UPD_CAP",
+        "HANDSHAKE_IN_THE_CLEAR_CAP",
+        "CHUNK_CAP",
+        "EP_INFO_CAP_SIG",
+        "MULTI_KEY_CAP_NEG",
+        "LARGE_RESP_CAP"
+      ],
+      "flags_unrecognised": [],
+      "ct_exponent": 0,
+      "data_transfer_size": 4608,
+      "max_spdm_msg_size": 163840
+    },
+    "responder": {
+      "flags_raw": "0xb99afbf7",
+      "flags": [
+        "CACHE_CAP",
+        "CERT_CAP",
+        "CHAL_CAP",
+        "MEAS_CAP_SIG",
+        "MEAS_FRESH_CAP",
+        "ENCRYPT_CAP",
+        "MAC_CAP",
+        "MUT_AUTH_CAP",
+        "KEY_EX_CAP",
+        "PSK_CAP_RESPONDER_WITH_CONTEXT",
+        "ENCAP_CAP",
+        "HBEAT_CAP",
+        "KEY_UPD_CAP",
+        "HANDSHAKE_IN_THE_CLEAR_CAP",
+        "CHUNK_CAP",
+        "SET_CERT_CAP",
+        "CSR_CAP",
+        "EP_INFO_CAP_SIG",
+        "MEL_CAP",
+        "MULTI_KEY_CAP_NEG",
+        "GET_KEY_PAIR_INFO_CAP",
+        "SET_KEY_PAIR_INFO_CAP",
+        "LARGE_RESP_CAP"
+      ],
+      "flags_unrecognised": [],
+      "ct_exponent": 0,
+      "data_transfer_size": 4608,
+      "max_spdm_msg_size": 163840
+    },
+    "common": [
+      "CERT_CAP",
+      "CHAL_CAP",
+      "CHUNK_CAP",
+      "ENCAP_CAP",
+      "ENCRYPT_CAP",
+      "EP_INFO_CAP_SIG",
+      "HANDSHAKE_IN_THE_CLEAR_CAP",
+      "HBEAT_CAP",
+      "KEY_EX_CAP",
+      "KEY_UPD_CAP",
+      "LARGE_RESP_CAP",
+      "MAC_CAP",
+      "MULTI_KEY_CAP_NEG",
+      "MUT_AUTH_CAP"
+    ]
+  },
+  "algorithms": {
+    "offered": {
+      "Hash": [
+        "SHA_256",
+        "SHA_384"
+      ],
+      "MeasHash": null,
+      "Asym": [
+        "ECDSA_P256",
+        "ECDSA_P384"
+      ],
+      "PqcAsym": [
+        "ML_DSA_44",
+        "ML_DSA_65",
+        "ML_DSA_87"
+      ],
+      "DHE": [
+        "FFDHE_2048",
+        "FFDHE_3072",
+        "SECP_256_R1",
+        "SECP_384_R1"
+      ],
+      "KEM": [
+        "ML_KEM_512",
+        "ML_KEM_768",
+        "ML_KEM_1024"
+      ],
+      "AEAD": [
+        "AES_256_GCM",
+        "CHACHA20_POLY1305"
+      ],
+      "ReqAsym": [
+        "RSASSA_2048",
+        "RSASSA_3072",
+        "RSAPSS_2048",
+        "RSAPSS_3072"
+      ],
+      "ReqPqcAsym": [
+        "ML_DSA_44",
+        "ML_DSA_65",
+        "ML_DSA_87"
+      ],
+      "KeySchedule": [
+        "HMAC_HASH"
+      ],
+      "MeasSpec": [
+        "DMTF"
+      ],
+      "OtherParam": [
+        "OPAQUE_FMT_1",
+        "MULTI_KEY_CONN"
+      ]
+    },
+    "offered_counts": {
+      "Hash": 2,
+      "MeasHash": null,
+      "Asym": 2,
+      "PqcAsym": 3,
+      "DHE": 4,
+      "KEM": 3,
+      "AEAD": 2,
+      "ReqAsym": 4,
+      "ReqPqcAsym": 3,
+      "KeySchedule": 1,
+      "MeasSpec": 1,
+      "OtherParam": 2
+    },
+    "negotiated": {
+      "Hash": [
+        "SHA_384"
+      ],
+      "MeasHash": [
+        "SHA_512"
+      ],
+      "Asym": [
+        "ECDSA_P384"
+      ],
+      "PqcAsym": [],
+      "DHE": [
+        "SECP_384_R1"
+      ],
+      "KEM": [],
+      "AEAD": [
+        "AES_256_GCM"
+      ],
+      "ReqAsym": [
+        "RSAPSS_3072"
+      ],
+      "ReqPqcAsym": [],
+      "KeySchedule": [
+        "HMAC_HASH"
+      ],
+      "MeasSpec": [
+        "DMTF"
+      ],
+      "OtherParam": [
+        "OPAQUE_FMT_1",
+        "MULTI_KEY_CONN"
+      ]
+    }
+  },
+  "certificate": {
+    "get_certificate_count": 1,
+    "get_certificate_encapsulated": 0,
+    "requested_length": 163824,
+    "responder_chains": {},
+    "responder_slot0_bytes": null,
+    "responder_slot0_portions": null,
+    "responder_slot0_fetches": null,
+    "requester_chains": {},
+    "requester_slot0_bytes": null,
+    "requester_slot0_portions": null,
+    "requester_slot0_fetches": null,
+    "all_chains_consistent": null
+  },
+  "mutual_auth": {
+    "encapsulated_exchange": false,
+    "encapsulated_message_count": 0,
+    "encapsulated_by_type": {},
+    "requester_chain_bytes": null,
+    "challenge_auth_attr": null,
+    "challenge_auth_attr_meaning": null
+  },
+  "chunking": {
+    "chunk_get_count": 0,
+    "chunk_response_count": 0,
+    "large_response_errors": 0,
+    "large_msg_size": null
+  },
+  "measurements": {
+    "blocks_reported": null,
+    "total_index_reported": null,
+    "num_of_blocks": null,
+    "measurement_record_bytes": null,
+    "get_measurements_count": 0,
+    "measurements_count": 0,
+    "invalid_request_errors": 1,
+    "existing_indices": [],
+    "existing_indices_hex": [],
+    "record_bytes_by_index": {},
+    "record_bytes_sum": null,
+    "operation": null
+  },
+  "errors": {
+    "total": 1,
+    "by_code": {
+      "InvalidRequset": 1
+    }
+  },
+  "message_bytes": {
+    "source": "t3_cert.hex.txt",
+    "total": 308,
+    "consistent": true,
+    "carried_total": 0,
+    "carried_verified_inside_carrier": 0,
+    "carried_not_inside_carrier": [],
+    "unpaired": [],
+    "first_by_type": {
+      "SPDM_ALGORITHMS": 60,
+      "SPDM_CAPABILITIES": 20,
+      "SPDM_DIGESTS": 108,
+      "SPDM_ERROR": 4,
+      "SPDM_GET_CAPABILITIES": 20,
+      "SPDM_GET_CERTIFICATE": 16,
+      "SPDM_GET_DIGESTS": 4,
+      "SPDM_GET_VERSION": 4,
+      "SPDM_NEGOTIATE_ALGORITHMS": 56,
+      "SPDM_VERSION": 16
+    },
+    "total_by_type": {
+      "SPDM_DIGESTS": 108,
+      "SPDM_ALGORITHMS": 60,
+      "SPDM_NEGOTIATE_ALGORITHMS": 56,
+      "SPDM_GET_CAPABILITIES": 20,
+      "SPDM_CAPABILITIES": 20,
+      "SPDM_VERSION": 16,
+      "SPDM_GET_CERTIFICATE": 16,
+      "SPDM_GET_VERSION": 4,
+      "SPDM_GET_DIGESTS": 4,
+      "SPDM_ERROR": 4
+    },
+    "carried_by_type": {}
+  },
+  "layout": {
+    "hash_name": "SHA_384",
+    "hash_bytes": 48,
+    "measurement_hash_bytes": 64,
+    "responder_signature_bytes": 96,
+    "requester_signature_bytes": 384,
+    "attempted": 1,
+    "closed": 1,
+    "unexplained": [],
+    "challenge_auth": null,
+    "challenge_auth_requester": null,
+    "measurements": null,
+    "measurements_unsigned": null,
+    "certificate": null,
+    "certificate_requester": null,
+    "digests": {
+      "packet": 8,
+      "supported_slot_mask": "0x13",
+      "provisioned_slot_mask": "0x12",
+      "slots": 2,
+      "digest_bytes": 48,
+      "per_slot_bytes": 52,
+      "per_slot_extra": 4,
+      "per_slot_extra_is": "KeyPairID, CertificateInfo, KeyUsageMask",
+      "total_bytes": 108,
+      "closes": true
+    },
+    "digests_requester": null,
+    "chains": [],
+    "distinct_root_hashes": 0,
+    "measurement_record": null,
+    "measurement_records": []
+  }
+}

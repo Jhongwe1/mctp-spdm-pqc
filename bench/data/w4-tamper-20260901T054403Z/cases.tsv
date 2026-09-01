@@ -1,0 +1,8 @@
+case	exit	packets	slots	cert	chal	meas	anchor	record_sha256	svn	fixture	verdict
+t0_none	0	30	0x13	3	1	1	match	f2a14684e8fae9ff	7	none	completed
+t0_clean	0	30	0x13	3	1	1	match	f2a14684e8fae9ff	7	loaded	completed
+t1_meas	0	30	0x13	3	1	1	match	21ae49f9b66835f6	7	loaded	completed
+t3_cert	1	10	0x12	0	0	0	-		-	unreached	no-CERTIFICATE-served
+t3b_foreign	0	30	0x13	3	1	1	MISMATCH	f2a14684e8fae9ff	7	loaded	completed
+svn5	0	30	0x13	3	1	1	match	985df8524b6d0e08	5	loaded	completed
+svn9	0	30	0x13	3	1	1	match	cda33be106e759c3	9	loaded	completed

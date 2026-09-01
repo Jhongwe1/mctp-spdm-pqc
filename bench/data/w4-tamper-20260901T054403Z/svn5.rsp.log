@@ -1,0 +1,6 @@
+measurement_source: loaded /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w4-tamper-20260901T054403Z/svn5.measurements.bin (336 bytes, 4 blocks, svn=5)
+exe_conn - 0x0000001e
+exe_session - 0x00000004
+meas_op - 0xff
+slot_count - 0x01
+SPDM Responder server stopped

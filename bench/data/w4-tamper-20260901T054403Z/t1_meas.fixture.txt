@@ -1,0 +1,14 @@
+file      : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w4-tamper-20260901T054403Z/t1_meas.measurements.bin (336 bytes)
+sha256    : 04c0f6ddf83508fc1cd4ced13a2dbe7af8215e322ed24932bdf6dd812bfe9305
+svn       : 7  (at file offset 8, 8 bytes little-endian)
+blocks    : 4
+
+  index  length  offset  value
+  0x001      72      48  01 01 01 01 01 01 01 01 01 01 01 01 ...
+  0x002      72     120  02 02 02 02 02 02 02 02 02 02 02 02 ...  (72 x 0x02)
+  0x003      72     192  03 03 03 03 03 03 03 03 03 03 03 03 ...  (72 x 0x03)
+  0x004      72     264  04 04 04 04 04 04 04 04 04 04 04 04 ...  (72 x 0x04)
+
+flipped   : file offset 84 (0x54), XOR 0x01
+            byte 36 of the 72-byte value for measurement index 0x01
+            record this offset in docs/tamper.md

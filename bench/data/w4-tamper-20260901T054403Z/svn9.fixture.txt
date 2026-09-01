@@ -1,0 +1,10 @@
+file      : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w4-tamper-20260901T054403Z/svn9.measurements.bin (336 bytes)
+sha256    : 0667facc882d70f612eb33b1bc7906aca6f6adceece83daa43a78f28a2562933
+svn       : 9  (at file offset 8, 8 bytes little-endian)
+blocks    : 4
+
+  index  length  offset  value
+  0x001      72      48  01 01 01 01 01 01 01 01 01 01 01 01 ...  (72 x 0x01)
+  0x002      72     120  02 02 02 02 02 02 02 02 02 02 02 02 ...  (72 x 0x02)
+  0x003      72     192  03 03 03 03 03 03 03 03 03 03 03 03 ...  (72 x 0x03)
+  0x004      72     264  04 04 04 04 04 04 04 04 04 04 04 04 ...  (72 x 0x04)
