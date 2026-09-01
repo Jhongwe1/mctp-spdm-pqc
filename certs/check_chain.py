@@ -207,6 +207,127 @@ def der_sequences(buf: bytes):
     return out
 
 
+# ----------------------------------------------------------- byte locator ---
+#
+# Tamper point 3 changes one byte of the intermediate certificate inside the
+# bundle the responder serves, and the whole value of the experiment is being
+# able to say WHICH byte and WHY that one. "I opened it in a hex editor and
+# changed something near the end" is not a controlled input.
+#
+# Three offsets are wrong in three different ways and each would produce a
+# failure that means something else:
+#
+#   * a byte of a DER length field  — the certificate stops parsing, and the
+#     responder fails to load its own chain before anything reaches the wire;
+#   * a byte of the subject public key — the leaf's signature ALSO stops
+#     verifying, so two links break and the capture cannot say which was
+#     detected;
+#   * a byte inside the tbsCertificate — correct, but it changes the
+#     certificate's contents as well as its signature, which is two variables.
+#
+# The one this returns is a byte inside the ECDSA signature's `s` integer. The
+# certificate still parses, every field still says what it said, the leaf still
+# chains to it — and the root's signature over it no longer verifies. One link,
+# one reason.
+#
+# This lives here rather than in the harness because certs/check_chain.py is
+# the file that owns certificate bytes: standing rule 12, one tool per input.
+
+def signature_span(der: bytes) -> dict:
+    """Where a certificate's signatureValue is, and where its ECDSA s lives.
+
+    Certificate ::= SEQUENCE { tbsCertificate, signatureAlgorithm, signatureValue }
+    and for ECDSA the BIT STRING wraps SEQUENCE { r INTEGER, s INTEGER }.
+    """
+    tag, _hdr, body, bstart = der_tlv(der, 0)
+    if tag != 0x30:
+        raise DerError("a certificate must be a SEQUENCE")
+    parts = list(der_children(der, bstart, bstart + body))
+    if len(parts) != 3:
+        raise DerError(f"a certificate has three parts, this one has {len(parts)}")
+
+    tbs_tag, tbs_off, tbs_start, tbs_len = parts[0]
+    sig_tag, _sig_off, sig_start, sig_len = parts[2]
+    if sig_tag != 0x03:
+        raise DerError(f"signatureValue is 0x{sig_tag:02x}, not a BIT STRING")
+    if sig_len < 1 or der[sig_start] != 0x00:
+        raise DerError("a signature BIT STRING with unused bits")
+
+    out = {
+        "tbs_offset": tbs_off,
+        "tbs_bytes": (tbs_start - tbs_off) + tbs_len,
+        "signature_offset": sig_start + 1,          # past the unused-bits byte
+        "signature_bytes": sig_len - 1,
+        "algorithm": "unknown",
+    }
+    if tbs_tag != 0x30:
+        raise DerError("tbsCertificate is not a SEQUENCE")
+
+    # ECDSA-Sig-Value ::= SEQUENCE { r INTEGER, s INTEGER }. RSA signatures are
+    # an opaque octet string and have no such structure, so say so rather than
+    # guess at one.
+    try:
+        inner = list(der_children(der, out["signature_offset"],
+                                  out["signature_offset"] + out["signature_bytes"]))
+        seq_tag, _o, seq_start, seq_len = inner[0]
+        if seq_tag != 0x30:
+            raise DerError("not an ECDSA-Sig-Value")
+        ints = list(der_children(der, seq_start, seq_start + seq_len))
+        if len(ints) != 2 or any(t != 0x02 for t, _a, _b, _c in ints):
+            raise DerError("ECDSA-Sig-Value is not two INTEGERs")
+        _t, _o2, s_start, s_len = ints[1]
+        out["algorithm"] = "ecdsa"
+        out["s_offset"] = s_start
+        out["s_bytes"] = s_len
+        # The middle of s: far from the leading byte, which for a positive
+        # INTEGER may be a 0x00 pad whose removal would change the encoded
+        # length, and far from the last byte, which is where a careless flip
+        # usually lands and is therefore the least interesting choice.
+        out["flip_offset"] = s_start + s_len // 2
+        out["flip_meaning"] = (f"byte {s_len // 2} of the {s_len}-byte ECDSA s "
+                               f"value in the certificate's own signature")
+    except (DerError, IndexError, StopIteration):
+        out["algorithm"] = "opaque"
+        out["flip_offset"] = out["signature_offset"] + out["signature_bytes"] // 2
+        out["flip_meaning"] = (f"byte {out['signature_bytes'] // 2} of the "
+                               f"{out['signature_bytes']}-byte signature")
+    return out
+
+
+def locate(chain_dir: pathlib.Path, bundle_name: str) -> dict:
+    """Every certificate in a bundle, and the byte to flip in each."""
+    bundle = chain_dir / bundle_name
+    raw = bundle.read_bytes()
+    spans = der_sequences(raw)
+
+    # Name the certificates by matching bytes against the individual files, so
+    # "the intermediate" is established rather than assumed from position.
+    known = {}
+    for name in ("ca", "inter", "end_responder", "end_requester"):
+        p = chain_dir / f"{name}.cert.der"
+        if p.is_file():
+            known[p.read_bytes()] = name
+
+    out = {"bundle": str(bundle), "bundle_bytes": len(raw),
+           "sha256": hashlib.sha256(raw).hexdigest(), "certificates": []}
+    for position, (offset, length) in enumerate(spans):
+        der = raw[offset:offset + length]
+        span = signature_span(der)
+        out["certificates"].append({
+            "position": position,
+            "name": known.get(der, f"unnamed-{position}"),
+            "offset": offset,
+            "bytes": length,
+            "sha256": hashlib.sha256(der).hexdigest(),
+            "signature_offset_in_bundle": offset + span["signature_offset"],
+            "signature_bytes": span["signature_bytes"],
+            "signature_algorithm": span["algorithm"],
+            "flip_offset_in_bundle": offset + span["flip_offset"],
+            "flip_meaning": span["flip_meaning"],
+        })
+    return out
+
+
 # ---------------------------------------------------------------- openssl ---
 
 def openssl(*args, cwd=None) -> tuple[int, str]:
@@ -555,6 +676,10 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="machine-readable facts")
     ap.add_argument("--self-test", action="store_true",
                     help="break the chain four ways and require each to be rejected")
+    ap.add_argument("--locate", metavar="BUNDLE", nargs="?",
+                    const="bundle_responder.certchain.der",
+                    help="where each certificate sits in a bundle, and which "
+                         "byte to flip to break exactly one signature")
     args = ap.parse_args()
 
     if not args.chain_dir.is_dir():
@@ -565,6 +690,31 @@ def main() -> int:
     if not shutil.which("openssl"):
         print("openssl is not on PATH", file=sys.stderr)
         return 2
+
+    if args.locate is not None:
+        try:
+            found = locate(args.chain_dir, args.locate)
+        except (DerError, OSError) as exc:
+            print(f"cannot locate: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(found, indent=2, sort_keys=True))
+            return 0
+        print(f"bundle: {found['bundle']} ({found['bundle_bytes']} bytes)")
+        print(f"sha256: {found['sha256']}")
+        print()
+        print(f"  {'#':>1}  {'name':<14} {'offset':>7} {'bytes':>6} "
+              f"{'sig at':>7} {'sig':>5}  flip")
+        for c in found["certificates"]:
+            print(f"  {c['position']}  {c['name']:<14} {c['offset']:>7} "
+                  f"{c['bytes']:>6} {c['signature_offset_in_bundle']:>7} "
+                  f"{c['signature_bytes']:>5}  {c['flip_offset_in_bundle']}")
+        print()
+        for c in found["certificates"]:
+            print(f"  {c['name']}: flipping bundle byte "
+                  f"{c['flip_offset_in_bundle']} changes "
+                  f"{c['flip_meaning']}")
+        return 0
 
     if args.self_test:
         return 1 if self_test(args.chain_dir) else 0
