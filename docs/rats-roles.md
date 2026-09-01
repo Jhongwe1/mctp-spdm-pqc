@@ -56,7 +56,7 @@ and that is where this project spends its effort:
 | Step | Who owns it | Where in this repo |
 |---|---|---|
 | obtain evidence over SPDM | DMTF reference implementation | `harness/` (G1) |
-| show that tampering changes the evidence | this project | `device/`, `bench/` (G2) |
+| show that tampering changes the evidence | this project | `device/`, [`docs/tamper.md`](tamper.md) — **done 2026-09-01** |
 | hold reference values | this project | `rats/` (G3) |
 | compare and decide | this project | `rats/` policy (G3) |
 | assert the decision in CI | this project | `.github/workflows/` (G6) |
@@ -64,6 +64,24 @@ and that is where this project spends its effort:
 The last row is the one worth defending in conversation. A table of results can
 be anything. **A CI job that turns red when a tampered measurement is *not*
 rejected is the reason the table can be believed.**
+
+## The second row is now measured, and it says more than it was asked to
+
+The claim above — that SPDM covers exactly one arrow of the diagram and the
+rest has to be built — was an argument from the specification until
+2026-09-01. It is now an observation.
+
+One byte of a device's own measurement was changed and **the handshake
+completed, with every signature verifying**
+([`tamper.md` §3](tamper.md)). Nothing in the protocol compared the value
+against anything, because there is nothing in the protocol to compare it
+against: the requester holds a trust anchor for the *certificate* chain,
+given out of band, and holds no equivalent for a *measurement*.
+
+So the row "hold reference values" is not scheduled work that would be nice to
+have. It is the row without which the row above it has no consequence — and
+`bench/data/w4-tamper-*/t1_meas` is a capture of exactly that having no
+consequence.
 
 ## Mapping onto a real machine
 

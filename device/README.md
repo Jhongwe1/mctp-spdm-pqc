@@ -129,6 +129,10 @@ so which bytes went in is always recoverable and never enforced.
 
 ## The provenance problem this creates, and how it is handled
 
+> The decision, the four alternatives rejected, and what it costs every time a
+> baseline is taken:
+> [`docs/decisions/0006`](../docs/decisions/0006-patching-the-pinned-tree.md).
+
 A patched build tree is a build tree that `third_party/*.pin` no longer fully
 describes. `certs/stage_chain.sh` avoids the same hazard by building a sandbox
 instead of overwriting the build tree; that is not available here, because a

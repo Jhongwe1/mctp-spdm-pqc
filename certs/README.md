@@ -7,6 +7,7 @@ the scripts that build it, and the checker that reads it out of its DER.
 bash certs/gen_chain.sh              # build one (refuses to overwrite)
 python3 certs/check_chain.py certs/out
 python3 certs/check_chain.py certs/out --self-test
+python3 certs/check_chain.py certs/out --locate      # which byte to flip, and why
 bash certs/stage_chain.sh pqc        # put it where an emulator will find it
 ```
 
@@ -80,3 +81,20 @@ mean one of them had still never done anything, and for one commit that was
 exactly the case: the byte-comparison against the individual certificates ran
 before the DER walk and caught everything the walk would have. Swapping the two
 gave each of them something only it can find.
+
+`--locate` answers a question the tamper experiment could otherwise only guess
+at: **which byte, and why that one.** It reports where each certificate sits
+inside the bundle and returns a byte in the middle of that certificate's own
+ECDSA `s` integer.
+
+The choice is the experiment. A byte of a DER length field stops the
+certificate parsing, so the responder fails to load its own chain and nothing
+reaches the wire. A byte of the subject public key breaks the leaf's signature
+as well as the root's, so two links break and the capture cannot say which one
+was detected. A byte of the `tbsCertificate` changes the certificate's contents
+as well as its signature, which is two variables. The byte this returns leaves
+the certificate parsing, every field saying what it said, and exactly one
+signature failing to verify.
+
+It lives here rather than in `harness/` for the same reason as everything else
+in this file: one tool per input, and this one owns certificate bytes.

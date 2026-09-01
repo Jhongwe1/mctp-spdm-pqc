@@ -1971,6 +1971,72 @@ So the re-read that found them is the same instrument as the one on
 the day's results, this one compares the day's results against the plan. Both
 exist because there is no mechanism for either, and the honest response to that
 is to schedule the reading rather than to invent a weak check.
+
+### The same file went stale again, and the re-read was still not scheduled
+
+**現象** Yesterday's last entry ended with a `TODO(me)`: the re-read that had
+just found five stale documents *"is currently a thing that happened once
+because somebody asked. It should be the last item of the end-of-day list, not
+the thing after it."*
+
+Today it happened once because somebody asked. It found eight things, and one
+of them is `.github/workflows/ci.yml` — **the same file, the same comment, for
+the same reason.** Yesterday it named four checks where the job ran twelve.
+Today it named ten where the job runs twenty-two.
+
+**假設** Why did a day's work leave eight documents behind?
+
+1. carelessness — the documents were forgotten in the rush to push;
+2. the documents are not reachable from the work, so nothing pointed at them;
+3. they were reachable but the pointer only exists in one direction.
+
+**先驗哪個、為什麼** (1) is untestable and flattering to reject, so it goes
+last. (2) is checkable in one command and false: `verify_repo.sh` reports zero
+dangling links across twenty-eight markdown files, and every one of the eight
+is linked from something.
+
+(3) is the one that survives, and the eight sort cleanly into two kinds:
+
+| kind | what it is | examples |
+|---|---|---|
+| **a summary of a mechanism** | prose that restates what a script does, kept in a second place | `ci.yml`'s comment, `certs/README.md`'s usage block, `c-drills/README.md`'s table, the RUNBOOK's command appendix, `README.md`'s manifest list |
+| **a statement a new measurement contradicts** | prose that was true and is now weaker than what is known | `threat-scope.md`'s "trusted by configuration", `rats-roles.md`'s "show that tampering changes the evidence — G2" |
+
+**根因** Both kinds have the same shape and it is not carelessness. **The work
+points at the document; the document does not point at the work.** `tamper.sh`
+does not know that `RUNBOOK`'s appendix lists commands. `verify_repo.sh` does
+not know that `ci.yml` describes it. The measurement that made "trusted by
+configuration" too generous did not know that sentence existed.
+
+Every one of them is a **second copy** — of a step list, of a usage line, of a
+belief — and a second copy has no mechanism connecting it to the first. That is
+the same finding as yesterday, stated one level up: *there is no mechanism for
+prose.* Yesterday's version was about a comment. This one is about a category.
+
+The eighth was different and worth separating: there was no
+`docs/decisions/0006`. Patching a pinned build tree changes what "the pin
+describes the binary" means, which is the foundation of ADRs 0001 and 0003, and
+`CLAUDE.md` says a decision that changes the repository's shape gets a record.
+That one was not stale — it was **absent**, and absence is the failure mode a
+re-read is worst at catching, because nothing is there to read.
+
+**教訓** Yesterday's TODO said the re-read should be scheduled rather than
+requested. It was not, and the cost was one file going stale twice in two days.
+So it is now the sixth item of the end-of-day list rather than a note about
+one, and `ci.yml`'s comment says out loud that it is a summary which has
+already rotted once and that the script is the list.
+
+But the sharper lesson is about which documents to re-read, because "re-read
+everything" does not survive week six either. **The ones that rot are the
+second copies**, and they are enumerable: a comment describing a script, a
+usage block listing a tool's modes, a table indexing files in a directory, and
+any sentence stating what a measurement has not yet been taken to check. Four
+shapes. That is a list short enough to actually walk.
+
+And one of them cannot be caught by re-reading at all. A missing ADR is not a
+stale sentence; it is a decision that was made without being written down, and
+the only prompt for it is asking *"did anything I did this week change the
+shape of the repository?"* — which is a question, not a document.
 ### What is measured, and what is still a claim about myself
 
 **`TODO(me)`** — `c-drills`. `d4` now exists with a contract, tests and a stub,

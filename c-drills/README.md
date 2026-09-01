@@ -69,7 +69,7 @@ it reports what has been finished and never claims anything else.
 | D1 | `d1_spdm_header.c` | an offset whose bounds check overflows before it is checked | first step of every capture-analysis script here |
 | D5 | `d5_endian.c` | a top byte of 0x80 or above, shifted on a signed int | the socket framing is big-endian, the payload little-endian |
 | D6 | `d6_packed_struct.c` | one byte of padding that moves a field AND a size | wire formats are byte layouts, not struct layouts |
-| D4 | BST delete | deleting a node with two children | not used here — kept for the three-way pointer rewiring it forces |
+| D4 | `d4_bst_delete.c` | a two-children delete whose in-order successor has a right child of its own | not used here — the one drill lifted from an interview rather than from this repo |
 | D2 | offset + length overflow | `offset + length` wrapping past the end of the buffer | the arithmetic behind a real advisory class |
 | D7 | ring buffer | full and empty are indistinguishable by indices alone | proxy and transport buffering |
 | D8 | length-bounded string copy | the truncation case, and who writes the terminator | the other real advisory class |
@@ -102,6 +102,15 @@ failed it on the first attempt:
   that checked values alone would have taught nothing.
 - **D6** was written against the five-byte MCTP transport framing and the trap
   could not fire. See below.
+- **D4**, in week four, passed both of the interesting compilations — the
+  correct implementation at 30/30 with no leaks, the in-place-unlink version
+  caught by six checks *and* by LeakSanitizer — and then failed the boring one
+  twice. The committed stub did not build, because gcc could prove the test
+  helper's `memcmp` bound was `(size_t)-1` on the only path a stub can reach.
+  gcc was right, and the second failure found a helper that could not state its
+  own buffer limit. **The stub compiling is the condition that is easy to skip,
+  because it is the one that has nothing to do with the exercise** — and it is
+  the one CI notices first, since `make` builds every drill.
 
 ## Why D6 is not about the transport framing
 

@@ -68,7 +68,10 @@ of which are code**:
 Both sit on the line *after* upstream computes its own value and leave the
 buffer alone when they decline, so the diff is purely additive and hashing,
 block assembly and signing are untouched. What a capture measures is still
-libspdm's behaviour.
+libspdm's behaviour. A patched tree is one a pin no longer fully describes, so
+the patch's digest goes into every manifest taken afterwards and a baseline is
+taken with it reverted — the decision and its four rejected alternatives are in
+[`docs/decisions/0006`](docs/decisions/0006-patching-the-pinned-tree.md).
 
 Then one byte of measurement index 1's pre-image was flipped:
 
@@ -384,9 +387,16 @@ contains a `manifest.json` holding:
 
 - the commit hashes of **every** upstream binary the run depended on — both
   emulator builds and `spdm_dump`, through which each capture is read
+- **any patch this project applied to that upstream**, by digest, along with
+  the pre- and post-image of every file it touched. From week 4 a pin alone no
+  longer describes the binary, and a patched tree that said nothing about being
+  patched is exactly the failure the rest of this list exists to prevent
 - the complete command lines that were executed, as executed
 - compiler, OpenSSL, Python and kernel versions
-- SHA-256 and byte count of every artifact in the directory
+- SHA-256 and byte count of every artifact in the directory, **including the
+  measurement fixtures a tamper run fed to the responder** — those are inputs,
+  and an experiment that cannot say which bytes went in has not recorded its
+  independent variable
 - whether the working tree was clean when the run happened
 
 This is a mechanism rather than a convention. Any script that records a result

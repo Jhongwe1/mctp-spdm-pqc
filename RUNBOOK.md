@@ -1186,14 +1186,34 @@ bash harness/healthcheck.sh pqc
 bash harness/healthcheck.sh pqc --write-baseline        # 順便更新 docs/env-baseline.md
 bash harness/healthcheck.sh stable
 
-# ── 收證據(★ 五臂,有出處)────────────────────────────
+# ── 收證據(★ 七臂,有出處)────────────────────────────
 bash harness/capture.sh                       # 預設 --name w2-baseline
-bash harness/capture.sh --name g2-tamper      # 之後的實驗換個名字
+bash harness/capture.sh --name w4-baseline    # 每週的基線換個名字
+
+# ── 改上游 · 篡改(★ W04,見 §8.8)───────────────────────
+bash harness/apply_device_patch.sh pqc --build      # 裝 patch 並重建
+bash harness/apply_device_patch.sh pqc --status     # 現在裝了沒
+bash harness/apply_device_patch.sh pqc --revert     # 拆掉(要再重建)
+bash harness/tamper.sh                              # 七個 case,約一分鐘
+bash harness/tamper.sh --only t3_cert               # 只跑一個
+python3 device/gen_measurements.py --out /tmp/m.bin           # 預設 = 重現上游
+python3 device/gen_measurements.py --svn 5 --out /tmp/m5.bin
+python3 device/gen_measurements.py --flip-block 1 --flip-offset 36 --out /tmp/t.bin
+python3 device/gen_measurements.py --describe /tmp/m.bin
+make -C device test                                 # loader,兩個 sanitizer
+make -C device interop                              # C 讀的跟 Python 寫的要一致
+
+# ── 憑證:要翻哪一個 byte ────────────────────────────────
+python3 certs/check_chain.py certs/out --locate      # 位移 ＋ 那是什麼
+python3 certs/check_chain.py certs/out --self-test   # 四種破壞,四個檢查
 
 # ── 分析:封包層 ────────────────────────────────────────
 python3 harness/pcapcount.py <file>.pcap
 python3 harness/pcapcount.py <file>.pcap --json
 python3 harness/pcapcount.py <file>.pcap --list         # 每個封包一行
+python3 bench/pcapstat.py <file>.pcap                   # 每種訊息幾個 byte
+python3 bench/pcapstat.py <file>.pcap --list            # 每個封包一行,含訊息名
+python3 bench/pcapstat.py <file>.pcap --check           # ★ 要跟 fields.py 一致
 
 # ── 分析:協定欄位層(★ 實際協商到什麼)──────────────────
 python3 harness/fields.py <run>/walkthrough.decode.txt

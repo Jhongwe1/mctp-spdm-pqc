@@ -127,12 +127,17 @@ it does.
     has to hold on any machine is the *relationship* rather than the bytes.
     [ADR 0005](decisions/0005-generated-inputs-are-evidence.md).
 15. **A drill whose failure mode cannot occur teaches a superstition.** Before a
-    C drill is committed, its tests are compiled against a correct
-    implementation, which must pass, and against the wrong one the drill exists
-    to teach, which must be caught. Twice now a drill has been written whose
-    trap could not fire — 2026-08-28's `d1` and 2026-08-31's first `d6` — and
-    both times reasoning about whether it would fire was the same reasoning
-    that produced it.
+    C drill is committed, its tests are compiled **three** ways in a scratch
+    directory: against the committed stub, which must build and fail; against a
+    correct implementation, which must pass; and against the wrong one the
+    drill exists to teach, which must be caught. Twice a drill has been written
+    whose trap could not fire — 2026-08-28's `d1` and 2026-08-31's first `d6` —
+    and both times reasoning about whether it would fire was the same reasoning
+    that produced it. The first of the three was added to this rule on
+    2026-09-01, after `d4` passed the two interesting compilations and failed
+    the boring one: `make` builds every drill, so a stub that does not compile
+    turns the badge red on the day it is committed. `c-drills/README.md` had
+    described all three from the beginning; this rule had not.
 16. **A category is not a prefix of a sentence.** Rule 13 requires distinct
     breaks to be refused by distinct checks, and something has to decide what
     "distinct" means. Comparing the refusal *messages* is not enough: on
