@@ -600,6 +600,166 @@ def _place_measurements(rsp, req, sig):
                    4 + (33 if gensig else 0))
 
 
+# ------------------------------------------------- inside the record itself --
+#
+# A MEASUREMENTS message's record is a sequence of measurement blocks, and
+# until now this file reported only its length. That was enough while every
+# measurement in the project was upstream's synthetic constant. It stops being
+# enough the moment a fixture can change one: "the record is still 528 bytes"
+# is exactly what a successful tamper looks like.
+#
+# DSP0274 1.4.0 Table 45 (measurement block) and Table 46 (DMTF measurement
+# specification format):
+#
+#     Index                            1 byte
+#     MeasurementSpecification         1 byte
+#     MeasurementSize                  2 bytes  -- of everything after this
+#       DMTFSpecMeasurementValueType   1 byte   -- bit 7 set = raw bit stream
+#       DMTFSpecMeasurementValueSize   2 bytes
+#       DMTFSpecMeasurementValue       that many bytes
+#
+# Two equations close over the whole record and neither is free:
+#
+#   count   the blocks walked must equal NumberOfBlocks, which the responder
+#           wrote into a different field of the same message;
+#   closure the walk must consume MeasurementRecordLength exactly — not stop
+#           short, not run past.
+#
+# And one closes over each block: MeasurementSize must equal 3 plus
+# DMTFSpecMeasurementValueSize, which is the DMTF header restating the
+# common header's arithmetic. A record that is misread by one byte fails at
+# least one of the three; the walk is reported as `closes: false` rather than
+# quietly producing eight plausible blocks.
+#
+# The value-type names are transcribed from the pinned libspdm's
+# include/industry_standard/spdm.h lines 894-906 at 8a92317, the same
+# transcription trade the capability tables above make and with the same
+# caveat: --check cannot catch a name that drifts, because a wrong name stays
+# self-consistent. Re-read them after a version bump.
+
+MEAS_VALUE_TYPES = {
+    0x00: "IMMUTABLE_ROM",
+    0x01: "MUTABLE_FIRMWARE",
+    0x02: "HARDWARE_CONFIGURATION",
+    0x03: "FIRMWARE_CONFIGURATION",
+    0x04: "MEASUREMENT_MANIFEST",
+    0x05: "DEVICE_MODE",
+    0x06: "VERSION",
+    0x07: "SECURE_VERSION_NUMBER",
+    0x08: "HASH_EXTEND_MEASUREMENT",
+    0x09: "INFORMATIONAL",
+    0x0A: "STRUCTURED_MEASUREMENT_MANIFEST",
+}
+MEAS_TYPE_MASK = 0x7F
+MEAS_RAW_BIT_STREAM = 0x80
+
+# Below this a value is reported as hex as well as a digest. A digest answers
+# "did it change"; the bytes answer "to what". Eight bytes of secure version
+# number are worth reading; sixty-four bytes of SHA-512 are not, and a document
+# that quoted them would be unreadable.
+MEAS_VALUE_HEX_LIMIT = 16
+
+
+def fail(out, kind, why):
+    """Record WHY a walk stopped, as a stable code as well as a sentence.
+
+    The prose is for a person. The code is for the check in
+    harness/verify_repo.sh that requires four broken records to be refused for
+    four DIFFERENT reasons — standing rule 13. That check first keyed on the
+    sentence and passed while two of its four cases were being caught by the
+    same test, because the sentences differed only in a number they had
+    interpolated. A category has to be a category, not a prefix of a string.
+    """
+    out["why_kind"] = kind
+    out["why"] = why
+    return out
+
+
+def _measurement_record(raw, offset, length, declared_blocks):
+    """Walk a measurement record into its blocks. Never guesses."""
+    out = {
+        "record_offset": offset,
+        "record_bytes": length,
+        "sha256": hashlib.sha256(bytes(raw[offset:offset + length])).hexdigest(),
+        "declared_blocks": declared_blocks,
+        "blocks_walked": 0,
+        "closes": False,
+        "why": None,
+        "why_kind": None,
+        "blocks": {},
+        "secure_version_number": None,
+    }
+    if length <= 0 or offset + length > len(raw):
+        return fail(out, "record_outside_message",
+                    "the record does not fit inside the message")
+
+    end = offset + length
+    off = offset
+    order = []
+    while off < end:
+        if off + 4 > end:
+            return fail(out, "header_past_end",
+                        f"a block header at {off - offset} runs past the record")
+        index = raw[off]
+        spec = raw[off + 1]
+        size = _u16le(raw, off + 2)
+        if off + 4 + size > end:
+            return fail(out, "block_past_end",
+                        f"block index 0x{index:02x} declares {size} bytes, "
+                        f"which runs past the record")
+        if size < 3:
+            return fail(out, "block_too_small",
+                        f"block index 0x{index:02x} is {size} bytes, too few "
+                        f"for a DMTF measurement header")
+
+        vtype = raw[off + 4]
+        vsize = _u16le(raw, off + 5)
+        value = bytes(raw[off + 7:off + 7 + vsize])
+        # The DMTF header restating the common header's arithmetic. They come
+        # from two different writes by the responder, so disagreement is a
+        # misread rather than a coincidence.
+        if size != 3 + vsize:
+            return fail(out, "size_disagrees",
+                        f"block index 0x{index:02x}: MeasurementSize {size} "
+                        f"but 3 + value size {vsize} is {3 + vsize}")
+
+        key = f"0x{index:02x}"
+        entry = {
+            "index": index,
+            "measurement_specification": spec,
+            "measurement_size": size,
+            "value_type": vtype,
+            "value_type_name": MEAS_VALUE_TYPES.get(vtype & MEAS_TYPE_MASK,
+                                                    "unknown"),
+            "raw_bit_stream": bool(vtype & MEAS_RAW_BIT_STREAM),
+            "value_bytes": vsize,
+            "value_sha256": hashlib.sha256(value).hexdigest(),
+        }
+        if vsize <= MEAS_VALUE_HEX_LIMIT:
+            entry["value_hex"] = value.hex()
+        # The secure version number is the one value a policy will compare
+        # rather than merely digest, so it is decoded here instead of left as
+        # eight bytes of hex for a document to transcribe by hand.
+        if (vtype & MEAS_TYPE_MASK) == 0x07 and vsize == 8:
+            entry["value_uint64"] = int.from_bytes(value, "little")
+            out["secure_version_number"] = entry["value_uint64"]
+        out["blocks"][key] = entry
+        order.append(key)
+        out["blocks_walked"] += 1
+        off += 4 + size
+
+    out["block_order"] = order
+    if off != end:
+        return fail(out, "walk_short",
+                    f"the walk ended at {off - offset} of {length}")
+    if declared_blocks is not None and out["blocks_walked"] != declared_blocks:
+        return fail(out, "count_mismatch",
+                    f"walked {out['blocks_walked']} blocks, "
+                    f"NumberOfBlocks says {declared_blocks}")
+    out["closes"] = True
+    return out
+
+
 # ------------------------------------------------------- the chain itself ---
 #
 # CHALLENGE_AUTH is over-determined by one equation. CERTIFICATE is over-
@@ -893,6 +1053,12 @@ def reconstruct(messages, negotiated) -> dict:
         # handshake with more than one populated slot carries several.
         "chains": [],
         "distinct_root_hashes": 0,
+        # Every measurement record the capture carried, walked into its blocks,
+        # and the largest of them promoted for a document to quote. The largest
+        # is the --meas_op ALL response where there is one; under ONE_BY_ONE
+        # each record holds a single block and `records` holds them all.
+        "measurement_record": None,
+        "measurement_records": [],
     }
     hashes = (out["hash_bytes"], out["measurement_hash_bytes"])
 
@@ -976,6 +1142,21 @@ def reconstruct(messages, negotiated) -> dict:
         out["closed"] += 1
         if out[slot] is None:
             out[slot] = placed
+
+        # The record itself, only for a responder's MEASUREMENTS: the values a
+        # verifier would compare against reference values are the device's,
+        # and a requester answering an encapsulated request is a different
+        # question this project does not ask.
+        if msg.code == SPDM_MEASUREMENTS and msg.direction == "RSP->REQ":
+            record = _measurement_record(
+                msg.raw, placed["record_offset"], placed["record_bytes"],
+                placed["blocks"])
+            record["packet"] = msg.seq
+            out["measurement_records"].append(record)
+
+    if out["measurement_records"]:
+        out["measurement_record"] = max(out["measurement_records"],
+                                        key=lambda r: r["record_bytes"])
 
     out["distinct_root_hashes"] = len({c["root_hash"] for c in out["chains"]})
     return out
@@ -1395,6 +1576,23 @@ def render(data: dict) -> str:
              f"{ms['invalid_request_errors']} InvalidRequset")
     if ms["existing_indices_hex"]:
         L.append(f"              indices that exist: {', '.join(ms['existing_indices_hex'])}")
+
+    rec = (data.get("layout") or {}).get("measurement_record")
+    if rec:
+        L.append("")
+        L.append(f"record      : packet {rec['packet']}, {rec['record_bytes']} bytes, "
+                 f"{rec['blocks_walked']}/{rec['declared_blocks']} blocks"
+                 + ("" if rec["closes"] else f"  DOES NOT CLOSE: {rec['why']}"))
+        L.append(f"              sha256 {rec['sha256']}")
+        if rec["secure_version_number"] is not None:
+            L.append(f"              secure version number {rec['secure_version_number']}")
+        for key in rec.get("block_order", sorted(rec["blocks"])):
+            b = rec["blocks"][key]
+            shown = b.get("value_hex") or (b["value_sha256"][:16] + "...")
+            L.append(f"              {key}  {b['value_type_name']:<31} "
+                     f"{'raw' if b['raw_bit_stream'] else 'hash'} "
+                     f"{b['value_bytes']:>3}B  {shown}")
+
     mb = data.get("message_bytes")
     if mb:
         L.append("")
