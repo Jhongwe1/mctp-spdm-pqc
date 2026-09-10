@@ -59,6 +59,24 @@ Twelve bytes ahead of every message, and `command.h` states their byte order:
 #define SOCKET_TRANSPORT_TYPE_TCP     0x03
 ```
 
+> 🔴 **The last line of that comment is wrong for the default transport, and
+> this document quoted it without saying so until 2026-09-10.** For
+> `SOCKET_TRANSPORT_TYPE_MCTP` the payload is what libspdm's MCTP transport
+> encoded, so it begins with the MCTP **message-type byte** and the SPDM header
+> starts at `payload[1]`. The comment is accurate only for
+> `SOCKET_TRANSPORT_TYPE_NONE`, which is not the default.
+>
+> The refutation is four paragraphs below, in this same section: every pcap
+> record starts `00 00 00 c0 05 10 84 …`, and the `05` is that byte. So the
+> repository has been carrying the evidence against the sentence it quoted,
+> next to the sentence, for a month.
+>
+> It cost about ten minutes while writing `harness/tamper_proxy.py`, which
+> reads `payload[1]` and `payload[2]`; a reader who trusts the comment reads
+> `payload[0]` and `payload[1]`, gets `0x05` and `0x10`, and is one byte out on
+> every field in the message. Filed as upstream candidate five —
+> [`docs/upstream/README.md`](upstream/README.md) — as two lines of comment.
+
 **A big-endian header wrapping a little-endian payload, in one connection.** Not
 a mistake — the framing is a network protocol and the payload is a
 memory-layout-defined structure — but it is exactly the situation where a

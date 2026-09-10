@@ -141,7 +141,7 @@ patch has to be compiled in.
 So three things are true instead:
 
 1. **Without the environment variable the binary does not behave differently** —
-   and `bench/data/w4-tamper-*/t0_none` reproduces the measurement record of a
+   and `bench/data/w5-tamper-*/t0_none` reproduces the measurement record of a
    capture taken on 2026-08-31, before this patch was written, to the byte.
 2. **`harness/apply_device_patch.sh` refuses to patch the wrong tree.** It
    compares the tree's libspdm commit against `third_party/spdm-emu-pqc.pin` and

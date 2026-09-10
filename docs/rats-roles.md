@@ -56,10 +56,10 @@ and that is where this project spends its effort:
 | Step | Who owns it | Where in this repo |
 |---|---|---|
 | obtain evidence over SPDM | DMTF reference implementation | `harness/` (G1) |
-| show that tampering changes the evidence | this project | `device/`, [`docs/tamper.md`](tamper.md) — **done 2026-09-01** |
+| show that tampering changes the evidence | this project | `device/`, `harness/tamper_proxy.py`, [`docs/tamper.md`](tamper.md) — **done**, five tampers over ten arms |
 | hold reference values | this project | `rats/` (G3) |
 | compare and decide | this project | `rats/` policy (G3) |
-| assert the decision in CI | this project | `.github/workflows/` (G6) |
+| assert the decision in CI | this project | `.github/workflows/` — **half done 2026-09-10**: `verify_repo.sh` fails if an in-flight tamper stops being rejected. The half that needs a reference value is G3 |
 
 The last row is the one worth defending in conversation. A table of results can
 be anything. **A CI job that turns red when a tampered measurement is *not*
@@ -80,8 +80,23 @@ given out of band, and holds no equivalent for a *measurement*.
 
 So the row "hold reference values" is not scheduled work that would be nice to
 have. It is the row without which the row above it has no consequence — and
-`bench/data/w4-tamper-*/t1_meas` is a capture of exactly that having no
+`bench/data/w5-tamper-*/t1_meas` is a capture of exactly that having no
 consequence.
+
+2026-09-10 sharpened it into a comparison rather than a single arm. The same
+measurement index, changed at the device and changed on the wire, in two arms
+that differ in nothing else:
+
+| | changed at the device | changed in flight |
+|---|---|---|
+| the record on the wire | differs from the control | differs from the control |
+| the signature | recomputed over it | the old one |
+| what SPDM did | **nothing** | rejected, `80020001` |
+
+The left-hand column is not a gap in the protocol. It is the protocol's scope,
+drawn precisely: SPDM authenticates the *reporter*, and the left column changed
+the *report* in a way the reporter then vouched for honestly. Only a Verifier
+holding a reference value has anything to disagree with.
 
 ## Mapping onto a real machine
 
