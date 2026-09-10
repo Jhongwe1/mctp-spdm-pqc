@@ -2479,6 +2479,225 @@ The one that is not is the second, and it is a decision rather than a drift: the
 plan asked for a generator, and the argument against it is one this repository
 already made twice this fortnight. That is what a deviation record is for.
 
+### The re-read found six more, and one of them was the defect I had just filed upstream
+
+**現象** After everything above was committed and pushed, the sixth item of the
+end-of-day list — the re-read — was run properly rather than assumed. It found
+six things, and the first is the one worth leading with:
+
+**`docs/transports.md` quotes `command.h`'s wrong comment verbatim, and does not
+say it is wrong.** The same comment I spent the afternoon filing as upstream
+candidate five. Four paragraphs below the quotation, in the same section, the
+document prints `00 00 00 c0 05 10 84 00 00` and explains that the `05` is the
+MCTP message type. **The refutation has been sitting next to the sentence for a
+month.**
+
+**假設** How does a repository end up carrying, in its own documentation, the
+exact defect it is proposing to fix in somebody else's?
+
+1. the document was written before the defect was understood;
+2. the quotation was treated as source rather than as a claim;
+3. the re-read after finding the defect never happened.
+
+**先驗哪個、為什麼** (1) is true and uninteresting — `transports.md` predates
+today by three weeks. (3) is false in an embarrassing way: the re-read *did*
+happen, today, and it is what found this. What it did not happen is *at the
+moment the defect was found*, which was six hours earlier.
+
+(2) is the one that transfers, and it is checkable: the document introduces the
+block with **"`command.h` states their byte order"**. That sentence treats the
+comment as an authority. Every other quotation in that file is introduced as
+something to be checked against the bytes — and the bytes are printed, and they
+disagree, and nobody put the two next to each other because they are in
+different subsections about different topics.
+
+**根因** **A quotation is a claim, and this repository has a rule for claims and
+no mechanism for quotations.** `<!--claim-->` covers numbers. `third_party/*.pin`
+covers versions. Nothing covers "somebody else's prose, reproduced here" — and
+reproducing prose is precisely how a defect propagates from one repository into
+another, because it arrives already looking authoritative.
+
+**教訓** The narrow fix is in: the quotation now carries a red note saying which
+line is wrong, for which transport, with the refuting bytes named and the
+upstream candidate linked.
+
+The general one is a rule I will actually be able to follow: **when you find
+that an upstream statement is wrong, grep your own repository for it before
+writing the patch.** It costs one command, and the alternative is proposing a
+fix to a project while shipping the bug yourself. `grep -rn "starting from
+SPDM_HEADER"` returns four files here, and only one of them was wrong.
+
+The other five, each smaller:
+
+| what | why it had rotted |
+|---|---|
+| `figures/` was empty while `README.md`'s layout tree listed it as "generated figures" | the directory has been an advertised promise since 2026-08-11. Shape three — a table indexing a directory — pointed at a directory with nothing in it |
+| `docs/threat-scope.md` had no row for an on-path attacker | the proxy is the first result here that is about an adversary rather than a specification boundary, and the document was written when there were none |
+| `docs/threat-scope.md` and `docs/rats-roles.md` cited `w4-tamper-*` | the run they name still exists and still supports the claim, so this is the *mild* form — a live claim citing evidence that has been superseded rather than refuted. Both moved |
+| `harness/healthcheck.sh` hard-codes a run family in its output, which is then generated into `docs/env-baseline.md` | a script that prints a specific run's path produces a generated document that rots on a schedule nobody controls. It now names no run |
+| `README.md`'s manifest list said nothing about the proxy's reports | the same list the 2026-09-01 re-read fixed for the patch digest and the fixtures. **Second time.** Its job is "which bytes produced this", and an intervention is as much an input as a fixture |
+
+Worth noticing that the manifest list is now the only thing in this repository
+that has rotted twice and been fixed twice by hand. That is the signature of a
+list that wants a mechanism, and the mechanism is available: the manifest
+schema knows its own keys, so the document could be generated from a real
+manifest rather than described beside one. `TODO(me)`.
+
+### The figure that was a promise for a month
+
+**現象** `plan/W05.md`'s DoD carries one line I could not tick by looking:
+*"Fig 1 憑證鏈層級圖(W3 已做,確認還在)"*. It is not there. `figures/` holds a
+`README.md` and nothing else, and has since 2026-08-11.
+
+**假設** Either W03 produced it and it was lost, or W03 never produced it and
+the plan assumed it had.
+
+**先驗哪個、為什麼** `git log -- figures/` returns one commit, the one that
+created the README. It was never produced. The plan's line is a *prediction
+written as an observation*, which is the same class of statement as
+"三個篡改點還沒開始" was this morning — a sentence about the repository's state
+written by somebody who was not looking at the repository.
+
+**根因** `figures/README.md` states the rule — every figure is produced by a
+script from a run directory, none is drawn by hand — and the rule was never
+exercised, so nothing enforced it and nothing produced anything. **A rule with
+no instances is indistinguishable from a rule nobody follows**, and after four
+weeks the difference stops mattering.
+
+**教訓** `harness/mkfigures.py` renders Figure 1 — the three certificates, their
+DER sizes, and `4 + 48 + 1845 = 1897` on the wire — and every number on it is
+read from `certs/check_chain.py`, `harness/fields.py` and `bench/pcapstat.py`.
+`--check` re-renders and requires the committed SVG to be identical;
+`verify_repo.sh` runs it, and a deliberately drifted file was fed to it to
+confirm it says so.
+
+The part worth keeping is about ordering. I nearly skipped this on the grounds
+that a diagram is decoration and the week's real work was done. It is not
+decoration in *this* repository, because the repository's claim is that its
+numbers can be re-derived — and a figure is the one artifact where a reader
+cannot check that for themselves. So a figure here has to be *generated* or it
+has to be *absent*, and for a month it was absent while being advertised, which
+is the worst of the three states.
+
+### A check that failed for a reason that had nothing to do with what it checks
+
+**現象** The verify run after the re-read printed these two lines, in this
+order:
+
+```
+    ok   gen_measurements.py and the C builder write identical bytes (336 bytes)
+  FAIL gen_measurements.py and the C builder disagree about the file format
+```
+
+One line apart. The same step. The `ok` came from `make`; the `FAIL` came from
+the shell wrapping it.
+
+**假設** ① `make interop` really failed after printing that it succeeded;
+② the step's condition is reading something other than `make`'s status;
+③ a transient — the run also printed `make: Warning: File
+'measurement_source_test' has modification time 0.032 s in the future`.
+
+**先驗哪個、為什麼** ③ first, because if it is transient the other two do not
+matter and because it is one re-run. It did not reproduce: `make interop` alone
+exited 0, twelve lines, five times.
+
+That leaves ① and ②, and ② is checkable by reading one line:
+
+```bash
+if make -C device --no-print-directory interop 2>&1 | head -2 | sed 's/^/  /'; then
+```
+
+The condition is a **pipeline**, and `lib/common.sh` turns on `set -o
+pipefail`, so its status is any non-zero member's. My first guess was that
+`head -2` closed the pipe and `make` died of SIGPIPE — and the first attempt to
+reproduce it **refuted that**: `PIPESTATUS=0 0 0`, every time. Twelve short
+lines fit in a 64 KB pipe buffer, so `make` finishes writing before `head` has
+read anything.
+
+The reproduction was wrong, not the theory, and what was missing was the
+warning. `interop`'s recipe is several commands, and the last interesting one is
+`gen_measurements.py --describe | sed`, which runs **after** the summary line.
+Without the warning, `head -2` takes the summary and the first `--describe`
+line and exits while that `sed` is mid-write — sometimes early enough to matter
+and sometimes not. With the warning, the warning *is* line one, so `head` exits
+one line sooner, before `--describe` runs at all, and the kill is certain.
+
+Forced by giving the binary a future mtime:
+
+```
+  run 1: pipeline=141 PIPESTATUS=141 0        <- 141 = 128 + 13 = SIGPIPE
+  run 2: pipeline=141 PIPESTATUS=141 0
+  ... 5 of 5
+
+  captured first, judged on make's own status:
+  run 1: make=0  lines=12
+  ... 5 of 5
+```
+
+**根因** `set -o pipefail` and a consumer that exits before end of input are
+individually reasonable and jointly a bug: the producer gets `SIGPIPE`, 0
+becomes 141, and 141 is not zero. The clock skew was not the cause. It was the
+thing that turned an intermittent failure into a deterministic one by shifting
+where `head` stopped reading — which is why it appeared on a day when nothing
+about `device/` had changed.
+
+`CLAUDE.md` already carries the neighbouring rule, from a different day:
+*不要 `| tee` 接建置卻不看 `set -o pipefail` / `PIPESTATUS`*. That one is about
+`pipefail` being **off** and a failure being hidden. This is the mirror image —
+`pipefail` **on**, and a success being hidden — and the two look nothing alike
+while having the same shape.
+
+**教訓** The bug is one line. The interesting part is what looking for its
+siblings found.
+
+`grep -n 'if .*| *\(head\|grep -q\)' harness/*.sh` returns eight sites, and
+**two of them invert their answer**:
+
+```bash
+if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
+```
+
+`grep -q` exits **at the first match**. So on a machine that *has* ML-DSA,
+`openssl` is killed writing the rest of the list, the pipeline is 141, and the
+branch reports **"no ML-DSA (needs >= 3.5)"** — the reverse of the truth, on
+the single check that decides whether week eight's post-quantum certificate
+chain is possible. It has never fired here because this machine's OpenSSL is
+3.0.13 and there is no match, so the wrong branch happens to be the right
+answer. It would have failed the day the machine was upgraded, which is the day
+somebody would trust it most.
+
+A third is worse in a quieter way. `lib/handshake.sh`'s `hs_port_is_listening`
+is the same shape, and it runs in a loop on **every handshake this repository
+takes**. When `grep -q` matches early enough to kill `ss`, "the port is
+listening" is reported as "it is not", the caller keeps waiting, and ten
+seconds later the run fails with `return 91` and no explanation. That function
+exists *specifically* to replace a `sleep 3` race, and it had a race of its own
+that gets more likely as the machine gets busier.
+
+All eight are now captured into a variable and matched with a here-string,
+which is a redirection rather than a pipeline and has no second process to
+lose. And the class has a guard: `verify_repo.sh` flags any `if`/`while`/`&&`
+whose pipeline ends in `head`, `grep -q`, `grep -m` or `sed Nq`, skipping the
+ones inside `$( )` because a substitution's status is discarded. Fed a
+deliberately broken line it names the file, the line and the fix; on the
+repaired tree it passes.
+
+Three things worth keeping, in increasing order of generality:
+
+1. **A check that fails for a reason unrelated to what it checks is worse than
+   no check**, because the failure is specific, legible and wrong. "The two
+   implementations of the file format disagree" is a sentence somebody would
+   have acted on.
+2. **A wrong reproduction is not a wrong hypothesis.** The first attempt showed
+   `PIPESTATUS=0 0 0` and I nearly filed the whole thing as a flake. What was
+   missing was the *warning* — the condition that had made it deterministic in
+   the first place — and reproducing a bug means reproducing its context, not
+   its command.
+3. **When a defect is found in one line, grep for its shape before fixing it.**
+   One line was broken today. Seven more were broken and quiet, two of them in
+   the direction that reports success as failure, and the cheapest moment to
+   find them was while the shape was still in my head.
+
 ### What is measured, and what is still a claim about myself
 
 **`TODO(me)`** — `c-drills`. `d2` now exists: contract, tests, stub, validated
