@@ -1065,6 +1065,388 @@ else
     good "$found document(s) checked, $skipped that only quote the markup"
 fi
 
+step "the tamper proxy can still refuse to change a byte"
+# The proxy is the only thing in this repository that produces a successful
+# cryptographic rejection, and it does it by changing one byte of a message it
+# has parsed. If its parse is wrong the byte lands somewhere else, the arm
+# still fails, and the wrong sentence gets written about why.
+#
+# So its refusals are the check, not its successes. --self-test feeds the
+# parser thirteen broken messages, requires each to be refused by the
+# specifically named check that should catch it, and fails if any registered
+# check was never exercised. One of the thirteen is the field list in
+# plan/W05's own text, which omits RequesterContext.
+if out="$(python3 harness/tamper_proxy.py --self-test 2>&1)"; then
+    printf '%s\n' "$out" | tail -3 | sed 's/^/  /'
+    good "every registered refusal fires, and the flip lands where the walk says"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "harness/tamper_proxy.py --self-test failed"
+fi
+
+step "a libspdm status can be named, and a C errno cannot be mistaken for one"
+# Table 1's most load-bearing cell is a status code that two arms share. Naming
+# it from a table is only safe if the table is right and the line shape is not
+# over-matched: the emulators print "receive_platform_data Error - 2" through
+# the same macro, and reading that 2 as a libspdm status would name a layer
+# that had no opinion about anything.
+if out="$(python3 harness/spdm_status.py --self-test 2>&1)"; then
+    printf '%s\n' "$out" | tail -2 | sed 's/^/  /'
+    good "severity and source are computed, names are checked against the header"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "harness/spdm_status.py --self-test failed"
+fi
+
+step "three tools agree on how big the certificate chain is"
+# certs/check_chain.py adds up the DER files on disk and never opens a capture.
+# harness/fields.py reads spdm_dump's decode and never opens a certificate.
+# bench/pcapstat.py walks the capture file and opens neither. Three routes to
+# one number, sharing no input:
+#
+#     4 + RootHash + sum of the certificates  ==  the chain's own Length field
+#                                             ==  the sum of every PortionLength
+#
+# The third route arrived in week five, with cert_roundtrips, and it found
+# something the other two could not: the 4.0.0-rc responder sends the chain in
+# ONE message where the 3.8.0 responder sends it in two, and the number of
+# round trips is a property of the exchange rather than of the certificates.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys
+
+def tool(script, *args):
+    out = subprocess.run([sys.executable, script, *args],
+                         capture_output=True, text=True)
+    if out.returncode not in (0, 1):
+        raise SystemExit(f"  {script} failed: {out.stderr.strip()[:200]}")
+    return json.loads(out.stdout)
+
+bundle = pathlib.Path("certs/out/bundle_responder.certchain.der")
+on_disk = bundle.stat().st_size if bundle.exists() else None
+if on_disk is None:
+    print("  certs/out is not staged; the disk route is skipped")
+
+checked, chunked, problems = [], [], []
+for pcap in sorted(pathlib.Path("bench/data").glob("*/*.pcap")):
+    name = f"{pcap.parent.name}/{pcap.name}"
+    stats = tool("bench/pcapstat.py", str(pcap), "--json")["summary"]
+    cert = stats["certificates"]
+    if cert["roundtrips"] == 0:
+        continue
+    if not cert["slots"]:
+        # A chain larger than the negotiated DataTransferSize comes back inside
+        # CHUNK_RESPONSE rather than CERTIFICATE, so there is no chain to
+        # reassemble here. Reported, because a silent zero looks like a bug.
+        if stats["by_type"].get("SPDM_CHUNK_RESPONSE"):
+            chunked.append(f"{name}: {cert['roundtrips']} round trip(s), the "
+                           "chain came back in CHUNK_RESPONSE messages")
+        elif stats["by_type"].get("SPDM_ERROR"):
+            # t3_cert: the responder validated its own chain, could not, and
+            # answered SPDM_ERROR instead of serving the slot. There is no
+            # chain because none was ever sent, which is the finding rather
+            # than a failure to parse one.
+            chunked.append(f"{name}: {cert['roundtrips']} round trip(s) "
+                           "answered with SPDM_ERROR, so no chain was sent")
+        else:
+            problems.append(f"{name}: {cert['roundtrips']} GET_CERTIFICATE and "
+                            "no chain reassembled")
+        continue
+    for c in cert["slots"]:
+        if not c["closes"]:
+            problems.append(f"{name} slot {c['slot']}: {c['why']}")
+            continue
+        if c["length_field"] != c["chain_bytes"]:
+            problems.append(f"{name} slot {c['slot']}: Length field "
+                            f"{c['length_field']} != {c['chain_bytes']}")
+    ours = [c for c in cert["slots"]
+            if c["closes"] and c["certificates_bytes"] == on_disk]
+    if ours:
+        checked.append(f"{name}: slot {ours[0]['slot']} carries 4 + "
+                       f"{cert['root_hash_bytes']} + {on_disk} = "
+                       f"{ours[0]['chain_bytes']} bytes in "
+                       f"{ours[0]['messages']} message(s), "
+                       f"{cert['roundtrips']} round trip(s)")
+
+for line in checked:
+    print("  " + line)
+for line in chunked:
+    print("  --   " + line)
+for line in problems:
+    print("  " + line)
+if on_disk is not None and not checked:
+    print(f"  no capture carries a chain whose certificates total {on_disk} bytes")
+    sys.exit(1)
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "the DER files, the decode and the capture agree on the chain" \
+             || bad "the three routes to the chain's size disagree"
+
+step "an in-flight tamper is still rejected, and the device-side one still is not"
+# This is the assertion the whole tamper directory exists to make, written as a
+# negative: the build turns RED if a tampered measurement stops being refused.
+# It reads the primary evidence rather than the table tamper.sh printed — the
+# requester's own log for the status, and the committed fields.json for what
+# reached the wire — so it is checking the run, not the summary of it.
+#
+# Four things have to hold, and the third is the one people find surprising:
+#
+#   t0_proxy    forwarded unchanged: no error, and the control's record
+#   t2a_record  the signed CONTENT changed in flight: refused
+#   t2b_sig     the SIGNATURE changed in flight:      refused, SAME status
+#   t1_meas     changed at the DEVICE:                NOT refused, and the
+#               record on the wire differs from the control
+#
+# t1_meas is asserted to keep passing. It is not a gap in the harness; it is
+# the measurement that says why Gate 3 exists, and if it ever starts failing
+# that is a change in libspdm worth stopping for.
+python3 - <<'PY'
+import json, pathlib, subprocess, sys
+
+def status(log):
+    out = subprocess.run([sys.executable, "harness/spdm_status.py", str(log),
+                          "--json"], capture_output=True, text=True)
+    if out.returncode not in (0, 1) or not out.stdout.strip():
+        return None
+    got = json.loads(out.stdout)
+    return got if isinstance(got, dict) else None
+
+def record(fields_json):
+    if not fields_json.exists():
+        return None
+    d = json.loads(fields_json.read_text())
+    return ((d.get("layout") or {}).get("measurement_record") or {}).get("sha256")
+
+WANT = {
+    "t0_proxy":   ("no status", "same record"),
+    "t1_meas":    ("no status", "different record"),
+    "t2a_record": ("VERIF_FAIL", "different record"),
+    "t2b_sig":    ("VERIF_FAIL", "same record"),
+}
+
+demonstrated, problems, seen = 0, [], 0
+for run in sorted(pathlib.Path("bench/data").glob("*-tamper-*")):
+    control = record(run / "t0_clean.fields.json")
+    if control is None:
+        continue
+    present = {c for c in WANT if (run / f"{c}.req.log").exists()}
+    if not present:
+        continue
+    seen += 1
+    print(f"  {run.name}")
+    rejections = {}
+    for case in sorted(present):
+        st = status(run / f"{case}.req.log")
+        rec = record(run / f"{case}.fields.json")
+        got_status = "no status" if st is None else (st["name"] or st["status"])
+        got_record = ("no record" if rec is None else
+                      "same record" if rec == control else "different record")
+        want_status, want_record = WANT[case]
+        ok = got_status == want_status and got_record == want_record
+        if st is not None and st["name"] == "VERIF_FAIL":
+            rejections[case] = st["status"]
+        print(f"    {'ok  ' if ok else 'FAIL'} {case:<11} {got_status:<12} "
+              f"{got_record}")
+        if not ok:
+            problems.append(f"{run.name}/{case}: wanted {want_status} and "
+                            f"{want_record}, got {got_status} and {got_record}")
+    if {"t2a_record", "t2b_sig"} <= present:
+        codes = set(rejections.values())
+        if len(codes) == 1 and rejections:
+            print(f"    ok   both in-flight tampers refused with the same "
+                  f"status, {codes.pop()}")
+            demonstrated += 1
+        else:
+            problems.append(f"{run.name}: the two in-flight tampers did not "
+                            f"share one status: {rejections}")
+
+    # The proxy and the capture are two witnesses to the same byte, and they
+    # never see each other: the proxy reported what it read and what it wrote
+    # while the connection was open, and fields.py read what the requester
+    # ended up with, out of a file, afterwards. So for t2a_record:
+    #
+    #   proxy "before"  ==  the control's record   the responder sent the right one
+    #   proxy "after"   ==  the record in the pcap  the requester got the wrong one
+    #
+    # Either half failing means the byte that changed is not the byte anybody
+    # thinks changed, and that is not a distinction an exit code carries.
+    report = run / "t2a_record.proxy.json"
+    if report.exists():
+        pr = json.loads(report.read_text()).get("tamper") or {}
+        wire = record(run / "t2a_record.fields.json")
+        before_ok = pr.get("record_sha256_before") == control
+        after_ok = pr.get("record_sha256_after") == wire
+        print(f"    {'ok  ' if before_ok else 'FAIL'} t2a_record  the proxy read "
+              f"the control's record off the wire "
+              f"({(pr.get('record_sha256_before') or '-')[:16]}…)")
+        print(f"    {'ok  ' if after_ok else 'FAIL'} t2a_record  and what it "
+              f"wrote is what the capture holds "
+              f"({(pr.get('record_sha256_after') or '-')[:16]}…)")
+        if not before_ok:
+            problems.append(f"{run.name}/t2a_record: the responder's record was "
+                            f"not the control's")
+        if not after_ok:
+            problems.append(f"{run.name}/t2a_record: the proxy's output digest "
+                            f"is not the one in the capture")
+
+if seen == 0:
+    print("  no tamper run in bench/data carries these arms")
+    sys.exit(1)
+if demonstrated == 0:
+    print("  no run demonstrates an in-flight tamper being rejected")
+    sys.exit(1)
+for line in problems:
+    print("  " + line)
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "tampering in flight is refused; tampering at the device is not" \
+             || bad "the tamper detection this repository claims did not hold"
+
+step "the three gate tables agree, and they agree about which week it is"
+# README.md, docs/roadmap.md and RUNBOOK.md each carry a table of the nine
+# gates, in two languages and three formats. On 2026-09-10 the RUNBOOK's first
+# screen was nine days stale, and the person it misled was the author: it said
+# the three tamper points had not been started while section 8.8 of the same
+# file explained all three.
+#
+# Worth being exact about what this catches, because the first version of this
+# check would NOT have caught that day. The three tables' STATE columns all
+# said "in progress" for G2 and were all correct. What had rotted was the prose
+# beside the state, and the week number at the top of the RUNBOOK, and there is
+# no mechanism for prose — 2026-09-01 in LOG.md is the entry that says so.
+#
+# The week number is mechanisable, and it is the load-bearing half: a reader
+# who is told "week three finished" stops reading before the section that
+# explains week four. So both halves are checked, and only one of them is the
+# reason this step exists.
+#
+# CLAUDE.md's end-of-day list already said to keep two of the tables in step.
+# That is a discipline; this is a mechanism, and the difference between them
+# was nine days.
+python3 - <<'PY'
+import re, sys
+
+STATES = {
+    "complete": "complete", "in progress": "in progress",
+    "not started": "not started",
+    "完成": "complete", "進行中": "in progress",
+    "未開始": "not started",
+}
+FILES = ["README.md", "docs/roadmap.md", "RUNBOOK.md"]
+ROW = re.compile(r"^\|\s*\*{0,2}(G[0-8])\*{0,2}\s*\|(?P<rest>.*)\|\s*$")
+
+def states(path):
+    out = {}
+    for line in open(path, encoding="utf-8"):
+        m = ROW.match(line.rstrip())
+        if not m:
+            continue
+        rest = m.group("rest")
+        hits = [(rest.find(k), v) for k, v in STATES.items() if k in rest]
+        if not hits:
+            out[m.group(1)] = "UNSTATED"
+            continue
+        out[m.group(1)] = min(hits)[1]
+    return out
+
+tables = {f: states(f) for f in FILES}
+gates = sorted(set().union(*(set(t) for t in tables.values())))
+width = max(len(f) for f in FILES)
+for f in FILES:
+    row = " ".join(f"{g}:{tables[f].get(g, '-')[:11]:<11}" for g in gates)
+    print(f"  {f:<{width}}  {row}")
+
+bad = 0
+for g in gates:
+    got = {f: tables[f].get(g) for f in FILES}
+    if len(set(got.values())) != 1:
+        print(f"  {g} disagrees: " + ", ".join(f"{f}={v}" for f, v in got.items()))
+        bad += 1
+    elif set(got.values()) == {"UNSTATED"}:
+        print(f"  {g} carries no recognised state in any table")
+        bad += 1
+    elif None in got.values():
+        print(f"  {g} is missing from " +
+              ", ".join(f for f, v in got.items() if v is None))
+        bad += 1
+if not gates:
+    print("  no gate table found in any of the three files")
+    bad += 1
+
+# The week number, from the sentence each file states it in.
+WEEK = {
+    "README.md": r"[Tt]his is week (\d+) of a 14-week programme",
+    "RUNBOOK.md": r"W0*(\d+)\s*收工",
+}
+weeks = {}
+for f, pattern in WEEK.items():
+    m = re.search(pattern, open(f, encoding="utf-8").read())
+    weeks[f] = int(m.group(1)) if m else None
+    print(f"  {f:<{width}}  says week {weeks[f]}")
+if None in weeks.values():
+    for f, w in weeks.items():
+        if w is None:
+            print(f"  {f} no longer states which week it is, in the form "
+                  f"/{WEEK[f]}/")
+    bad += 1
+elif len(set(weeks.values())) != 1:
+    print("  the two files disagree about which week it is: "
+          + ", ".join(f"{f}={w}" for f, w in weeks.items()))
+    bad += 1
+
+sys.exit(1 if bad else 0)
+PY
+[ $? -eq 0 ] && good "nine gates, three tables, one answer each, and one week" \
+             || bad "the gate tables disagree about what exists"
+
+step "the drills track reports itself"
+# The project track has spent five weeks generating work for a track that has
+# completed nothing, and until now that was a sentence in LOG.md rather than a
+# number anywhere. A sentence does not get read on a day nobody is looking for
+# it.
+#
+# This does not fail the build. Whether to spend an evening on paper is not a
+# decision a script gets to make, and a check that fails for a reason nobody
+# intends to fix teaches people to ignore red. What it does assert is the one
+# thing that would be dishonest: a drill in DONE.txt whose compile-error count
+# was never recorded. DONE.txt is what CI runs and SCORECARD.md is the only
+# thing in this repository that measures the author rather than the system.
+python3 - <<'PY'
+import pathlib, re, sys
+
+drills = sorted(p.stem for p in pathlib.Path("c-drills").glob("d*_*.c"))
+done = [ln.strip() for ln in pathlib.Path("c-drills/DONE.txt").read_text().splitlines()
+        if ln.strip() and not ln.strip().startswith("#")]
+scorecard = pathlib.Path("c-drills/SCORECARD.md").read_text()
+
+print(f"  {len(drills)} drill(s) with a contract, tests and a stub: "
+      + ", ".join(d.split('_')[0] for d in drills))
+print(f"  {len(done)} in DONE.txt" + (": " + ", ".join(done) if done else ""))
+if len(done) < len(drills):
+    print(f"  --   {len(drills) - len(done)} written and not yet finished. The "
+          "implementations are not the harness's to write.")
+
+bad = 0
+for name in done:
+    if name not in drills:
+        print(f"  {name} is in DONE.txt and has no source file")
+        bad += 1
+        continue
+    key = name.split("_")[0].upper()
+    row = re.search(rf"^\|\s*{key}\s*\|.*$", scorecard, re.M | re.I)
+    if not row:
+        print(f"  {name} is finished and has no row in SCORECARD.md")
+        bad += 1
+        continue
+    cells = [c.strip() for c in row.group(0).split("|")]
+    # columns: '', #, Drill, Date, Paper time, Compile errors, ...
+    if len(cells) < 7 or not cells[6]:
+        print(f"  {name} is finished and its compile-error count is blank")
+        bad += 1
+sys.exit(1 if bad else 0)
+PY
+[ $? -eq 0 ] && good "every finished drill carries the number it exists to produce" \
+             || bad "a drill is claimed finished without its measurement"
+
 step "private material is not tracked"
 # plan/ and archive/ hold the schedule this work is executed against; study/
 # holds a question bank and its answers, which is a record of what one person
