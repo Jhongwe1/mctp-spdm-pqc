@@ -29,11 +29,41 @@ parsing `spdm_dump -x` a second time.
 
 What is deliberately not here yet
 ---------------------------------
-This does not decode message BODIES. Reporting `MEASUREMENTS is 674 bytes` is
-this file's job; reporting what is inside those 674 bytes is `fields.py`'s, and
-duplicating it would create a second parser to keep correct — which is the
-thing rule 12 exists to prevent. Week 5 needs per-message byte counts for
-Table 1 and that is exactly what this produces.
+This does not decode message BODIES, with one exception argued for below.
+Reporting `MEASUREMENTS is 674 bytes` is this file's job; reporting what is
+inside those 674 bytes is `fields.py`'s, and duplicating it would create a
+second parser to keep correct — which is the thing rule 12 exists to prevent.
+
+The certificate chain, and why it is the exception
+--------------------------------------------------
+`GET_CERTIFICATE` is the one message whose *transport* is interesting rather
+than its contents. A chain does not arrive in one message: the responder sends
+as much as it can and says how much is left, so the number of round trips is a
+property of the exchange, not of the certificates. Two quantities follow, and
+neither is a body field:
+
+  * `cert_roundtrips` — how many `GET_CERTIFICATE` requests it took. This is
+    the number week eight needs, because a post-quantum chain is several times
+    larger and the round trips are what a slow bus charges for.
+  * `chain_bytes` — the reassembled chain length, from the `PortionLength` of
+    each response.
+
+That gives a **third** independent route to a number this repository already
+has two of. `certs/check_chain.py` computes it from the DER files on disk and
+never opens a capture; `harness/fields.py` reads it out of `spdm_dump`'s
+decode and never opens a certificate; this file walks the capture and reads
+neither. `harness/verify_repo.sh` requires all three to agree.
+
+Two equations have to close before the number is reported, and if either fails
+the chain is reported as not closing rather than as a length:
+
+    sum of every PortionLength   ==  first response's Portion + Remainder
+    the chain's own Length field ==  that same total
+
+The second is the chain's own opinion of its size, carried in the first four
+bytes of the reassembled bytes, and it comes from the responder rather than
+from the framing. `verify_repo.sh` feeds this a chain one byte short and
+requires it to say so.
 
 The framing
 -----------
@@ -137,6 +167,41 @@ SPDM_CODES = {
     0xFF: "SPDM_RESPOND_IF_READY",
 }
 
+# spdm.h:468-478. Only the size matters here, and it is the digest length of
+# the algorithm rather than a table of names, because the only use is skipping
+# the RootHash field to find where the certificates start.
+BASE_HASH = {
+    0x00000001: ("SHA_256", 32),
+    0x00000002: ("SHA_384", 48),
+    0x00000004: ("SHA_512", 64),
+    0x00000008: ("SHA3_256", 32),
+    0x00000010: ("SHA3_384", 48),
+    0x00000020: ("SHA3_512", 64),
+    0x00000040: ("SM3_256", 32),
+}
+
+# spdm.h:714-760, and libspdm_rsp_certificate.c:212-229 for what the responder
+# actually writes. Bit 7 of Param1 selects between two layouts of the same
+# response, and this repository's own captures use BOTH: the 4.0.0-rc pair sets
+# it whenever LARGE_RESP_CAP was negotiated, the 3.8.0 pair never does.
+#
+#   small (bit clear)   PortionLength u16 @4, RemainderLength u16 @6, chain @8
+#   large (bit set)     both u16 fields written as ZERO, then
+#                       LargePortionLength u32 @8, LargeRemainderLength u32 @12,
+#                       chain @16
+#
+# The trap is that the small fields are still present in the large layout and
+# are zero, so a parser that reads offset 4 unconditionally gets a chain of
+# length nought and reports it as an empty chain rather than as an error. That
+# is what this file did on its first run against a 4.0.0-rc capture, and the
+# only reason it was noticed is that the arm taken with the 3.8.0 build
+# reconstructed its chains and the 4.0.0-rc arms did not.
+SPDM_CERT_LARGE_CHAIN = 0x80
+SPDM_CERT_SLOT_ID_MASK = 0x0F
+CERT_SMALL_HEADER_BYTES = 8
+CERT_LARGE_HEADER_BYTES = 16
+
+
 # A response code has bit 7 clear, a request code has it set. That is the
 # convention the table above obeys without exception, so direction is derived
 # rather than stored twice.
@@ -195,6 +260,10 @@ def messages(path: Path) -> tuple[dict, list[dict]]:
                 entry["name"] = SPDM_CODES.get(code, f"UNKNOWN_0x{code:02x}")
                 entry["direction"] = "REQ->RSP" if is_request(code) else "RSP->REQ"
                 entry["version"] = spdm_version(spdm[0])
+                # Kept for the certificate walk and stripped before any output.
+                # A JSON file carrying every message twice would be a capture
+                # with extra steps.
+                entry["_spdm"] = spdm
         out.append(entry)
 
     by_type: dict[str, dict] = {}
@@ -222,13 +291,163 @@ def messages(path: Path) -> tuple[dict, list[dict]]:
     # and fields.py, restated here from this tool's own numbers so that it is
     # checked against the thing it is derived from rather than against a
     # remembered constant.
+    stats["certificates"] = certificates(out)
     stats["framing_accounts_for_the_difference"] = (
         framing is not None
         and stats["captured_bytes_total"]
         == stats["spdm_bytes_total"] + framing * len(parsed)
         + sum(e["captured_bytes"] for e in out if e["spdm_bytes"] is None)
     )
+    for e in out:
+        e.pop("_spdm", None)
     return stats, out
+
+
+def negotiated_hash(entries: list[dict]) -> tuple[str | None, int | None]:
+    """The base hash algorithm, read out of the ALGORITHMS response.
+
+    Standing rule 8: read the independent variable back rather than assuming
+    it. The RootHash field's width is whatever this negotiation settled on, and
+    a chain parsed with the wrong width is off by sixteen bytes without
+    complaining. BaseHashSel sits at offset 16 of the response, after Length,
+    MeasurementSpecificationSel, OtherParamsSelection, MeasurementHashAlgo and
+    BaseAsymSel (spdm.h:544-552).
+    """
+    for e in entries:
+        if e.get("name") != "SPDM_ALGORITHMS" or "_spdm" not in e:
+            continue
+        msg = e["_spdm"]
+        if len(msg) < 20:
+            return None, None
+        sel = int.from_bytes(msg[16:20], "little")
+        return BASE_HASH.get(sel, (f"0x{sel:08x}", None))
+    return None, None
+
+
+def certificates(entries: list[dict]) -> dict:
+    """Reassemble each slot's certificate chain from the responses that carried it."""
+    hash_name, hash_bytes = negotiated_hash(entries)
+    out = {
+        "roundtrips": 0,
+        "base_hash": hash_name,
+        "root_hash_bytes": hash_bytes,
+        "slots": [],
+        "notes": [],
+    }
+
+    # A slot is fetched in a burst of request/response pairs, and the same slot
+    # can legitimately be fetched twice in one connection (the mutual-auth
+    # exchange does exactly that). So chains are cut on the RemainderLength
+    # reaching zero rather than on the slot id changing, which would merge two
+    # fetches of slot 0 into one impossible chain.
+    current: dict | None = None
+    for e in entries:
+        name = e.get("name")
+        if name == "SPDM_GET_CERTIFICATE":
+            out["roundtrips"] += 1
+            continue
+        if name != "SPDM_CERTIFICATE" or "_spdm" not in e:
+            continue
+        msg = e["_spdm"]
+        large = bool(msg[2] & SPDM_CERT_LARGE_CHAIN)
+        head = CERT_LARGE_HEADER_BYTES if large else CERT_SMALL_HEADER_BYTES
+        if len(msg) < head:
+            out["notes"].append(
+                f"packet {e['packet']}: CERTIFICATE is {len(msg)} bytes, too "
+                f"few for its {head}-byte {'large' if large else 'small'} header")
+            continue
+        slot = msg[2] & SPDM_CERT_SLOT_ID_MASK
+        if large:
+            portion = int.from_bytes(msg[8:12], "little")
+            remainder = int.from_bytes(msg[12:16], "little")
+            # The 16-bit pair must be zero in this layout. Checking it is what
+            # tells "the responder used the large form" apart from "this file
+            # guessed the wrong form", which otherwise look identical.
+            if msg[4:8] != b"\x00\x00\x00\x00":
+                out["notes"].append(
+                    f"packet {e['packet']}: LargeCertChain is set but the "
+                    f"16-bit Portion/Remainder fields are "
+                    f"{msg[4:8].hex(' ')} rather than zero")
+                continue
+        else:
+            portion = int.from_bytes(msg[4:6], "little")
+            remainder = int.from_bytes(msg[6:8], "little")
+        chunk = msg[head:head + portion]
+        if len(chunk) != portion:
+            out["notes"].append(
+                f"packet {e['packet']}: PortionLength says {portion}, the "
+                f"message carries {len(chunk)}")
+            continue
+
+        if current is None:
+            current = {
+                "slot": slot,
+                "direction": e["direction"],
+                "first_packet": e["packet"],
+                "declared_total": portion + remainder,
+                "large": large,
+                "portions": [],
+                "bytes": bytearray(),
+            }
+        current["portions"].append(portion)
+        current["bytes"] += chunk
+        if remainder == 0:
+            out["slots"].append(_settle_chain(current, hash_bytes))
+            current = None
+
+    if current is not None:
+        current["incomplete"] = True
+        out["slots"].append(_settle_chain(current, hash_bytes))
+
+    complete = [c for c in out["slots"] if c.get("closes")]
+    out["chains"] = len(out["slots"])
+    out["chains_that_close"] = len(complete)
+    return out
+
+
+def _settle_chain(chain: dict, hash_bytes: int | None) -> dict:
+    """Two equations on one chain: the portions, and the chain's own Length."""
+    raw = bytes(chain.pop("bytes"))
+    total = sum(chain["portions"])
+    settled = {
+        "slot": chain["slot"],
+        "direction": chain["direction"],
+        "first_packet": chain["first_packet"],
+        "large_form": chain.get("large"),
+        "messages": len(chain["portions"]),
+        "portions": chain["portions"],
+        "chain_bytes": total,
+        "declared_total": chain["declared_total"],
+        "length_field": None,
+        "certificates_bytes": None,
+        "closes": False,
+        "why": None,
+    }
+    if chain.get("incomplete"):
+        settled["why"] = "the last response still declared a non-zero RemainderLength"
+        return settled
+    if total != chain["declared_total"]:
+        settled["why"] = (f"the portions sum to {total}, the first response "
+                          f"declared {chain['declared_total']}")
+        return settled
+    if len(raw) < 4:
+        settled["why"] = "too few bytes for the chain's own Length field"
+        return settled
+    # DSP0274 splits these four bytes into Length(2) and Reserved(2); libspdm
+    # declares one uint32 (spdm.h:772-778). With Reserved zero the two readings
+    # are the same number, and that is asserted rather than assumed.
+    length = int.from_bytes(raw[0:4], "little")
+    settled["length_field"] = length
+    settled["reserved_is_zero"] = raw[2:4] == b"\x00\x00"
+    if length != total:
+        settled["why"] = (f"the chain's own Length field says {length}, "
+                          f"{total} bytes arrived")
+        return settled
+    settled["closes"] = True
+    if hash_bytes is not None and total >= 4 + hash_bytes:
+        settled["certificates_bytes"] = total - 4 - hash_bytes
+        settled["root_hash"] = raw[4:4 + hash_bytes].hex()
+    return settled
 
 
 def cross_check(path: Path, stats: dict) -> int:
@@ -345,6 +564,43 @@ def main() -> int:
     print(f"  {'message':<36} {'n':>3} {'bytes':>8}")
     for name, v in stats["by_type"].items():
         print(f"  {name:<36} {v['count']:>3} {v['bytes']:>8}")
+
+    cert = stats["certificates"]
+    if cert["roundtrips"] or cert["slots"]:
+        print()
+        print(f"  certificate chains: {cert['roundtrips']} GET_CERTIFICATE "
+              f"round trip(s), {cert['chains_that_close']} of {cert['chains']} "
+              f"chain(s) close")
+        if cert["base_hash"]:
+            print(f"  RootHash is {cert['root_hash_bytes']} bytes "
+                  f"({cert['base_hash']}, read from ALGORITHMS)")
+        for c in cert["slots"]:
+            head = (f"  slot {c['slot']} {c['direction']} from packet "
+                    f"{c['first_packet']}: ")
+            if not c["closes"]:
+                print(head + f"does not close — {c['why']}")
+                continue
+            portions = " + ".join(str(x) for x in c["portions"])
+            print(head + f"{portions} = {c['chain_bytes']} bytes in "
+                  f"{c['messages']} message(s), "
+                  f"{'large' if c['large_form'] else 'small'} form")
+            if c["certificates_bytes"] is not None:
+                print(f"      4 + {cert['root_hash_bytes']} + "
+                      f"{c['certificates_bytes']} certificates, root "
+                      f"{c.get('root_hash', '')[:16]}…")
+        if cert["roundtrips"] and not cert["slots"]:
+            chunked = stats["by_type"].get("SPDM_CHUNK_RESPONSE")
+            if chunked:
+                print(f"  --    no chain was reassembled: the responder "
+                      f"answered in {chunked['count']} CHUNK_RESPONSE "
+                      f"message(s) rather than CERTIFICATE, which is what a "
+                      f"chain larger than the negotiated DataTransferSize "
+                      f"looks like")
+            else:
+                print("  --    no chain was reassembled, and no CHUNK_RESPONSE "
+                      "explains it")
+        for note in cert["notes"]:
+            print(f"  --    {note}")
 
     if args.list:
         print()
