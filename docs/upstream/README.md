@@ -31,6 +31,7 @@ needs a date attached to it.
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
 | Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
+| Fifth candidate found while writing a proxy | **done** | 2026-09-10 | `spdm-emu`: `command.h` documents the socket payload as starting at the SPDM header when a transport byte precedes it — see below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
 | **This project's** first change submitted | not started | | scheduled W03 → **slipped**, see below |
@@ -272,6 +273,59 @@ underneath. What they demonstrate is reading a reference implementation closely
 enough to find where its samples stop being examples, with a committed capture
 behind each. That is the claim; "I found a security bug in libspdm" is not, and
 would not survive review.
+
+## A fifth, found by trusting a comment for ten minutes — 2026-09-10
+
+`spdm_emu/spdm_emu_common/command.h` is the only place the socket wire format
+is written down, and it is where anyone writing a tool that sits between the
+two emulators will start. It says:
+
+```c
+/* Client->Server/Server->Client
+ *   command/response: 4 bytes (big endian)
+ *   transport_type: 4 bytes (big endian)
+ *   PayloadSize (excluding command and PayloadSize): 4 bytes (big endian)
+ *   payload (SPDM message, starting from SPDM_HEADER): PayloadSize (little endian)*/
+```
+
+The last line is wrong for the default transport. For `SOCKET_TRANSPORT_TYPE_MCTP`
+the payload is what libspdm's MCTP transport encoded, which begins with the MCTP
+message type — `0x05` for SPDM, `0x06` for a secured message — and the SPDM
+header starts at `payload[1]`.
+
+It is visible in any capture this project has taken, because
+`send_platform_data` writes the same buffer into the pcap with a four-byte
+synthesised `mctp_header_t` in front of it:
+
+```
+00 00 00 c0 | 05 | 10 84 00 00
+└─ pcap only ┘ └┬┘  └─ SPDM header ─┘
+                MCTP message type
+```
+
+`harness/tamper_proxy.py` reads `payload[1]` for the version and `payload[2]`
+for the `RequestResponseCode`. A reader who trusts the comment reads
+`payload[0]` and `payload[1]`, gets `0x05` and `0x10`, and is one byte out on
+every field in the message — a `GET_VERSION` looks like a version byte of 5 and
+a request code of 0x10, which is not a code at all.
+
+**The proposed change is two lines of comment**, naming the transport
+dependency and the message-type byte. Nothing else moves.
+
+**What this is worth, stated before anyone asks.** It is a comment. It is not a
+defect in the code, it changes no behaviour, and a reviewer would be right to
+call it trivial. What it has going for it is that it is *checkable in one
+command* against a file the repository itself produces, and that the person
+proposing it hit the problem rather than read about it. Small documentation
+changes are also the right first submission to a repository nobody there knows
+you in, which is the actual reason it is the one being prepared first.
+
+**A related observation that is NOT being submitted**, because it is a design
+question rather than a defect: the comment is accurate for
+`SOCKET_TRANSPORT_TYPE_NONE`, where the payload really does start at the SPDM
+header. The sentence is not wrong so much as unqualified, and saying so is a
+smaller and more likely-to-land change than arguing about which case should be
+the default in the documentation.
 
 ## Three identity traps, all of which are silent until they are not
 

@@ -15,7 +15,7 @@
 |---|---|
 | 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
 | 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
-| **現在做到哪?** | ★★ **W03 收工(2026-08-31)**。**G1 完成**:逐欄位文件 7 個訊息對、**164 個數字由 CI 從 capture 重算**,其中 **4 個**訊息對的位移是從線上重建的(§8.3b)。**G2 開始**:自己簽的三層憑證鏈已經產出、被 responder 接受、在線上量到 1897 bytes —— 而且那個數字是**兩個互不相干的工具各算一次算出來的**(§8.7)。三個篡改點還沒開始 |
+| **現在做到哪?** | ★★ **W05 收工(2026-09-10)**。**G1 完成**:逐欄位文件 7 個訊息對、**164 個數字由 CI 從 capture 重算**。**G2 完成**:自己簽的三層鏈 ＋ **Table 1**,五種篡改、十條受控臂,而且 CI 現在會因為「線上篡改沒被拒絕」而變紅(§8.8)。★ 最重要的一格是**沒有失敗的那一格**:改裝置上的量測值,握手照樣完成 —— 那正是 G3 存在的理由 |
 | ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
 | ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
 | ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**當時 128/128 通過(W03 之後是 164/164),而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
@@ -29,7 +29,7 @@
 | Claude Code 從哪開? | **`C:\Users\Key20\Desktop\mctp-spdm-pqc`** |
 | 程式碼在哪? | repo 就在上面那個路徑;**上游原始碼與 build tree 在 WSL 的 `~/spdm-lab/`(ext4),絕不放 `/mnt/c`** |
 | GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
-| 今天要做什麼? | **① `c-drills`,而且只有這一件是急的。** 四題有合約有測試、零題完成:`d3`、`d1`、`d5`(位元組序)、`d6`(packed struct)。**實作永遠是你的** ② `docs/upstream/spdm15-hybrid-feedback.md` 有一份 297 字的公評回饋草稿,**還沒送**(要 DMTF portal 帳號,而且要用你自己的話) ③ W04 開始改 `meas.c`,前置已經確認過了 |
+| 今天要做什麼? | **① `c-drills`,而且只有這一件是急的。** 六題有合約有測試、零題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`。**實作永遠是你的**,而 `verify_repo.sh` 現在會把「六比零」印出來 ② `docs/upstream/spdm15-hybrid-feedback.md` 那份公評回饋草稿**還沒送** ③ W06 開始 Gate 3:RATS 流水線,先裝 OPA、先跑通 DMTF 自己的範例 |
 | 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠四題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第四個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
 | ⚠️ W07~W08 已知的障礙 | **系統 OpenSSL 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空** —— W03 的古典鏈不需要它(secp384r1 就夠),但要簽 **PQC 憑證**那條現在就是紅的。這跟 libspdm 無關(它自己編 OpenSSL submodule):**一個專案裡兩個 OpenSSL,只有一個被釘住** |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
@@ -41,12 +41,12 @@
 |---|---|---|
 | G0 | 環境與版本基線 | ✅ 完成 |
 | G1 | 完整握手、逐欄位 | ✅ **完成** — 7 個訊息對逐欄位標註,**164** 個數字由 CI 驗證,其中 **4 個訊息對的位移是從線上重建出來的**。剩下三個為什麼比較難(而不只是還沒做),寫在文件 §10 |
-| G2 | 憑證鏈與三點篡改 | 🟡 **進行中** — 自己簽的三層鏈已經產出、從 DER 檢查過、被 responder 接受、在線上量到 1897 bytes。**三個篡改點一個都還沒有**,Table 1 是空的而不是先畫好的(W04~W05) |
-| G3 | RATS 驗證流水線 | ⬜ 未開始(W06~W07) |
+| G2 | 憑證鏈與三點篡改 | ✅ **完成** — 自己簽的三層鏈在線上量到 1897 bytes,**而且現在有三個互不相干的工具各算一次**(憑證檔 / 解碼 / capture)。**Table 1** 五列、十條受控臂,`docs/tamper.md`。篡改點 ② 需要一支 proxy,做出來之後變成兩列 —— 因為「錯誤訊息一樣、根因相反」那一對其實住在裡面 |
+| G3 | RATS 驗證流水線 | ⬜ **未開始**(W06~W07)—— 但 Table 1 已經是它的理由:五種篡改裡,**唯一沒有被任何一層擋下來的**那一種,正好就是要靠參考值才擋得住的那一種 |
 | G4 | 後量子成本 | ⬜ 未開始(W08) |
 | G5 | 真實傳輸 | ⬜ 未開始(W09) |
 | G6 | 一致性與負面測試 | ⬜ 未開始(W10~W11) |
-| G7 | 上游貢獻 | 🟡 環境已備妥;兩個候選 patch 有證據、都還沒送。另外 08-31 在公評期內讀完 DMTF 的 SPDM 1.5 hybrid PQC WIP 並寫了回饋草稿,**沒有送出**,而且它被歸類成「時機的證明」不是「貢獻」 |
+| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**五個**候選 patch 有證據、都還沒送。最新一個是 09-10 寫 proxy 時撞到的:`command.h` 說 socket payload 從 SPDM header 開始,但 MCTP 傳輸在前面放了一個 byte。另外 08-31 在公評期內讀完 DMTF 的 SPDM 1.5 hybrid PQC WIP 並寫了回饋草稿,**沒有送出**,而且它被歸類成「時機的證明」不是「貢獻」 |
 | G8 | 交付與敘事 | ⬜ 未開始(W12~W14) |
 
 ---
@@ -874,7 +874,8 @@ python3 harness/fields.py --verify-tables \
 
 ## 8.8 ★ 改一個 byte,然後看是哪一層發現
 
-這一節是 W04 做出來的東西。**如果你只讀一節,讀這節。**
+這一節是 W04 跟 W05 做出來的東西,也是 **Table 1** 的操作說明。
+**如果你只讀一節,讀這節。**
 
 ### 為什麼要先改上游
 
@@ -929,7 +930,7 @@ bash harness/apply_device_patch.sh pqc --revert    # 拆掉(要再重建一次)
 > 一堆東西但那兩行上下文剛好沒動 —— 那時 `git apply` 會成功,而你 patch 到的
 > 是一個你沒讀過的檔案。**digest 擋得住,上下文擋不住。**
 
-### 跑那七個 case
+### 跑那十個 case
 
 ```bash
 bash harness/tamper.sh          # 約一分鐘
@@ -947,7 +948,53 @@ bash harness/tamper.sh          # 約一分鐘
 | `anchor` | responder 送的鏈,root 是不是 requester 被設定去信的那一張 |
 | `record_sha256` | 那 528 bytes 的量測記錄 |
 
-### 三個你應該自己看一次的結果
+### ★ 那支 proxy(W05 加的),以及它為什麼會拒絕動手
+
+篡改點 ② 是「改線上的位元組」,所以需要一支坐在中間的程式:
+
+```
+spdm_requester_emu --port 2324  ──►  tamper_proxy.py (聽 2324)  ──►  spdm_responder_emu (2323)
+```
+
+```bash
+# 先驗透明:什麼都不改,握手必須成功,量測記錄必須跟對照組一模一樣
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --passthrough
+
+# 改「被簽的內容」
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-record 1:36
+
+# 改「簽章本身」
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-signature -1
+
+# 它自己的測試:十三種壞掉的訊息,十三個檢查全部都要被打到
+python3 harness/tamper_proxy.py --self-test
+```
+
+**它動手之前要先閉合兩條式子,不閉合就拒絕:**
+
+```
+從 ALGORITHMS 讀回來的 BaseAsymSel  ->  ECDSA P-384  ->  簽章 96 bytes
+674 - (4 + 1 + 3 + 528 + 32 + 2 + 8)                   =        96 bytes
+                                                                 ^ 閉合
+```
+
+> 🔴 **這條式子把 `plan/W05.md` 自己的欄位表擋下來了。** 計畫那張 `MEASUREMENTS`
+> 結構圖少寫了 `RequesterContext`(8 bytes,SPDM 1.3 以後才有),照它算簽章會
+> 早 8 個位元組開始。proxy 拒絕翻,並且把 96 跟 104 兩個數字都印出來。
+> **這就是「兩個未知數要兩條式子」那條紀律的第三次現場**——前兩次在 §8.3b。
+
+**offset 為什麼要印三個?** 因為讀的人會在三個地方遇到它:
+
+| 座標系 | t2a 的值 | 為什麼差這麼多 |
+|---|--:|---|
+| SPDM 訊息裡 | 51 | 從 SPDMVersion 那個 byte 算起 |
+| socket payload 裡 | 52 | 前面多一個 MCTP 訊息型別 byte(`0x05`) |
+| pcap 紀錄裡 | 56 | 再多四個 `spdm_emu` 自己合成的 MCTP 表頭 |
+
+`command.h` 的註解說 payload「從 SPDM_HEADER 開始」。**那句話是錯的**,而且是
+寫這支 proxy 時第一個踩到的東西。已經記成上游候選第五案。
+
+### 五個你應該自己看一次的結果
 
 **① 改量測值 → 握手成功。** 不是 bug。responder 是拿「它剛剛送出去的東西」去
 簽名的,你改了它讀進來的資料,它就對新的資料簽名 —— requester 收到的是自洽的
@@ -986,6 +1033,34 @@ grep -h 'SPDM_DIGESTS' "$R/t0_clean.decode.txt" "$R/t3_cert.decode.txt"
 > **一個只檢查 `IS_ERROR` 的整合者,等於接受了每一條 parse 得過的憑證鏈。**
 > 在真的 BMC 上,這就是「這台裝置是真的」跟「這台裝置文件齊全」的差別。
 
+**④ 在線上改「被簽的內容」→ 失敗,`80020001`。** 同一個 index 1、同一個 offset
+36,但這次改的是**線上那個值**(SHA-512 的第 36 個 byte),不是裝置上那個
+pre-image。responder 簽的是舊的、requester 收到的是新的,兩邊對不起來。
+
+**⑤ 在線上改「簽章本身」→ 失敗,`80020001`,一模一樣的號碼。**
+量測記錄一個 byte 都沒動,`f2a14684…` 跟對照組完全相同。
+
+> 🔴 **④ 跟 ⑤ 是這整個專案最好講的一格。** 兩者的根因是相反的——一個是「被簽的
+> 東西被改了」,一個是「簽章被改了」——而 requester 印出來的東西**完全一樣**:
+> 同一個號碼、同一個函式、同一層。
+>
+> **意思是:如果你在真的產品上只靠一行 error log 做 triage,你分不出來是韌體被
+> 改、還是線路上有 interposer。** 這兩件事的處置完全不同:前者查供應鏈跟更新
+> 流程,後者查線路。**SPDM 告訴你「有問題」,不告訴你「問題在哪一層」。**
+>
+> 分得出來的是 pcap:④ 的量測記錄跟對照組不同,⑤ 的一模一樣。
+> **線上分得出來,錯誤訊息分不出來。**
+
+```bash
+R=$(ls -d bench/data/w5-tamper-* | tail -1)
+for c in t1_meas t2a_record t2b_sig; do
+  printf '%-12s %s\n' "$c" "$(python3 harness/spdm_status.py "$R/$c.req.log")"
+done
+#   t1_meas      -
+#   t2a_record   80020001 VERIF_FAIL (ERROR/CRYPTO/0x0001) from do_measurement_via_spdm
+#   t2b_sig      80020001 VERIF_FAIL (ERROR/CRYPTO/0x0001) from do_measurement_via_spdm
+```
+
 ### 產生 fixture
 
 ```bash
@@ -1004,6 +1079,30 @@ run、兩條不同的憑證鏈裡都一樣。**先用一個 256-bit 的目標證
 > ⚠️ `--flip-byte 12` 會被**拒絕**,而且它會告訴你為什麼:那個位移落在 svn
 > 欄位裡,翻它是改了檔案「怎麼被讀」而不是「它說了什麼」。log 裡看起來會一模
 > 一樣,意思卻完全不同。
+
+### ★★ CI 現在會因為「篡改沒被擋下來」而變紅
+
+W05 之前,`綠 ≠ 有在保護我` 這句話是完全成立的:兩個 job 都只在檢查形式。
+現在 `verify_repo.sh` 多了一步,它**從原始證據重算**(requester 自己的 log ＋
+已 commit 的 `fields.json`,不看 `cases.tsv` 那張表),而且四個條件缺一就紅:
+
+```
+t0_proxy    沒有錯誤,而且記錄跟對照組一樣      <- 儀器本身沒壞
+t2a_record  VERIF_FAIL,記錄跟對照組不一樣
+t2b_sig     VERIF_FAIL,記錄跟對照組一樣        <- 而且要跟 t2a 同一個號碼
+t1_meas     沒有錯誤,記錄跟對照組不一樣        <- ★ 這條是要它「繼續不被擋」
+```
+
+最後一條容易被誤會:**它不是缺口,它是量測結果。** 改裝置上的量測值本來就不該
+被 SPDM 擋下來,那是 G3 的工作。如果哪天它開始被擋了,代表 libspdm 變了,那值得
+停下來看。
+
+還有一條是兩個互不相見的證人:proxy 說它讀到 `f2a14684…`(＝對照組)、寫出
+`4519f14e…`;`fields.py` 事後從 capture 檔讀出來也是 `4519f14e…`。
+**兩邊都要對,才算數。**
+
+⚠️ **但還是不要把 badge 講成保證。** 現在紅的條件是「線上篡改沒被拒絕」,
+**不是**「量測值不對卻通過了」——後者要參考值,那是 G3。
 
 ---
 
@@ -1190,12 +1289,24 @@ bash harness/healthcheck.sh stable
 bash harness/capture.sh                       # 預設 --name w2-baseline
 bash harness/capture.sh --name w4-baseline    # 每週的基線換個名字
 
-# ── 改上游 · 篡改(★ W04,見 §8.8)───────────────────────
+# ── 改上游 · 篡改(★ W04~W05,見 §8.8 與 docs/tamper.md)──
 bash harness/apply_device_patch.sh pqc --build      # 裝 patch 並重建
 bash harness/apply_device_patch.sh pqc --status     # 現在裝了沒
 bash harness/apply_device_patch.sh pqc --revert     # 拆掉(要再重建)
-bash harness/tamper.sh                              # 七個 case,約一分鐘
-bash harness/tamper.sh --only t3_cert               # 只跑一個
+bash harness/tamper.sh                              # 十個 case,約一分鐘
+bash harness/tamper.sh --only t2a_record            # 只跑一個
+
+# ── 線上篡改:那支 proxy(★ Table 1 的 2a / 2b)──────────
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --passthrough
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-record 1:36
+python3 harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-signature -1
+python3 harness/tamper_proxy.py --self-test         # ★ 十三個檢查全部要被打到
+#   requester 那邊要加 --port 2324;responder 不加,它還是聽 2323
+
+# ── 讀 emulator 的 log 說了什麼 ─────────────────────────
+python3 harness/spdm_status.py <run>/t2a_record.req.log   # 命名那個號碼
+python3 harness/spdm_status.py --decode 0x80020001        # 不用 log 也能拆
+python3 harness/spdm_status.py --self-test
 python3 device/gen_measurements.py --out /tmp/m.bin           # 預設 = 重現上游
 python3 device/gen_measurements.py --svn 5 --out /tmp/m5.bin
 python3 device/gen_measurements.py --flip-block 1 --flip-offset 36 --out /tmp/t.bin
@@ -1214,6 +1325,8 @@ python3 harness/pcapcount.py <file>.pcap --list         # 每個封包一行
 python3 bench/pcapstat.py <file>.pcap                   # 每種訊息幾個 byte
 python3 bench/pcapstat.py <file>.pcap --list            # 每個封包一行,含訊息名
 python3 bench/pcapstat.py <file>.pcap --check           # ★ 要跟 fields.py 一致
+#   它也會印憑證鏈:幾趟來回、每一趟幾個 byte、重建出來的總長對不對得上
+#   磁碟上那個 DER(4 + 48 + 1845 = 1897)
 
 # ── 分析:協定欄位層(★ 實際協商到什麼)──────────────────
 python3 harness/fields.py <run>/walkthrough.decode.txt

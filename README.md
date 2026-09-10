@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 4 of a 14-week programme. The table below is the truth about what
+This is week 5 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -34,22 +34,102 @@ exists today, not what is planned. Planned work is in
 |:--|---|---|
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
 | G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
-| G2 | certificate chain, three tamper points | **in progress** — the chain, plus a tamper harness and **two of the three points measured** ([`docs/tamper.md`](docs/tamper.md)). Point 2 needs a proxy between the emulators and is absent rather than stubbed, so **Table 1 is incomplete** |
-| G3 | RATS verification pipeline | not started — and week 4 measured why it is not optional |
+| G2 | certificate chain, three tamper points | **complete** — **Table 1**, five rows over ten controlled arms, every point measured ([`docs/tamper.md`](docs/tamper.md)). Point 2 needed a proxy and became two arms, which is where the pair that fails identically for opposite reasons turned out to live |
+| G3 | RATS verification pipeline | not started — and weeks 4 and 5 measured why it is not optional: the one tamper nothing refuses is the one a reference value would catch |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | agreements and account done; **four** candidate changes with evidence, none submitted — the two newest each carry a committed capture. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
+| G7 | upstream contribution | **in progress** — agreements and account done; **five** candidate changes with evidence, none submitted. The newest is a header comment that describes the socket payload as starting at the SPDM header when a transport byte precedes it. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
 
+### What week 5 established
+
+**Table 1 is finished, and its most important row is the one where nothing
+happened.** Five tampers, ten controlled arms, one control taken before the
+code under test existed:
+
+| # | what changed | where | what happened | status |
+|:--|---|---|---|---|
+| **1** | the measurement value | on the **device** | **handshake completed** | **none** |
+| **2a** | the measurement record | **in flight** | refused | `80020001` `VERIF_FAIL` |
+| **2b** | the **signature** | **in flight** | refused | `80020001` `VERIF_FAIL` |
+| **3** | a certificate | on the **device's disk** | never sent at all | `8001000a` `ERROR_PEER` |
+| 3b | *whose* certificate | on the device's disk | **handshake completed** | none — a **warning** |
+
+Rows 2a and 2b are the pair this project's own plan expected to find between
+rows 1 and 2. It is not there: **a measurement changed at the device is signed
+by the device**, so the requester receives a self-consistent pair and every
+check passes. The pair that actually demonstrates "same message, opposite
+cause" is inside point 2 — the signed *content* changed against the *signature*
+changed — and it is stronger, because both halves reach a verifier and the only
+difference between them is which side of the signature the byte was on.
+
+> Both print `80020001`. **An integrator triaging from a log line cannot tell a
+> corrupted device from a corrupted link**, and the two have completely
+> different responses: one is a supply chain, the other is a cable. SPDM says
+> *that* something is wrong, not *which layer* is.
+
+The wire separates them immediately: `t2a_record` carries a measurement record
+that differs from the control, `t2b_sig` carries the control's byte for byte.
+The error message carries neither fact.
+
+**[`harness/tamper_proxy.py`](harness/tamper_proxy.py) is what rows 2a and 2b
+needed, and what it refuses to do is the interesting part.** It sits between the
+two emulators, and before changing a byte it closes two equations:
+
+```
+BaseAsymSel, read out of the ALGORITHMS response as it passes  ->  96 bytes
+674 - (4 + 1 + 3 + 528 + 32 + 2 + 8)                           =   96 bytes
+                                                                   ^ closed
+```
+
+**That equation refused this project's own plan.** `plan/W05.md` lists the
+`MEASUREMENTS` fields without `RequesterContext` — eight bytes, present since
+SPDM 1.3 — which would have put the signature eight bytes early. The proxy
+declined to flip anything and printed both numbers.
+`tamper_proxy.py --self-test` reproduces that refusal along with twelve others
+and fails if any of its thirteen registered checks was never exercised.
+
+**CI now turns red if tampering stops being detected.** `verify_repo.sh`
+re-derives rows 1, 2a and 2b from the requester's own logs and the committed
+`fields.json`, and fails if either in-flight tamper stops being refused, if the
+two stop sharing one status, or if the device-side one *starts* being refused.
+That last clause is deliberate: row 1 passing is a measurement, not a gap.
+
+It also requires the proxy and the capture — two witnesses that never see each
+other — to agree that the responder sent the control's record and that what the
+proxy wrote is what the capture holds.
+
+**A third route to the certificate chain's size.**
+[`bench/pcapstat.py`](bench/pcapstat.py) now reassembles the chain from each
+`CERTIFICATE` response's `PortionLength` and reports `cert_roundtrips`. So
+`4 + 48 + 1845 = 1897` is reached by three tools sharing no input: the DER files
+on disk, `spdm_dump`'s decode, and the capture file. It found something the
+other two could not — the `4.0.0-rc` responder sends the chain in **one**
+message where the `3.8.0` responder sends it in two, six round trips against
+three — and it found its own bug first: the 1.4 `LargeCertChain` layout moves
+`PortionLength` to a 32-bit field at offset 8 and leaves the 16-bit one reading
+zero, so a parser that trusts offset 4 reports an empty chain rather than an
+error.
+
+**No byte count in Table 1 detects anything.** A clean run, a proxied run and
+three tampers are all 30 packets and 11,671 SPDM bytes, to the byte. A bit flip
+does not change a size, and a size-based anomaly detector would see five
+identical exchanges.
+
+Full write-up, with every number re-derived from its capture on every CI run:
+[`docs/tamper.md`](docs/tamper.md). How an experiment gets run here at all:
+[`docs/measurement.md`](docs/measurement.md).
+
 ### What week 4 established
 
 **A byte was changed in a device's own measurement, and SPDM did not notice.**
 That is not a defect. It is the boundary of what the protocol claims, and it is
-the reason Gate 3 exists.
+the reason Gate 3 exists. Week 5 turned it into row 1 of Table 1, beside four
+tampers that *are* caught.
 
 `libspdm`'s sample device secret library invents its measurements — index 1 is
 the SHA-512 of 72 bytes of `0x01`, and the secure version number is the constant
@@ -127,8 +207,8 @@ Two new tools, and both exist to disagree with something.
 [`bench/pcapstat.py`](bench/pcapstat.py) walks the capture file itself and
 totals bytes per message type; `fields.py` reaches the same totals from
 `spdm_dump`'s output. Neither opens the other's input, and CI requires them to
-agree across **43 captures** — eighteen equations on the walkthrough instead of
-one. The one capture where they cannot agree measures something new: the
+agree across every committed capture — eighteen equations on the walkthrough
+instead of one, and 55 captures at the time of writing. The one capture where they cannot agree measures something new: the
 reference decoder sees **12.0%** of the post-quantum capture, 13,441 SPDM bytes
 of 111,831.
 
