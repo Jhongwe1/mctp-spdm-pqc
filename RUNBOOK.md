@@ -1013,7 +1013,7 @@ pcap 裡**連 `CERTIFICATE` 訊息都沒有**,而 `ProvisionedSlotMask` 從 `0x1
 **壞掉的位元組根本沒上線。**
 
 ```bash
-R=$(ls -d bench/data/w4-tamper-* | tail -1)
+R=$(ls -d bench/data/*-tamper-* | tail -1)
 grep -h 'SPDM_DIGESTS' "$R/t0_clean.decode.txt" "$R/t3_cert.decode.txt"
 #   看 ProvisionedSlotMask 那一格
 ```
