@@ -86,14 +86,27 @@ hs_cleanup() {
     HS_RESPONDER_PID=""
 }
 
+# The listener check, captured rather than piped, and it matters here more
+# than anywhere else in the repository.
+#
+# `ss -ltn | grep -q PORT` returns the pipeline's status, and under
+# `set -o pipefail` — which lib/common.sh turns on — grep -q exiting at the
+# first match can leave `ss` writing into a closed pipe. SIGPIPE makes the
+# pipeline 141, so "the port IS listening" is reported as "it is not", the
+# caller keeps waiting, and the run fails ten seconds later with `return 91`
+# and no explanation. It is a race that gets more likely as the machine gets
+# busier, which is the worst possible property for a check whose whole job is
+# to replace a `sleep 3` race.
 hs_port_is_listening() {
+    local listening
     if command -v ss >/dev/null 2>&1; then
-        ss -ltn 2>/dev/null | grep -qE "[:.]${HS_PORT}[[:space:]]"
+        listening="$(ss -ltn 2>/dev/null || true)"
     elif command -v netstat >/dev/null 2>&1; then
-        netstat -ltn 2>/dev/null | grep -qE "[:.]${HS_PORT}[[:space:]]"
+        listening="$(netstat -ltn 2>/dev/null || true)"
     else
         return 2      # cannot tell; caller falls back to a sleep
     fi
+    grep -qE "[:.]${HS_PORT}[[:space:]]" <<<"$listening"
 }
 
 # hs_wait_for_responder <pid> <timeout_s>

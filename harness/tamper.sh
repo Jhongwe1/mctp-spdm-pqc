@@ -232,7 +232,10 @@ proxy_wait_listening() {
     while [ "$waited" -lt 100 ]; do
         kill -0 "$PROXY_PID" 2>/dev/null || return 1
         if command -v ss >/dev/null 2>&1; then
-            ss -ltn 2>/dev/null | grep -qE "[:.]${PROXY_PORT}[[:space:]]" && return 0
+            # Captured, not piped: lib/handshake.sh's hs_port_is_listening says
+            # what the pipeline form costs, and this was written in it.
+            grep -qE "[:.]${PROXY_PORT}[[:space:]]" \
+                <<<"$(ss -ltn 2>/dev/null || true)" && return 0
         else
             sleep 1; return 0
         fi

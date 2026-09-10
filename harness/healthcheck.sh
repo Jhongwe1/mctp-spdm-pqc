@@ -148,7 +148,7 @@ if [ -f "$DEVICE_PATCH" ]; then
     cat "$DEVICE_PATCH"
     prov_pin_file "$DEVICE_PATCH" DEVICE_PATCH.txt device_patch
     printf '  Without SPDM_MEASUREMENTS_FILE this binary behaves as upstream does,\n'
-    printf '  and bench/data/w4-tamper-*/t0_none is the capture that says so. With\n'
+    printf '  and every tamper run holds a t0_none arm that says so. With\n'
     printf '  it, the measurements come from a file. To remove the patch:\n'
     printf '      bash harness/apply_device_patch.sh %s --revert\n' "$FLAVOR"
     verdict INFO 0 "device/meas-from-file.patch IS APPLIED — the pin alone no longer describes this binary"
@@ -160,7 +160,7 @@ section "1. which algorithms the CLI exposes (decides which experiments exist)"
 HELP="$("${BIN}/spdm_requester_emu" --help 2>&1 || true)"
 printf '%s\n' "$HELP" | grep -oE '\-\-(pqc_asym|kem|pqc_first|asym|hash|dhe|aead|ver)[^]]*' \
     | sed 's/^/  /' | head -40 || true
-if printf '%s\n' "$HELP" | grep -q -- '--pqc_asym'; then
+if grep -q -- '--pqc_asym' <<<"$HELP"; then
     verdict PASS 1 "--pqc_asym exposed by this build"
 else
     verdict INFO 1 "--pqc_asym absent (expected for flavor=stable)"
@@ -273,7 +273,10 @@ fi
 
 section "8. system OpenSSL — only affects signing a POST-QUANTUM chain (W07-W08)"
 openssl version 2>&1 | sed 's/^/  /'
-if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
+# Captured rather than piped — see harness/doctor.sh for what the pipeline
+# form does on a machine that actually has ML-DSA.
+OSSL_ALGS="$(openssl list -signature-algorithms 2>/dev/null || true)"
+if grep -qi 'ml-dsa' <<<"$OSSL_ALGS"; then
     verdict PASS 8 "system OpenSSL offers ML-DSA"
 else
     verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5) — the W03 chain is ECDSA-P384 and did not need it; a PQC chain will"
@@ -289,8 +292,9 @@ else
 fi
 
 section "10. kernel MCTP support (W09 AF_MCTP path)"
-if zcat /proc/config.gz 2>/dev/null | grep -qE '^CONFIG_MCTP=[ym]' \
-   || grep -qE '^CONFIG_MCTP=[ym]' "/boot/config-$(uname -r)" 2>/dev/null; then
+KCONFIG="$( { zcat /proc/config.gz 2>/dev/null \
+              || cat "/boot/config-$(uname -r)" 2>/dev/null; } || true)"
+if grep -qE '^CONFIG_MCTP=[ym]' <<<"$KCONFIG"; then
     verdict PASS 10 "CONFIG_MCTP enabled in this kernel"
 else
     ( zcat /proc/config.gz 2>/dev/null || cat "/boot/config-$(uname -r)" 2>/dev/null ) \

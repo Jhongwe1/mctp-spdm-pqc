@@ -92,7 +92,11 @@ if command -v gcc >/dev/null 2>&1; then
 fi
 if command -v openssl >/dev/null 2>&1; then
     OSSL="$(openssl version | awk '{print $2}')"
-    if openssl list -signature-algorithms 2>/dev/null | grep -qi 'ml-dsa'; then
+    # Captured, not piped: grep -q exits at the first match, openssl dies
+    # writing the rest, and pipefail turns "found it" into 141. This branch
+    # would report "no ML-DSA" on exactly the machines that have it.
+    OSSL_ALGS="$(openssl list -signature-algorithms 2>/dev/null || true)"
+    if grep -qi 'ml-dsa' <<<"$OSSL_ALGS"; then
         pass "openssl (system)" "$OSSL — has ML-DSA"
     else
         info "openssl (system)" "$OSSL — no ML-DSA (needs >= 3.5). The W03 chain is ECDSA-P384 and did not need it; a post-quantum chain (W07-W08) will."
@@ -127,7 +131,8 @@ done
 # ---------------------------------------------------------------- port -----
 printf '\n-- port --\n'
 PORT="${SPDM_EMU_PORT:-2323}"
-if command -v ss >/dev/null 2>&1 && ss -ltn 2>/dev/null | grep -qE "[:.]${PORT}[[:space:]]"; then
+LISTENING="$(ss -ltn 2>/dev/null || true)"
+if command -v ss >/dev/null 2>&1 && grep -qE "[:.]${PORT}[[:space:]]" <<<"$LISTENING"; then
     fail "port ${PORT}" "already in use — stop the process or set SPDM_EMU_PORT"
 else
     pass "port ${PORT}" "free"

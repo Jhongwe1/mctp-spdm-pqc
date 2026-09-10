@@ -140,7 +140,8 @@ PY
 step "c-drills compile and run"
 if make -C c-drills --no-print-directory >/dev/null 2>&1; then
     good "every drill compiles under -Werror + ASan + UBSan"
-    if make -C c-drills --no-print-directory test 2>&1 | tail -3 | sed 's/^/  /'; then
+    if out="$(make -C c-drills --no-print-directory test 2>&1)" \
+       && printf '%s\n' "$out" | tail -3 | sed 's/^/  /'; then
         good "drills marked complete in DONE.txt pass"
     else
         bad "a completed drill failed"
@@ -173,15 +174,37 @@ step "the measurement source module compiles, rejects, and agrees with its write
 # implementations and standing rule 12 says two routes to one quantity are made
 # to agree; without this the drift would surface as a responder quietly serving
 # upstream's synthetic values during a tamper run.
-if make -C device --no-print-directory test 2>&1 | tail -2 | sed 's/^/  /'; then
+#
+# Both of these capture before they judge, and the reason is a bug this step
+# had on 2026-09-10. It was written as
+#
+#     if make -C device interop 2>&1 | head -2 | sed 's/^/  /'; then
+#
+# and `head -2` closes the pipe as soon as it has two lines. `make` is still
+# writing — the recipe ends with a --describe whose ten lines come after the
+# summary — so it dies of SIGPIPE, exits 141, and `set -o pipefail` makes the
+# whole pipeline non-zero. The step then reported that the two implementations
+# of the file format disagree, on the line after printing that they agree.
+#
+# It had been intermittent since the step was written, and became deterministic
+# the day /mnt/c's clock skew made `make` print one extra warning line, which
+# moved head's exit to before the --describe ran. Measured: PIPESTATUS=141 0,
+# five runs out of five, and 0 out of 5 when captured first.
+#
+# A check that fails for a reason unrelated to what it checks is worse than no
+# check, because the failure is legible and wrong.
+if out="$(make -C device --no-print-directory test 2>&1)"; then
+    printf '%s\n' "$out" | tail -2 | sed 's/^/  /'
     good "the loader's self-test passes under -Werror + ASan + UBSan"
 else
-    make -C device --no-print-directory test 2>&1 | tail -25 | sed 's/^/  /'
+    printf '%s\n' "$out" | tail -25 | sed 's/^/  /'
     bad "the measurement source self-test failed"
 fi
-if make -C device --no-print-directory interop 2>&1 | head -2 | sed 's/^/  /'; then
+if out="$(make -C device --no-print-directory interop 2>&1)"; then
+    printf '%s\n' "$out" | head -2 | sed 's/^/  /'
     good "the C reader and the Python writer produce identical bytes"
 else
+    printf '%s\n' "$out" | tail -20 | sed 's/^/  /'
     bad "gen_measurements.py and the C builder disagree about the file format"
 fi
 make -C device --no-print-directory clean >/dev/null 2>&1 || true
@@ -1064,6 +1087,62 @@ if [ "$found" -eq 0 ]; then
 else
     good "$found document(s) checked, $skipped that only quote the markup"
 fi
+
+step "no branch is decided by a pipeline that can lose its producer"
+# The bug class this exists for cost an hour on 2026-09-10 and had been latent
+# since the step it broke was written.
+#
+#     if make ... 2>&1 | head -2 | sed 's/^/  /'; then
+#
+# `head -2` closes the pipe once it has two lines. Everything upstream that is
+# still writing gets SIGPIPE and exits 141, and `set -o pipefail` — which
+# lib/common.sh turns on for every script here — makes the pipeline non-zero.
+# The branch that should have been taken is not, and the message printed is
+# about something that did not happen.
+#
+# `grep -q` and `grep -m N` are the same hazard and the more dangerous one,
+# because they exit early exactly WHEN THEY MATCH. Two checks in this
+# repository would have reported "this OpenSSL has no ML-DSA" on the machines
+# that have it, which is the reverse of the truth, on the path that decides
+# whether week eight's post-quantum certificate chain is possible.
+#
+# The fix is always the same: capture into a variable, then match with a
+# here-string, which is a redirection and has no second process to fail.
+python3 - <<'PY'
+import pathlib, re, sys
+
+# A pipeline whose status is a boolean: it opens a compound command, and its
+# consumer is one that exits before end of input.
+DECIDES = re.compile(r'^\s*(if|while|until|elif)\b|(\|\||&&)\s*$')
+EARLY = re.compile(r'\|\s*(head\b|grep\s+(-\w*q|-m\b|-\w*m\s)|sed\s+-n?\s*[\'"]?\dq)')
+
+flagged = []
+for path in sorted(pathlib.Path(".").glob("harness/**/*.sh")) + \
+            sorted(pathlib.Path(".").glob("certs/*.sh")):
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        stripped = line.strip()
+        if stripped.startswith("#") or not DECIDES.search(line):
+            continue
+        if not EARLY.search(line):
+            continue
+        # A pipeline inside $( ) is a value, not a branch: its status is
+        # discarded by whatever consumes the substitution.
+        before = line.split("|")[0]
+        if before.count("$(") > before.count(")"):
+            continue
+        flagged.append(f"{path}:{n}: {stripped[:96]}")
+
+if flagged:
+    print("  a branch is decided by a pipeline whose producer can be killed:")
+    for f in flagged:
+        print("    " + f)
+    print("  capture into a variable and match with a here-string instead")
+    sys.exit(1)
+print("  every conditional pipeline either reads to end of input or is a value")
+sys.exit(0)
+PY
+[ $? -eq 0 ] && good "no conditional pipeline can turn 0 into 141" \
+             || bad "a branch can be decided by SIGPIPE"
 
 step "the tamper proxy can still refuse to change a byte"
 # The proxy is the only thing in this repository that produces a successful

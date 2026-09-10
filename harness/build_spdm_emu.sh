@@ -194,7 +194,8 @@ for b in spdm_requester_emu spdm_responder_emu; do
 done
 
 # The single fact that decides whether the PQC half of this project is possible.
-if "${BIN}/spdm_requester_emu" --help 2>&1 | grep -qE '\-\-pqc_asym'; then
+EMU_HELP="$("${BIN}/spdm_requester_emu" --help 2>&1 || true)"
+if grep -qE '\-\-pqc_asym' <<<"$EMU_HELP"; then
     ok "--pqc_asym present  -> PQC experiments are possible with this build"
 else
     warn "--pqc_asym ABSENT  -> this build cannot run PQC (expected for flavor=stable)"
