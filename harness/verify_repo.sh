@@ -1398,6 +1398,25 @@ PY
 [ $? -eq 0 ] && good "nine gates, three tables, one answer each, and one week" \
              || bad "the gate tables disagree about what exists"
 
+step "every figure still renders from the data it claims to show"
+# CLAUDE.md and figures/README.md have said since 2026-08-11 that no figure
+# here is drawn by hand, and README.md's repository layout has listed the
+# directory since the same day. The directory was empty until 2026-09-10, which
+# is the "table indexing a directory" shape of the rot this repository keeps
+# finding, aimed at a directory with nothing in it.
+#
+# So the rule now has something to hold. harness/mkfigures.py re-renders each
+# figure from certs/check_chain.py, harness/fields.py and bench/pcapstat.py and
+# this step requires the committed file to be identical. A figure whose numbers
+# stopped being true fails the build rather than staying beautiful.
+if out="$(python3 harness/mkfigures.py --check 2>&1)"; then
+    printf '%s\n' "$out" | sed 's/^/  /'
+    good "the committed figures are what the data renders to"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "a figure no longer matches the data it was rendered from"
+fi
+
 step "the drills track reports itself"
 # The project track has spent five weeks generating work for a track that has
 # completed nothing, and until now that was a sentence in LOG.md rather than a
