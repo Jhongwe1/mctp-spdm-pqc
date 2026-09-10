@@ -1,0 +1,43 @@
+{
+  "bundle": "/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/certs/out/bundle_responder.certchain.der",
+  "bundle_bytes": 1845,
+  "certificates": [
+    {
+      "bytes": 504,
+      "flip_meaning": "byte 24 of the 49-byte ECDSA s value in the certificate's own signature",
+      "flip_offset_in_bundle": 479,
+      "name": "ca",
+      "offset": 0,
+      "position": 0,
+      "sha256": "94b614dd86b4c697edeb2cae35a12ee30767ff2b434cabbb8cedccd678a95293",
+      "signature_algorithm": "ecdsa",
+      "signature_bytes": 103,
+      "signature_offset_in_bundle": 401
+    },
+    {
+      "bytes": 573,
+      "flip_meaning": "byte 24 of the 48-byte ECDSA s value in the certificate's own signature",
+      "flip_offset_in_bundle": 1053,
+      "name": "inter",
+      "offset": 504,
+      "position": 1,
+      "sha256": "f51f6f7a9842f9f90f0ac3ee43da6ecdd29527c3cc84893ccb4bf6b1d9c81ad8",
+      "signature_algorithm": "ecdsa",
+      "signature_bytes": 103,
+      "signature_offset_in_bundle": 974
+    },
+    {
+      "bytes": 768,
+      "flip_meaning": "byte 24 of the 48-byte ECDSA s value in the certificate's own signature",
+      "flip_offset_in_bundle": 1821,
+      "name": "end_responder",
+      "offset": 1077,
+      "position": 2,
+      "sha256": "6beaad65acc32a5abe2260715b6b5bc9654ca92a2d5da8fa8864ce4362916975",
+      "signature_algorithm": "ecdsa",
+      "signature_bytes": 103,
+      "signature_offset_in_bundle": 1742
+    }
+  ],
+  "sha256": "af8e6645e0f1cd6f755364e61f76cdf618833ea3cdad451ca296e231bbe3fe2b"
+}

@@ -1,0 +1,4 @@
+[proxy] listening on 127.0.0.1:2324, forwarding to 127.0.0.1:2323, mode passthrough
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 45 B: signature requested, RequesterContext 8 B
+[proxy] MEASUREMENTS 674 B: 8 blocks, record 528 B at 8, opaque 0 B, RequesterContext 8 B, signature 96 B at 578  CLOSED

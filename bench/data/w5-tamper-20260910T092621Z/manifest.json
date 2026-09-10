@@ -1,0 +1,515 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w5-tamper-20260910T092621Z",
+    "name": "w5-tamper",
+    "flavor": "pqc",
+    "started_at": "2026-09-10T09:26:21Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "b473db53ec7d39670ac559293db0af0591a14243",
+    "repo_dirty": "true",
+    "control_capture": "bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt",
+    "control_record_sha256": "f2a14684e8fae9ff0e3ebff2a380f435c0fee5b0c8199d3fdfed31b2252f51d8",
+    "chain_sandbox": "/home/key/spdm-lab/work/selfsigned-pqc",
+    "chain_sha256": "af8e6645e0f1cd6f755364e61f76cdf618833ea3cdad451ca296e231bbe3fe2b",
+    "cert_flip_offset": "1053",
+    "cert_flip_meaning": "byte 24 of the 48-byte ECDSA s value in the certificate's own signature",
+    "cert_flip_sha256": "54de97fdfc3bbd87cd2048b78310e36d3da7608c622bd7f46ff8299b308ef285",
+    "foreign_chain_sha256": "488a5015bc5174f01a1314ee641c049f6ed41a3f7d5616e91192951dce794c78",
+    "foreign_anchor_sha256": "94b614dd86b4c697edeb2cae35a12ee30767ff2b434cabbb8cedccd678a95293",
+    "finished_at": "2026-09-10T09:26:42Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z",
+    "spdm_dump_tool": "spdm-dump",
+    "spdm_dump_spdm_dump": "9d91f21e21ad56f842affa30361b2807ea9c8e22",
+    "spdm_dump_spdm_dump_short": "9d91f21",
+    "spdm_dump_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "spdm_dump_libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "spdm_dump_built_at": "2026-08-11T05:46:07Z"
+  },
+  "commands": [
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/certs/check_chain.py /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/certs/out --locate --json",
+    "./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_none.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_none.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_none.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/device/gen_measurements.py --out /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/device/gen_measurements.py --out /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t1_meas.measurements.bin --flip-block 1 --flip-offset 36",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t1_meas.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t1_meas.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t1_meas.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t1_meas.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/tamper_proxy.py --listen 2324 --forward 2323 --passthrough --report /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_proxy.proxy.json --once",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --port 2324 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_proxy.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_proxy.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_proxy.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-record 1:36 --report /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2a_record.proxy.json --once",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --port 2324 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2a_record.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2a_record.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2a_record.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/tamper_proxy.py --listen 2324 --forward 2323 --flip-signature -1 --report /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2b_sig.proxy.json --once",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --port 2324 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2b_sig.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2b_sig.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t2b_sig.pcap -x",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3_cert.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3_cert.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3_cert.pcap -x",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t0_clean.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3b_foreign.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3b_foreign.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3b_foreign.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/device/gen_measurements.py --out /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn5.measurements.bin --svn 5",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn5.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn5.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn5.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn5.pcap -x",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/device/gen_measurements.py --out /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn9.measurements.bin --svn 9",
+    "env SPDM_MEASUREMENTS_FILE=/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn9.measurements.bin ./spdm_responder_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1",
+    "./spdm_requester_emu --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --meas_op ALL --slot_count 1 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn9.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn9.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/svn9.pcap -x"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.spdm-dump.txt",
+      "bytes": 227,
+      "sha256": "215d83f718731633df540ab58a5938a159d12b23519c0fb7855c6e7d978e3bfa"
+    },
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 404,
+      "sha256": "c27b3d6da4d4e88e642e13303e193979ad7466322807c750a1731de8ded002ce"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "cases.tsv",
+      "bytes": 893,
+      "sha256": "f3434f3587b157227e9a8d9adca56c3a7bd68c1c9dd40c9ec60f92dd9e118648"
+    },
+    {
+      "path": "chain-locate.json",
+      "bytes": 1504,
+      "sha256": "517e17447b75a42dadef9cc3f902b3fb7d80d70dd841bf8222799103f168a01d"
+    },
+    {
+      "path": "svn5.decode.txt",
+      "bytes": 5540,
+      "sha256": "95b5ac3c2c499f936a53a05ce7e1a75dea652433bdb76e8a1d07c43a1109d09b"
+    },
+    {
+      "path": "svn5.fields.json",
+      "bytes": 22424,
+      "sha256": "afcff3f222580cd3d83aa97c9564b6c81fda67ae538629c419c09a940902acc1"
+    },
+    {
+      "path": "svn5.fixture.txt",
+      "bytes": 617,
+      "sha256": "35af11bcfbad71efaa8d45863edc7e1ef4ff0e6980eef397d0dcb72118dc5a19"
+    },
+    {
+      "path": "svn5.hex.txt",
+      "bytes": 59641,
+      "sha256": "8ece5c67c93c456edf578f2012d1a97a80217663d24d5be9760ec1b169acf631"
+    },
+    {
+      "path": "svn5.measurements.bin",
+      "bytes": 336,
+      "sha256": "1badbab7bc4a43e2040e02c63a140a1d23a611e3badc130dc577c9fbbd6d326d"
+    },
+    {
+      "path": "svn5.pcap",
+      "bytes": 12325,
+      "sha256": "ff6a956b80a854e533785ab00abb1b34a7a85f3bd085fd655949c041aee6f483"
+    },
+    {
+      "path": "svn5.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "svn5.rsp.log",
+      "bytes": 267,
+      "sha256": "e6317edccf7e8f756fdde51d095313d9678ce5d6bd7f1a080b17522a82030c4c"
+    },
+    {
+      "path": "svn9.decode.txt",
+      "bytes": 5540,
+      "sha256": "c2b09a976a34bcc49e3738d314665415521cc133ba8d74c76349c29bc8fd191e"
+    },
+    {
+      "path": "svn9.fields.json",
+      "bytes": 22424,
+      "sha256": "8ab4c85b61972b79509b73b7d695517060919f14699151fcad8ac8f0fcaaec76"
+    },
+    {
+      "path": "svn9.fixture.txt",
+      "bytes": 617,
+      "sha256": "f8ba87c7e8bc163a99d8b2d6e97fb034debc55e68275e639db7192f5be5acac7"
+    },
+    {
+      "path": "svn9.hex.txt",
+      "bytes": 59641,
+      "sha256": "14fc0b39301d8afa0eda20bf8b1aa3dea4d70fd9924d53a8e85a0b5b81c1bd01"
+    },
+    {
+      "path": "svn9.measurements.bin",
+      "bytes": 336,
+      "sha256": "0667facc882d70f612eb33b1bc7906aca6f6adceece83daa43a78f28a2562933"
+    },
+    {
+      "path": "svn9.pcap",
+      "bytes": 12325,
+      "sha256": "f57fe9e40a78f698b7194a00dd0ed2f30e5714501f1557461fa81381673bedc2"
+    },
+    {
+      "path": "svn9.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "svn9.rsp.log",
+      "bytes": 267,
+      "sha256": "c7ab41a3e60d60b40ea506a991041b7b5e449efa6a27bb915a9b6ac33119731c"
+    },
+    {
+      "path": "t0_clean.decode.txt",
+      "bytes": 5540,
+      "sha256": "674fead41d794337ee07e3ade196b98f1e07b243f2eb968c82bcc6e77c929786"
+    },
+    {
+      "path": "t0_clean.fields.json",
+      "bytes": 22432,
+      "sha256": "fb4ae53ce8104b09eb494626e110af81ead9937704b534b79e638120b976ad67"
+    },
+    {
+      "path": "t0_clean.fixture.txt",
+      "bytes": 621,
+      "sha256": "eff10d6363637622acf031ea3e27b6fa19fd68188a0fa84c0494a7a13efc27b9"
+    },
+    {
+      "path": "t0_clean.hex.txt",
+      "bytes": 59641,
+      "sha256": "470f015ac36a63027c8b79bddfd763006ca6b821db5b327598c3450921e90fa0"
+    },
+    {
+      "path": "t0_clean.measurements.bin",
+      "bytes": 336,
+      "sha256": "8844b46e183e7635f90df3407da6b9f68ddac2a78cc765ffa74cb281ced7dff2"
+    },
+    {
+      "path": "t0_clean.pcap",
+      "bytes": 12325,
+      "sha256": "679578702babce03a4bf06695bb9ebd96331fc67f7bc89fd27c7f90b0fc6c7f8"
+    },
+    {
+      "path": "t0_clean.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "t0_clean.rsp.log",
+      "bytes": 271,
+      "sha256": "e1dd86cccc2fadbae7b72adf924246ff499b629388a2d63217931d74a5b1a49f"
+    },
+    {
+      "path": "t0_none.decode.txt",
+      "bytes": 5540,
+      "sha256": "8c6140a81fedc014b3479033391d0a50ba5a2c40c887d6b4a9a81f5c451dec35"
+    },
+    {
+      "path": "t0_none.fields.json",
+      "bytes": 22430,
+      "sha256": "7df2df5199c7005454c73c21db890abb9da0342216bd01e90119405200a16071"
+    },
+    {
+      "path": "t0_none.hex.txt",
+      "bytes": 59641,
+      "sha256": "2309f732c841bbd8f84d2186db463eea3fa311bfd7a0ce87ff24d35011b1f0ef"
+    },
+    {
+      "path": "t0_none.pcap",
+      "bytes": 12325,
+      "sha256": "9999deba66b4592bb37bb33da11502dd31697e2614d7c707bf8bb72ac2a113a3"
+    },
+    {
+      "path": "t0_none.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "t0_none.rsp.log",
+      "bytes": 110,
+      "sha256": "70fa0256c3d6e926d86f13d91783bbbad6d3fba0e3a928d0d3cefb5f7fd0fda0"
+    },
+    {
+      "path": "t0_proxy.decode.txt",
+      "bytes": 5540,
+      "sha256": "0ca1bf5f926a8f196837c2a47ebf537b234df678dc7f6a839e6563fc8e9889b8"
+    },
+    {
+      "path": "t0_proxy.fields.json",
+      "bytes": 22432,
+      "sha256": "2adc85f41c20fd641ac2a5d1a8b32d8c3512e5adfa06e4782d5d47e1c75e567c"
+    },
+    {
+      "path": "t0_proxy.hex.txt",
+      "bytes": 59641,
+      "sha256": "02bd6b52740c86033fa82681591d2253364e1f37d9820bd14a79d2695c979ce8"
+    },
+    {
+      "path": "t0_proxy.pcap",
+      "bytes": 12325,
+      "sha256": "41e5712044ddcbbee45ce40184afe7afae50f80a645ecfb7a5bddec4e425e2eb"
+    },
+    {
+      "path": "t0_proxy.proxy.json",
+      "bytes": 2924,
+      "sha256": "dd7b79277da245a483c9198244c6697f436b046e8ebfe7da042528b1bb4d61dc"
+    },
+    {
+      "path": "t0_proxy.proxy.log",
+      "bytes": 359,
+      "sha256": "3bdf935e486cc189f055b4077a9a7f143f8098d9f8dda11ae06c73a5ae55860b"
+    },
+    {
+      "path": "t0_proxy.req.log",
+      "bytes": 124,
+      "sha256": "6d91ed910717e38ce54302e9bf618d75f09f8346a12a6c1b7ae8fa790c08f5a9"
+    },
+    {
+      "path": "t0_proxy.rsp.log",
+      "bytes": 271,
+      "sha256": "e1dd86cccc2fadbae7b72adf924246ff499b629388a2d63217931d74a5b1a49f"
+    },
+    {
+      "path": "t1_meas.decode.txt",
+      "bytes": 5540,
+      "sha256": "6eaf68432327c2ae806f495a35fa8eab5d6be5dd45d62e400f77a19356bee5a3"
+    },
+    {
+      "path": "t1_meas.fields.json",
+      "bytes": 22430,
+      "sha256": "b6f43206855a77395809ef238424f33c81a054f6d8eb69820a8e6e45aad77156"
+    },
+    {
+      "path": "t1_meas.fixture.txt",
+      "bytes": 769,
+      "sha256": "4ffeefdf44609ce50e8b1d5e48bf90d89f3bb09522e46f5c4baaa30058fd8277"
+    },
+    {
+      "path": "t1_meas.hex.txt",
+      "bytes": 59641,
+      "sha256": "cc81fae373883dea5707cb6417c8f1ea4682e9c160d0016173d854498b5ee606"
+    },
+    {
+      "path": "t1_meas.measurements.bin",
+      "bytes": 336,
+      "sha256": "04c0f6ddf83508fc1cd4ced13a2dbe7af8215e322ed24932bdf6dd812bfe9305"
+    },
+    {
+      "path": "t1_meas.pcap",
+      "bytes": 12325,
+      "sha256": "de5ae6c2daf739b6b627fe6412c358858786736a0ca7955e8596c37801e46da4"
+    },
+    {
+      "path": "t1_meas.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "t1_meas.rsp.log",
+      "bytes": 270,
+      "sha256": "a2f9d1d62b89b0a610c67191688b7651aca69b2f1f45757957d31dc97141a95e"
+    },
+    {
+      "path": "t2a_record.decode.txt",
+      "bytes": 5540,
+      "sha256": "09d45d5eddea359a3097c154e83c61c754fb85951567e3eaaa01bcbd0d5cac2f"
+    },
+    {
+      "path": "t2a_record.fields.json",
+      "bytes": 22436,
+      "sha256": "125e87fb4e24ebf96790fcbb207cc272b9c86a2d137cd9939938f0a334b1df7c"
+    },
+    {
+      "path": "t2a_record.hex.txt",
+      "bytes": 59641,
+      "sha256": "098b17cf2188599c9e15c21318d88bdb35a3cd9df249e5e96eb9cce2f1974eef"
+    },
+    {
+      "path": "t2a_record.pcap",
+      "bytes": 12325,
+      "sha256": "5df61826a2f333c39c716186f1f783daa497da5e9d4a2ac7f629973b22d499fc"
+    },
+    {
+      "path": "t2a_record.proxy.json",
+      "bytes": 3359,
+      "sha256": "497b69b89370cc9f0cd8c8df3f058670a336df4ffd06ea0de10c43960ed482b4"
+    },
+    {
+      "path": "t2a_record.proxy.log",
+      "bytes": 483,
+      "sha256": "aea5fb9e5daf4013847394a2729dad6f182673e7f8d3fa44d861b801e0f7d917"
+    },
+    {
+      "path": "t2a_record.req.log",
+      "bytes": 166,
+      "sha256": "4080c1945a6fed48eed525be9e155a07c9e01f986c42d8a74c8575a0fcdbc0fc"
+    },
+    {
+      "path": "t2a_record.rsp.log",
+      "bytes": 271,
+      "sha256": "e1dd86cccc2fadbae7b72adf924246ff499b629388a2d63217931d74a5b1a49f"
+    },
+    {
+      "path": "t2b_sig.decode.txt",
+      "bytes": 5540,
+      "sha256": "6f56fc781474d42ca59119f2e5176ca1082249b9a6a1f5d93f3269e81979ed29"
+    },
+    {
+      "path": "t2b_sig.fields.json",
+      "bytes": 22430,
+      "sha256": "cfbcf25067d038e0a6e962c8cf2e0a66065f9c074545fddcfe648bafacd6275a"
+    },
+    {
+      "path": "t2b_sig.hex.txt",
+      "bytes": 59641,
+      "sha256": "2f00769388abb0c47a60d288b86916718f6efff668be535dfd00434f912ae62f"
+    },
+    {
+      "path": "t2b_sig.pcap",
+      "bytes": 12325,
+      "sha256": "2d84e201a71749515897df43051795ec152e54077d372b23851b4b35fb81ab23"
+    },
+    {
+      "path": "t2b_sig.proxy.json",
+      "bytes": 3346,
+      "sha256": "3a62d0993fbb840dd0be1ff7a7ca53108764113100040a3b6bead5e12d299c77"
+    },
+    {
+      "path": "t2b_sig.proxy.log",
+      "bytes": 467,
+      "sha256": "dcdbe4efd7c441b6e8fcce07fb8babf837a6572916f3ac012078b664689779c1"
+    },
+    {
+      "path": "t2b_sig.req.log",
+      "bytes": 166,
+      "sha256": "4080c1945a6fed48eed525be9e155a07c9e01f986c42d8a74c8575a0fcdbc0fc"
+    },
+    {
+      "path": "t2b_sig.rsp.log",
+      "bytes": 271,
+      "sha256": "e1dd86cccc2fadbae7b72adf924246ff499b629388a2d63217931d74a5b1a49f"
+    },
+    {
+      "path": "t3_cert.bundle_responder.certchain.der",
+      "bytes": 1845,
+      "sha256": "54de97fdfc3bbd87cd2048b78310e36d3da7608c622bd7f46ff8299b308ef285"
+    },
+    {
+      "path": "t3_cert.decode.txt",
+      "bytes": 2213,
+      "sha256": "bde6745658d56700471461d23e661969e661f5bdd3b90251028035248e3d02cc"
+    },
+    {
+      "path": "t3_cert.fields.json",
+      "bytes": 7605,
+      "sha256": "4a13a5b0d1cada5f3655258929214fd45235edaa69f86a7a22c97db79f835d47"
+    },
+    {
+      "path": "t3_cert.hex.txt",
+      "bytes": 3447,
+      "sha256": "fd88b12986a9d29b1aaf467a95116963873d39d962715828d7ce20bc0625898e"
+    },
+    {
+      "path": "t3_cert.pcap",
+      "bytes": 542,
+      "sha256": "42e616c908cde57ff839d0247ac6044906094e754ab3da5a1cced9472774ab72"
+    },
+    {
+      "path": "t3_cert.req.log",
+      "bytes": 157,
+      "sha256": "1ed69e647c108bd1413517303249c78709a3ecdb97801d0da53b527d28162456"
+    },
+    {
+      "path": "t3_cert.rsp.log",
+      "bytes": 110,
+      "sha256": "70fa0256c3d6e926d86f13d91783bbbad6d3fba0e3a928d0d3cefb5f7fd0fda0"
+    },
+    {
+      "path": "t3b_foreign.decode.txt",
+      "bytes": 5540,
+      "sha256": "a19ca387d59ad6de7adfbeaa7171ce292437c93893bcdec6b88aa7822ddca80d"
+    },
+    {
+      "path": "t3b_foreign.fields.json",
+      "bytes": 22438,
+      "sha256": "ad842a10d20da453d5f70ff59b223561cef0d916e24af7ce649b6751fe0e97d6"
+    },
+    {
+      "path": "t3b_foreign.hex.txt",
+      "bytes": 58049,
+      "sha256": "358c21aaf0e1f26809c2c7903a90b11801d4cfb586c74b0ba2f6d309af6effcd"
+    },
+    {
+      "path": "t3b_foreign.pcap",
+      "bytes": 11841,
+      "sha256": "e379ce71d021a19ad670b3057b165e342610341f44be305c74bce51bffe66dac"
+    },
+    {
+      "path": "t3b_foreign.req.log",
+      "bytes": 112,
+      "sha256": "893d93c49471f6a9f8f7009b5072393b9409cef0947ebb0fc3ba4bec97ffda08"
+    },
+    {
+      "path": "t3b_foreign.rsp.log",
+      "bytes": 271,
+      "sha256": "e1dd86cccc2fadbae7b72adf924246ff499b629388a2d63217931d74a5b1a49f"
+    }
+  ],
+  "artifact_count": 80,
+  "artifact_bytes": 935216
+}

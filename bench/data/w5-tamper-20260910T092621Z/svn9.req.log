@@ -1,0 +1,6 @@
+exe_conn - 0x0000001e
+exe_session - 0x00000004
+meas_op - 0xff
+slot_count - 0x01
+connect success!
+Client stopped

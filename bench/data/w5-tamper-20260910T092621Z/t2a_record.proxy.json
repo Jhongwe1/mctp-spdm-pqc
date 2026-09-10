@@ -1,0 +1,127 @@
+{
+  "listen": 2324,
+  "forward": 2323,
+  "mode": "record",
+  "frames": {
+    "requester_to_responder": 17,
+    "responder_to_requester": 17
+  },
+  "negotiated": {
+    "spdm_version": "1.4",
+    "base_asym_sel": "0x00000080",
+    "base_asym_name": "ECDSA_ECC_NIST_P384",
+    "signature_bytes": 96,
+    "pqc_asym_sel": "0x00000000"
+  },
+  "measurements": {
+    "spdm_bytes": 674,
+    "number_of_blocks": 8,
+    "record_bytes": 528,
+    "record_offset": 8,
+    "record_sha256": "f2a14684e8fae9ff0e3ebff2a380f435c0fee5b0c8199d3fdfed31b2252f51d8",
+    "nonce_offset": 536,
+    "opaque_length_offset": 568,
+    "opaque_length": 0,
+    "opaque_offset": 570,
+    "requester_context_offset": 570,
+    "requester_context_bytes": 8,
+    "signature_offset": 578,
+    "signature_bytes": 96,
+    "closed": true,
+    "blocks": [
+      {
+        "index": 1,
+        "measurement_specification": 1,
+        "measurement_bytes": 67,
+        "block_offset": 0,
+        "measurement_offset": 4,
+        "value_type": 0,
+        "value_bytes": 64,
+        "value_offset": 7
+      },
+      {
+        "index": 2,
+        "measurement_specification": 1,
+        "measurement_bytes": 67,
+        "block_offset": 71,
+        "measurement_offset": 75,
+        "value_type": 1,
+        "value_bytes": 64,
+        "value_offset": 78
+      },
+      {
+        "index": 3,
+        "measurement_specification": 1,
+        "measurement_bytes": 67,
+        "block_offset": 142,
+        "measurement_offset": 146,
+        "value_type": 2,
+        "value_bytes": 64,
+        "value_offset": 149
+      },
+      {
+        "index": 4,
+        "measurement_specification": 1,
+        "measurement_bytes": 67,
+        "block_offset": 213,
+        "measurement_offset": 217,
+        "value_type": 3,
+        "value_bytes": 64,
+        "value_offset": 220
+      },
+      {
+        "index": 16,
+        "measurement_specification": 1,
+        "measurement_bytes": 11,
+        "block_offset": 284,
+        "measurement_offset": 288,
+        "value_type": 135,
+        "value_bytes": 8,
+        "value_offset": 291
+      },
+      {
+        "index": 17,
+        "measurement_specification": 1,
+        "measurement_bytes": 67,
+        "block_offset": 299,
+        "measurement_offset": 303,
+        "value_type": 8,
+        "value_bytes": 64,
+        "value_offset": 306
+      },
+      {
+        "index": 253,
+        "measurement_specification": 1,
+        "measurement_bytes": 131,
+        "block_offset": 370,
+        "measurement_offset": 374,
+        "value_type": 132,
+        "value_bytes": 128,
+        "value_offset": 377
+      },
+      {
+        "index": 254,
+        "measurement_specification": 1,
+        "measurement_bytes": 19,
+        "block_offset": 505,
+        "measurement_offset": 509,
+        "value_type": 133,
+        "value_bytes": 16,
+        "value_offset": 512
+      }
+    ]
+  },
+  "tamper": {
+    "applied": true,
+    "mode": "record",
+    "target": "byte 36 of the 64-byte value of measurement index 0x01",
+    "byte_before": "0x7f",
+    "byte_after": "0x7e",
+    "record_sha256_before": "f2a14684e8fae9ff0e3ebff2a380f435c0fee5b0c8199d3fdfed31b2252f51d8",
+    "record_sha256_after": "4519f14eddf4fab47d53e0720427a7f22592ae0e53307f9e8313e2c06b99bc8c",
+    "offset_in_spdm_message": 51,
+    "offset_in_socket_payload": 52,
+    "offset_in_pcap_record": 56
+  },
+  "refusals": []
+}
