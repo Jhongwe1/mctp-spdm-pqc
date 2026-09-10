@@ -366,6 +366,12 @@ static void test_walk_null_and_alignment(void)
 
 int main(void)
 {
+    /* Line-buffer stdout. Without this, a drill that dies inside a
+     * sanitizer prints NOTHING when its output is redirected to a file, and
+     * the reader gets a stack trace with no idea which check was reached.
+     * The trace says where the bug is; this says how far you got. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+
     printf("d6 — a wire format is a byte layout, not a struct layout\n\n");
 
     test_the_two_headers_differ();        printf("\n");

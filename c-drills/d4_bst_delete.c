@@ -390,6 +390,12 @@ static void test_inorder_refuses_to_truncate(void)
 
 int main(void)
 {
+    /* Line-buffer stdout. Without this, a drill that dies inside a
+     * sanitizer prints NOTHING when its output is redirected to a file, and
+     * the reader gets a stack trace with no idea which check was reached.
+     * The trace says where the bug is; this says how far you got. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+
     printf("d4 — deleting from a BST, including the root\n\n");
 
     test_build();                        printf("\n");

@@ -348,6 +348,12 @@ static void test_u32_reads_nothing_extra(void)
 
 int main(void)
 {
+    /* Line-buffer stdout. Without this, a drill that dies inside a
+     * sanitizer prints NOTHING when its output is redirected to a file, and
+     * the reader gets a stack trace with no idea which check was reached.
+     * The trace says where the bug is; this says how far you got. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+
     printf("d1 — SPDM message header, and a little-endian field behind it\n\n");
 
     test_header_happy_path();          printf("\n");

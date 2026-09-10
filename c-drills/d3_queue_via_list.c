@@ -231,6 +231,12 @@ static void test_free_releases_everything(void)
 
 int main(void)
 {
+    /* Line-buffer stdout. Without this, a drill that dies inside a
+     * sanitizer prints NOTHING when its output is redirected to a file, and
+     * the reader gets a stack trace with no idea which check was reached.
+     * The trace says where the bug is; this says how far you got. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+
     printf("d3 — queue via singly linked list\n\n");
 
     test_empty_queue();          printf("\n");

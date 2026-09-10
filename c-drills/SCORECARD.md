@@ -34,7 +34,7 @@ open, and the practice is not practising the thing it is supposed to practise.
 | D5 | `d5_endian` | | / 15 min | | | | |
 | D6 | `d6_packed_struct` | | / 15 min | | | | |
 | D4 | BST delete | | / 25 min | | | | |
-| D2 | offset + length overflow check | | / 10 min | | | | |
+| D2 | `d2_offset_length` | | / 10 min | | | | |
 | D7 | ring buffer | | / 20 min | | | | |
 | D8 | length-bounded string copy | | / 15 min | | | | |
 
@@ -49,6 +49,16 @@ the fix is different for each:
 
 A falling total that is entirely `syntax` means one thing. A flat total that is
 mostly `logic` means something else and calls for a different response.
+
+## One row that is not about compiling
+
+D2 asks for a second thing, and it is worth more than the number:
+**write down which version you reached for first.** `off + len <= total` is
+the wrong one and it is the one almost everybody writes, because it reads like
+the sentence in your head. If that is what you wrote, say so in
+`c-drills/README.md` — it is the only evidence in this repository about what
+gets reached for under time pressure, and it is worth more than a passing
+test, which only says the second attempt was right.
 
 ## Rewrite rounds
 

@@ -26,6 +26,14 @@ value:
 Step 3 is the measurement. See SCORECARD.md for why that particular number is
 the one worth tracking.
 
+As of 2026-09-10 there are **six** drills with a contract, tests and a stub,
+and **zero** in `DONE.txt`. That ratio is printed by
+`harness/verify_repo.sh` on every run — as a report, not as a failure, because
+whether to spend an evening with paper is not a decision a script gets to
+make. What it does fail on is a drill listed as finished whose compile-error
+count was never recorded, since that number is the entire point of the
+directory.
+
 ## Usage
 
 ```bash
@@ -70,7 +78,7 @@ it reports what has been finished and never claims anything else.
 | D5 | `d5_endian.c` | a top byte of 0x80 or above, shifted on a signed int | the socket framing is big-endian, the payload little-endian |
 | D6 | `d6_packed_struct.c` | one byte of padding that moves a field AND a size | wire formats are byte layouts, not struct layouts |
 | D4 | `d4_bst_delete.c` | a two-children delete whose in-order successor has a right child of its own | not used here — the one drill lifted from an interview rather than from this repo |
-| D2 | offset + length overflow | `offset + length` wrapping past the end of the buffer | the arithmetic behind a real advisory class |
+| D2 | `d2_offset_length.c` | `off + len` wrapping, so the check says yes and the read goes outside the buffer | GHSA-m4wc-xmvg-369f, and every length this repository's parsers take off the wire |
 | D7 | ring buffer | full and empty are indistinguishable by indices alone | proxy and transport buffering |
 | D8 | length-bounded string copy | the truncation case, and who writes the terminator | the other real advisory class |
 
@@ -138,6 +146,22 @@ lesson rather than the rule.
 The general form, which is the part worth keeping: **before writing a drill,
 compile the wrong implementation and confirm it fails.** Reasoning about whether
 a trap fires is exactly the kind of reasoning that produced the trap.
+
+- **D2**, in week five, was compiled four ways rather than three, because its
+  own comment calls a *second* version correct — `len <= total && off <= total -
+  len` — and a comment that says so without checking is the thing this
+  repository keeps finding rotted. It passes 31/31, same as the canonical one.
+  The wrong version does not merely return a wrong answer: AddressSanitizer
+  stops it inside `copy_range` with a two-byte read one byte before the source
+  buffer, because `src + SIZE_MAX` wraps the address space to `src - 1`. That
+  is the advisory's primitive, reproduced in a drill.
+
+  Writing it also found a problem in every other drill here. A drill that dies
+  inside a sanitizer with its stdout redirected prints **nothing** — the buffer
+  is never flushed — so the reader gets a stack trace and no idea which check
+  they had reached. All six now line-buffer stdout in `main`, and D2's naming
+  test runs second rather than last so that the sentence identifying the
+  mistake is printed before the mistake aborts the program.
 
 ## Why D1 has two functions
 
