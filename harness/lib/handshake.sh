@@ -31,6 +31,12 @@
 #     hs_run <bin_dir> <out_prefix> [emulator args...]
 #     rc=$?
 #
+# Two arrays change what hs_run does, and both are cleared by their callers
+# rather than by this file, so that a case which forgets to set one cannot
+# inherit the previous case's:
+#     HS_RESPONDER_ENV     NAME=VALUE strings, applied to the responder only
+#     HS_REQUESTER_EXTRA   arguments appended to the requester only
+#
 # Leaves <out_prefix>.rsp.log, <out_prefix>.req.log and <out_prefix>.pcap.
 #
 # Return value: the requester's exit status, or one of
@@ -54,6 +60,22 @@ HS_RESPONDER_PID=""
 # a tamper experiment. The claim being made is that ONE side's measurements
 # came from a file, so only one side is given the file.
 HS_RESPONDER_ENV=()
+
+# Arguments appended to the REQUESTER's command line only. Empty by default.
+#
+# Every existing caller passes one argument list to both sides, which is right
+# for everything that has to be negotiated: an arm where the two disagree about
+# --asym is not an arm, it is a bug. Exactly one thing is legitimately different
+# between them, and it arrived with the tamper proxy: the requester connects to
+# a port the responder is not listening on, because something else is. --port is
+# parsed by the shared argument parser in spdm_emu_common/spdm_emu.c:785, so
+# passing it to both would move the responder too and the proxy would forward
+# into an empty port.
+#
+# It is deliberately not a general "requester options" hook. Anything else that
+# differs between the two sides should be justified in the caller first, and
+# this comment is where the justification for the one that exists lives.
+HS_REQUESTER_EXTRA=()
 
 hs_cleanup() {
     if [ -n "$HS_RESPONDER_PID" ] && kill -0 "$HS_RESPONDER_PID" 2>/dev/null; then
@@ -120,8 +142,10 @@ hs_run() {
         return 91
     fi
 
-    hs_note_cmd "./spdm_requester_emu" "$@" --pcap "$pcap"
-    timeout "$HS_TIMEOUT" ./spdm_requester_emu "$@" --pcap "$pcap" >"$req_log" 2>&1
+    hs_note_cmd "./spdm_requester_emu" "$@" "${HS_REQUESTER_EXTRA[@]}" \
+        --pcap "$pcap"
+    timeout "$HS_TIMEOUT" ./spdm_requester_emu "$@" "${HS_REQUESTER_EXTRA[@]}" \
+        --pcap "$pcap" >"$req_log" 2>&1
     rc=$?
 
     # The requester normally shuts the responder down. Give it a moment so the
