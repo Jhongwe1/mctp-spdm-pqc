@@ -4,18 +4,25 @@
 #
 #     bash harness/tamper.sh                      # every case, ~1 minute
 #     bash harness/tamper.sh --only t3_cert
-#     bash harness/tamper.sh --name w4-tamper
+#     bash harness/tamper.sh --name w5-tamper
 #
 # What this is
 # ------------
-# Seven handshakes that differ from each other in exactly one thing each, against
+# Ten handshakes that differ from each other in exactly one thing each, against
 # one control. The control is not taken here: it is a capture this repository
 # committed on 2026-08-31, before the code under test existed, and the reason
 # is in "the control came first" below.
 #
 #   t0_none      no fixture at all — the patched binary on upstream's own path
 #   t0_clean     a fixture whose contents equal what upstream synthesises
+#   t0_proxy     the clean fixture, routed through the tamper proxy in
+#                passthrough mode — the control for the proxy itself
 #   t1_meas      the same fixture with ONE BYTE of measurement index 1 flipped
+#                on the DEVICE, before the responder hashes and signs it
+#   t2a_record   the clean fixture, and one byte of measurement index 1's value
+#                flipped ON THE WIRE, after the responder signed it
+#   t2b_sig      the clean fixture, and one byte of the SIGNATURE flipped on
+#                the wire
 #   t3_cert      the clean fixture, and one byte of the SUB CA certificate
 #                inside the chain the responder serves
 #   t3b_foreign  a well-formed chain from an authority the requester was never
@@ -27,18 +34,30 @@
 # and the same slot count. What differs is named in the case list and nothing
 # else, which is what lets a difference in the result be attributed.
 #
-# Three tamper points, and only two of them are here
-# --------------------------------------------------
+# Three tamper points, and why point 2 is two arms
+# ------------------------------------------------
 # SPDM protects three things by three independent mechanisms, and the point of
 # the exercise is that they fail differently:
 #
-#   1  the measurement value at the device  — this file, t1_meas
-#   2  the bytes in flight                  — needs a proxy between the two
-#                                             emulators; not this week
-#   3  a certificate in the chain           — this file, t3_cert
+#   1  the measurement value at the device  — t1_meas
+#   2  the bytes in flight                  — t2a_record and t2b_sig, through
+#                                             harness/tamper_proxy.py
+#   3  a certificate in the chain           — t3_cert
 #
-# Point 2 is deliberately absent rather than stubbed. Adding a case to the list
-# below is what it will cost when the proxy exists.
+# Point 2 is split because the plan this project is executed against predicted
+# that points 1 and 2 would produce the SAME error message from different root
+# causes, and point 1 turned out to produce no error at all: a measurement
+# changed at the device is signed by the device. So the pair that actually
+# demonstrates "same message, different cause" is inside point 2 — the signed
+# CONTENT changed (t2a_record) against the SIGNATURE changed (t2b_sig) — and
+# it is a stronger pair than the planned one, because both halves reach a
+# verifier and the difference between them is nothing but which side of the
+# signature the byte was on.
+#
+# t0_proxy is the control for the proxy and is not a tamper point. Without it,
+# "the handshake failed" in t2a and t2b could as easily mean "the proxy cannot
+# forward 1.9 KB of certificate without corrupting it" as "the verifier
+# rejected what it was sent", and nothing in an exit code tells the two apart.
 #
 # The control came first
 # ----------------------
@@ -76,7 +95,7 @@ _HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "${_HERE}/lib/handshake.sh"
 set +e          # arms are expected to fail; each is judged on its evidence
 
-RUN_NAME="w4-tamper"
+RUN_NAME="w5-tamper"
 ONLY=""
 FLAVOR="pqc"
 CONTROL="bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt"
@@ -172,8 +191,66 @@ prov_note control_capture "$CONTROL"
 prov_note control_record_sha256 "$CONTROL_RECORD"
 
 RESULTS="${PROV_RUN_DIR}/cases.tsv"
-printf 'case\texit\tpackets\tslots\tcert\tchal\tmeas\tanchor\trecord_sha256\tsvn\tfixture\tverdict\n' \
+printf 'case\texit\tpackets\tslots\tcert\tchal\tmeas\tanchor\trecord_sha256\tsvn\tfixture\tproxy\tstatus\tverdict\n' \
     > "$RESULTS"
+
+# req_status <req.log> — the libspdm status the requester last reported, named.
+#
+# The number is the finding: the two in-flight tamper arms print the same one,
+# from the same layer, for causes that are opposites. harness/spdm_status.py
+# owns emulator logs and holds the only copy of the name table.
+req_status() {
+    local out
+    out="$(python3 "${REPO_ROOT}/harness/spdm_status.py" "$1" 2>/dev/null)" || out=""
+    case "$out" in
+        ""|"-") printf '-' ;;
+        *)      printf '%s %s' "${out%% *}" "$(printf '%s' "$out" | awk '{print $2}')" ;;
+    esac
+}
+
+# ------------------------------------------------------------- the proxy ----
+#
+# Set PROXY_ARGS immediately before a run_case that should go through it, and
+# run_case clears it — the same discipline as HS_RESPONDER_ENV, and for the
+# same reason: an arm that silently inherited the previous arm's tamper would
+# be a two-variable experiment reported as a one-variable one.
+#
+# The proxy listens before the responder exists and connects upstream only when
+# a client arrives, so the start order does not matter and there is no race to
+# lose. It is given --once, so it exits when the connection closes and its exit
+# status is available to be read: 0 means it did what it was asked, 1 means it
+# was asked to change a byte and refused or never saw a MEASUREMENTS. That
+# status is evidence, and a case is not judged without it.
+
+PROXY="${REPO_ROOT}/harness/tamper_proxy.py"
+PROXY_PORT="${SPDM_PROXY_PORT:-2324}"
+PROXY_ARGS=()
+PROXY_PID=""
+
+proxy_wait_listening() {
+    local waited=0
+    while [ "$waited" -lt 100 ]; do
+        kill -0 "$PROXY_PID" 2>/dev/null || return 1
+        if command -v ss >/dev/null 2>&1; then
+            ss -ltn 2>/dev/null | grep -qE "[:.]${PROXY_PORT}[[:space:]]" && return 0
+        else
+            sleep 1; return 0
+        fi
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+    return 1
+}
+
+proxy_cleanup() {
+    if [ -n "$PROXY_PID" ] && kill -0 "$PROXY_PID" 2>/dev/null; then
+        kill "$PROXY_PID" 2>/dev/null || true
+        sleep 0.2
+        kill -9 "$PROXY_PID" 2>/dev/null || true
+    fi
+    PROXY_PID=""
+}
+trap 'proxy_cleanup' EXIT
 
 # anchor_state <fields.json> <sandbox-dir> — does the chain the responder served
 # on slot 0 root in the certificate the requester was configured to trust?
@@ -333,12 +410,32 @@ run_case() {
     local name="$1" dir="$2" fixture="$3" want_svn="$4" note="$5"
     local prefix="${PROV_RUN_DIR}/${name}"
     local rc=0 pkts json chal meas cert slots anchor record svn loaded errored verdict fixnote
+    local proxy_rc=0 proxy_note="-" proxy_report="" status="-"
 
     if [ -n "$ONLY" ] && [ "$ONLY" != "$name" ]; then
+        PROXY_ARGS=()
         return 0
     fi
 
     log "case '${name}' — ${note}"
+
+    if [ "${#PROXY_ARGS[@]}" -gt 0 ]; then
+        proxy_report="${prefix}.proxy.json"
+        prov_cmd python3 "$PROXY" --listen "$PROXY_PORT" --forward "$HS_PORT" \
+            "${PROXY_ARGS[@]}" --report "$proxy_report" --once
+        python3 "$PROXY" --listen "$PROXY_PORT" --forward "$HS_PORT" \
+            "${PROXY_ARGS[@]}" --report "$proxy_report" --once \
+            > "${prefix}.proxy.log" 2>&1 &
+        PROXY_PID=$!
+        dim "    proxy ${PROXY_PORT} -> ${HS_PORT}  ${PROXY_ARGS[*]}"
+        if ! proxy_wait_listening; then
+            proxy_cleanup
+            die "the proxy never listened on ${PROXY_PORT} — see ${prefix}.proxy.log"
+        fi
+        HS_REQUESTER_EXTRA=(--port "$PROXY_PORT")
+    fi
+    PROXY_ARGS=()
+
     HS_RESPONDER_ENV=()
     if [ -n "$fixture" ]; then
         HS_RESPONDER_ENV=("SPDM_MEASUREMENTS_FILE=${fixture}")
@@ -355,6 +452,30 @@ run_case() {
     # one-variable one. Read by lib/handshake.sh, not by anything here.
     # shellcheck disable=SC2034
     HS_RESPONDER_ENV=()
+    # shellcheck disable=SC2034
+    HS_REQUESTER_EXTRA=()
+
+    # The proxy's own exit status, read before anything else is judged. It is
+    # the only thing that can say "the byte this case is named after was never
+    # changed", and a tamper case that silently did not tamper looks exactly
+    # like a tamper that was not detected.
+    if [ -n "$PROXY_PID" ]; then
+        wait "$PROXY_PID"
+        proxy_rc=$?
+        PROXY_PID=""
+        if [ -f "$proxy_report" ]; then
+            if [ "$(jget "$proxy_report" mode)" = "passthrough" ]; then
+                proxy_note="passthrough"
+            elif [ "$(jget "$proxy_report" tamper.applied)" = "True" ]; then
+                proxy_note="flip@$(jget "$proxy_report" tamper.offset_in_spdm_message)"
+            else
+                proxy_note="REFUSED"
+            fi
+        else
+            proxy_note="NO-REPORT"
+        fi
+        [ "$proxy_rc" -eq 0 ] || proxy_note="${proxy_note}/rc${proxy_rc}"
+    fi
 
     pkts="$(pcap_field "${prefix}.pcap" packets)"
 
@@ -382,6 +503,7 @@ run_case() {
         svn="$(jget "$json" layout.measurement_record.secure_version_number)"
     fi
     anchor="$(anchor_state "$json" "$dir")"
+    status="$(req_status "${prefix}.req.log")"
 
     # Did the responder read the fixture? Its own stderr says so.
     #
@@ -420,6 +542,14 @@ run_case() {
     # code answers a broader question than the one being asked, and on
     # 2026-08-11 three tools in one day answered slightly different questions
     # with one.
+    #
+    # The MEASUREMENTS-rejected branch was added on 2026-09-10 because the
+    # first run of the two proxy arms reported "stopped-after-CHALLENGE" for
+    # them — and the meas column beside it said 1. The message had arrived and
+    # its signature had not verified, which is a different sentence about a
+    # different layer, and the vocabulary had no word for it. A verdict that
+    # names the wrong stage is worse than no verdict, because it reads like an
+    # observation.
     verdict="?"
     if [ "$chal" != "0" ] && [ "$meas" != "0" ] && [ "$rc" -eq 0 ]; then
         verdict="completed"
@@ -427,6 +557,8 @@ run_case() {
         verdict="no-CERTIFICATE-served"
     elif [ "$chal" = "0" ]; then
         verdict="stopped-after-CERTIFICATE"
+    elif [ "$meas" != "0" ]; then
+        verdict="MEASUREMENTS-rejected"
     else
         verdict="stopped-after-CHALLENGE"
     fi
@@ -438,15 +570,22 @@ run_case() {
        || [ "$fixnote" = "UNEXPECTED" ]; then
         verdict="${verdict}/FIXTURE-${fixnote}"
     fi
+    # A proxy that refused, crashed or never saw the message it was aimed at
+    # invalidates the arm outright, however the handshake turned out.
+    case "$proxy_note" in
+        -|passthrough|flip@*) : ;;
+        *) verdict="${verdict}/PROXY-${proxy_note}" ;;
+    esac
 
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
         "$name" "$rc" "$pkts" "$slots" "$cert" "$chal" "$meas" "$anchor" \
-        "${record:0:16}" "${svn:--}" "$fixnote" "$verdict" >> "$RESULTS"
+        "${record:0:16}" "${svn:--}" "$fixnote" "$proxy_note" "$status" \
+        "$verdict" >> "$RESULTS"
 
     if [ "$verdict" = "completed" ]; then
         ok "${name}: ${verdict}, ${pkts} packets, record ${record:0:16}…, svn ${svn:--}"
     else
-        warn "${name}: ${verdict}, exit ${rc}, ${pkts} packets"
+        warn "${name}: ${verdict}, ${pkts} packets, status ${status}"
     fi
 }
 
@@ -468,6 +607,37 @@ make_fixture t1_meas --flip-block 1 --flip-offset 36
 run_case t1_meas "$CLEAN_DIR" "$FIXTURE" "7" \
     "one byte of measurement index 1 flipped"
 
+# ── point 2: the same measurement, changed on the other side of the signature ─
+#
+# t0_proxy first, and its job is to be boring. It runs the clean fixture through
+# the proxy with nothing changed, and its measurement record digest has to equal
+# the control's. Only then does a failure in the two arms below mean what their
+# names say. A proxy that mangled a 1.9 KB CERTIFICATE would break every arm it
+# touched, and "the tamper was detected" is exactly what that looks like from
+# an exit code.
+PROXY_ARGS=(--passthrough)
+run_case t0_proxy "$CLEAN_DIR" "$F_CLEAN" "7" \
+    "clean measurements, forwarded through the proxy unchanged"
+
+# t2a: measurement index 1 again, offset 36 again — but this is byte 36 of the
+# VALUE ON THE WIRE, which is the hash, where t1_meas changed byte 36 of the
+# 72-byte PRE-IMAGE the responder hashes. Same index, same offset, two
+# different objects on two different sides of the signature, and that is the
+# whole experiment: the difference in outcome cannot be attributed to what was
+# changed, only to when.
+PROXY_ARGS=(--flip-record 1:36)
+run_case t2a_record "$CLEAN_DIR" "$F_CLEAN" "7" \
+    "one byte of measurement index 1's value flipped in flight"
+
+# t2b: the last byte of the signature itself. The signed content is untouched
+# and the signature is not, which is the mirror image of t2a. If libspdm
+# reports these two differently that is a finding; if it reports them
+# identically that is the finding the plan predicted, arriving one row later
+# than it expected.
+PROXY_ARGS=(--flip-signature -1)
+run_case t2b_sig "$CLEAN_DIR" "$F_CLEAN" "7" \
+    "the last byte of the measurement signature flipped in flight"
+
 run_case t3_cert "$TAMPERED_DIR" "$F_CLEAN" "7" \
     "clean measurements, one byte of the sub CA certificate flipped"
 
@@ -486,8 +656,8 @@ hdr "cases"
 if command -v column >/dev/null 2>&1; then
     column -t -s "$TAB" "$RESULTS" | sed 's/^/  /'
 else
-    awk -F'\t' '{printf "  %-12s %-5s %-8s %-6s %-5s %-5s %-5s %-9s %-18s %-4s %-10s %s\n", \
-                 $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' "$RESULTS"
+    awk -F'\t' '{printf "  %-12s %-5s %-8s %-6s %-5s %-5s %-5s %-9s %-18s %-4s %-10s %-12s %-22s %s\n", \
+                 $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14}' "$RESULTS"
 fi
 
 printf '\n'
@@ -511,6 +681,34 @@ printf '\n'
 awk -F'\t' 'NR>1 && $8 == "MISMATCH" {
     printf "  %-12s completed against a chain rooted in an unprovisioned CA\n", $1
 }' "$RESULTS"
+
+printf '\n'
+hdr "what the proxy changed, and where it says it changed it"
+printf '  Offsets are given three ways because a reader meets them three ways:\n'
+printf '  inside the SPDM message, inside the socket payload (one byte later,\n'
+printf '  the MCTP message type), and inside a pcap record (four more, the\n'
+printf '  header spdm_emu synthesises). See harness/tamper_proxy.py.\n'
+printf '\n'
+for _r in "${PROV_RUN_DIR}"/*.proxy.json; do
+    [ -f "$_r" ] || continue
+    _n="$(basename "$_r" .proxy.json)"
+    if [ "$(jget "$_r" mode)" = "passthrough" ]; then
+        printf '  %-12s forwarded %s frames unchanged\n' "$_n" \
+            "$(( $(jget "$_r" frames.requester_to_responder) + \
+                 $(jget "$_r" frames.responder_to_requester) ))"
+        continue
+    fi
+    printf '  %-12s %s\n' "$_n" "$(jget "$_r" tamper.target)"
+    printf '  %-12s   %s -> %s at SPDM %s / payload %s / pcap %s\n' "" \
+        "$(jget "$_r" tamper.byte_before)" "$(jget "$_r" tamper.byte_after)" \
+        "$(jget "$_r" tamper.offset_in_spdm_message)" \
+        "$(jget "$_r" tamper.offset_in_socket_payload)" \
+        "$(jget "$_r" tamper.offset_in_pcap_record)"
+    printf '  %-12s   signature %s B at %s, sized by %s read off the wire\n' "" \
+        "$(jget "$_r" measurements.signature_bytes)" \
+        "$(jget "$_r" measurements.signature_offset)" \
+        "$(jget "$_r" negotiated.base_asym_name)"
+done
 
 prov_finish
 
