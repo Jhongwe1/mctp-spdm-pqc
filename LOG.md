@@ -2064,3 +2064,453 @@ plan's specifics were overtaken by reading the source — the first being that
 the secure version number is a `uint64_t`, not the `uint32` the plan describes.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+## 2026-09-10 · Day 6 · the same byte on both sides of one signature
+
+Week five, taken nine days after week four ended. Table 1 is finished, and the
+row that carries it is the one where nothing happened.
+
+### A document misled its own author for nine days, and that is the measurement
+
+**現象** Today started with "I am not sure whether the last session ended at
+week three or week four — the RUNBOOK says week three." It says week three
+because `RUNBOOK.md` §0, the thirty-second summary at the top, still read
+**"W03 收工(2026-08-31)… 三個篡改點還沒開始"**. Section 8.8 of the *same
+file*, 850 lines further down, explains all three tamper points in detail. The
+file had been contradicting itself since 2026-09-01.
+
+**假設** Why did the first screen rot while the section it contradicts was
+being written?
+
+1. carelessness on a busy day;
+2. §0 is not reachable from the work, so nothing pointed at it;
+3. the end-of-day list does not mention it;
+4. the re-read that was supposed to catch exactly this was pointed somewhere
+   else.
+
+**先驗哪個、為什麼** (3) is checkable in seconds and false: `CLAUDE.md` item 4
+says *"進度有變就更新 RUNBOOK.md"*, which covers it exactly. (2) is false too —
+`git log` shows `RUNBOOK.md` was edited twice on 09-01, once to add §8.8 and
+once to extend the appendix. The file was open. The screen was not read.
+
+(1) and (4) are the same answer told at two altitudes, and (4) is the one that
+transfers. 2026-08-28's commit is literally titled *"a runbook first screen that
+is not stale"*, so the failure mode was known, named, and fixed once by hand
+eleven days before it recurred.
+
+**根因** The 09-01 entry enumerated four shapes of second copy that rot — a
+comment describing a script, a usage block listing a tool's modes, a table
+indexing a directory, and a sentence stating what a measurement has not yet been
+taken to check. **It missed a fifth, and the fifth is the one with the most
+readers: a status summary of the whole repository.** Every one of the four it
+named is a *local* copy, describing a thing next to it. §0 describes
+*everything*, so nothing in particular is next to it, and no piece of work feels
+responsible for it.
+
+**教訓** Two, and only one of them is a mechanism.
+
+The mechanism: `verify_repo.sh` now extracts a state token per gate from all
+three tables — `README.md`, `docs/roadmap.md`, `RUNBOOK.md`, in two languages
+and three formats — and requires them to agree, plus the week number from the
+two files that state one. `CLAUDE.md` already required two of the tables to be
+kept in step; that was a discipline, and the difference between a discipline and
+a mechanism was nine days.
+
+The honest part: **that check would not have caught today.** The three tables'
+G2 rows all said "in progress" and all three were right. What rotted was the
+prose beside the state token, and the week number at the top. The week number is
+mechanisable and is now checked; the prose is not, and pretending otherwise
+would be worse than admitting it. What is genuinely new is only this: a reader
+who is told "week three finished" stops reading before the section that explains
+week four, so the week number is the load-bearing half of a first screen even
+though it is the least interesting fact on it.
+
+And one more thing worth writing down: **the bug report was a person being
+confused.** No script produced it. That is the only kind of evidence there is
+for a documentation defect, and it arrived nine days late because there was
+nobody else reading.
+
+### The week's headline claim was refuted by the previous week's own capture
+
+**現象** `plan/W05.md` §0.6 gives the sentence the week is supposed to earn:
+*"其中兩個會產生一模一樣的錯誤訊息 —— 改量測值跟改傳輸中的簽章"*. Point 1 does
+not produce an error message. `t1_meas` completed on 09-01 with exit 0 and every
+signature verifying, and `docs/tamper.md` said so a week before the plan's
+sentence was due to be written.
+
+**假設** What do you do with a plan whose flagship claim is already dead?
+
+1. drop the claim and report four rows honestly;
+2. keep hunting for a variant of point 1 that does fail;
+3. find the pair somewhere else.
+
+**先驗哪個、為什麼** (2) first, because it is cheap to reason about and it
+decides the other two. For a signature check to fail, the bytes signed and the
+bytes verified have to differ. There are exactly two ways: change them after
+signing, or sign with a mismatched key. Changing the *source* is neither, so no
+variant of point 1 — a different index, a different offset, the whole record —
+can fail. (2) is not slow, it is impossible, and knowing that took five minutes
+of asking who signs what rather than an afternoon of arms.
+
+That leaves (1) and (3), and (3) is strictly better if the pair exists.
+It does: **split point 2.** Flip a byte of the measurement *record* in flight,
+and flip a byte of the *signature* in flight. Both reach the verifier. Both
+fail. The only difference between them is which side of the signature the byte
+was on.
+
+**根因** The plan's error is a specific one and worth naming precisely. It
+assumed *what* was changed determines the outcome — a measurement value, in both
+cases. What determines the outcome is *when relative to the signature*. Point 1
+and point 2 differ in both variables at once, so they were never a controlled
+pair; 2a and 2b differ in exactly one.
+
+**教訓** The measured version is stronger than the planned one, and it is
+stronger for a reason that generalises: **a pair that demonstrates "same symptom,
+opposite cause" has to hold everything else constant, including the layer the
+symptom comes from.** `t2a_record` and `t2b_sig` are the same message, the same
+index, the same offset in spirit, and the same status — `80020001`,
+`VERIF_FAIL`, severity ERROR, source CRYPTO. `t1_meas` was never in that
+comparison; it is a row about a layer that does not exist.
+
+The interview sentence changes accordingly, and gets better:
+
+> I did three tampers and one of them produced no error at all — the one where
+> the device's own measurement was changed, because the device signs what it
+> reads. So the two that produce the *same* message are both on the wire: one
+> where the signed content changed and one where the signature changed. Same
+> number, opposite causes, and the only thing that separates them is the pcap.
+
+### The equation refused the plan's field list, which is what it was for
+
+**現象** `harness/tamper_proxy.py` will not flip a byte until it can close
+
+    len(message) - signature_offset  ==  the size ECDSA P-384 signs
+
+Built with the field list from `plan/W05.md` §2.2, it computes `signature_offset`
+= 570 and gets 104 where 96 was required, and refuses.
+
+**假設** Either the message is not what the plan says, or the arithmetic is
+wrong, or `BaseAsymSel` was read from the wrong offset.
+
+**先驗哪個、為什麼** The third is cheapest to eliminate and would poison
+everything: `ALGORITHMS` also carries its own `Length` field, so requiring
+`Length == len(message)` costs one line and confirms the whole struct is being
+read at the right base. It closed. So the offsets are right and the field list
+is not.
+
+**根因** `spdm.h:936-949`:
+
+```c
+    /*uint8_t                measurement_record[measurement_record_length];
+     * uint8_t                nonce[32];
+     * uint16_t               opaque_length;
+     * uint8_t                opaque_data[opaque_length];
+     * uint8_t                requester_context[SPDM_REQ_CONTEXT_SIZE];
+     * uint8_t                signature[key_size];*/
+```
+
+`RequesterContext`, eight bytes, added in SPDM 1.3. The plan predates the
+version this project pins and its diagram omits it. 104 − 96 = 8.
+
+**教訓** This is the third time the same discipline has paid, and the first time
+it paid against a document rather than against a decoder. §8.3b of the RUNBOOK
+introduced it: an offset cannot be recomputed the way a value can, because a
+decoder prints fields and not positions, so the answer was to reconstruct the
+whole message and require the leftover to equal something known independently.
+
+What is new today is that **the independently known quantity came off the wire in
+the same connection.** The proxy watches `ALGORITHMS` go past, reads
+`BaseAsymSel`, and sizes the signature from what was negotiated rather than from
+what was requested. That is standing rule 8 applied inside a tool rather than
+inside a report, and it means the refusal is not "the plan disagrees with my
+constant" but "the plan disagrees with this connection".
+
+`--self-test` now feeds the parser thirteen broken messages and fails if any of
+its thirteen *named* checks was never exercised. The first version counted
+distinct string prefixes and called that coverage, which reported three checks
+where six inputs had fired only three of them — a suite measuring its own
+vocabulary rather than its own reach.
+
+### The comment I would have believed, and the byte it costs
+
+**現象** `spdm_emu/spdm_emu_common/command.h` is the only written description of
+the socket framing:
+
+```
+ *   payload (SPDM message, starting from SPDM_HEADER): PayloadSize (little endian)
+```
+
+It is wrong for the default transport. For MCTP the payload starts with
+libspdm's message-type byte — `0x05` — and the SPDM header begins at
+`payload[1]`.
+
+**假設** Reading `payload[1]` as the `RequestResponseCode` gives `0x10` for a
+`GET_VERSION`, which is not a request code at all. Either the comment is wrong,
+or the capture is framed differently from the socket, or the transport was not
+MCTP.
+
+**先驗哪個、為什麼** The capture, because it costs one command and this repo
+already has fifty-five of them:
+
+```
+pkt  0  len=   9  00 00 00 c0 05 10 84 00 00
+                  └─ 4 B, pcap only ─┘ └┬┘ └── SPDM header ──┘
+                                        MCTP message type
+```
+
+`send_platform_data` writes the *same buffer* to the pcap with a four-byte
+synthesised `mctp_header_t` in front, so the pcap answers a question about the
+socket. Five bytes of framing, not four — which is a number
+`verify_repo.sh` has been asserting since week two, in the equation
+`captured == SPDM bytes + 5 × messages`. **The correct answer was already
+committed, in an assertion, and I still had to go and look.**
+
+**根因** The comment is not exactly false; it is unqualified. It is accurate for
+`SOCKET_TRANSPORT_TYPE_NONE`, where the payload really does begin at the SPDM
+header. It is the default transport that makes it wrong, and defaults are what
+people read comments for.
+
+**教訓** Two.
+
+The small one is filed: upstream candidate five, two lines of comment naming the
+transport dependency. It is trivial, it changes no behaviour, and it is the
+right first submission to a repository nobody there knows me in — small,
+checkable in one command against a file the repository itself produces, and
+found by hitting it rather than by reading about it.
+
+The larger one is about where a fact lives. Three places described this framing:
+a comment (wrong), an assertion in `verify_repo.sh` (right, and phrased as
+arithmetic rather than as a sentence), and every committed capture (right, and
+unreadable without a tool). **The one that was wrong is the only one written for
+a human**, and that is not a coincidence — it is the only one nothing executes.
+
+### The control was not clean, and it was my proxy that dirtied it
+
+**現象** The passthrough arm — the proxy forwarding with nothing changed — exited
+1, with `ERROR: receive_platform_data Error - 2` in the requester's log. The
+handshake itself was complete: 30 packets, 11,337 bytes, `CHALLENGE_AUTH` and
+`MEASUREMENTS` both present, the measurement record byte-identical to the
+control.
+
+**假設** ① the proxy corrupts something late in the connection; ② the requester
+always exits 1 in this configuration; ③ the proxy closes too early.
+
+**先驗哪個、為什麼** ② first, because it is one run and it decides whether there
+is a problem at all: the same command without the proxy exits **0**. So there is
+a problem and it is mine. Between ① and ③, the log line names a *receive* that
+failed rather than a field that was wrong, which points at the connection's end
+rather than at its content.
+
+**根因** `spdm_requester_emu.c:253` sends `SHUTDOWN` through
+`communicate_platform_data`, which **waits for a reply**, and
+`spdm_responder_emu.c:126` sends one back before it stops looping. My proxy tore
+the connection down the moment it saw `SHUTDOWN` go past, on the theory that the
+requester says it and leaves. It does not.
+
+**教訓** The transferable half is not about SPDM. **A transparent proxy does not
+get to have opinions about when a conversation is over.** The peers close; it
+notices. Every opinion I gave it was a place for it to be subtly different from
+no proxy at all — and "subtly different" is exactly the failure a control exists
+to detect and exactly the one an exit code hides.
+
+Which is the other half: **that arm exists because the instrument is new.**
+Rows 2a and 2b of Table 1 mean nothing without it. A proxy that mangled a 1.9 KB
+`CERTIFICATE` would fail both tamper arms, and "the tamper was detected" is what
+that looks like from the outside. `docs/measurement.md` now says this out loud
+as a field of the template: **a new instrument needs its own control**, and it is
+the field most often skipped because it feels like testing the test.
+
+### Two digests in the draft were sixteen real characters and forty-eight invented ones
+
+**現象** The first draft of `docs/tamper.md` carried
+
+```
+<!--claim …blocks.0x01.value_sha256=ce5dea03475fdf73e93d2f83a4d55b6ba2c1fd1cc6f8a4a4e0e66d8b6ba1e5f3-->
+```
+
+The real value is `ce5dea03475fdf73fa645ac2865d866a7e1aa6afae38be25c4b6f1525e3d0dc8`.
+The first sixteen characters are right. The remaining forty-eight were invented.
+The same happened to a second digest, in the row beside it.
+
+**假設** How does a fabricated digest get into a document in a repository whose
+entire argument is that its numbers point at captures?
+
+1. carelessness;
+2. the value was not available when the prose was written;
+3. **the value was available in a truncated form, and the truncation is
+   invisible once it is pasted.**
+
+**先驗哪個、為什麼** (2) is false — the run had finished and the digests were in
+`t2a_record.fields.json`. (3) is testable by looking at what was on screen, and
+it is what happened: the summary script that surveyed the run printed
+`sha=ce5dea03475fdf73`, sixteen characters, because that is what fits in a
+table. Sixteen characters of a SHA-256 is a **prefix**, and a prefix pasted into
+a field that wants a full digest is a hole exactly forty-eight characters wide.
+Nothing about the result looks wrong. It is hex, it is the right length, it
+starts correctly.
+
+**根因** Every tool in this repository prints truncated digests, because full
+ones do not fit in a table and `f2a14684e8fae9ff…` is how a human recognises one.
+That is the right display and it is also a fabrication hazard, and the two are
+the same property: **a truncated digest is designed to look like the digest.**
+
+**教訓** The mechanism did its job, and that is the whole point of it. Every
+claim in the document was rewritten from `fields.py`'s own output and the two
+that changed were printed loudly; `fields.py --check` then confirmed 52/52
+against the captures. It cost one command. Without the claim markup, two
+fabricated digests would be sitting in the flagship document of a repository
+whose thesis is that its numbers can be re-derived — and *nothing would ever
+have found them*, because no reader checks a digest by eye and no reviewer has
+the capture.
+
+So the rule this produces is narrow and worth obeying: **never type a digest.
+Copy it from a machine-readable output, or have a tool write it.** The moment a
+digest is transcribed by a human from a display, it is not evidence any more,
+and the display that makes it easy is the one that truncated it to help.
+
+There is a smaller repo-shaped follow-on. `harness/tamper.sh`'s table and
+several tool summaries print sixteen-character prefixes. They should stay — they
+are for reading — but nothing that prints a prefix should ever be the place a
+number is *copied* from, and the JSON beside it always exists. `TODO(me)`:
+consider printing prefixes with a trailing `…` everywhere, so a pasted one is
+syntactically invalid rather than plausibly complete.
+
+### An empty chain is what a wrong layout looks like
+
+**現象** `bench/pcapstat.py` gained the certificate-chain reconstruction, and it
+reported **0 chains reassembled** on every capture taken with the `4.0.0-rc`
+pair — while reporting three chains, correctly, on the one arm built from
+`3.8.0`.
+
+**假設** ① the reconstruction is wrong; ② the newer responder does something
+different; ③ the newer captures are broken.
+
+**先驗哪個、為什麼** ③ is refuted for free: `fields.py` reads those same captures
+and reconstructs the chain, and has since week three. So the captures are fine
+and one of the two parsers is reading something the other is not. That makes ②
+worth one grep before ①, and the grep found it.
+
+**根因** SPDM 1.4 adds `LargeCertChain`, bit 7 of `Param1`. When it is set,
+`libspdm_rsp_certificate.c:212-229` writes **zero** into the 16-bit
+`PortionLength` and `RemainderLength` and puts the real values in 32-bit fields
+further in, with the chain starting at offset 16 rather than 8. The `4.0.0-rc`
+responder sets it whenever `LARGE_RESP_CAP` was negotiated. `3.8.0` never does.
+
+So my parser read offset 4, got 0, and reported a chain of length nought.
+`fields.py` already handled both layouts — `CERT_LARGE_BIT` is in it — and the
+verify step that says "chain at 16" had been printing the answer for a week.
+
+**教訓** **A zero-valued field in the wrong layout does not look like an error.
+It looks like data.** The parser did not crash, did not warn, and produced a
+number: zero chains, zero bytes, everything self-consistent. What made it
+visible was having one capture from a different upstream version in the same
+directory, and that was luck rather than design — the `classical-stable` arm
+exists to compare two releases' byte counts, not to catch this.
+
+The generalisable form is the one to keep: **when two layouts share a struct and
+one zeroes the other's fields, the zero is the trap.** The fix is not to read the
+right offset; it is to *assert the other layout's fields are zero*, which turns
+"I guessed the layout" and "the responder used that layout" into different
+outcomes. `pcapstat.py` now does that and says so if they are not.
+
+### A verdict that named the wrong stage
+
+**現象** The first full run of the new arms reported
+`t2a_record: stopped-after-CHALLENGE` — with `meas 1` in the column beside it.
+
+**假設** Either the message count is wrong or the verdict vocabulary is.
+
+**先驗哪個、為什麼** The count is produced by `fields.py` from the decode, agrees
+with `pcapstat.py` from the capture, and both say one `MEASUREMENTS` arrived. So
+the verdict is wrong, and it is wrong in a specific way: `run_case` had four
+outcomes and none of them was "the message arrived and its signature did not
+verify", so control fell through to the last `else`.
+
+**根因** The vocabulary was written when every failure mode in the file happened
+*before* a message could arrive. Point 2 is the first case where the exchange
+completes and the verification does not, and there was no word for it.
+
+**教訓** **A verdict that names the wrong stage is worse than no verdict**,
+because it reads like an observation rather than like a gap. `stopped-after-
+CHALLENGE` is a sentence somebody could have written into a document, and it
+would have been wrong about which layer refused what, which is the one thing
+Table 1 is about.
+
+The table now also carries the status the requester actually printed, named
+rather than quoted: `harness/spdm_status.py` decodes severity and source
+arithmetically from the value — `0x80020001` is ERROR / CRYPTO / 0x0001 — and
+looks up only the name. That distinction matters more than it sounds: it is why
+`0x40020003` reads as a **warning** without anybody having to remember that
+`VERIF_NO_AUTHORITY` is one, and the top nibble is the entire difference between
+a row that stops a connection and a row that does not.
+
+### `kill "${RPID:-0}"`
+
+**現象** A scratch script died with exit 15 before printing anything.
+
+**根因** `kill 0` sends `SIGTERM` to the whole **process group**, and `${RPID:-0}`
+supplies `0` when the variable is unset — which it is on the first call, before
+anything has been started.
+
+**教訓** The default in `${VAR:-default}` is chosen for the case where the
+variable is missing, and `0` is the most dangerous possible choice for something
+about to be passed to `kill`. **A safe default is one whose meaning is "do
+nothing", and for `kill` that is the empty string with a guard, not a number
+that happens to be valid.** Sixty seconds to find, and it belongs here because
+the same shape — a placeholder that is also a legal input — is what
+`--flip-byte 12` was in week four and what a zero `PortionLength` was this
+morning. Three of them in two weeks.
+
+### Four places this week left the plan, and what each cost
+
+| the plan says | what exists | why |
+|---|---|---|
+| `Tbl 1`, four rows, points ①②③ | five rows over ten arms | point ① produces no error, so the "identical message" pair had to come from inside point ②. The extra rows are `t0_proxy` (the instrument's control) and `t2a`/`t2b` |
+| `pcapstat.py --out` producing the Markdown table | not built | this repository already has a mechanism for "the numbers in a document are generated": `<!--claim-->` plus `fields.py --check`. A second emitter would be a second copy with nothing holding it to the first, which is the failure mode the last two weeks have been about. Table 1's byte columns are claim-marked instead |
+| `--flip-last-byte` | `--flip-signature N` and `--flip-record INDEX:OFFSET` | flipping the last byte requires no understanding of the message and cannot state which field it hit. `--flip-record` is what makes 2a possible at all |
+| `MEASUREMENTS` field list without `RequesterContext` | eight bytes further along | the plan predates SPDM 1.3. The proxy refuses rather than guesses |
+
+Three of the four are the same decision: **use the mechanism that already
+exists rather than the name the plan happened to use** — which is word for word
+the finding of 09-01, made again, which suggests it is a property of executing
+a plan written thirty days before the tools existed rather than an insight.
+
+The one that is not is the second, and it is a decision rather than a drift: the
+plan asked for a generator, and the argument against it is one this repository
+already made twice this fortnight. That is what a deviation record is for.
+
+### What is measured, and what is still a claim about myself
+
+**`TODO(me)`** — `c-drills`. `d2` now exists: contract, tests, stub, validated
+**four** ways rather than three, because the drill's own comment calls a second
+version correct and a comment that says so without checking is what the last two
+weeks have been about. That makes **six** drills waiting and **zero** finished.
+`DONE.txt` is empty for the sixth working day running.
+
+What changed today is only that the number is now printed by
+`verify_repo.sh` rather than described in a paragraph. It does not fail the
+build, and it should not: whether to spend an evening with paper is not a
+decision a script gets to make. What it does fail on is a drill listed as
+finished whose compile-error count was never recorded — currently vacuous, and
+load-bearing the moment the first one lands.
+
+`d2` is also the drill with the shortest paper time in the series, ten minutes,
+and the highest ratio of consequence to effort: the wrong version is caught by
+AddressSanitizer with a two-byte out-of-bounds read, because `src + SIZE_MAX`
+wraps the address space to `src - 1`. That is GHSA-m4wc-xmvg-369f's primitive,
+reproduced in twenty lines.
+
+**`TODO(me)`** — Table 1's row 1 is now the argument for Gate 3 rather than a
+loose end, and Gate 3 has not started. Both its prerequisites are met: the
+secure version number takes three values on the wire, and the build already
+fails if an in-flight tamper stops being rejected. What is missing is the half
+that needs a reference value, and that is the half nothing in this repository
+can do yet.
+
+**`TODO(me)`** — `docs/upstream/README.md` now lists **five** candidates and
+**zero** submissions. The oldest is twenty-four days old. The newest is two
+lines of a comment, which is the smallest and most likely to land, and it is the
+one to send first. The DMTF portal account for the SPDM 1.5 feedback is still
+not created and that window has closed.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
