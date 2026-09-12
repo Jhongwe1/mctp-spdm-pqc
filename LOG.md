@@ -3125,6 +3125,94 @@ closes, the sentences that will rot are the ones written while it was open.**
 They are findable by name — the gate's name is in them. That is a grep, and the
 only reason it did not happen yesterday is that nothing asked for it.
 
+### The paperwork I thought was done, for a project it does not cover
+
+**現象** *"等等,你說要簽 CLA 嗎?我之前好像忘記了"* — asked the day before the
+first change was due to go out, with the branch built, the commit signed off and
+a checklist beside it saying the paperwork was in order.
+
+**假設** Where does the confusion come from?
+
+1. it is done — the Individual CLA went to `manager@lfprojects.org` on
+   2026-08-04, and `docs/upstream/README.md` has the row to prove it;
+2. it is done for the wrong project;
+3. the target has no CLA at all and the question does not apply;
+4. the documents here never said which of those was true.
+
+**先驗哪個、為什麼** (3) first, because it is the only one answerable from a
+primary source rather than from my own notes, and because if it is true the
+other three stop mattering. `DMTF/spdm-emu` has a `CONTRIBUTING.md`. Reading it,
+with `grep -ci 'contributor license agreement\\|\\bCLA\\b'`: **zero**.
+
+Then (2), which is (1) with the scope stated: the agreement is the Linux
+Foundation's, sent for OpenBMC, and covers every OpenBMC repository. DMTF is a
+different standards body. The two share one line of process — the sign-off —
+and nothing else.
+
+(4) is the real finding and it was answered by the question existing. A
+documentation defect has no other kind of witness, which is 2026-09-10's lesson
+arriving a second time: the person confused by a document is the bug report.
+
+**根因** Three things, in increasing order of how much they cost.
+
+`CONTRIBUTING.md` requires the **DCO** — real name, reachable address, matching
+the commit author, per DSP4014 — and no CLA. It also has a section this project
+had not read at all: **AI assistance must be declared** with
+`Assisted-by: AGENT_NAME:MODEL_VERSION`, and an AI must **not** be named in
+`Signed-off-by` (the DCO is a certification only a human can make) or in
+`Co-authored-by` (authorship rests with the humans responsible). The maintainers
+use it on their own merges — `Assisted-by: Claude Code:claude-sonnet-5` on #519.
+
+**The prepared commit had no `Assisted-by:` line.** That is rule 3, and it was
+missing from a change that was otherwise reviewed, tested and one keystroke from
+being sent. The checklist beside it had eleven ticks and no box for it.
+
+And the sharper half: **this repository's own convention is a violation there.**
+Every commit here carries `Co-Authored-By: Claude Opus 5 …`. Correct here,
+forbidden by rule 2 upstream. The prepared commit did not carry it — but by
+habit rather than by design, and a habit is not a mechanism.
+
+**教訓** The mechanism first.
+`harness/check_upstream_commit.sh` encodes the rules **read out of the target's
+own `CONTRIBUTING.md`**, records that file's SHA-256, and says so when the
+target's copy no longer matches — because a rule set that has moved is precisely
+what a returning contributor does not re-read. Ten rules, nine self-test cases,
+eight of which break exactly one rule.
+
+Only the DMTF profile exists. OpenBMC's — Gerrit, `Change-Id`, a CLA whose state
+no script here can see — waits for week 9 and a real commit to check against.
+Writing it now would be a check whose failure mode has never fired, which is the
+mistake `d1` and `d6` already taught.
+
+Then the rule, which generalises past upstreams: **the contribution rules of a
+project you have not contributed to are not the ones you already know.** The
+comfortable failure here was not forgetting to do the paperwork. It was
+*remembering having done it* — and the memory was accurate, for a different
+organisation.
+
+And two more, small and familiar, both of which this repository caught by
+itself.
+
+The first version of the "is an AI named in the sign-off" test used the bare
+pattern `ai`, which matched **`gmail`** in the author's own address and reported
+a compliant commit as a violation. Word boundaries. That is 2026-09-10's *"a
+check that fails for a reason unrelated to what it checks"* for the third time
+in four days, and it is now a self-test case of its own rather than a sentence
+in a log.
+
+And the new script's very first `verify_repo.sh` run was **red**, on
+`a branch can be decided by SIGPIPE` — the guard added on 2026-09-10 after that
+shape inverted two branches elsewhere in `harness/`. I had written four
+`if printf … | grep -q` conditions in a file whose whole purpose is checking
+things carefully. The guard named the file, the line and the fix, and the fix
+was the one that entry prescribes: a here-string, which is a redirection with no
+second process to lose.
+
+That is the most encouraging thing in this entry. A rule written four days ago,
+after a bug that took an afternoon, refused its own shape in new code written by
+the person who wrote the rule — **before it could reach a commit.** It is the
+only kind of evidence that a mechanism is worth more than a lesson.
+
 ### The sentence I wrote from reasoning rather than from a run
 
 **現象** Fixing the twelve above, I added `opa` to `doctor.sh` as a FAIL rather
