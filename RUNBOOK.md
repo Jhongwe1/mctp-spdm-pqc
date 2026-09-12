@@ -29,11 +29,11 @@
 | Claude Code 從哪開? | **`C:\Users\Key20\Desktop\mctp-spdm-pqc`** |
 | 程式碼在哪? | repo 就在上面那個路徑;**上游原始碼與 build tree 在 WSL 的 `~/spdm-lab/`(ext4),絕不放 `/mnt/c`** |
 | GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
-| 今天要做什麼? | **① `c-drills`,而且只有這一件是急的。** 六題有合約有測試、零題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`。**實作永遠是你的**,而 `verify_repo.sh` 現在會把「六比零」印出來 ② `docs/upstream/spdm15-hybrid-feedback.md` 那份公評回饋草稿**還沒送** ③ W06 開始 Gate 3:RATS 流水線,先裝 OPA、先跑通 DMTF 自己的範例 |
-| 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠四題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第四個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
+| 今天要做什麼? | **① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它是唯一一件急的。** **七**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`。**實作永遠是你的**,`verify_repo.sh` 會把「七比零」印出來。D7 還多要一句:在 `c-drills/README.md` 寫**你選了哪一種環形緩衝區設計、放棄了什麼** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ W07:把版本規則從 `==` 改成 `>=`,並用四個案例證明完整性那條沒被弄鬆 |
+| 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠七題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第七個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
 | ⚠️ W07~W08 已知的障礙 | **系統 OpenSSL 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空** —— W03 的古典鏈不需要它(secp384r1 就夠),但要簽 **PQC 憑證**那條現在就是紅的。這跟 libspdm 無關(它自己編 OpenSSL submodule):**一個專案裡兩個 OpenSSL,只有一個被釘住** |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
-| ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我**。現在只有 `verify` 與 `drills` 兩個 CI job,真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)要到 G2/G3 才存在<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
+| ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我 —— 但這一條在 09-12 變了一半。** 那個真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)**現在存在了**,它是三個 job 裡唯一一個會因為安全性質失效而變紅的。**還沒被保護的是**:沒有 `upstream` job(要 G6);`rats` job 斷言的是「這十條臂的判定必須是這些答案」,不是「這個政策抓得到所有壞東西」;而 `t3b_foreign` 那條——對的量測、錯的憑證來源——兩層都判 PASS,因為身分不在這個政策的職責裡。**沒裝 `opa` 的機器跑 `verify_repo.sh` 會直接紅**,不會靜靜跳過(2026-09-13 拿掉 PATH 實測過)<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
 
 ### 現在的關卡狀態
 
@@ -157,8 +157,29 @@ Responder 回你一個 measurement,比如 `a3f9...`。**然後呢?**
 需要的軟體(§4 的 `doctor.sh` 會逐項幫你檢查):
 
 ```
-git   cmake(≥3.10)   make   gcc   python3   perl
+git   cmake(≥3.10)   make   gcc   python3   perl   opa
 ```
+
+> ### ⚠️ `opa` 是 W06 之後才加進來的,而且它不是可有可無的
+>
+> Open Policy Agent 是評估 `rats/policy.rego` 的引擎,而那份政策就是
+> 「被篡改的量測必須被判 FAIL」這句話的所在。**沒有它,`verify_repo.sh`
+> 直接紅**——不是跳過。`rats/appraise.py selftest` 會拒絕在沒有引擎的情況下
+> 假裝通過,因為一個「因為沒被跑到所以通過」的自我檢驗,比沒有自我檢驗更糟。
+>
+> (這句話一開始寫成「會跳過但仍然是綠的」。2026-09-13 把 `opa` 從 PATH 拿掉
+> 實測,發現是錯的——那是推理出來的,不是跑出來的,而這份 runbook 的規矩就是
+> 不收推理出來的句子。)
+>
+> ```bash
+> curl -L -o /tmp/opa https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static
+> sudo install -m 0755 /tmp/opa /usr/local/bin/opa
+> opa version        # Rego Version 那一行要是 v1
+> ```
+>
+> 版本釘在 `third_party/opa.pin`。**要緊的不是小版號,是 Rego 的語言版本**:
+> OPA 從 1.0 起預設 v1,而 DMTF 附的那份範例政策是 v0 寫的、解析不過。
+> `verify_repo.sh` 會比對你機器上的 Rego 版本跟 pin,不一致就變紅。
 
 ---
 
@@ -1212,6 +1233,12 @@ bash harness/doctor.sh
 
 # 二、做事(跑實驗、改東西)
 
+# ★ 二點五、收工前第一件事:抓「過期的未來式」
+#    一個 gate 關掉的那天,會腐爛的正是那些在它還開著的時候寫下的句子——
+#    而它們找得到,因為那個 gate 的名字就在句子裡。四秒鐘。
+git grep -niE 'G[0-9]|gate [0-9]|not started|未開始|還不存在|does not exist yet|要到.*才' -- '*.md' \
+  | grep -viE 'plan/|^LOG\.md'
+
 # 三、每次有結果就記錄,commit 用上游格式
 git add -A
 git commit -s -m "meas: make the SVN configurable instead of hard-coded
@@ -1224,6 +1251,24 @@ Tested: <你怎麼驗證的>
 
 `-s` 會加上 `Signed-off-by:`。**從第一個 commit 就用上游格式**,因為之後要送
 Gerrit,現在練起來那時候不用重學。
+
+### 為什麼「二點五」那一步是收工的第一件事,不是最後一件
+
+`verify_repo.sh` 會比對三張 gate 表的**狀態字**有沒有一致,還會比對週次。
+那個機制存在,而且它**擋不住這件事**——2026-09-10 的 LOG 就是這樣寫的:
+「那個檢查抓不到今天」。三張表的狀態字當時全對,爛掉的是旁邊的敘述。
+
+2026-09-12 收工的時候,`rats` job 被建出來了,而 RUNBOOK 第一屏還寫著
+「真正該綠的 `rats` job 要到 G2/G3 才存在」。**那句話本身就是在告訴讀者
+CI 保護不到什麼,而它自己剛好停止為真。** 同一天總共十二個檔案是這個形狀。
+
+**一句未來式是一個附了到期日的宣稱。**「那是 Gate 3 的事」、「還不存在」、
+「要到 W09 才有」——寫下的當下都是對的,都會在某一個特定的日子變成假的,
+而那天沒有任何東西會指向它們。它們跟「數字跟 capture 對不上」是相反的問題:
+數字是**對某個事實錯了**,未來式是**對過去正確、卻被當成現在讀**。
+
+放在收工序列的**最前面**,是因為改完之後往往還要改 gate 表、改 README,
+而那三個檔案本來就有機制看著。先跑沒有機制的那一半。
 
 ### 11.5 ★ 拿到量測之後呢:參考值比對(W06 做的事)
 
@@ -1377,6 +1422,34 @@ diff <(grep libspdm= ~/spdm-lab/work/spdm-emu-pqc/BUILD_PIN.txt) \
 把新舊 hash 記進 `LOG.md`,那就是「這塊變動很快,所以我引用任何行為之前
 都直接讀 repo 當下的狀態」這句話的證據。
 
+### ★ 12.1 不用重建也要做的那一半:乾淨 clone 跑一次檢查
+
+上面那段要重建整個 build tree,四十分鐘。**但真正抓到東西的那一半只要九十秒**,
+而且不需要建任何東西:
+
+```bash
+cd /tmp && rm -rf cc && git clone <這個 repo> cc && cd cc
+bash harness/verify_repo.sh          # 全部檢查,不碰上游
+python3 rats/appraise.py matrix --check
+make -C c-drills
+```
+
+**這是唯一一個「別人會看到什麼」的檢查,而且它看得到的東西,在你自己的樹裡
+永遠看不到。** 2026-09-12 第一次把它當成例行動作跑,九十秒抓到兩個缺陷:
+
+1. 一份已提交的判定檔裡帶著**絕對路徑** `/mnt/c/Users/Key20/...`。在寫它的那棵樹
+   裡,那個路徑是對的,所以沒有任何檢查看得出問題。
+2. `rats/mint_reference.sh` 因為「沒有金鑰」就**自己產了一把**——而「沒有金鑰」
+   正是乾淨 clone 的樣子,因為私鑰刻意不進 git。產一把新的,等於把所有已發布
+   參考值的簽章金鑰換掉,而症狀要到三個檢查之後才浮出來。
+
+第二個尤其值得記住:那支腳本**本來就有**一個「不要覆蓋已存在的金鑰」的防護。
+那是另一種形狀。**寫防護的時候要問的是「這條會在誰的機器上觸發」**——
+只會在作者機器上觸發的防護,是為唯一不需要它的人寫的。
+
+> 順帶一提:在乾淨 clone 裡 `bash rats/mint_reference.sh` **應該要拒絕**,
+> 並且告訴你原因。它拒絕,就代表那個防護是活的。
+
 ---
 
 ## 附錄 A · 指令速查
@@ -1429,6 +1502,31 @@ make -C device interop                              # C 讀的跟 Python 寫的�
 # ── 憑證:要翻哪一個 byte ────────────────────────────────
 python3 certs/check_chain.py certs/out --locate      # 位移 ＋ 那是什麼
 python3 certs/check_chain.py certs/out --self-test   # 四種破壞,四個檢查
+
+# ── ★ 判定:拿到量測之後呢(W06,見 §11.5)──────────────
+R=$(ls -d bench/data/*-tamper-* | tail -1)
+python3 rats/appraise.py appraise "$R/t0_clean.decode.txt"   # 應 PASS,exit 0
+python3 rats/appraise.py appraise "$R/t1_meas.decode.txt"    # 應 FAIL,exit 1
+python3 rats/appraise.py matrix --check             # 十條臂,比對 out/expected.json
+python3 rats/appraise.py selftest                   # 十一個破壞,八個機制全要被打到
+#   exit 0 通過 · 1 判它失敗 · 2 判不出來。1 跟 2 一定要分開看
+
+# 中間步驟(想看某一段長什麼樣的時候)
+python3 harness/fields.py "$R/t0_clean.decode.txt" --emit-record /tmp/rec.bin
+python3 rats/appraise.py evidence  "$R/t0_clean.decode.txt" -o /tmp/ev.json
+python3 rats/appraise.py reference "$R/t0_clean.decode.txt" -o /tmp/ref.json
+python3 rats/appraise.py to-cbor -i /tmp/ref.json -o /tmp/ref.cbor
+python3 rats/appraise.py to-json -i /tmp/ref.cbor -o /tmp/back.json
+
+# ── 參考值:發行者那一端 ────────────────────────────────
+bash rats/mint_reference.sh                         # 沒變就不重簽(ECDSA 是隨機的)
+python3 rats/cose.py verify -i rats/ref/clean.corim --key rats/keys/ref-signer.pub
+python3 rats/cose.py inspect -i rats/ref/clean.corim
+python3 rats/cose.py selftest                       # 106 項,含 RFC 8949 原始向量
+#   私鑰不在 git 裡:乾淨 clone 驗得了,重簽不了(這是刻意的)
+
+# ── 跟 DMTF 那套比對(要有 spdm-emu checkout)────────────
+bash rats/interop.sh                                # 16 項比對,寫 rats/interop/report.md
 
 # ── 分析:封包層 ────────────────────────────────────────
 python3 harness/pcapcount.py <file>.pcap
@@ -1512,7 +1610,13 @@ SPDM_EMU_PORT=2400         # 換 port(預設 2323)
 | **ML-DSA** | 後量子**簽章**演算法(原名 Dilithium),FIPS 204 |
 | **ML-KEM** | 後量子**金鑰封裝**演算法(原名 Kyber),FIPS 203 |
 | **RATS** | Remote ATtestation procedureS。IETF 的證明架構(RFC 9334),定義了 Attester / Verifier / Relying Party 等五個角色 |
-| **CoRIM** | 描述「參考值應該長怎樣」的標準格式 |
+| **CoRIM / CoMID** | 描述「參考值應該長怎樣」的標準格式(IETF RATS 的 draft)。CoMID 是裡面描述一個模組的那一層,每一筆是 `[環境, 量測值]`,環境裡就帶著量測 index —— 那是 DMTF 範例政策讀進去卻沒用的欄位 |
+| **參考值(Reference Value)** | 「這個量測**應該**是多少」。SPDM 完全不提供這個,它是 RATS 的 Reference Value Provider(真實世界裡是韌體發行者)發布的 |
+| **背書(Endorsement)** | 「**誰有資格**說應該是多少」。在這個 repo 裡就是參考值上的那個 COSE 簽章:驗不過,後面整條流水線一步都不跑 |
+| **COSE** | CBOR Object Signing and Encryption(RFC 8152/9052)。用 CBOR 表達的簽章格式;這裡用的是 `COSE_Sign1`,簽的不是訊息本身而是 `["Signature1", 保護標頭, 外部資料, 內容]` 這個結構 |
+| **`kid`** | key identifier,COSE 保護標頭裡的欄位。這裡是 `42`,看起來像裝飾:**在真實部署裡它代表「哪一個韌體發行者的簽章金鑰」**,因為一台機器裡的 verifier 可能同時信任 GPU 廠、SSD 廠、BMC 廠三份參考值,它要靠 `kid` 決定用哪一把公鑰驗 |
+| **OPA / Rego** | Open Policy Agent,以及它的政策語言。判定規則寫在 `rats/policy.rego`。⚠️ OPA 從 1.0 起預設 **Rego v1**,語法跟 v0 不相容——DMTF 附的範例政策是 v0,在現在的 OPA 上會吐 11 個 parse error |
+| **判定(Appraisal)** | 把證據跟參考值放在一起、套上政策、得出一個結果的那個動作。結束碼三種:0 通過、1 **判它失敗**、2 **判不出來** |
 | **pcap** | 封包錄影檔。本專案所有證據的原始格式 |
 | **libspdm** | DMTF 的 SPDM 參考實作(C 語言) |
 | **spdm-emu** | 用 libspdm 做的 requester/responder 模擬器,兩個行程透過 TCP 對話 |

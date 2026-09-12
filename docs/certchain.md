@@ -181,10 +181,16 @@ claiming to be the part I think I am talking to" — which the verifier can
 compare against what the slot inventory says should be there.
 
 Two limits worth stating in the same breath. This is only as good as the
-verifier's willingness to *reject* a mismatch, and the RATS policy that does
-that is Gate 3, not this week. And it does not defend against an attacker who
-can extract the leaf private key from the part it belongs to; nothing at this
-layer does. See [`threat-scope.md`](threat-scope.md).
+verifier's willingness to *reject* a mismatch — and the RATS policy built in
+Gate 3 **deliberately does not do this one**. It appraises measurements against
+reference values and says nothing about identity, which is why
+`bench/data/w5-tamper-*/t3b_foreign` — a chain from an authority the requester
+was never given, serving correct measurements — is judged PASS by it. Putting
+the trust anchor into the appraisal is a natural extension and is recorded as
+not done rather than implied; [`rats-pipeline.md`](rats-pipeline.md) §3 and §9.
+And none of it defends against an attacker who can extract the leaf private key
+from the part it belongs to; nothing at this layer does. See
+[`threat-scope.md`](threat-scope.md).
 
 ---
 

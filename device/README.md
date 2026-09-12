@@ -31,9 +31,13 @@ That means:
 
 - **there is no byte to flip.** A tamper test needs an input, and a constant
   compiled into a function is not one;
-- **a rollback policy has one input.** Gate 3's rule is
+- **a rollback policy has one input.** Gate 3's rule will be
   `evidence_svn >= reference_svn`, and a rule fed a single value has never been
-  tested, whichever way round it is written.
+  tested, whichever way round it is written. As of 2026-09-12 the policy
+  compares for **equality** — which is what DMTF's sample does — so `svn5` and
+  `svn9` are refused with the same check and the same message, and a rollback
+  is indistinguishable from an upgrade. That is the "before" week 7 changes,
+  and the three values on the wire are what makes changing it testable.
 
 So this directory supplies the values and **nothing else**.
 

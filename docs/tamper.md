@@ -687,8 +687,20 @@ will pass. Only a verifier comparing against a reference value refuses it.
   require a requester to reject an unprovisioned root; deciding that is the
   integrator's job, which is why libspdm hands it back as a warning.
 - **Row 1 is a property of SPDM's scope, not a defect anywhere.** No layer in
-  this table is failing to do its job. The verifier that would refuse it does
-  not exist yet, and building it is Gate 3.
+  this table is failing to do its job. The verifier that would refuse it did
+  not exist when this table was taken; it does now, and
+  [`rats-pipeline.md`](rats-pipeline.md) Table 3 appraises these same ten
+  captures. Row 1 is judged **FAIL**, blocked by `SPDM_HASH_CHECK` at
+  measurement index 1, and CI turns red if it stops being.
+
+  Two rows of that table are worth reading back against this one. **Row 2b
+  passes the appraisal**, and correctly: the signature was altered and the
+  measurement record is this row's control byte for byte, so the right answer
+  is that the conveyance broke and the device is fine — which is the
+  distinction the identical `80020001` in rows 2a and 2b could not make. And
+  **row 3b passes too**, which is also correct and still not reassuring: the
+  measurements really are the reference values, and what is wrong is whose
+  device produced them.
 
 ---
 
