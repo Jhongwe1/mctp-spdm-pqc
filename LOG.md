@@ -2733,3 +2733,247 @@ one to send first. The DMTF portal account for the SPDM 1.5 feedback is still
 not created and that window has closed.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+
+---
+
+## 2026-09-12 · Day 7 · the fix that would have been worse than the bug
+
+Week six. Gate 3's first half: a measurement compared against a signed
+reference value, a policy, a verdict, and a CI job that turns red when a
+tampered measurement stops being rejected. Three entries, and the middle one is
+the only one I would tell somebody about.
+
+### The published example does not run, and the first root cause was not the root cause
+
+**現象** Before connecting anything of this project's, I ran DMTF's own
+eight-command example from `spdm_emu/spdm_device_verifier_tool/readme.md`
+verbatim, on the sample data that ships beside it. Step 3 printed
+`Signature verification failed`, and every step after it failed on a missing
+file.
+
+I also fell into this repository's own second red line while doing it: my
+scratch script printed `exit=0` after each step, because `$?` after `cmd | tail`
+is `tail`'s status. The output was right and the exit code was meaningless.
+
+**假設** Three, and they are not equally likely:
+
+1. the environment — a Python dependency at a version the tool predates;
+2. the tool — a defect in `CoRimTool.py`;
+3. the data — the signed file really is bad, and the verifier is right.
+
+**先驗哪個、為什麼** (3) first, because it is the only one that would make
+everything else a waste of time, and because it is checkable *without either of
+the other two being true*: the signature can be verified by a third party. I
+built the COSE `Sig_structure` by hand — `["Signature1", protected, b"",
+payload]` — and checked it with `ecdsa` alone. `True`. So the file is sound and
+the verifier is wrong, and (3) is eliminated by evidence rather than by
+assumption.
+
+Then (2) before (1), for a bad reason that turned out to be lucky: I had already
+read the function. `VerifySignedCbor` builds its key as
+`EC2Key(crv='P_256', d=key)` where `key` came from `VerifyingKey.to_string()`
+— the public point, 64 bytes, where the private scalar goes. `SignCbor`, three
+lines above, does the same construction correctly with a `SigningKey`.
+
+**I fixed that line and it still failed.** That is the useful part of this
+entry. A hypothesis that explains the symptom is not the same as the hypothesis
+that causes it, and the difference is visible only when you test the fix rather
+than the reasoning.
+
+**根因** Both (1) and (2), stacked, each sufficient on its own.
+
+(1) is `requirements.txt` with no upper bounds. `cbor2` ≥ 6.0 decodes the
+contents of a `CBORTag` as **immutable** containers — arrays become `tuple`,
+maps become `FrozenDict` — and `pycose`'s `CoseMessage.decode` type-checks for
+`list`. The sharpest statement of it is that **pycose cannot decode its own
+`encode()` output**: 79 bytes, byte-identical through a `cbor2` round trip,
+`TypeError`. Bisected: 6.1.4 fails, 5.6.5 and 5.4.6 work.
+
+(2) is the key. With `cbor2` pinned, the unmodified tool still says *failed*;
+with the one line changed it says *passed* and the whole example runs through to
+`opa eval`.
+
+**教訓** Two, and the second is more general than the tool.
+
+**Run the published example first, unchanged, before connecting anything of
+your own.** If I had wired my measurement record in on day one, the same
+failure would have looked like my bug, and I would have spent a day inside my
+own code. Four of this week's seven upstream findings came from the fifth
+command of somebody else's tutorial.
+
+**A wrong reproduction is not a wrong hypothesis, and a partial fix is not a
+wrong root cause.** 2026-09-10's entry has the first half of that sentence. This
+is the second: the key defect was real, was the thing I had reasoned to, and was
+not sufficient. What settled it was applying the fix and re-running — not
+re-reading the argument that produced it.
+
+### The one-line fix that would have been worse than the bug
+
+**現象** The commit was written. Subject line under fifty characters, body
+wrapped at seventy-two, `Tested:` lines, `Signed-off-by:` with my legal name, on
+a branch, on top of upstream `main`. One keystroke from a pull request.
+
+Then I ran a script whose only job was to re-execute the `Tested:` claims of
+that commit message, because a claim I send to somebody else is one I should
+have run. The last claim was *"a corrupted signature is still refused"*. I
+flipped the last byte of the 64-byte signature and the patched tool printed
+**Signature verification passed** and wrote the 996-byte payload.
+
+**假設** Three:
+
+1. the flip did not land inside the signature;
+2. `verify_signature()` raises for some inputs and not others, and this one
+   slipped through a branch;
+3. `verify_signature()` does not raise at all.
+
+**先驗哪個、為什麼** (1) first, and not because it is likely — because it is the
+only one that would make the other two irrelevant, and because it costs one
+`cbor2.loads` and a comparison. Decoded both files: one byte differs, at offset
+1118, which is the last byte of the 64-byte signature element of the COSE_Sign1
+array. Eliminated.
+
+(3) before (2), because (2) requires the library to be inconsistent and (3)
+requires only that I did not read its signature. Reading it took four seconds:
+
+```python
+def verify_signature(self, *args, **kwargs) -> bool:
+    """:returns: True for a valid signature or False for an invalid signature"""
+```
+
+**根因** `CoRimTool.py` calls `cose_msg.verify_signature(Algorithm)` and
+**discards the return value**. The function returns a bool; it does not raise on
+a bad signature. So the `except Exception` around it catches key-construction
+errors and nothing else, and control falls through to the payload write and
+`print("Signature verification passed")`.
+
+Two defects, three lines apart, in one function, **and they mask each other**.
+The key defect makes `EC2Key` raise before any signature is examined, so the
+tool refuses everything and looks fail-closed. Repair it alone and the tool
+accepts everything.
+
+**The change I was one keystroke from sending would have converted a verifier
+that accepts nothing into a verifier that accepts anything.** Not a regression I
+would have introduced by carelessness — a regression that follows from a fix
+that is correct, minimal, and exactly what the symptom asks for.
+
+**教訓** Three, in increasing order of how much I would want to be asked about
+them.
+
+1. **Run your own commit message.** Not the change — the *claims*. Mine had
+   four `Tested:` lines and the fourth was false, and the only reason I know is
+   that re-running them was mechanical enough to be worth automating. A
+   `Tested:` line is a promise made to a stranger; running it is the cheapest
+   thing in the whole exercise and it is the step with nothing forcing it.
+
+2. **When a defect is found in a line, read the rest of the function.**
+   2026-09-10's lesson was *grep for the shape before fixing it*, and it found
+   seven more instances of one pattern across the repository. This is the same
+   instruction pointed the other way: not outward across files, but **downward
+   through the enclosing scope**, because the two defects that mask each other
+   are almost always neighbours. Three lines apart, in this case.
+
+3. **A fix is correct in the state it leaves behind, not in isolation.** This is
+   now standing rule 17 in `docs/roadmap.md`. "Is this change right?" is the
+   wrong question when the surrounding code is also wrong; the question is
+   "what is true after this lands?" — and the honest answer here was *worse than
+   before*, for a change that reviews cleanly in one line of diff.
+
+And a mechanism, because a lesson with no mechanism is a mood.
+`rats/interop.sh` now keeps a **half-patched** copy of `CoRimTool.py` beside the
+fully patched one and asserts that the half-patched one **accepts** a forged
+signature. If that ever stops being true, the second half of the bug report is
+wrong and must not be sent. The near-miss is not a story any more; it is a
+check, and it runs whenever the interoperability comparison does.
+
+### Comparing sets of hashes cannot see which hash belongs where
+
+**現象** DMTF ships `SpdmSamplePolicy.rego` with the tools, and week six's plan
+was to use it. Reading it first — `default SPDM_HASH_CHECK = false;
+SPDM_HASH_CHECK { ev_hash_list == ref_hash_list }` — both sides are **partial
+set** rules. It compares a *set* of digests against a *set* of digests.
+
+**假設** What can a set comparison not see?
+
+1. which index a digest belongs to;
+2. duplicates, which collapse into one member;
+3. an empty reference, since `set() == set()` is true;
+4. the digest algorithm, which both sides carry and neither reads.
+
+**先驗哪個、為什麼** (1) first, because it is the one with a consequence I can
+state in a sentence about hardware rather than about Rego: measurement index 1
+is the immutable ROM and index 2 is the mutable firmware, so a device presenting
+its firmware digest as its ROM digest has said something false about which parts
+of it can change — and the multiset is unchanged. If that were not true the rest
+would be pedantry.
+
+**根因** All four are real, and **(3) was wrong as I first wrote it**, which is
+the part worth keeping.
+
+I asserted in the self-test that set comparison passes *any* empty reference. It
+does not: with an empty reference and real evidence, the two sets differ and the
+sample correctly refuses. The self-test failed on my expectation, not on the
+policy. The hole is narrower and worse — **both** sides empty — which is a
+device that answered `GET_MEASUREMENTS` with nothing, appraised against a
+reference that names nothing, and declared good. That fails **open**, on the
+least trustworthy input a verifier will ever see.
+
+The measured version, against the real file under `--v0-compatible` rather than
+against my model of it: the sample **accepts** the index swap, **accepts** the
+all-empty pair, **accepts** an algorithm substitution, and correctly refuses the
+duplicate. Four of eleven cases in `rats/rats_selftest.py` are ones it lets
+through.
+
+**教訓** The lesson is not about Rego.
+
+**A claim about somebody else's code is a claim, and mine was wrong in the
+direction that flattered me.** "Their policy passes an empty reference" is a
+better story than "their policy passes an empty reference *and* empty evidence,
+which is a narrower case". I had the second and wrote the first, and what caught
+it was a test I wrote to check the policy rather than to check myself.
+
+The generalisation, which is the reason this entry exists: **when a test fails
+against an expectation, the expectation is a hypothesis too.** Every previous
+entry in this log treats a failing check as evidence about the system. This one
+was evidence about the sentence I had written about the system, and I nearly
+debugged the model instead of the claim.
+
+### What is measured, and what is still a claim about myself
+
+**`TODO(me)`** — `c-drills`. `d7` now exists: contract, tests, stub, validated
+**five** ways rather than three, because it is the first drill whose contract
+admits two correct answers and "both designs pass" is exactly the kind of claim
+a comment makes and nothing checks. Both were written and both pass, 151 and
+152 checks; the difference of one is the byte the leave-a-slot-empty design
+cannot store. That makes **seven** drills waiting and **zero** finished.
+`DONE.txt` has been empty for the seventh working day running.
+
+The stub run found a defect in the tests themselves — `rb_capacity() - 1`
+underflowing to `SIZE_MAX` when capacity is zero, which is this drill's own trap
+inside the test that teaches it — and it was visible only because standing rule
+15 requires running against the stub. That is twice now that the *boring* one of
+the three compilations has been the one that found something.
+
+**`TODO(me)`** — Gate 3's first half is done and the second is not. The secure
+version number is compared for **equality**, so `svn5` and `svn9` produce the
+same verdict with the same message: a rollback and an upgrade are
+indistinguishable, which is the one distinction a rollback rule exists to make.
+Week 7 is `evidence >= reference` and four cases, and the fourth is the one that
+matters — it has to prove that loosening the version rule did not loosen the
+integrity rule.
+
+**`TODO(me)`** — `docs/upstream/` now lists **twelve** candidates and **zero**
+submissions, and for the first time one of them is *prepared* rather than
+*noticed*: branch, commit, pull-request body, checklist, and a re-run of its own
+`Tested:` lines. The keystroke is mine and I have not made it. The oldest
+candidate is thirty-two days old.
+
+**`TODO(me)`** — Two of the eight measurement blocks cannot be appraised by
+anything, because DMTF's evidence format has no encoding for a raw bit stream
+that is not a secure version number. One of them is `DEVICE_MODE`, which is
+where a device says whether it is in a debug mode. I reproduced that behaviour
+for interoperability and printed a coverage number beside every verdict, and I
+am not sure that is the right trade — the alternative is an evidence format of
+my own that no DMTF tool can read.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
