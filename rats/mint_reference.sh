@@ -69,6 +69,24 @@ if [ "$GENKEY" -eq 1 ] || [ ! -f "$KEY" ]; then
         # else, as "the endorsement did not verify".
         die "$KEY exists. Remove it deliberately if you mean to replace it — every committed .corim stops verifying when you do."
     fi
+
+    # ★ And the case the guard above does NOT cover, found by cloning this
+    # repository somewhere else and running this script: the private key is not
+    # tracked, so in a FRESH CLONE it is absent while the published reference
+    # values are present. "Generate one because there isn't one" then silently
+    # replaces the key that every committed .corim was signed with, and the
+    # damage surfaces three checks later as "rats/cose.py no longer verifies
+    # CoRimTool.py's signature" — which is true, and says nothing about either
+    # tool.
+    #
+    # The two conditions are not the same shape. The first is "do not overwrite
+    # something that exists". This is "do not create something whose absence is
+    # load-bearing", and it is the one that fires on the machine of anybody who
+    # is not the author.
+    if ls "$(dirname "$OUT")"/*.corim >/dev/null 2>&1; then
+        die "no signing key at $KEY, but reference values are already published in $(dirname "$OUT"). The private half is deliberately untracked (see rats/README.md), so this is what a fresh clone looks like: you can VERIFY these, and only the machine that minted them can re-mint them. Generating a key here would replace the one they were signed with and they would all stop verifying. If you really mean to publish a NEW set, delete them first and pass --genkey."
+    fi
+
     log "generating an ES256 reference-signing key"
     run openssl ecparam -name prime256v1 -genkey -noout -out "$KEY"
     run openssl ec -in "$KEY" -pubout -out "$PUB" 2>/dev/null
@@ -87,6 +105,24 @@ run python3 "${REPO_ROOT}/rats/appraise.py" reference "$FROM" \
 log "JSON -> CBOR"
 run python3 "${REPO_ROOT}/rats/appraise.py" to-cbor \
     -i "${TMPD}/reference.json" -o "${TMPD}/reference.cbor" || die "encoding failed"
+
+# ECDSA signatures carry a random nonce, so signing the same document twice
+# produces two different files. That makes a re-run of this script a change to
+# a committed binary with no change to its meaning, which is diff noise at best
+# and, at worst, somebody wondering what moved. Idempotence is free here: if
+# the existing reference value verifies and carries exactly the document about
+# to be signed, nothing needs to happen.
+if [ -f "$OUT" ] \
+   && python3 "${REPO_ROOT}/rats/cose.py" verify -i "$OUT" --key "$PUB" \
+        -o "${TMPD}/existing.cbor" >/dev/null 2>&1 \
+   && cmp -s "${TMPD}/existing.cbor" "${TMPD}/reference.cbor"; then
+    ok "$(realpath --relative-to="$REPO_ROOT" "$OUT") already carries this exact document, signed and verifying — not re-signed"
+    cp "${TMPD}/reference.json" "${OUT%.corim}.json"
+    hdr "unchanged"
+    printf '  %s  %s bytes\n' "$(realpath --relative-to="$REPO_ROOT" "$OUT")" "$(stat -c%s "$OUT")"
+    printf '  a fresh signature over the same bytes would differ (ECDSA is randomised) and mean nothing\n'
+    exit 0
+fi
 
 log "COSE_Sign1, wrapped as a signed CoRIM"
 run python3 "${REPO_ROOT}/rats/cose.py" sign -i "${TMPD}/reference.cbor" \
