@@ -26,7 +26,7 @@ value:
 Step 3 is the measurement. See SCORECARD.md for why that particular number is
 the one worth tracking.
 
-As of 2026-09-10 there are **six** drills with a contract, tests and a stub,
+As of 2026-09-12 there are **seven** drills with a contract, tests and a stub,
 and **zero** in `DONE.txt`. That ratio is printed by
 `harness/verify_repo.sh` on every run — as a report, not as a failure, because
 whether to spend an evening with paper is not a decision a script gets to
@@ -79,7 +79,7 @@ it reports what has been finished and never claims anything else.
 | D6 | `d6_packed_struct.c` | one byte of padding that moves a field AND a size | wire formats are byte layouts, not struct layouts |
 | D4 | `d4_bst_delete.c` | a two-children delete whose in-order successor has a right child of its own | not used here — the one drill lifted from an interview rather than from this repo |
 | D2 | `d2_offset_length.c` | `off + len` wrapping, so the check says yes and the read goes outside the buffer | GHSA-m4wc-xmvg-369f, and every length this repository's parsers take off the wire |
-| D7 | ring buffer | full and empty are indistinguishable by indices alone | proxy and transport buffering |
+| D7 | `d7_ring_buffer.c` | `head == tail` is both empty and full; and `rb_len` as `head - tail`, which underflows the moment the writer wraps | the tamper proxy's framing, and week 9's `transport/af_mctp_glue.c` |
 | D8 | length-bounded string copy | the truncation case, and who writes the terminator | the other real advisory class |
 
 Each file states its own contract, its boundaries, and its time box at the top.
@@ -119,6 +119,20 @@ failed it on the first attempt:
   own buffer limit. **The stub compiling is the condition that is easy to skip,
   because it is the one that has nothing to do with the exercise** — and it is
   the one CI notices first, since `make` builds every drill.
+- **D7**, in week six, was compiled **five** ways rather than three, because it
+  is the first drill whose contract admits **two** correct answers — leave one
+  slot empty, or carry a count — and "both designs pass" is precisely the kind
+  of claim a comment makes and nothing checks. Both were written and both pass,
+  at 151 and 152 checks; the difference of one is the extra byte design (a)
+  cannot store. Two wrong versions were caught, by 16 checks and by 10.
+
+  The stub run then found a defect in the tests themselves. `test_a_write_that_wraps`
+  computed `rb_capacity() - 1` to place the indices, and a stub reports a
+  capacity of zero, so the subtraction underflowed and the test asked for a
+  write of 18446744073709551615 bytes. **That is the drill's own trap, inside
+  the test that teaches it**, and the only reason it was visible is that rule
+  15 requires running against the stub — the condition with nothing to do with
+  the exercise, again.
 
 ## Why D6 is not about the transport framing
 
