@@ -1,0 +1,143 @@
+{
+  "corim_id": "4D435450535044004D2D53504442494E",
+  "corim_tags": [
+    {
+      "comid_tag_identity": {
+        "comid_tag_id": "52415453524546302D6D63747073706D"
+      },
+      "comid_entity": {
+        "comid_entity_name": "mctp-spdm-pqc",
+        "comid_reg_id": "https://github.com/Jhongwe1/mctp-spdm-pqc",
+        "comid_role": [
+          0,
+          1
+        ]
+      },
+      "comid_triples": {
+        "comid_reference_triples": [
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 1
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_digests": [
+                  [
+                    8,
+                    "8d531d77d821e167114d1eb07e0ae19cfb565152408843c768f1135b548fdfa13a203e5c7f129ceacc017df26c999f62da26dbf2e1128345ec0f65d37f87ca41"
+                  ]
+                ]
+              }
+            }
+          ],
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 2
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_digests": [
+                  [
+                    8,
+                    "9effd8a668f76d3fce35451a136f8ef6710260e9ca28beef897f559fcdba48a4c066560fb4900195cae4d4fab1f7d11243421008af8614d92a3fcabbbf75248f"
+                  ]
+                ]
+              }
+            }
+          ],
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 3
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_digests": [
+                  [
+                    8,
+                    "ffde42483a687dd47d05f956a2d62007b71a2988084da1095ec2e43bca156680cae07d0b84cbc7fc9b1d4e80cd8669aa956aed8bb17b0a20a5031c288dfa8b9f"
+                  ]
+                ]
+              }
+            }
+          ],
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 4
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_digests": [
+                  [
+                    8,
+                    "3a0bd5b08436b1d386122090cfa0446cf2571b74f2a15f44df735695dab84bbb1bebb3aef39af6a0f97279b5fb04d513a52dd16547fe88d0455815520c861ed4"
+                  ]
+                ]
+              }
+            }
+          ],
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 16
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_svn": 7
+              }
+            }
+          ],
+          [
+            {
+              "comid_class": {
+                "comid_class_id": "3F8E1C4A5B7D46A29E03C81D2F6B4A70",
+                "comid_vendor": "mctp-spdm-pqc",
+                "comid_model": "spdm-emu responder, measurements from device/",
+                "comid_layer": 1,
+                "comid_index": 17
+              }
+            },
+            {
+              "comid_mval": {
+                "comid_digests": [
+                  [
+                    8,
+                    "c4f9625b48d4e0e192c463a2d00b43305d7d588d7d9c846c1d3f9ed1198883729a55b9178a4f7101dfa1c83234391b2ee98027e8a435d0283e29784ecda6406e"
+                  ]
+                ]
+              }
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}
