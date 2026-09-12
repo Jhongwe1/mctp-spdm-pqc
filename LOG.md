@@ -3049,3 +3049,130 @@ am not sure that is the right trade — the alternative is an evidence format of
 my own that no DMTF tool can read.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+
+---
+
+## 2026-09-13 · Day 8 · the re-read, and a sentence that was reasoned rather than run
+
+Not new work. `CLAUDE.md`'s end-of-day list, item by item, done properly rather
+than from memory — the same exercise as 2026-09-10, which found three things.
+This one found fourteen, and the last one was mine.
+
+### Fourteen, and the pattern behind twelve of them
+
+**現象** Everything was committed, pushed and green. Asked to confirm that every
+file which should have changed had changed, I read rather than remembered, with
+`git grep -n -iE 'G3|gate 3|RATS'` over every tracked document.
+
+Fourteen places needed work. The two that matter most:
+
+- `RUNBOOK.md`'s first screen, the "⚠️ three things to remember" row, still
+  said *"there are only two CI jobs, `verify` and `drills`; the `rats` job that
+  should really be green — the one asserting that a tampered measurement must
+  be judged FAIL — does not exist until G2/G3."* **It exists. I built it
+  yesterday.** The sentence that told the reader what CI does not protect was
+  itself the thing that had stopped being true.
+- The same screen said six drills where there are seven, and *"today: start
+  Gate 3"*.
+
+And ten more of the same shape: `harness/doctor.sh` did not know `opa` existed;
+`RUNBOOK.md` §2's tool list did not mention it; Appendix A had 116 lines of
+command reference and zero `rats` commands; the glossary had `CoRIM` and not
+`COSE`, `OPA` or `kid`; `docs/tamper.md` said *"the verifier that would refuse
+it does not exist yet"*; `docs/certchain.md` said the RATS policy *"is Gate 3,
+not this week"*; `docs/threat-scope.md` had two rows still pointing forward;
+`device/README.md` stated Gate 3's rule as `>=` when the policy compares for
+equality.
+
+**假設** Why did twelve documents fall behind in one day?
+
+1. carelessness at the end of a long session;
+2. the end-of-day list names three documents — `LOG.md`, `README.md`/
+   `roadmap.md`, `RUNBOOK.md` — and nothing names the rest;
+3. the mechanism that exists for this only checks a state token, not prose.
+
+**先驗哪個、為什麼** (3), because it is checkable in one run and it is the one I
+would otherwise have assumed had covered me. `verify_repo.sh`'s gate-table check
+compares a *state word* per gate across three files, plus the week number. It
+passed the whole time. It was designed to pass: 2026-09-10's own entry says so
+in as many words — *"that check would not have caught today"* — and then
+yesterday I let the check's existence stand in for the thing it explicitly does
+not do.
+
+(2) is true and is the smaller half. The list says *"update `RUNBOOK.md` if
+progress changed"*, and progress changing is exactly when eleven other files
+change too.
+
+**根因** **A forward reference is a claim with a timer on it**, and this
+repository is full of them because it is written a week at a time. *"That is
+Gate 3"*, *"does not exist yet"*, *"要到 G2/G3 才存在"* — every one was true
+when written, every one becomes false on a specific day, and nothing points at
+them on that day. They are the opposite of the stale-number problem
+`fields.py --check` solves: a number that drifts from its capture is *wrong
+about a fact*; a forward reference is **right about the past and read as the
+present**.
+
+**教訓** Two, and the first is the cheap one.
+
+`git grep -iE 'G3|gate 3|RATS|not started|yet'` over `*.md` costs four seconds,
+and it is now the first thing in the end-of-day sequence rather than an
+afterthought — before the gate tables, because the gate tables are the three
+files that already have a mechanism.
+
+The second is the general form, and it is the one worth keeping: **when a gate
+closes, the sentences that will rot are the ones written while it was open.**
+They are findable by name — the gate's name is in them. That is a grep, and the
+only reason it did not happen yesterday is that nothing asked for it.
+
+### The sentence I wrote from reasoning rather than from a run
+
+**現象** Fixing the twelve above, I added `opa` to `doctor.sh` as a FAIL rather
+than an INFO, and wrote the justification into three places: *"without it,
+`harness/verify_repo.sh` skips the whole appraisal — loudly, and still green. A
+check that is green because nothing asked it looks exactly like a check that is
+green because nothing is wrong."*
+
+Then, because the new pin check had not been observed rejecting anything —
+standing rule 11 — I wrote a script that feeds it four broken states. The fourth
+removes `opa` from `PATH`. **`verify_repo.sh` returned 1.**
+
+**假設** 1. the test removed more than `opa`; 2. something unrelated failed;
+3. the sentence is wrong.
+
+**先驗哪個、為什麼** (1) first, because the first attempt set `PATH` to three
+directories and would have taken `shellcheck` with it — a test that breaks two
+things and blames one. Re-run with a `PATH` filtered to remove exactly the one
+directory `opa` lives in. Still 1, and the failing line named itself:
+
+```
+FAIL rats/appraise.py self-test failed — a policy that cannot reject is not a policy
+```
+
+**根因** The sentence was wrong, and it was wrong because I had written the
+thing that falsifies it the day before and then reasoned about the system
+instead of running it. `rats/rats_selftest.py` opens with a check for `opa` and
+exits 2 — *"this self-test would pass by not running"* — which is deliberate,
+correct, and exactly the principle the false sentence was invoking. The two
+steps then disagreed: one hard-failed, and the next printed a loud "skipped" and
+passed, explaining that a green run would be misleading. **The explanation
+described a state the script could no longer reach.**
+
+**教訓** The mechanism first: the matrix step now fails too, so a missing engine
+is one red line for one reason rather than two steps with different opinions.
+`doctor.sh`, `RUNBOOK.md` §2 and the first screen say what actually happens, and
+the RUNBOOK note carries the correction in brackets rather than quietly reading
+as if it had always said that.
+
+The lesson is a narrower version of yesterday's, and narrower is better.
+Yesterday: *run your own commit message*. Today: **a sentence about your own
+system's behaviour is a claim, and the cost of checking it is one command.** I
+had three: `opa` removed from `PATH`, and the exit code. What made me write it
+instead of run it is that it was a *justification* rather than a *result* — it
+was there to explain why `doctor.sh` should fail, and explanations do not feel
+like the kind of thing that needs evidence.
+
+That is the same shape as 2026-09-12's third entry, where a claim about DMTF's
+policy was wrong in the direction that flattered it. Both times the false
+sentence was in a supporting role. **Nothing checks the reasoning you use to
+justify a check.**
