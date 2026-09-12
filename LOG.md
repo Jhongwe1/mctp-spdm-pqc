@@ -2938,6 +2938,78 @@ entry in this log treats a failing check as evidence about the system. This one
 was evidence about the sentence I had written about the system, and I nearly
 debugged the model instead of the claim.
 
+### Two defects that only exist somewhere else
+
+**現象** Everything was green: `verify_repo.sh` all passed, the interoperability
+run agreed on sixteen comparisons, the health check reported `PASS=8 FAIL=0`,
+twelve commits on a clean tree. Then the clone — `git clone` into
+`$LAB_DIR/cleanclone-w6`, run the same suite there, because that is the only
+check that answers "what will somebody else see".
+
+Two failures, in a tree whose only difference from this one is **where it sits
+on the disk**.
+
+**假設** For the first, `t3_cert.verdict.json differs from the committed
+verdict`:
+
+1. the appraisal is not deterministic;
+2. something in the verdict depends on the environment;
+3. the clone is stale.
+
+For the second, `rats/cose.py no longer verifies CoRimTool.py's signature`:
+
+1. `cose.py` is broken;
+2. the committed interop fixture is broken;
+3. something in the clone changed the key.
+
+**先驗哪個、為什麼** For the first, (3) costs one `git log` and is false. Then
+(2) before (1), because nine of the ten arms reproduced exactly and a
+non-deterministic appraisal would not be selective — so whatever it is, it is
+something `t3_cert` has and the others do not. `t3_cert` is the arm whose
+handshake never reaches `MEASUREMENTS`, so its entire committed verdict is the
+*text of a refusal*. Opening it: the text begins `/mnt/c/Users/Key20/...`.
+
+For the second, (3) first, on the grounds that two things had just failed in the
+same run and a common cause is cheaper to test than two independent ones. The
+clone's `rats/keys/` held a key with a timestamp of ninety seconds earlier. It
+had been generated *by my own check script*, which runs `mint_reference.sh`.
+
+**根因** Both are the same shape and neither can occur in the tree where the
+code was written.
+
+`_rel()` exists in `rats/appraise.py` for exactly this: a committed derivation
+holding an absolute path only reproduces on the machine that wrote it. I applied
+it to the verdict dictionary and not to the exception messages, and the only arm
+whose verdict *is* an exception message is the one that failed.
+
+`mint_reference.sh` generated a signing key because there was not one. The
+private half is deliberately untracked, so **"there is not one" is what a fresh
+clone looks like** — and generating one silently replaces the key that every
+committed reference value was signed with. The script already refused to
+*overwrite* an existing key. That is a different condition: "do not overwrite
+something that exists" against "do not create something whose absence is
+load-bearing". Only the second one fires on somebody else's machine.
+
+**教訓** Three, and the third is the one I will keep.
+
+**A property about other people's machines has to be tested on one.** Every
+check in `verify_repo.sh` runs in the tree that produced the thing it checks,
+and none of them can see an absolute path, because the absolute path is correct
+there. `RUNBOOK.md` §10 has described the clean-clone re-run as a delivery step
+since week one; it found two defects the first time it was run as a routine one,
+and it cost ninety seconds.
+
+**A guard is a shape, not a sentence.** The overwrite guard and the missing-key
+guard read like the same precaution and protect against opposite states. When
+writing one, the question worth asking is *which machine does this fire on* —
+because a guard that only fires on the author's machine is a guard for the one
+person who does not need it.
+
+**And the cheapest place to find out what your repository promises is to stop
+being inside it.** The private key's absence is a published property: it is in
+`rats/README.md`, in `mint_reference.sh`'s header, and in the reasoning behind
+ADR 0005. All three were written by someone who had the key.
+
 ### What is measured, and what is still a claim about myself
 
 **`TODO(me)`** — `c-drills`. `d7` now exists: contract, tests, stub, validated
