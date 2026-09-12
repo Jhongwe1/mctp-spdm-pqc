@@ -32,9 +32,11 @@ needs a date attached to it.
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
 | Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
 | Fifth candidate found while writing a proxy | **done** | 2026-09-10 | `spdm-emu`: `command.h` documents the socket payload as starting at the SPDM header when a transport byte precedes it — see below |
+| Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
-| **This project's** first change submitted | not started | | scheduled W03 → **slipped**, see below |
+| **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | 2026-09-12 | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
+| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 |
 | Reviewer response received | not started | | |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
@@ -326,6 +328,247 @@ question rather than a defect: the comment is accurate for
 header. The sentence is not wrong so much as unqualified, and saying so is a
 smaller and more likely-to-land change than arguing about which case should be
 the default in the documentation.
+
+## Six, from running the published example — 2026-09-12
+
+`DMTF/spdm-emu` at `5f01d2f`, `spdm_emu/spdm_device_verifier_tool/`. The
+tools this project's week-six plan was built around: CoRIM manifests, COSE
+signing, an Open Policy Agent policy. Their `readme.md` gives an eight-command
+example with the sample data that ships beside it.
+
+**The example does not run.** Every one of these was found by typing those
+eight commands, and the thing worth saying before the list is that *running the
+published example first, unchanged, before connecting anything of my own* is
+what made them findings rather than two days of debugging my own code.
+
+The tool was last changed on 2023-05-09. Upstream `main` on 2026-09-12 is
+byte-identical to the pinned copy — fetched and diffed, not assumed — so all six
+are current.
+
+### ① `requirements.txt` has no upper bounds, and the ceiling has arrived
+
+```
+cbor>=1.0.0     pycose>=0.1.2     cose>=0.9.dev8     cryptography>=2.3
+```
+
+`pip install -r requirements.txt` today resolves `cbor2` to 6.1.4 through
+`pycose`. cbor2 ≥ 6.0 decodes the contents of a `CBORTag` as **immutable**
+containers — arrays become `tuple`, maps become `FrozenDict` — and
+`pycose.messages.CoseMessage.decode()` requires `isinstance(cose_obj, list)`.
+
+Measured, and it is the cleanest way to state it: **pycose cannot decode its own
+`encode()` output.** 79 bytes, byte-identical through a `cbor2` round trip,
+`TypeError: Bytes cannot be decoded as COSE message`.
+
+Bisected here: 6.1.4 fails, 5.6.5 and 5.4.6 return `list`/`dict` and work. This
+is pycose's incompatibility rather than DMTF's code, but DMTF's tool is the
+thing that stops working and the fix in their tree is a pin.
+
+### ② `CoRimTool.py verify` does not verify — ★ the one being sent
+
+Two lines of `VerifySignedCbor`, and **they mask each other**, which is the
+whole reason this section is longer than the others and the whole reason the
+change is one change.
+
+**(a) The key.** `CoRimTool.py:209`:
+
+```python
+key = VerifyingKey.from_pem(f.read()).to_string()
+cose_key = EC2Key(crv='P_256', d=key)
+```
+
+`VerifyingKey.to_string()` returns the **public point**, `x ‖ y`, 64 bytes for
+P-256. It is passed as `d=`, the **private scalar**, 32 bytes. Three lines up in
+the same file, `SignCbor` does the same construction correctly with a
+`SigningKey`, whose `to_string()` really is `d`.
+
+`EC2Key` raises `ValueError: Invalid EC key (key out of range, infinity, etc.)`,
+the surrounding `except Exception` catches it, and the tool prints *Signature
+verification failed*. **The message is wrong as well as the outcome**: nothing
+ever looked at a signature.
+
+**(b) The result.** `CoRimTool.py:214`:
+
+```python
+cose_msg.verify_signature(Algorithm)
+```
+
+`Sign1Message.verify_signature()` is documented as returning
+*"True for a valid signature or False for an invalid signature"*. **It returns.
+It does not raise.** The value is discarded, and control falls through to the
+payload write and *Signature verification passed*.
+
+> ### ⚠ Fixing (a) alone makes the tool worse
+>
+> Measured, on 2026-09-12, on the sample data: with (a) repaired and (b) not,
+> flipping the last byte of the 64-byte signature still prints **Signature
+> verification passed** and still writes the 996-byte payload.
+>
+> **This project had that one-line change committed and was one keystroke from
+> sending it.** It was caught by the last line of a script written to check that
+> the commit message's own `Tested:` claims were true — the claim being *"a
+> corrupted signature is still refused"*, which turned out not to be.
+>
+> A verifier that accepts nothing is useless. A verifier that accepts anything
+> is worse than useless, and the second is what the first fix produces. So they
+> go together, and `rats/interop.sh` now keeps a **half-patched** copy beside
+> the patched one and asserts that the half-patched one accepts a forged
+> signature. A check is the only form of "remember this" that survives.
+
+Reproduction, with cbor2 pinned so that ① is out of the way:
+
+```bash
+cd spdm_emu/spdm_device_verifier_tool
+pip install -r requirements.txt && pip install 'cbor2==5.6.5'
+python3 CoRimTool.py json_to_cbor -i SampleManifests/SpdmSampleCoMid.json \
+                     -o /tmp/s.cbor
+python3 CoRimTool.py sign -f /tmp/s.cbor --key SampleTestKey/ecc-private-key.pem \
+                     --kid 11 --alg ES256 -o /tmp/s.corim
+python3 CoRimTool.py verify -f /tmp/s.corim --key SampleTestKey/ecc-public-key.pem \
+                     --alg ES256 -o /tmp/out.cbor
+#   Signature verification failed
+```
+
+And the signature is good. Verified independently, with `ecdsa` over the COSE
+`Sig_structure` built by hand — `["Signature1", protected, b"", payload]` — which
+returns `True`. The fix is two lines:
+
+```python
+-        cose_key = EC2Key(crv='P_256', d=key)
++        cose_key = EC2Key(crv='P_256', x=key[:len(key) // 2], y=key[len(key) // 2:])
+         cose_msg.key = cose_key
+ 
+-        cose_msg.verify_signature(Algorithm)
++        if not cose_msg.verify_signature(Algorithm):
++            raise ValueError('signature does not verify')
+```
+
+With them, the same command prints *Signature verification passed*, a corrupted
+signature prints *failed* and writes nothing, and the whole published example
+runs to `opa eval`.
+
+**Is (b) a vulnerability?** Not as shipped, and the reasoning matters more than
+the answer. It is not reachable today: (a) means `verify` raises before any
+signature is examined, so the tool accepts nothing and no deployed system can
+be holding a forged manifest it approved. (b) becomes reachable only if someone
+fixes (a) — which is exactly why the report and the fix cover both, and why
+neither half is being sent on its own. If it had been reachable in shipping
+code the channel would have been DMTF's security reporting process rather than
+a public pull request, and this section would say so instead of describing it.
+
+### ③ `json_to_cbor` cannot read `cbor_to_json`'s output
+
+```bash
+python3 CoRimTool.py json_to_cbor -i SampleManifests/SpdmSampleCoMid.json -o /tmp/a.cbor
+python3 CoRimTool.py cbor_to_json -i /tmp/a.cbor                          -o /tmp/a.json
+python3 CoRimTool.py json_to_cbor -i /tmp/a.json                          -o /tmp/b.cbor
+#   KeyError: 'corim'
+```
+
+Three commands, the tool's own sample manifest, no other project involved.
+`cbor_to_json` writes the two CoRIM container tags as JSON **keys** — `corim`
+and `unsigned_corim_map` — and `translate_data`'s `AllMapDict` has no entry for
+either, so it raises before reaching anything else.
+
+It matters because `cbor_to_json` is step 2 of the documented verification flow:
+its output is what the OPA policy is evaluated against, and it is not a document
+the tool can take back.
+
+### ④ `translate_data` hard-codes two names where a table was intended
+
+`CoRimTool.py:190`, inside the list branch:
+
+```python
+if input[index] == "comid_tag_creator":
+    output.append(AllMapDict[input[index]])
+elif input[index] == "sha256":
+    output.append(SupportHashAlgMap[input[index]])
+else:
+    output.append(input[index])
+```
+
+`sha384`, `sha512`, `comid_creator` and `comid_maintainer` all fall through and
+are encoded as **text strings** where the CDDL has integers. Measured on a CoMID
+with five SHA-512 digests and two entity roles: 1523 bytes rather than 1480, a
+43-byte difference in a document a signature covers.
+
+The published sample sidesteps it by writing the integers directly
+(`"comid_digests": [[8, …]]`), so the shipped example never exercises the
+branch.
+
+### ⑤ `verify` reports failure on stdout and exits 0
+
+`CoRimTool.py:215`:
+
+```python
+    except Exception:
+        print("Signature verification failed")
+        exit()
+```
+
+Bare `exit()` is status 0. A shell cannot tell a verified manifest from a
+rejected one, and a pipeline that trusts the exit code treats a failed
+verification as a success.
+
+**Not filed as a security issue, and the reasoning is the point.** It cannot be
+reached as a fail-open today, because ② means `verify` never succeeds and never
+writes its output file, so every downstream step fails anyway. It is a
+robustness defect in a tool whose own readme calls it a sample and whose keys
+say *do NOT use them in any production*. If it had been reachable in shipping
+code the channel would have been DMTF's security reporting process rather than a
+public issue, and this section would not exist.
+
+### ⑥ `SpdmSamplePolicy.rego` does not parse on a current OPA
+
+OPA made Rego v1 the default in 1.0. On `opa 1.20.2` the sample produces
+**eleven** `rego_parse_error` messages — `` `if` keyword is required before rule
+body``, `` `contains` keyword is required for partial set rules`` — and
+evaluates only under `--v0-compatible`. The readme documents a bare
+`opa eval -i <input> -d <policy> "data.spdm"` and mentions no version anywhere.
+
+### What is being submitted, and what is not
+
+**② only, and both of its lines.** One logical change — *make `verify`
+verify* — and the difference between the documented example working and not
+working. The pull-request body is
+[`0001-corim-verify.md`](0001-corim-verify.md); it names ① as a separate problem
+with the exact command to work around it, because a maintainer who applies the
+fix on a fresh virtualenv and sees it still fail will close the change.
+
+The two lines are one change rather than two on evidence rather than on taste:
+fixing the key alone converts a verifier that accepts nothing into one that
+accepts anything, which was measured rather than reasoned about.
+
+①, ③, ④, ⑤ and ⑥ are recorded here with their reproductions and are **not**
+bundled. Six unrelated fixes in a first pull request to a repository where
+nobody knows you is how a first pull request does not land, and three of the six
+involve a judgment about which form is canonical — that is a maintainer's call
+to make, not a contributor's to assume.
+
+### What this is worth, stated before anyone asks
+
+Finding seven defects in one directory sounds like more than it is: it is a
+sample tool, last touched in 2023, whose dependencies moved underneath it. The
+claim is not *I found bugs in DMTF's code*. The claim is narrower and more
+useful, and it has two halves.
+
+**I ran the published example before writing anything of my own**, and when it
+failed I read the source until I could say which line and why, rather than
+working around it and moving on. Four of the seven were found by the fifth
+command.
+
+**And I checked my own bug report before sending it.** The second half of ② —
+the one that makes the first half dangerous — was found by writing a script to
+re-run the `Tested:` lines of a commit message that was already written, already
+signed off, and already on a branch. The last of those lines was false. That is
+the finding I would actually talk about: not that upstream had a defect, but
+that a fix which is obviously correct in isolation was, in context, the more
+harmful of the two states.
+
+The remaining one came from asking whether the policy that runs at the end
+actually checks what it appears to check — and it does not, which is in
+[`../rats-pipeline.md`](../rats-pipeline.md) §5 and is a finding about design
+rather than a defect to report.
 
 ## Three identity traps, all of which are silent until they are not
 
