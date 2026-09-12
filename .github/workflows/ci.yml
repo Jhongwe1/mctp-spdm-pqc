@@ -6,20 +6,28 @@ name: CI
 # stops being rejected. A table of results can be anything; a build that fails
 # on the negative is why a table can be believed.
 #
-# As of 2026-09-10 half of that job exists, inside `verify`:
-# harness/verify_repo.sh re-derives the in-flight tamper arms from the
-# requester's own logs and the committed fields.json, and fails if either stops
-# being refused, if the two stop sharing one status, or if the device-side one
-# starts being refused. What is still missing is the reference-value half —
-# comparing a measurement against what it SHOULD be — which is Gate 3, and
-# which will become the `rats` job.
+# As of 2026-09-12 that job exists and is called `rats`.
 #
-#   now      verify    harness/verify_repo.sh. 28 steps at the time of
-#                      writing, and THAT NUMBER IS NOT MAINTAINED HERE.
+# The half that came first, inside `verify`, asserts that an IN-FLIGHT tamper is
+# refused by the handshake — and, just as importantly, that the DEVICE-SIDE one
+# is not, because a measurement changed before it is signed reaches a requester
+# with every signature valid. That arm completes with no error of any kind, and
+# no amount of SPDM catches it.
+#
+# `rats` is the other half: the same ten captures, compared against a COSE-signed
+# reference value under a policy, with the clean ones required to PASS and the
+# tampered ones required to FAIL. rats/out/expected.json says which is which and
+# why, per arm, so the assertion is a specification rather than a snapshot of a
+# previous run.
+#
+#   now      verify    harness/verify_repo.sh. It runs the appraisal too when
+#                      `opa` is present, and says so loudly when it is not.
+#                      The step count is NOT MAINTAINED HERE; it went stale
+#                      twice in two days when it was.
+#   now      rats      reference values -> policy -> verdict. The job that turns
+#                      red when a tampered measurement stops being rejected
 #   now      drills    every C drill compiles under -Werror + both sanitizers;
 #                      the ones named in c-drills/DONE.txt are run
-#   G3       rats      reference values -> policy -> verdict, with the clean
-#                      capture passing and the tampered one FAILING
 #   G6       upstream  build libspdm from the pinned commit, run its unit tests
 #
 # This comment used to enumerate what `verify` checks. It went stale twice in
@@ -60,6 +68,58 @@ jobs:
 
       - name: harness/verify_repo.sh
         run: bash harness/verify_repo.sh
+
+  rats:
+    name: a tampered measurement must be rejected
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Open Policy Agent
+        run: |
+          curl -fsSL -o /tmp/opa \
+            https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static
+          sudo install -m 0755 /tmp/opa /usr/local/bin/opa
+          opa version
+
+      - name: The encoders, against RFC 8949's own vectors
+        run: python3 rats/cose.py selftest
+
+      - name: The policy, against eleven broken pairs
+        run: python3 rats/appraise.py selftest
+
+      - name: Every arm of the capture matrix, against what it must produce
+        run: python3 rats/appraise.py matrix --check
+
+      # The two assertions above are about documents. This one is about the
+      # shell: a verifier whose only channel is stdout cannot be used in a
+      # pipeline, and the tool this replaced — DMTF's CoRimTool.py verify —
+      # prints "Signature verification failed" and exits 0. So the exit code
+      # is asserted directly, in both directions, because a tool that always
+      # exits 1 would satisfy half of this and be equally useless.
+      - name: The verdict reaches the shell
+        run: |
+          run="bench/data/w5-tamper-20260910T092621Z"
+          # errexit is on by default here, and a FAIL verdict is a non-zero
+          # exit that must be READ rather than propagated. Turning it off for
+          # exactly these two lines is the point of the step.
+          set +e
+          python3 rats/appraise.py appraise "$run/t0_clean.decode.txt" >/dev/null
+          clean=$?
+          python3 rats/appraise.py appraise "$run/t1_meas.decode.txt" >/dev/null
+          tampered=$?
+          set -e
+          echo "clean exit=$clean   tampered exit=$tampered"
+          test "$clean" -eq 0 || { echo "the untampered capture did not pass"; exit 1; }
+          test "$tampered" -eq 1 || { echo "the TAMPERED capture did not fail"; exit 1; }
+
+      - name: Report
+        run: |
+          {
+            echo "### RATS appraisal"
+            echo
+            python3 rats/appraise.py matrix --out /tmp/rats-out | sed -n '1,20p'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   drills:
     name: c-drills (-Werror, ASan, UBSan)

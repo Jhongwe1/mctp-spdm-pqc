@@ -24,7 +24,7 @@ cd "$REPO_ROOT" || exit 1
 
 step "shellcheck"
 if command -v shellcheck >/dev/null 2>&1; then
-    if shellcheck -x -S warning harness/*.sh certs/*.sh; then
+    if shellcheck -x -S warning harness/*.sh certs/*.sh rats/*.sh; then
         good "no warnings or errors"
     else
         bad "shellcheck reported problems"
@@ -152,8 +152,10 @@ else
 fi
 
 step "python syntax (analysis tools)"
-if python3 -m py_compile harness/fields.py bench/pcapstat.py device/gen_measurements.py; then
-    good "fields.py, pcapstat.py and gen_measurements.py compile"
+if python3 -m py_compile harness/fields.py bench/pcapstat.py \
+                         device/gen_measurements.py rats/cose.py \
+                         rats/appraise.py rats/rats_selftest.py; then
+    good "fields.py, pcapstat.py, gen_measurements.py and rats/ compile"
 else
     bad "an analysis tool has a syntax error"
 fi
@@ -1379,6 +1381,122 @@ sys.exit(1 if problems else 0)
 PY
 [ $? -eq 0 ] && good "tampering in flight is refused; tampering at the device is not" \
              || bad "the tamper detection this repository claims did not hold"
+
+step "the appraisal's own encoders and policy can still reject"
+# rats/ is a second implementation of somebody else's format, and the two ways
+# it can be quietly wrong are an encoder that agrees only with itself and a
+# policy that has only ever seen good input. Both self-tests run here.
+if python3 rats/cose.py selftest > /tmp/rats-cose.$$ 2>&1; then
+    sed -n '$p' /tmp/rats-cose.$$ | sed 's/^/  /'
+    good "CBOR, COSE and the DER conversion, against RFC 8949's own vectors"
+else
+    sed 's/^/  /' /tmp/rats-cose.$$
+    bad "rats/cose.py self-test failed"
+fi
+rm -f /tmp/rats-cose.$$
+if python3 rats/appraise.py selftest > /tmp/rats-policy.$$ 2>&1; then
+    grep -E 'ACCEPTS this|categories, all fired|checks, 0 failed' /tmp/rats-policy.$$ | sed 's/^/  /'
+    good "every broken pair is refused, and each one names its own reason"
+else
+    sed 's/^/  /' /tmp/rats-policy.$$
+    bad "rats/appraise.py self-test failed — a policy that cannot reject is not a policy"
+fi
+rm -f /tmp/rats-policy.$$
+
+step "a tampered measurement is still REJECTED by the appraisal"
+# ★ The assertion this repository is built to support, and the reason Gate 3
+# exists. docs/tamper.md row 1 is a tamper NOTHING in the SPDM handshake
+# refused: the device signed what it measured, every signature verified, the
+# requester exited 0. rats/out/expected.json says that arm must appraise FAIL,
+# and this is where that stops being a sentence.
+#
+# Two assertions, not one. --check re-derives every verdict and requires it to
+# equal the committed one, so a change in the tools that changes a result is a
+# red build. --expect compares the OUTCOMES against a committed statement of
+# what they must be, because a policy that passes everything re-derives
+# perfectly and would satisfy --check forever.
+if command -v opa >/dev/null 2>&1; then
+    if python3 rats/appraise.py matrix --check > /tmp/rats-matrix.$$ 2>&1; then
+        sed -n '/^arm /,/^$/p' /tmp/rats-matrix.$$ | sed 's/^/  /'
+        grep -c '^  ok ' /tmp/rats-matrix.$$ | sed 's/^/  assertions passed: /'
+        good "ten arms, every verdict re-derived, every outcome as specified"
+    else
+        sed 's/^/  /' /tmp/rats-matrix.$$
+        bad "the appraisal matrix does not match rats/out/expected.json"
+    fi
+    rm -f /tmp/rats-matrix.$$
+else
+    printf '  --   opa not installed (RUNBOOK.md §11) — the appraisal is skipped\n'
+    printf '  --   THIS IS THE CHECK THAT MATTERS. A green run without it is\n'
+    printf '  --   green because nothing was asked, not because nothing is wrong.\n'
+fi
+
+step "this project's encoders still agree with DMTF's"
+# rats/interop/ holds what DMTF's spdm_device_verifier_tool produced, recorded
+# once by rats/interop.sh on a machine that has a spdm-emu checkout. Here — on
+# a runner that has none — this project's side is re-derived and required to
+# equal it. The interoperability claim is therefore checked on every push
+# rather than on the day somebody re-runs the comparison.
+INTEROP="rats/interop"
+if [ -f "$INTEROP/dmtf-evidence.json" ]; then
+    T="$(mktemp -d)"
+    RUNDIR="bench/data/w5-tamper-20260910T092621Z"
+
+    python3 harness/fields.py "$RUNDIR/t0_clean.decode.txt" \
+            --emit-record "$T/record.bin" >/dev/null 2>&1
+    if cmp -s "$T/record.bin" "$INTEROP/record.bin"; then
+        good "the measurement record is the one both tools were given"
+    else
+        bad "the record emitted from the capture is not the one in $INTEROP"
+    fi
+
+    python3 rats/appraise.py evidence "$RUNDIR/t0_clean.decode.txt" \
+            -o "$T/evidence.json" >/dev/null 2>&1
+    # SpdmMeasurement.py writes json.dumps(...) and stops, with no final
+    # newline. Every byte of the document agrees; one writer ends the file.
+    if [ "$(sed -e '$a\' "$T/evidence.json" | sha256sum)" \
+       = "$(sed -e '$a\' "$INTEROP/dmtf-evidence.json" | sha256sum)" ]; then
+        good "evidence: identical to SpdmMeasurement.py's, bar its missing newline"
+    else
+        diff "$INTEROP/dmtf-evidence.json" "$T/evidence.json" | head -20 | sed 's/^/  /'
+        bad "the evidence document no longer matches DMTF's"
+    fi
+
+    python3 rats/appraise.py to-cbor -i "$INTEROP/reference.json" \
+            -o "$T/reference.cbor" >/dev/null 2>&1
+    if cmp -s "$T/reference.cbor" "$INTEROP/dmtf-reference.cbor"; then
+        good "CoRIM: $(wc -c < "$T/reference.cbor" | tr -d ' ') bytes, identical to CoRimTool.py's"
+    else
+        bad "the CBOR encoding no longer matches CoRimTool.py's"
+    fi
+
+    # Encode, decode, encode: the property a signature depends on, and the one
+    # CoRimTool.py does not have (KeyError: 'corim' on its own sample).
+    python3 rats/appraise.py to-json -i "$T/reference.cbor" -o "$T/back.json" >/dev/null 2>&1
+    python3 rats/appraise.py to-cbor -i "$T/back.json" -o "$T/again.cbor" >/dev/null 2>&1
+    if cmp -s "$T/again.cbor" "$T/reference.cbor"; then
+        good "encode -> decode -> encode returns the same bytes"
+    else
+        bad "a decode and re-encode changed the reference document"
+    fi
+
+    if python3 rats/cose.py verify -i "$INTEROP/dmtf-signed.corim" \
+            --key rats/keys/ref-signer.pub -o "$T/payload.cbor" >/dev/null 2>&1; then
+        good "rats/cose.py still verifies a COSE_Sign1 CoRimTool.py signed"
+    else
+        bad "rats/cose.py no longer verifies CoRimTool.py's signature"
+    fi
+
+    if python3 rats/cose.py verify -i rats/ref/clean.corim \
+            --key rats/keys/ref-signer.pub >/dev/null 2>&1; then
+        good "the published reference value verifies against the committed key"
+    else
+        bad "rats/ref/clean.corim does not verify — every appraisal below is void"
+    fi
+    rm -rf "$T"
+else
+    bad "$INTEROP is missing; run bash rats/interop.sh on a machine with spdm-emu"
+fi
 
 step "the three gate tables agree, and they agree about which week it is"
 # README.md, docs/roadmap.md and RUNBOOK.md each carry a table of the nine
