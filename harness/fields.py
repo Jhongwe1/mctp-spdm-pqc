@@ -4,6 +4,8 @@
     python3 harness/fields.py <run>/walkthrough.decode.txt            # table
     python3 harness/fields.py <run>/walkthrough.decode.txt --json     # machine
     python3 harness/fields.py --check docs/handshake-walkthrough.md   # assert
+    python3 harness/fields.py <run>/t0_clean.decode.txt \
+            --emit-record /tmp/record.bin                             # the bytes
 
 Why this exists
 ---------------
@@ -675,8 +677,18 @@ def fail(out, kind, why):
     return out
 
 
-def _measurement_record(raw, offset, length, declared_blocks):
-    """Walk a measurement record into its blocks. Never guesses."""
+def _measurement_record(raw, offset, length, declared_blocks,
+                        keep_values=False):
+    """Walk a measurement record into its blocks. Never guesses.
+
+    `keep_values` adds each block's raw value bytes under "value". It defaults
+    to off and nothing in this file's JSON output turns it on, deliberately:
+    every `*.fields.json` in bench/data is a committed derivation whose digest a
+    `manifest.json` attests to, so a field appearing in the default output
+    invalidates 396 attested artifacts across 15 runs. The caller that needs the
+    bytes is rats/appraise.py, which asks for them explicitly and never writes
+    this dictionary to disk.
+    """
     out = {
         "record_offset": offset,
         "record_bytes": length,
@@ -737,6 +749,8 @@ def _measurement_record(raw, offset, length, declared_blocks):
         }
         if vsize <= MEAS_VALUE_HEX_LIMIT:
             entry["value_hex"] = value.hex()
+        if keep_values:
+            entry["value"] = value
         # The secure version number is the one value a policy will compare
         # rather than merely digest, so it is decoded here instead of left as
         # eight bytes of hex for a document to transcribe by hand.
@@ -1873,6 +1887,78 @@ def check(doc_path: Path, repo_root: Path) -> int:
     return 1 if failures else 0
 
 
+# ---------------------------------------------------- the record as bytes ---
+#
+# Everything above answers questions ABOUT a capture. This answers with a piece
+# OF one, and it exists because Gate 3 needs the measurement record itself
+# rather than a description of it: a reference-value comparison is a comparison
+# of bytes, and the bytes a verifier would compare are the ones the responder
+# put on the wire.
+#
+# The obvious alternative is to hand the appraisal `device/measurements.bin`,
+# which is the fixture the responder READ. It is the wrong file and the way it
+# is wrong is not obvious, so it is written down here rather than left to be
+# rediscovered:
+#
+#   * it is this project's own container format (MSR1), not DSP0274's
+#     measurement-block encoding, so a DMTF tool parsing it reads garbage;
+#   * it holds four of the responder's eight blocks — the manifest, the
+#     hash-extend log and the device-mode block are still upstream's;
+#   * and a reference value derived from the fixture, compared against evidence
+#     derived from the same fixture, is an identity. It would pass for every
+#     input including a tampered one, because the tamper is in both halves.
+#
+# The point of RATS is that evidence travels: the Attester produces it, SPDM
+# conveys it, the Verifier appraises it. A pipeline fed the Attester's own
+# input file has deleted the conveyance and is testing nothing.
+#
+# What is emitted is therefore sliced out of the MEASUREMENTS message, and the
+# slice is checked before it is written: the bytes must hash to the digest the
+# reconstruction computed independently, from the same message but through the
+# block walk. If those two disagree the record is not written at all, because a
+# reference value minted from a misread record is worse than no reference value
+# — it is a policy that will reject correct devices for the rest of its life.
+
+
+def emit_record(data: dict, messages, out_path: Path) -> int:
+    layout = data.get("layout") or {}
+    rec = layout.get("measurement_record")
+    if rec is None:
+        print("no MEASUREMENTS response carried a record in this capture",
+              file=sys.stderr)
+        return 2
+    if not rec.get("closes"):
+        print(f"the record walk did not close ({rec.get('why_kind')}: "
+              f"{rec.get('why')}) — refusing to emit a record this file "
+              f"could not read", file=sys.stderr)
+        return 2
+
+    msg = next((m for m in messages if m.seq == rec["packet"]), None)
+    if msg is None or not msg.raw:
+        print(f"packet {rec['packet']} is not in the decode with its bytes",
+              file=sys.stderr)
+        return 2
+
+    off, length = rec["record_offset"], rec["record_bytes"]
+    blob = bytes(msg.raw[off:off + length])
+    if len(blob) != length:
+        print(f"packet {rec['packet']}: {len(blob)} bytes available where the "
+              f"record declares {length}", file=sys.stderr)
+        return 2
+
+    got = hashlib.sha256(blob).hexdigest()
+    if got != rec["sha256"]:
+        print(f"the slice hashes to {got} and the reconstruction says "
+              f"{rec['sha256']} — two readings of the same message disagree",
+              file=sys.stderr)
+        return 2
+
+    out_path.write_bytes(blob)
+    print(f"{out_path}: {length} bytes, {rec['blocks_walked']} block(s), "
+          f"sha256 {got}")
+    return 0
+
+
 # ------------------------------------------------------------------- main ---
 
 def main() -> int:
@@ -1888,6 +1974,9 @@ def main() -> int:
                     help="compare the capability-bit tables against libspdm's spdm.h")
     ap.add_argument("--write-pin", action="store_true",
                     help="with --verify-tables, record the result in third_party/spdm-h.pin")
+    ap.add_argument("--emit-record", type=Path, metavar="OUT.bin",
+                    help="write the MEASUREMENTS record's bytes, as the "
+                         "responder sent them, for a reference-value comparison")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent
@@ -1909,6 +1998,9 @@ def main() -> int:
         print(f"no SPDM messages decoded from {args.decode}", file=sys.stderr)
         return 2
     data = extract(messages, meta, args.decode)
+
+    if args.emit_record:
+        return emit_record(data, messages, args.emit_record)
 
     if args.list_keys:
         for k, v in sorted(flatten(data).items()):
