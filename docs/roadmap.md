@@ -15,7 +15,7 @@ table and the two are kept in step.
 | **G0** | 1 | environment and version baseline | two pinned builds; health check passes items 4 and 7; `docs/env-baseline.md` committed | **complete** |
 | **G1** | 2–3 | full handshake, field by field | every field of six message pairs annotated from a capture, in my own words | **complete** — seven pairs annotated in `docs/handshake-walkthrough.md`, 164 values asserted against their captures by CI, and four pairs whose *offsets* are reconstructed from the wire rather than transcribed. The three that are not, and why they are harder rather than merely undone, are in §10 |
 | **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | **complete** — the chain, a tamper harness running ten controlled arms against a prior baseline, and **Table 1** with all three points measured (`docs/tamper.md`). Point 2 became two arms — the signed content changed in flight, and the signature changed in flight — because they are the pair that fails identically for opposite reasons, which is what the week's plan expected of points 1 and 2 and what point 1 turned out not to do |
-| **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | **not started** — and Table 1 is now the argument for it: of five tampers, the four that touch bytes a verifier can check are refused or never sent, and the one nobody refuses is the one that changed what the device believes about itself. Both prerequisites are met — the secure version number takes three values on the wire, and `verify_repo.sh` already fails if an in-flight tamper stops being rejected |
+| **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | **in progress** — the pipeline exists and is asserted by CI: a capture's measurement record, compared against a COSE-signed reference value under `rats/policy.rego`, over all ten tamper arms (**Table 3**, `docs/rats-pipeline.md`). The arm nothing in SPDM refused is judged FAIL and names the index; the arm where only the *signature* was altered is judged PASS, which separates a damaged link from a damaged device where one status code could not. What remains is the fourth clause of the definition: the secure version number is compared for equality, so an upgrade and a rollback are indistinguishable. Week 7 |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | not started |
 | **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | not started |
 | **G6** | 10–11 | conformance and negative testing | upstream responder validator run with a root cause for every failure; negative tests reproducing three 2026 advisory *classes* | not started |
@@ -56,10 +56,10 @@ Those three are not on the list.
 | 4 | `pcapstat.py` — capture statistics, written here, no dependencies | G2 | tool — exists, and CI requires it to agree with `fields.py` per message type |
 | 5 | **Table 2** — post-quantum cost at four levels | G4 | measured |
 | 6 | **Figure 2** — total handshake bytes and certificate round trips | G4 | measured |
-| 7 | reference values, policy, and verdicts | G3 | reproducible |
+| 7 | **Table 3** — reference values, policy, and a verdict per arm | G3 | reproducible — exists; `rats/`, `docs/rats-pipeline.md`. The rollback cases are week 7 |
 | 8 | upstream responder-validator report, root cause per failure | G6 | reproducible |
 | 9 | negative test suite reproducing three advisory classes | G6 | reproducible |
-| 10 | CI that re-runs the experiments and asserts the published numbers | G6 | mechanism |
+| 10 | CI that re-runs the experiments and asserts the published numbers | G6 | mechanism — the `rats` job exists as of 2026-09-12 and is the half that asserts a **tampered** measurement is rejected |
 | 11 | an upstream change with reviewer correspondence | G7 | external |
 | 12 | `docs/threat-scope.md` — what is and is not defended against | G8 | written |
 | 13 | `docs/limitations.md` | G8 | written |
@@ -147,6 +147,23 @@ it does.
     report *which* check rejected something returns a stable code beside the
     prose — `ms_status_t` in `device/`, `why_kind` in `fields.py` — and the
     tests compare codes.
+17. **A fix is correct in the state it leaves behind, not in isolation.**
+    On 2026-09-12 a one-line change to an upstream verifier was written,
+    committed, signed off and one keystroke from being sent. It was right: the
+    tool passed a public key where a private scalar goes, so it refused every
+    signature. Three lines below, the same function discarded the *return
+    value* of `verify_signature()`, which is a bool rather than an exception.
+    The two defects masked each other, and the correct fix for the first,
+    applied alone, would have turned a verifier that accepts **nothing** into
+    one that accepts **anything**.
+    It was caught by writing a script to re-run the `Tested:` claims of a
+    commit message that already existed — and the last claim, *"a corrupted
+    signature is still refused"*, was false. So: **before sending a change,
+    run its own commit message**, and when a defect is found in a function,
+    read the rest of the function rather than the rest of the line.
+    `rats/interop.sh` now keeps a half-patched copy of that file and asserts
+    that it accepts a forged signature, because the story is not the
+    mechanism; the check is.
 
 ## External dates that do not wait
 

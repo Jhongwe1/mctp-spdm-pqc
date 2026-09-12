@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 5 of a 14-week programme. The table below is the truth about what
+This is week 6 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -35,15 +35,71 @@ exists today, not what is planned. Planned work is in
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
 | G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
 | G2 | certificate chain, three tamper points | **complete** — **Table 1**, five rows over ten controlled arms, every point measured ([`docs/tamper.md`](docs/tamper.md)). Point 2 needed a proxy and became two arms, which is where the pair that fails identically for opposite reasons turned out to live |
-| G3 | RATS verification pipeline | not started — and weeks 4 and 5 measured why it is not optional: the one tamper nothing refuses is the one a reference value would catch |
+| G3 | RATS verification pipeline | **in progress** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is now judged FAIL, and the `rats` job turns red if it stops being. Outstanding: the rollback rule, where an upgrade and a downgrade still produce the same verdict — week 7 |
 | G4 | post-quantum cost quantification | not started |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | **in progress** — agreements and account done; **five** candidate changes with evidence, none submitted. The newest is a header comment that describes the socket payload as starting at the SPDM header when a transport byte precedes it. SPDM 1.5 hybrid-PQC review read and feedback drafted, not sent |
+| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. Twelve candidates now carry evidence and none has been sent |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 6 established
+
+**The row where nothing happened now fails.** Week 5 ended with a measurement
+changed on the device, a handshake that completed, every signature verifying,
+and no status code anywhere. That is the boundary of what SPDM claims, and it
+is the thing a reference value is for.
+
+**Table 3** — the same ten arms, appraised against a COSE-signed reference value
+under a policy. The left column is what the *handshake* did; the right is what
+the *appraisal* says about the same captures:
+
+| arm | what changed | SPDM handshake | appraisal |
+|:--|---|---|:--|
+| `t0_clean` `t0_none` `t0_proxy` | nothing | completed | **PASS** |
+| **`t1_meas`** | a measurement, **on the device** | **completed, no status** | **FAIL** — `SPDM_HASH_CHECK`, index 1 |
+| `t2a_record` | the record, in flight | refused `80020001` | **FAIL** — `SPDM_HASH_CHECK`, index 1 |
+| **`t2b_sig`** | the **signature**, in flight | refused `80020001` | **PASS** |
+| `t3_cert` | a certificate | never sent, `8001000a` | *no evidence* |
+| `t3b_foreign` | *whose* certificate | completed | **PASS** |
+| `svn5` `svn9` | the secure version number | completed | **FAIL** — `SPDM_SVN_CHECK`, index 16 |
+
+**Rows `t2a` and `t2b` answer the question week 5 left open.** Both print the
+same status. With the appraisal beside it, two one-bit answers give three
+distinguishable states: *refused and FAIL* is content that is wrong and unsigned
+for; *refused and PASS* is a measurement that is fine and a conveyance that
+broke; *completed and FAIL* is a healthy link and a wrong device. What that
+costs in a real deployment — the requester discards a message it rejects — is in
+[`docs/rats-pipeline.md`](docs/rats-pipeline.md) beside the table, not in a
+closing section.
+
+**`t3b_foreign` passes and that is correct**, because the measurements really
+are the reference values. What is wrong is whose device it is, which is an
+identity question this policy does not answer and says so.
+
+**Six of eight measurement blocks can be appraised at all.** `MEASUREMENT_MANIFEST`
+and `DEVICE_MODE` are raw bit streams with no encoding in DMTF's evidence
+format, so no policy can read them — including the bits that say whether the
+device is in a debug mode. Every verdict carries the coverage number, because
+*this device passed* and *this device passed the part of itself anything can
+look at* are different sentences.
+
+**The `rats` CI job exists**, and it is the one the roadmap has carried as a
+promise since week one: reference values → policy → verdict, with
+[`rats/out/expected.json`](rats/out/expected.json) stating per arm what the
+outcome must be and why. Not a snapshot — a policy that passed everything would
+reproduce a snapshot perfectly.
+
+**The published tooling this was built on does not work.** Running DMTF's own
+example verbatim, before connecting anything, produced seven findings; the
+sharpest is that `CoRimTool.py verify` has never verified a signature, in two
+lines that mask each other. A one-line fix for the obvious one was committed and
+one keystroke from being sent — and it would have turned a verifier that accepts
+nothing into one that accepts anything. It was caught by a script written to
+re-run the commit message's own `Tested:` claims.
+[`docs/upstream/`](docs/upstream/README.md).
 
 ### What week 5 established
 
