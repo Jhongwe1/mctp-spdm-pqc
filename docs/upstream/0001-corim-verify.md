@@ -31,6 +31,61 @@ lines in it.
 
 ---
 
+## 0.5 What this project requires of a contributor, read rather than assumed
+
+**No contributor licence agreement.** The word does not appear in
+`CONTRIBUTING.md` — zero occurrences. What DMTF requires is the **DCO**: a
+`Signed-off-by:` line on every commit, real name, an address you can be reached
+at, **matching the commit author**, per DSP4014.
+
+> ⚠ **This is not OpenBMC's process and the paperwork does not carry over.**
+> The Individual CLA sent to `manager@lfprojects.org` on 2026-08-04 covers every
+> *OpenBMC* repository and nothing else. OpenBMC needs a CLA **and** a DCO
+> **and** Gerrit with a `Change-Id`; DMTF needs a GitHub pull request with a DCO
+> sign-off. Two different organisations, two different processes, and the only
+> thing they share is the sign-off line.
+
+**And AI assistance must be declared.** `CONTRIBUTING.md` has a section on it
+with three rules, and two of them are prohibitions:
+
+| | |
+|---|---|
+| ✗ | an AI **must not** be named in `Signed-off-by` — the DCO is a certification only a human can make |
+| ✗ | an AI **must not** be named in `Co-authored-by` — authorship rests with the humans responsible |
+| ✓ | an AI-assisted commit **must** carry `Assisted-by: AGENT_NAME:MODEL_VERSION` |
+
+The maintainers use it on their own merges: `Assisted-by: Claude
+Code:claude-sonnet-5` on #519, `Assisted-by: Claude:claude-sonnet-5` on #520.
+
+> ### ★ This repository's own convention is a violation there
+>
+> Every commit in `mctp-spdm-pqc` carries
+> `Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>`. That is
+> correct here and **forbidden by rule 2 upstream**. A convention that is right
+> in one repository is a rule break in another, and nothing about writing the
+> commit would have said so.
+>
+> The prepared commit did not carry it — but it did not carry `Assisted-by:`
+> either, which is rule 3, and that was a real omission found by being asked a
+> question about paperwork rather than by the checklist in §6.
+> `harness/check_upstream_commit.sh` now enforces all three, and its self-test
+> feeds it eight commits that break one rule each.
+
+**Where these rules were read from**, because a rule set that has moved is
+exactly what a returning contributor does not re-read:
+
+```
+DMTF/spdm-emu  CONTRIBUTING.md
+sha256   52b95edb12676cb51d1d3e681b6ec266fdfd7abe9c782c9a1be47ea81d1da3cc
+added    b569bc0, 2026-06-05, "Add CONTRIBUTING.md with DCO and AI
+         attribution policy"
+read at  ea77f25 (upstream main, 2026-09-12)
+```
+
+Byte-identical in the pinned tree at `5f01d2f`, so this is not a policy that
+arrived after the captures did. `harness/check_upstream_commit.sh` carries that
+digest and says so when the target's copy differs.
+
 ## 1. The commit
 
 Subject ≤ 50 characters, body wrapped at 72, `Tested:` describing what was
@@ -203,23 +258,41 @@ key ones on every interoperability run.
 
 ## 6. The checklist, before sending
 
+Everything above the line is checked by
+`bash harness/check_upstream_commit.sh ~/spdm-lab/work/spdm-emu-pr`, which is
+where it belongs — a checklist is a discipline and this one had already missed
+`Assisted-by:` once.
+
 ```
-☐ target repo's CI is green on main
+ ── mechanised ─────────────────────────────────────────────────────────
+☑ exactly one Signed-off-by, legal name, MATCHING the commit author
+☑ no AI named in Signed-off-by          (CONTRIBUTING.md rule 1)
+☑ no Co-authored-by at all              (rule 2; this repo's own
+                                         convention must not travel)
+☑ Assisted-by: Claude Code:claude-opus-5 (rule 3)
 ☑ subject <= 50 characters, "component: summary"
-☑ body wrapped at 72, says WHY and not only what
-☑ Tested: lines, each one actually run — and re-run after the change grew
-☑ Signed-off-by, legal name, matching the account
-☑ exactly one logical change, with the evidence for why the two lines are one
+☑ body wrapped at 72
+☑ a Tested: line exists
+☑ exactly one commit, clean tree
+☑ the CONTRIBUTING.md these rules were read from has not moved
+
+ ── only you can tick these ────────────────────────────────────────────
 ☑ diff reviewed line by line, CRLF preserved (392 CRLF, 0 bare LF)
+☑ every Tested: line actually run — and re-run after the change grew
+☑ exactly one LOGICAL change, with the evidence for why two lines are one
 ☑ no prior issue or PR covers it — searched DMTF/spdm-emu for "CoRimTool"
    and "EC2Key" on 2026-09-12: 0 results each. RE-CHECK ON THE DAY.
 ☑ not a new feature, so no prior discussion is expected
-   (DMTF takes documentation and fixes directly)
+   (CONTRIBUTING.md step 6: open a PR against main and respond to review)
+☐ target repo's CI is green on main
 ☐ decide the channel. Public PR, on the reasoning in README.md ② — the
    fail-open is not reachable in shipping code, because the key defect
    means the tool accepts nothing. If that reasoning is wrong, the
    channel is DMTF's security reporting process instead.
 ```
+
+**No CLA to sign** — see §0.5. The only paperwork is the sign-off already in
+the commit.
 
 ## 7. Sending it
 

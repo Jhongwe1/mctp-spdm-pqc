@@ -1252,6 +1252,26 @@ Tested: <你怎麼驗證的>
 `-s` 會加上 `Signed-off-by:`。**從第一個 commit 就用上游格式**,因為之後要送
 Gerrit,現在練起來那時候不用重學。
 
+> ### ⚠️ 但這個 repo 的 trailer 慣例**不能直接帶去上游**
+>
+> 這裡每一個 commit 都有 `Co-Authored-By: Claude …`。在這個 repo 裡是對的;
+> **在 DMTF/spdm-emu 是違規的**——它的 `CONTRIBUTING.md` 第 2 條明文寫
+> 「AI 不得出現在 `Co-authored-by`」,第 1 條寫「不得出現在 `Signed-off-by`」,
+> 第 3 條寫「有 AI 協助就**必須**加 `Assisted-by: 工具名:模型版本`」。
+>
+> 也就是說:同一句 trailer,在這裡是誠實,在那裡是規則違反。而且
+> **兩個上游的規則彼此也不一樣**:OpenBMC 要 CLA + DCO + Gerrit 的 Change-Id,
+> DMTF 只要 DCO,沒有 CLA。
+>
+> 所以送出去之前跑這個,不要靠記憶:
+>
+> ```bash
+> bash harness/check_upstream_commit.sh ~/spdm-lab/work/spdm-emu-pr
+> ```
+>
+> 它把規則從**對方自己的 `CONTRIBUTING.md`** 讀出來、記下那個檔案的 sha256,
+> 對方改了規則它會講。細節在 `docs/upstream/README.md`。
+
 ### 為什麼「二點五」那一步是收工的第一件事,不是最後一件
 
 `verify_repo.sh` 會比對三張 gate 表的**狀態字**有沒有一致,還會比對週次。

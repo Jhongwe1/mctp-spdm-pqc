@@ -21,7 +21,8 @@ needs a date attached to it.
 
 | Item | State | Date | Evidence |
 |---|---|---|---|
-| Individual CLA sent to `manager@lfprojects.org` | **done** | 2026-08-04 | signed as the legal name; one agreement covers every OpenBMC repository |
+| Individual CLA sent to `manager@lfprojects.org` | **done** | 2026-08-04 | signed as the legal name; one agreement covers every OpenBMC repository — **and nothing outside OpenBMC**, see below |
+| DMTF's requirements read, from its own `CONTRIBUTING.md` | **done** | 2026-09-13 | **no CLA exists**: DCO sign-off only, plus a mandatory `Assisted-by:` trailer for AI-assisted commits. Checked by `harness/check_upstream_commit.sh` rather than by a checklist |
 | Gerrit account, SSH key, `~/.ssh/config` | **done** | 2026-08-04 | `ssh openbmc.gerrit` returns a greeting with the account's full name |
 | Gerrit profile full name corrected | **done** | 2026-08-04 | GitHub OAuth had populated it with a short form — see the third trap below |
 | `commit-msg` hook installed (Change-Id) | **done** | 2026-08-04 | hook served by Gerrit 3.11.7 |
@@ -45,6 +46,50 @@ needs a date attached to it.
 > path from `git commit -s` to a change sitting in Gerrit has been walked once
 > already, so what this project still owes upstream is a technical problem, not
 > an administrative one.
+
+## Two upstreams, two processes, and the paperwork does not carry over
+
+Worth its own section because it was a live confusion on 2026-09-13, the day
+before the first change was due to be sent: *"do I need to sign a CLA? is this
+the same as OpenBMC's Gerrit?"*
+
+**No, and no.** They share exactly one thing — the `Signed-off-by` line — and
+differ in everything else.
+
+| | `openbmc/spdm` | `DMTF/spdm-emu` |
+|---|---|---|
+| submission | **Gerrit**, `git push …:refs/for/master` | **GitHub pull request** |
+| `Change-Id` | required, from the `commit-msg` hook | not used |
+| **CLA** | **required.** Individual CLA to `manager@lfprojects.org`, one per person, covering every OpenBMC repository | **none. The word does not appear in `CONTRIBUTING.md`** |
+| DCO | required | required — DSP4014, real name, address you can be reached at, **matching the commit author** |
+| AI assistance | no stated policy found | **`Assisted-by: AGENT_NAME:MODEL_VERSION` required**, and an AI must NOT appear in `Signed-off-by` or `Co-authored-by` |
+| who merges | maintainers, via Gerrit +2 | maintainers; any DMTF member may call a vote |
+
+The CLA sent on 2026-08-04 is real, is dated, and covers OpenBMC. It has no
+bearing on a DMTF pull request, and assuming it did would have been the
+comfortable mistake: the paperwork *feels* done.
+
+> ### The rule worth keeping
+>
+> **The contribution rules of a project you have not contributed to are not the
+> ones you already know.** This repository's own commits carry
+> `Co-Authored-By: Claude …`, which is correct here and **forbidden** by
+> DMTF's `CONTRIBUTING.md` rule 2. A convention that is right in one repository
+> is a rule break in another, and nothing about writing the commit says so.
+>
+> So the rules are now read out of the target's own `CONTRIBUTING.md` and
+> encoded in [`harness/check_upstream_commit.sh`](../../harness/check_upstream_commit.sh),
+> with the digest of the file they were read from. When that digest moves, the
+> script says so — because a rule set that has changed is exactly the thing a
+> returning contributor does not re-read.
+>
+> Only the DMTF profile is implemented. OpenBMC's arrives in week 9, when there
+> is a real commit to check it against; writing it now against nothing would be
+> a check whose failure mode has never fired.
+
+**What was actually missing.** The prepared commit carried a correct DCO
+sign-off and **no `Assisted-by:` trailer**, which rule 3 requires. Added
+2026-09-13; the commit is now `425aa5a` and the checker passes all ten rules.
 
 ## Rehearsing the submission before submitting
 
