@@ -3,5 +3,5 @@
     "decode": "bench/data/w5-tamper-20260910T092621Z/t3_cert.decode.txt"
   },
   "outcome": "no-evidence",
-  "why": "/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w5-tamper-20260910T092621Z/t3_cert.decode.txt: no MEASUREMENTS response carried a record \u2014 the handshake did not reach the point where a device says anything a reference value could be compared to"
+  "why": "bench/data/w5-tamper-20260910T092621Z/t3_cert.decode.txt: no MEASUREMENTS response carried a record \u2014 the handshake did not reach the point where a device says anything a reference value could be compared to"
 }

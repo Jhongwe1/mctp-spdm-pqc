@@ -177,40 +177,40 @@ def read_capture(decode: Path) -> dict:
     text = decode.read_text(encoding="utf-8", errors="replace")
     messages, meta = fields.parse_decode(text)
     if not messages:
-        raise Appraisal(f"{decode}: no SPDM messages decoded", 2)
+        raise Appraisal(f"{_rel(decode)}: no SPDM messages decoded", 2)
     data = fields.extract(messages, meta, decode)
 
     neg = (data.get("algorithms") or {}).get("negotiated") or {}
     meas_hash = neg.get("MeasHash") or []
     if len(meas_hash) != 1:
         raise Appraisal(
-            f"{decode}: the capture negotiated {meas_hash or 'no'} measurement "
+            f"{_rel(decode)}: the capture negotiated {meas_hash or 'no'} measurement "
             f"hash algorithm; an appraisal needs exactly one, and reading it "
             f"from the response is the point", 2)
     alg_name = meas_hash[0].lower().replace("_", "")
     if alg_name not in HASH_ALG:
-        raise Appraisal(f"{decode}: measurement hash {meas_hash[0]} is not one "
+        raise Appraisal(f"{_rel(decode)}: measurement hash {meas_hash[0]} is not one "
                         f"this evidence format can name", 2)
 
     layout = data.get("layout") or {}
     rec = layout.get("measurement_record")
     if rec is None:
-        raise Appraisal(f"{decode}: no MEASUREMENTS response carried a record — "
+        raise Appraisal(f"{_rel(decode)}: no MEASUREMENTS response carried a record — "
                         f"the handshake did not reach the point where a device "
                         f"says anything a reference value could be compared to", 2)
     if not rec.get("closes"):
-        raise Appraisal(f"{decode}: the record walk did not close "
+        raise Appraisal(f"{_rel(decode)}: the record walk did not close "
                         f"({rec.get('why_kind')}: {rec.get('why')})", 2)
 
     msg = next((m for m in messages if m.seq == rec["packet"]), None)
     if msg is None or not msg.raw:
-        raise Appraisal(f"{decode}: packet {rec['packet']} has no bytes", 2)
+        raise Appraisal(f"{_rel(decode)}: packet {rec['packet']} has no bytes", 2)
     blob = bytes(msg.raw[rec["record_offset"]:
                          rec["record_offset"] + rec["record_bytes"]])
     walk = fields._measurement_record(blob, 0, len(blob), rec["declared_blocks"],
                                       keep_values=True)
     if not walk["closes"]:
-        raise Appraisal(f"{decode}: the emitted record does not re-walk "
+        raise Appraisal(f"{_rel(decode)}: the emitted record does not re-walk "
                         f"({walk['why_kind']}: {walk['why']})", 2)
 
     return {
@@ -488,6 +488,13 @@ def _rel(p: Path) -> str:
     A committed derivation holding an absolute path is a derivation that only
     reproduces on the machine that wrote it, and the check that re-derives it
     in CI would fail for a reason that has nothing to do with the measurement.
+
+    Applied to the verdict dictionary first, and to the EXCEPTION MESSAGES a
+    fortnight later — which is to say ten minutes later, in a clean clone.
+    `t3_cert` has no MEASUREMENTS response, so its committed verdict is the
+    text of the refusal, and that text carried an absolute path. The check that
+    found it is the one that clones the repository somewhere else and re-runs
+    everything; nothing inside this working tree could have.
     """
     p = Path(p).resolve()
     try:
@@ -509,9 +516,9 @@ def appraise(decode: Path, corim: Path, pub: Path, tmp: Path,
         payload, phdr = verify1(corim.read_bytes(), pub)
     except VerifyFailed as e:
         raise Appraisal(f"the reference value's signature did not verify "
-                        f"against {pub}: {e}", 2)
+                        f"against {_rel(pub)}: {e}", 2)
     except (CborError, ValueError) as e:
-        raise Appraisal(f"{corim} is not a COSE_Sign1 this file can read: {e}", 2)
+        raise Appraisal(f"{_rel(corim)} is not a COSE_Sign1 this file can read: {e}", 2)
     kid = phdr.get(4, b"")
     reference = cbor_to_json(payload)
 
