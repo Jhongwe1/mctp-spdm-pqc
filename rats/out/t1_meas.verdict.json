@@ -1,0 +1,70 @@
+{
+  "capture": {
+    "decode": "bench/data/w5-tamper-20260910T092621Z/t1_meas.decode.txt",
+    "sha256": "6eaf68432327c2ae806f495a35fa8eab5d6be5dd45d62e400f77a19356bee5a3"
+  },
+  "record": {
+    "sha256": "21ae49f9b66835f6d2cdefe34d14d05991c86c8527cc2cb672dc4d9b841406a1",
+    "bytes": 528
+  },
+  "measurement_hash": {
+    "algorithm": "sha512",
+    "read_from": "ALGORITHMS response, MeasHash"
+  },
+  "endorsement": {
+    "reference": "rats/ref/clean.corim",
+    "public_key": "rats/keys/ref-signer.pub",
+    "kid": "42",
+    "signature": "verified"
+  },
+  "coverage": {
+    "blocks_on_the_wire": 8,
+    "blocks_as_evidence": 6,
+    "blocks_no_format_can_carry": 2,
+    "dropped": [
+      {
+        "index": "0xfd",
+        "type": "MEASUREMENT_MANIFEST",
+        "bytes": 128,
+        "why": "a raw bit stream that is not a secure version number has no evidence encoding"
+      },
+      {
+        "index": "0xfe",
+        "type": "DEVICE_MODE",
+        "bytes": 16,
+        "why": "a raw bit stream that is not a secure version number has no evidence encoding"
+      }
+    ]
+  },
+  "policy": {
+    "file": "rats/policy.rego"
+  },
+  "result": {
+    "checks": {
+      "REFERENCE_PRESENT": true,
+      "SPDM_HASH_CHECK": false,
+      "SPDM_SVN_CHECK": true
+    },
+    "counts": {
+      "evidence_digests": 5,
+      "evidence_svns": 1,
+      "reference_digests": 5,
+      "reference_svns": 1
+    },
+    "detail": {
+      "digest_mismatch": [
+        1
+      ],
+      "digest_missing_from_evidence": [],
+      "digest_not_in_reference": [],
+      "svn_mismatch": [],
+      "svn_missing_from_evidence": [],
+      "svn_not_in_reference": []
+    },
+    "error_code": 1,
+    "failed_checks": [
+      "SPDM_HASH_CHECK"
+    ],
+    "verdict": "fail"
+  }
+}

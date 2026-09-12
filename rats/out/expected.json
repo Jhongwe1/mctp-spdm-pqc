@@ -1,0 +1,68 @@
+{
+  "_what_this_is": [
+    "The outcome every arm of the capture matrix MUST produce, and why.",
+    "",
+    "rats/appraise.py matrix --expect reads this and fails when a run disagrees",
+    "with it. .github/workflows/ci.yml runs that, which makes this file the",
+    "assertion the whole repository is built to support: a tampered measurement",
+    "must be REJECTED, and the build turns red when it stops being.",
+    "",
+    "It is deliberately not a snapshot of a previous run. A check that only says",
+    "'the same as last time' keeps passing after the policy is accidentally",
+    "disabled, because a policy that passes everything reproduces perfectly.",
+    "Each arm here states the outcome it must have and the sentence that makes",
+    "that the right outcome; changing one means arguing with the sentence.",
+    "",
+    "An arm that appears in the run and not here is a FAILURE, not a skip, so",
+    "that a new capture arrives checked rather than unnoticed."
+  ],
+  "run": "bench/data/w5-tamper-20260910T092621Z",
+  "reference": "rats/ref/clean.corim",
+  "policy": "rats/policy.rego",
+  "arms": {
+    "t0_clean": {
+      "outcome": "pass",
+      "because": "the control. The reference value was minted from this capture, so anything but a pass means the pipeline cannot recognise the device it was told about"
+    },
+    "t0_none": {
+      "outcome": "pass",
+      "because": "no fixture at all, on the patched binary's own path. Its record is the control's byte for byte, so an appraisal that separated them would be reporting on the fixture mechanism rather than on the measurement"
+    },
+    "t0_proxy": {
+      "outcome": "pass",
+      "because": "the clean fixture forwarded through the tamper proxy in passthrough mode. This is the proxy's control: if it passed the handshake but failed the appraisal, the proxy would be altering measurements while claiming not to"
+    },
+    "t1_meas": {
+      "outcome": "fail",
+      "blocked_by": ["SPDM_HASH_CHECK"],
+      "because": "★ ONE BYTE of measurement index 1 changed ON THE DEVICE, before the responder hashed and signed it. SPDM completed this handshake with no error of any kind, because a device signs whatever it measures. This is the row Gate 3 exists for, and it is the one assertion in this repository that must never be allowed to go green by accident"
+    },
+    "t2a_record": {
+      "outcome": "fail",
+      "blocked_by": ["SPDM_HASH_CHECK"],
+      "because": "the measurement record changed in flight, after signing. SPDM refused it with 80020001 and so does the appraisal, for a different reason: the signature no longer covers the bytes, AND the bytes are no longer the reference value's"
+    },
+    "t2b_sig": {
+      "outcome": "pass",
+      "because": "★ the SIGNATURE changed in flight and the measurement record did not. SPDM refuses this with the SAME status as t2a_record, and the appraisal separates them: the record here is the control's byte for byte, so the correct answer is that the measurement is fine and the conveyance was broken. A pipeline that failed this arm would be reporting a damaged link as a compromised device"
+    },
+    "t3_cert": {
+      "outcome": "no-evidence",
+      "because": "one byte of the sub-CA certificate on the responder's disk, which the responder refuses to load, so slot 0 is never provisioned and the handshake ends at GET_CERTIFICATE. There is no MEASUREMENTS response and therefore nothing to appraise. 'No evidence' is a third outcome and conflating it with either of the other two is how a verifier reports a device it never spoke to"
+    },
+    "t3b_foreign": {
+      "outcome": "pass",
+      "because": "★ a well-formed certificate chain from an authority the requester was never given, serving CORRECT measurements. The handshake completed, and the appraisal passes, and BOTH are right: the measurements really are the reference values. What is wrong is whose device it is, which is an identity question. Neither layer here answers it, and docs/rats-pipeline.md says so beside this row rather than in a closing section"
+    },
+    "svn5": {
+      "outcome": "fail",
+      "blocked_by": ["SPDM_SVN_CHECK"],
+      "because": "the secure version number is 5 where the reference value says 7 — a ROLLBACK. Correctly refused"
+    },
+    "svn9": {
+      "outcome": "fail",
+      "blocked_by": ["SPDM_SVN_CHECK"],
+      "because": "the secure version number is 9 where the reference value says 7 — an UPGRADE, refused for exactly the same reason and with exactly the same message as the rollback above. That is wrong in practice and it is wrong on purpose this week: the policy compares SVN for equality, which is what DMTF's sample does. Week 7 changes it to evidence >= reference and has to prove, with four cases, that loosening the version rule did not loosen the integrity rule. This row is the before"
+    }
+  }
+}
