@@ -24,8 +24,8 @@
 # side and requires it to equal them. The comparison is therefore checked on
 # every push, by a runner that has none of what this script needs.
 #
-# ⚠ Two things have to be worked around before DMTF's tools run at all, and
-# both are upstream defects this project measured. They are described in
+# ⚠ Three things have to be worked around before DMTF's tools run at all, and
+# all three are upstream defects this project measured. They are described in
 # docs/rats-pipeline.md and reported in docs/upstream/README.md:
 #
 #   1. cbor2 >= 6.0 decodes the contents of a CBORTag as immutable containers,
@@ -35,8 +35,20 @@
 #   2. CoRimTool.py's verify builds the verification key as
 #      EC2Key(crv='P_256', d=<the 64-byte public point>), passing the public
 #      key where the private scalar goes, so it refuses every signature it
-#      produced. This script patches that one line IN A SCRATCH COPY. The
-#      pinned tree is never written to.
+#      produced.
+#   3. …and the same function DISCARDS the return value of
+#      verify_signature(), which is a bool rather than an exception. So with
+#      (2) repaired and (3) not, a corrupted signature prints "Signature
+#      verification passed".
+#
+# (2) and (3) mask each other, and that is why both are patched here and why
+# they are one change upstream: repairing the key alone converts a tool that
+# accepts nothing into a tool that accepts anything. This script measured that
+# the day it was written, by flipping one byte of a signature and watching the
+# half-patched tool accept it — see "the half-fix" below, which is now a
+# permanent check rather than a story.
+#
+# Both patches are applied to a SCRATCH COPY. The pinned tree is never written.
 
 set -uo pipefail
 _HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -66,24 +78,42 @@ rm -rf "$SCRATCH"
 mkdir -p "$SCRATCH" "$OUT"
 cp -r "$VT_SRC"/. "$SCRATCH"/ || die "could not copy the verifier tool"
 
-# The one-line fix, applied to the scratch copy with its CRLF line endings
-# intact, so the diff this project sends upstream is the diff it tested.
-BEFORE="        cose_key = EC2Key(crv='P_256', d=key)"
-AFTER="        cose_key = EC2Key(crv='P_256', x=key[:len(key)//2], y=key[len(key)//2:])"
-if grep -qF "$BEFORE" "$SCRATCH/CoRimTool.py"; then
-    python3 - "$SCRATCH/CoRimTool.py" "$BEFORE" "$AFTER" <<'PY'
+# The two-line fix, applied byte-wise so the CRLF line endings survive: the
+# diff this project sends upstream has to be the diff it tested, and a file
+# whose endings changed is a diff of the whole file.
+#
+# A HALF-patched copy is kept beside it on purpose. It is the version that
+# would exist if the pull request fixed only the key, and the check further
+# down requires it to ACCEPT a signature it should refuse. That is not a
+# curiosity: it is the state this project was one keystroke from submitting on
+# 2026-09-12, and a check is the only form of "remember this" that survives.
+cp "$SCRATCH/CoRimTool.py" "$SCRATCH/CoRimTool.half.py"
+if python3 - "$SCRATCH/CoRimTool.py" "$SCRATCH/CoRimTool.half.py" <<'PY'
 import sys
-path, before, after = sys.argv[1], sys.argv[2], sys.argv[3]
-raw = open(path, 'rb').read()
-b = before.encode() + b'\r\n'
-if raw.count(b) != 1:
-    b = before.encode() + b'\n'
-assert raw.count(b) == 1, f"expected exactly one occurrence, found {raw.count(b)}"
-open(path, 'wb').write(raw.replace(b, after.encode() + b[len(before.encode()):]))
+full, half = sys.argv[1], sys.argv[2]
+KEY_OLD = b"        cose_key = EC2Key(crv='P_256', d=key)"
+KEY_NEW = (b"        cose_key = EC2Key(crv='P_256', x=key[:len(key) // 2], "
+           b"y=key[len(key) // 2:])")
+RES_OLD = b"        cose_msg.verify_signature(Algorithm)"
+RES_NEW = (b"        if not cose_msg.verify_signature(Algorithm):\r\n"
+           b"            raise ValueError('signature does not verify')")
+
+
+def sub(raw, old, new):
+    for eol in (b"\r\n", b"\n"):
+        if raw.count(old + eol) == 1:
+            return raw.replace(old + eol, new.replace(b"\r\n", eol) + eol)
+    raise SystemExit(f"expected exactly one occurrence of {old!r}")
+
+
+raw = open(full, 'rb').read()
+open(half, 'wb').write(sub(raw, KEY_OLD, KEY_NEW))
+open(full, 'wb').write(sub(sub(raw, KEY_OLD, KEY_NEW), RES_OLD, RES_NEW))
 PY
-    pass "patched CoRimTool.py verify (the public point was going into d=)"
+then
+    pass "patched CoRimTool.py verify: the key, and the discarded result"
 else
-    fail "CoRimTool.py no longer contains the line this script patches — re-read it before trusting anything below"
+    fail "CoRimTool.py no longer contains the lines this script patches — re-read it before trusting anything below"
 fi
 
 log "python environment"
@@ -246,6 +276,38 @@ else
     fail "unpatched CoRimTool.py did NOT refuse it. The defect reported in docs/upstream/README.md may have been fixed, or misread. Re-check before sending anything."
 fi
 
+# ★ The half-fix. One byte of the signature flipped, fed to three versions:
+# the fully patched one must REFUSE it; the half-patched one — the change this
+# project nearly submitted — must ACCEPT it. If the half-patched one ever
+# starts refusing, the second half of the upstream report is wrong and must not
+# be sent.
+python3 - "${REPO_ROOT}/rats/ref/clean.corim" "${SCRATCH}/forged.corim" <<'PY'
+import sys
+raw = bytearray(open(sys.argv[1], 'rb').read())
+raw[-1] ^= 0x01                       # the last byte of the COSE signature
+open(sys.argv[2], 'wb').write(bytes(raw))
+PY
+FORGED_FULL="$("$PY" "$SCRATCH/CoRimTool.py" verify -f "${SCRATCH}/forged.corim" \
+               --key "${REPO_ROOT}/rats/keys/ref-signer.pub" --alg ES256 \
+               -o "${SCRATCH}/forged-full.cbor" 2>&1)"
+FORGED_HALF="$("$PY" "$SCRATCH/CoRimTool.half.py" verify -f "${SCRATCH}/forged.corim" \
+               --key "${REPO_ROOT}/rats/keys/ref-signer.pub" --alg ES256 \
+               -o "${SCRATCH}/forged-half.cbor" 2>&1)"
+case "$FORGED_FULL" in
+    *failed*) pass "a forged signature is refused by the two-line fix" ;;
+    *) fail "the fully patched CoRimTool.py ACCEPTED a forged signature: $FORGED_FULL" ;;
+esac
+case "$FORGED_HALF" in
+    *passed*) pass "…and ACCEPTED by the key-only fix — which is why it is one change" ;;
+    *) fail "the key-only fix refused the forged signature. The upstream report says it does not; re-read verify_signature's return type before sending anything." ;;
+esac
+if python3 "${REPO_ROOT}/rats/cose.py" verify -i "${SCRATCH}/forged.corim" \
+        --key "${REPO_ROOT}/rats/keys/ref-signer.pub" >/dev/null 2>&1; then
+    fail "rats/cose.py ACCEPTED a forged signature"
+else
+    pass "rats/cose.py refuses it too, with a non-zero exit"
+fi
+
 # ------------------------------- 4. the published policy, on the same input -
 
 hdr "4. DMTF's SpdmSamplePolicy.rego, on inputs this project's policy refuses"
@@ -353,7 +415,10 @@ esac
     echo "| 4b | …on its own \`SampleManifests/SpdmSampleCoMid.json\` | **$SAMPLE_RT** |"
     echo "| 5 | \`rats/cose.py verify\` on \`CoRimTool.py sign\`'s output | accepted |"
     echo "| 6 | \`CoRimTool.py verify\` (patched) on \`rats/cose.py sign\`'s output | accepted |"
-    echo "| 7 | \`CoRimTool.py verify\` (**unpatched**) on the same file | refused — the upstream defect |"
+    echo "| 7 | \`CoRimTool.py verify\` (**unpatched**) on the same file | refused — upstream defect ② |"
+    echo "| 7a | a **forged** signature, fully patched tool | refused |"
+    echo "| 7b | the same, **key-only** patch | **accepted** — upstream defect ③ |"
+    echo "| 7c | the same, \`rats/cose.py\` | refused, non-zero exit |"
     echo "| 8 | \`SpdmSamplePolicy.rego\` parsed as Rego v1 | refused, 11 parse errors |"
     echo "| 9 | \`SpdmSamplePolicy.rego\` on the clean capture | passes, as this project's policy does |"
     echo "| 10 | \`SpdmSamplePolicy.rego\` on an index swap | **accepts** |"

@@ -1,6 +1,6 @@
 # rats/interop — measured, not asserted
 
-Produced by `bash rats/interop.sh` on 2026-09-12T14:56:27Z.
+Produced by `bash rats/interop.sh` on 2026-09-12T15:16:53Z.
 Not re-run in CI; what CI re-runs is the comparison against the files
 here. See harness/verify_repo.sh.
 
@@ -25,7 +25,10 @@ here. See harness/verify_repo.sh.
 | 4b | …on its own `SampleManifests/SpdmSampleCoMid.json` | **KeyError: 'corim'** |
 | 5 | `rats/cose.py verify` on `CoRimTool.py sign`'s output | accepted |
 | 6 | `CoRimTool.py verify` (patched) on `rats/cose.py sign`'s output | accepted |
-| 7 | `CoRimTool.py verify` (**unpatched**) on the same file | refused — the upstream defect |
+| 7 | `CoRimTool.py verify` (**unpatched**) on the same file | refused — upstream defect ② |
+| 7a | a **forged** signature, fully patched tool | refused |
+| 7b | the same, **key-only** patch | **accepted** — upstream defect ③ |
+| 7c | the same, `rats/cose.py` | refused, non-zero exit |
 | 8 | `SpdmSamplePolicy.rego` parsed as Rego v1 | refused, 11 parse errors |
 | 9 | `SpdmSamplePolicy.rego` on the clean capture | passes, as this project's policy does |
 | 10 | `SpdmSamplePolicy.rego` on an index swap | **accepts** |
