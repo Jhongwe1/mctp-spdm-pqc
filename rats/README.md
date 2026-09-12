@@ -47,6 +47,13 @@ when they differ. `docs/rats-pipeline.md` is the walkthrough;
 | [`interop/`](interop) | what DMTF's tools produced, committed so CI can check this project still matches without a `spdm-emu` checkout |
 | `keys/ref-signer.pub` | the public half. The private half is not here — see below |
 
+> **Why this exists rather than a call to DMTF's tools**, what it costs, and
+> what would retire it:
+> [`docs/decisions/0007`](../docs/decisions/0007-a-second-implementation-made-to-agree.md).
+> The policy engine's version is pinned like the decoder's, and the field that
+> matters is the Rego language version rather than the release:
+> [`third_party/opa.pin`](../third_party/opa.pin).
+
 ## Three things worth knowing before reading the code
 
 **The evidence comes off the wire, not out of `device/measurements.bin`.** That

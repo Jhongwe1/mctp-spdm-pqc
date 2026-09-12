@@ -322,6 +322,13 @@ tools connect. It makes it the wrong thing to ship a verdict from.
 evaluates only under `--v0-compatible`. The readme documents a bare `opa eval`
 and mentions no version. `rats/policy.rego` is v1.
 
+Which is why the engine is pinned along with the decoder and the builds:
+[`third_party/opa.pin`](../third_party/opa.pin). Every verdict in `rats/out/`
+was produced by `opa` evaluating this policy, and a verdict whose producer has
+no recorded version has half a provenance. The pinned field that is *checked* is
+`rego-version=` rather than the release number — a patch release of OPA is
+nobody's problem, and a different policy language is.
+
 ### Failing closed
 
 Every check begins `default X := false`, and every rule body that could be
@@ -346,6 +353,10 @@ verifier as a failed device. The tool this replaced exits 0 for all three.
 ---
 
 ## 6. Two implementations, made to agree
+
+> The decision — use DMTF's tools, write our own, or both required to agree —
+> with the three options and what the chosen one costs:
+> [`docs/decisions/0007`](decisions/0007-a-second-implementation-made-to-agree.md).
 
 `rats/` is a second implementation of a format somebody else defined, and a
 second implementation that has never been compared against the first is a guess
