@@ -1382,6 +1382,26 @@ PY
 [ $? -eq 0 ] && good "tampering in flight is refused; tampering at the device is not" \
              || bad "the tamper detection this repository claims did not hold"
 
+step "the upstream-commit rules can still refuse a commit"
+# What a change has to look like before it is sent is a checklist in
+# docs/upstream/0001-corim-verify.md, and on 2026-09-13 the checklist missed
+# that DMTF/spdm-emu requires an `Assisted-by:` trailer on an AI-assisted
+# commit. It was found by being asked a question, not by the checklist.
+#
+# The commit being checked lives outside this repository, so what runs here is
+# the checker's own self-test: nine throwaway commits, one compliant and eight
+# breaking one rule each. The ninth is the one that matters — a sign-off with a
+# gmail.com address, which the first version of the AI-detection pattern
+# refused because `ai` is a substring of `gmail`.
+if bash harness/check_upstream_commit.sh --self-test > /tmp/upstream-rules.$$ 2>&1; then
+    sed -n '$p' /tmp/upstream-rules.$$ | sed 's/^ */  /'
+    good "a compliant commit passes and eight broken ones do not"
+else
+    sed 's/^/  /' /tmp/upstream-rules.$$
+    bad "the upstream-commit checker does not refuse what it should"
+fi
+rm -f /tmp/upstream-rules.$$
+
 step "the appraisal's own encoders and policy can still reject"
 # rats/ is a second implementation of somebody else's format, and the two ways
 # it can be quietly wrong are an encoder that agrees only with itself and a
