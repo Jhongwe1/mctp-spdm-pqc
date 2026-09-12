@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# harness/doctor.sh — "can this machine build the project?"
+# harness/doctor.sh — "can this machine build the project, and check it?"
 #
 #   bash harness/doctor.sh
 #
@@ -9,7 +9,21 @@
 # command that fixes it, because a runbook that says "install the dependencies"
 # is a runbook that does not work.
 #
-# Exit code 0 = ready to build. Non-zero = fix what it printed, then re-run.
+# Exit code 0 = ready. Non-zero = fix what it printed, then re-run.
+#
+# "And check it" was added on 2026-09-12 along with the opa section, because the
+# two are not the same question any more and pretending they were would have
+# made this file contradict itself. A machine with no `opa` builds everything
+# and runs every experiment; what it cannot do is evaluate rats/policy.rego,
+# which is where "a tampered measurement must be rejected" lives.
+#
+# The first version of this comment said verify_repo.sh would skip that check
+# and still pass, which is why a missing opa had to be a FAIL here. Removing
+# opa from PATH on 2026-09-13 showed that claim was wrong: verify_repo.sh is
+# already RED without it, because rats/appraise.py's self-test refuses to run
+# without an engine rather than passing by not running. The FAIL here is
+# therefore not a warning about a silent gap; it is this script agreeing with
+# the one it exists to run before.
 
 set -uo pipefail
 
@@ -62,6 +76,33 @@ check_tool make    'make --version | head -1'               build-essential
 check_tool gcc     'gcc --version | head -1'                build-essential
 check_tool python3 'python3 --version'                      python3
 check_tool perl    'perl --version | sed -n 2p'             perl
+
+# ------------------------------------------------- tools the CHECKS need ----
+#
+# A third category, and it exists because the second one was the wrong home for
+# opa. "Optional" is true of the build and false of the thing this repository is
+# for: rats/policy.rego is where "a tampered measurement must be rejected"
+# lives, and without an engine to evaluate it, harness/verify_repo.sh fails.
+#
+# So this is a FAIL with the fix beside it rather than an INFO somebody scrolls
+# past — and the point of saying it here is that this script runs FIRST, before
+# anything is built. Finding out at the end of a forty-minute build that the
+# most important check cannot run is the avoidable version.
+printf '\n-- tools the checks need --\n'
+OPA_PIN="${REPO_ROOT}/third_party/opa.pin"
+if command -v opa >/dev/null 2>&1; then
+    OPA_VER="$(opa version 2>/dev/null | awk '/^Version:/{print $2}')"
+    OPA_REGO="$(opa version 2>/dev/null | awk '/^Rego Version:/{print $3}')"
+    pass "opa" "$OPA_VER, Rego $OPA_REGO"
+    if [ -f "$OPA_PIN" ]; then
+        WANT_REGO="$(awk -F= '/^rego-version=/{print $2}' "$OPA_PIN")"
+        if [ -n "$WANT_REGO" ] && [ "$OPA_REGO" != "$WANT_REGO" ]; then
+            fail "opa rego version" "this opa speaks Rego $OPA_REGO; third_party/opa.pin records $WANT_REGO. The policy language changed incompatibly at OPA 1.0 and rats/policy.rego is written for one of them."
+        fi
+    fi
+else
+    fail "opa" "missing — the appraisal cannot be evaluated, and harness/verify_repo.sh fails without it. Install: curl -L -o /tmp/opa https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static && sudo install -m 0755 /tmp/opa /usr/local/bin/opa"
+fi
 
 printf '\n-- optional tools --\n'
 for t in shellcheck jq ss qemu-system-x86_64; do

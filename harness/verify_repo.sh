@@ -1416,6 +1416,21 @@ step "a tampered measurement is still REJECTED by the appraisal"
 # what they must be, because a policy that passes everything re-derives
 # perfectly and would satisfy --check forever.
 if command -v opa >/dev/null 2>&1; then
+    # The engine is pinned like the decoder is, and for the same reason: a
+    # verdict whose producer has no recorded version has half a provenance.
+    # What is compared is the Rego LANGUAGE version, not the release — OPA made
+    # v1 the default at 1.0 and the dialects are incompatible, while a patch
+    # release is nobody's problem. third_party/opa.pin says why at length.
+    OPA_REGO="$(opa version 2>/dev/null | awk '/^Rego Version:/{print $3}')"
+    WANT_REGO="$(awk -F= '/^rego-version=/{print $2}' third_party/opa.pin 2>/dev/null)"
+    OPA_VER="$(opa version 2>/dev/null | awk '/^Version:/{print $2}')"
+    if [ -z "$WANT_REGO" ]; then
+        bad "third_party/opa.pin has no rego-version="
+    elif [ "$OPA_REGO" = "$WANT_REGO" ]; then
+        good "opa $OPA_VER speaks Rego $OPA_REGO, which is what opa.pin records"
+    else
+        bad "opa speaks Rego $OPA_REGO and third_party/opa.pin records $WANT_REGO — the policy language changed incompatibly at OPA 1.0"
+    fi
     if python3 rats/appraise.py matrix --check > /tmp/rats-matrix.$$ 2>&1; then
         sed -n '/^arm /,/^$/p' /tmp/rats-matrix.$$ | sed 's/^/  /'
         grep -c '^  ok ' /tmp/rats-matrix.$$ | sed 's/^/  assertions passed: /'
@@ -1426,9 +1441,17 @@ if command -v opa >/dev/null 2>&1; then
     fi
     rm -f /tmp/rats-matrix.$$
 else
-    printf '  --   opa not installed (RUNBOOK.md §11) — the appraisal is skipped\n'
-    printf '  --   THIS IS THE CHECK THAT MATTERS. A green run without it is\n'
-    printf '  --   green because nothing was asked, not because nothing is wrong.\n'
+    # Not a skip. The step above — rats/appraise.py selftest — already refuses
+    # to run without an engine, on the grounds that a self-test which passes by
+    # not running is worse than no self-test. This one used to print a loud
+    # "skipped" and pass anyway, which made the two steps disagree about what a
+    # missing opa means, and made this script's own message describe a state it
+    # could no longer reach.
+    #
+    # Measured 2026-09-13 by removing opa from PATH: the run was already red,
+    # from the step above, while this one was explaining that a green run would
+    # be misleading. So: red, once, for one reason.
+    bad "opa is not installed, so the appraisal cannot be evaluated — and THIS IS THE CHECK THAT MATTERS. Install it (RUNBOOK.md §2) rather than reading this as a skip: curl -L -o /tmp/opa https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static && sudo install -m 0755 /tmp/opa /usr/local/bin/opa"
 fi
 
 step "this project's encoders still agree with DMTF's"

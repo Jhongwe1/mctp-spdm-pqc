@@ -8,6 +8,7 @@ spdm-emu-pqc.pin       flavor=pqc      the post-quantum build
 spdm-emu-stable.pin    flavor=stable   the baseline build
 spdm-dump.pin                          the decoder every result is read through
 spdm-h.pin                             the header a hand-written table was copied from
+opa.pin                                the engine every VERDICT is produced by
 ```
 
 The first three are a verbatim copy of the `BUILD_PIN.txt` that
@@ -52,6 +53,7 @@ Three reasons, in order of how much they matter:
 | `spdm-h.pin` | the SHA-256 of the header whose capability-bit names `harness/fields.py` copied, and the libspdm commit it was read at |
 | `dsp0274.pin` | the SHA-256 of the DSP0274 1.4.0 PDF that this repository's specification citations were read from, and which sections were read |
 | `spdm15-wip.pin` | the same, for DMTF's SPDM 1.5 hybrid-PQC public-review draft |
+| `opa.pin` | the Open Policy Agent build that evaluated `rats/policy.rego`, and — the field that actually matters — the **Rego language version** it speaks |
 
 The pins record the resolved **commit hashes**, not just tag names. A tag can be
 moved; a hash cannot.
@@ -131,6 +133,34 @@ source, whether the source is a capture or a header. Both are
 
 At libspdm 4.0.0-rc the comparison found 19 requester and 32 responder
 single-bit capabilities, and every name matched.
+
+## Why the policy engine is pinned, and which field of it matters
+
+Same argument as the decoder below, one layer further on. Every verdict in
+`rats/out/` — including the one this repository's CI turns red over — was
+produced by `opa` evaluating `rats/policy.rego`. A verdict whose engine has no
+recorded version is a verdict with half a provenance.
+
+But the interesting part is which field is load-bearing, and it is not the
+version number:
+
+```
+version=1.20.2
+rego-version=v1
+```
+
+OPA made **Rego v1 the default in 1.0**, and the two dialects are not
+compatible. DMTF's shipped `SpdmSamplePolicy.rego` is v0 and produces eleven
+`rego_parse_error` messages on this binary; it evaluates only under
+`--v0-compatible`. `rats/policy.rego` is v1. So a patch release of OPA is not a
+reason to fail anybody's build, and a different **policy language** is — which
+is why `harness/verify_repo.sh` and `harness/doctor.sh` compare
+`rego-version=` and ignore the rest.
+
+The binary is not committed, for the three reasons below: it is not ours, a
+copy cannot be verified against anything, and it is 64 MB. CI installs the
+exact version from the pinned URL; a workstation is checked against the
+language version only.
 
 ## Why the decoder is pinned too, and why that was missed at first
 

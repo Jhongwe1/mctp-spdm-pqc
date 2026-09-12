@@ -1,0 +1,29 @@
+tool=opa
+source=Open Policy Agent
+version=1.20.2
+rego-version=v1
+build-commit=b2c26708e9d55645d7f837db495031f7e4152594-dirty
+build-timestamp=2026-09-03T20:35:14Z
+go-version=go1.27.1
+platform=linux/amd64
+wasm=available
+url=https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static
+installed-at=2026-09-12T14:47:00Z
+consumed-by=rats/policy.rego,rats/appraise.py,harness/verify_repo.sh,.github/workflows/ci.yml
+# Every verdict in rats/out/ was produced by this binary evaluating
+# rats/policy.rego. third_party/README.md's argument for pinning spdm-dump
+# applies here word for word: the bytes have provenance and the reading of them
+# does not, unless the reader is recorded too.
+#
+# rego-version= is the field that matters, and it is the only one
+# harness/verify_repo.sh and harness/doctor.sh compare. OPA made Rego v1 the
+# default in 1.0 and the two dialects are not compatible: DMTF's shipped
+# SpdmSamplePolicy.rego is v0 and produces eleven rego_parse_error messages on
+# this binary. A patch release of OPA is not a reason to fail a build; a
+# different policy language is.
+#
+# Not vendored, and not committed. It is a 64 MB static binary belonging to
+# somebody else, and the same three reasons in third_party/README.md apply. The
+# CI job installs this exact version from the URL above; a workstation is
+# checked against rego-version= rather than against the whole string, because a
+# contributor on a distribution package should not be blocked by a build hash.
