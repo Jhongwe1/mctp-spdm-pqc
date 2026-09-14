@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="560" viewBox="0 0 880 560" role="img" aria-label="DataTransferSize against round trips and against bytes">
+<rect width="880" height="560" fill="#fbfcfd"/>
+<text x="24" y="34" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#1f2933" text-anchor="start">DataTransferSize is a latency parameter, not a bandwidth one</text>
+<text x="24" y="55" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#52606d" text-anchor="start">one build, DataTransferSize the only thing that moves, read back off the wire in every arm</text>
+<text x="24" y="74" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#9aa5b1" text-anchor="start">w8-dts-sweep-20260914T133120Z  -  both y axes start at zero</text>
+<line x1="104" y1="104" x2="104" y2="252" stroke="#7b8794" stroke-width="1.2"/>
+<line x1="104" y1="252" x2="716" y2="252" stroke="#7b8794" stroke-width="1.2"/>
+<text x="104" y="90" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#1f2933" text-anchor="start">chunk round trips - each one is a bus round trip</text>
+<line x1="100" y1="252.0" x2="104" y2="252.0" stroke="#7b8794"/>
+<text x="96" y="255.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">0</text>
+<line x1="100" y1="201.8" x2="104" y2="201.8" stroke="#7b8794"/>
+<text x="96" y="205.33050847457628" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">20</text>
+<line x1="104" y1="201.8" x2="716" y2="201.8" stroke="#9aa5b1" stroke-width="0.6" stroke-dasharray="2 4"/>
+<line x1="100" y1="151.7" x2="104" y2="151.7" stroke="#7b8794"/>
+<text x="96" y="155.16101694915255" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">40</text>
+<line x1="104" y1="151.7" x2="716" y2="151.7" stroke="#9aa5b1" stroke-width="0.6" stroke-dasharray="2 4"/>
+<line x1="100" y1="104.0" x2="104" y2="104.0" stroke="#7b8794"/>
+<text x="96" y="107.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">59</text>
+<line x1="104" y1="104.0" x2="716" y2="104.0" stroke="#9aa5b1" stroke-width="0.6" stroke-dasharray="2 4"/>
+<line x1="104" y1="322" x2="104" y2="432" stroke="#7b8794" stroke-width="1.2"/>
+<line x1="104" y1="432" x2="716" y2="432" stroke="#7b8794" stroke-width="1.2"/>
+<text x="104" y="308" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#1f2933" text-anchor="start">captured bytes</text>
+<line x1="100" y1="432.0" x2="104" y2="432.0" stroke="#7b8794"/>
+<text x="96" y="435.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">0</text>
+<line x1="100" y1="377.0" x2="104" y2="377.0" stroke="#7b8794"/>
+<text x="96" y="380.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">35,000</text>
+<line x1="104" y1="377.0" x2="716" y2="377.0" stroke="#9aa5b1" stroke-width="0.6" stroke-dasharray="2 4"/>
+<line x1="100" y1="322.0" x2="104" y2="322.0" stroke="#7b8794"/>
+<text x="96" y="325.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="end">70,000</text>
+<line x1="104" y1="322.0" x2="716" y2="322.0" stroke="#9aa5b1" stroke-width="0.6" stroke-dasharray="2 4"/>
+<line x1="104.0" y1="432" x2="104.0" y2="437" stroke="#7b8794"/>
+<text x="104.0" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">1,024</text>
+<line x1="226.4" y1="432" x2="226.4" y2="437" stroke="#7b8794"/>
+<text x="226.4" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">2,048</text>
+<line x1="369.6" y1="432" x2="369.6" y2="437" stroke="#7b8794"/>
+<text x="369.598820176539" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">4,608</text>
+<line x1="471.2" y1="432" x2="471.2" y2="437" stroke="#7b8794"/>
+<text x="471.2" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">8,192</text>
+<line x1="593.6" y1="432" x2="593.6" y2="437" stroke="#7b8794"/>
+<text x="593.6" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">16,384</text>
+<line x1="716.0" y1="432" x2="716.0" y2="437" stroke="#7b8794"/>
+<text x="716.0" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#52606d" text-anchor="middle">32,768</text>
+<text x="410.0" y="474" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="middle">negotiated DataTransferSize (bytes, log scale)</text>
+<polyline points="104.0,104.0 226.4,174.2 369.6,221.9 471.2,229.4 593.6,236.9 716.0,252.0" fill="none" stroke="#276749" stroke-width="2.2"/>
+<circle cx="104.0" cy="104.0" r="3.4" fill="#276749"/>
+<text x="104.0" y="95.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">59</text>
+<circle cx="226.4" cy="174.2" r="3.4" fill="#276749"/>
+<text x="226.4" y="165.23728813559322" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">31</text>
+<circle cx="369.6" cy="221.9" r="3.4" fill="#276749"/>
+<text x="369.598820176539" y="212.89830508474577" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">12</text>
+<circle cx="471.2" cy="229.4" r="3.4" fill="#276749"/>
+<text x="471.2" y="220.4237288135593" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">9</text>
+<circle cx="593.6" cy="236.9" r="3.4" fill="#276749"/>
+<text x="593.6" y="227.94915254237287" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">6</text>
+<circle cx="716.0" cy="252.0" r="3.4" fill="#276749"/>
+<text x="716.0" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="middle">0</text>
+<polyline points="104.0,236.9 226.4,252.0 369.6,252.0 471.2,252.0 593.6,252.0 716.0,252.0" fill="none" stroke="#9ab5a4" stroke-width="2.2" stroke-dasharray="5 4"/>
+<circle cx="104.0" cy="236.9" r="3.4" fill="#9ab5a4"/>
+<text x="104.0" y="227.94915254237287" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">6</text>
+<circle cx="226.4" cy="252.0" r="3.4" fill="#9ab5a4"/>
+<text x="226.4" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">0</text>
+<circle cx="369.6" cy="252.0" r="3.4" fill="#9ab5a4"/>
+<text x="369.598820176539" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">0</text>
+<circle cx="471.2" cy="252.0" r="3.4" fill="#9ab5a4"/>
+<text x="471.2" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">0</text>
+<circle cx="593.6" cy="252.0" r="3.4" fill="#9ab5a4"/>
+<text x="593.6" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">0</text>
+<circle cx="716.0" cy="252.0" r="3.4" fill="#9ab5a4"/>
+<text x="716.0" y="243.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9ab5a4" text-anchor="middle">0</text>
+<polyline points="104.0,337.1 226.4,338.4 369.6,339.3 471.2,339.5 593.6,339.6 716.0,339.9" fill="none" stroke="#276749" stroke-width="2.2"/>
+<circle cx="104.0" cy="337.1" r="3.4" fill="#276749"/>
+<circle cx="226.4" cy="338.4" r="3.4" fill="#276749"/>
+<circle cx="369.6" cy="339.3" r="3.4" fill="#276749"/>
+<circle cx="471.2" cy="339.5" r="3.4" fill="#276749"/>
+<circle cx="593.6" cy="339.6" r="3.4" fill="#276749"/>
+<circle cx="716.0" cy="339.9" r="3.4" fill="#276749"/>
+<polyline points="104.0,421.4 226.4,421.7 369.6,421.7 471.2,421.7 593.6,421.7 716.0,421.7" fill="none" stroke="#9ab5a4" stroke-width="2.2" stroke-dasharray="5 4"/>
+<circle cx="104.0" cy="421.4" r="3.4" fill="#9ab5a4"/>
+<circle cx="226.4" cy="421.7" r="3.4" fill="#9ab5a4"/>
+<circle cx="369.6" cy="421.7" r="3.4" fill="#9ab5a4"/>
+<circle cx="471.2" cy="421.7" r="3.4" fill="#9ab5a4"/>
+<circle cx="593.6" cy="421.7" r="3.4" fill="#9ab5a4"/>
+<circle cx="716.0" cy="421.7" r="3.4" fill="#9ab5a4"/>
+<text x="724" y="343.9472857142857" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#276749" text-anchor="start">58,579-60,394</text>
+<text x="724" y="425.693" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#7f9a89" text-anchor="start">6,559-6,766</text>
+<rect x="24" y="68" width="14" height="3" fill="#276749"/>
+<text x="44" y="74" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">P2  ML-DSA-65 + ML-KEM-768</text>
+<rect x="214" y="68" width="14" height="3" fill="#9ab5a4"/>
+<text x="234" y="74" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">A0  ECDSA P-384 + ECDHE P-384</text>
+<text x="24" y="500" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">Across a 32x range of DataTransferSize the post-quantum handshake’s bytes move 3.1% and its chunk round trips move from 0 to 59.</text>
+<text x="24" y="517" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">So DataTransferSize buys round trips and not bandwidth. Each round trip is one bus RTT, which on SMBus at 100 kHz is the expensive half of the cost.</text>
+<text x="24" y="534" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">The classical arm chunks only at 1,024 bytes, where its 1,655-byte chain stops fitting - the dashed line. The 4,608-byte point reproduces the unpatched build’s capture exactly, which is what makes the other five comparable to it.</text>
+<text x="24" y="546" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="normal" fill="#9aa5b1" text-anchor="start">DataTransferSize has no upstream flag; it is LIBSPDM_RECEIVER_BUFFER_SIZE minus transport overhead. transport/data-transfer-size.patch makes it settable.</text>
+</svg>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-label="Post-quantum SPDM cost by phase and in round trips">
+<rect width="900" height="520" fill="#fbfcfd"/>
+<text x="24" y="34" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#1f2933" text-anchor="start">What post-quantum authentication costs, and where</text>
+<text x="24" y="55" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#52606d" text-anchor="start">captured bytes by protocol phase (left) and request/response round trips (right)</text>
+<text x="24" y="74" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#9aa5b1" text-anchor="start">one build, eighteen control variables pinned, --meas_op ALL, algorithms read back off the wire</text>
+<rect x="24" y="82" width="10" height="10" fill="#94a3b8"/>
+<text x="39" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">GET_VERSION … ALGORITHMS</text>
+<rect x="210" y="82" width="10" height="10" fill="#a8b3c4"/>
+<text x="225" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">GET_DIGESTS / DIGESTS</text>
+<rect x="375" y="82" width="10" height="10" fill="#2b6cb0"/>
+<text x="390" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">certificate chain</text>
+<rect x="512" y="82" width="10" height="10" fill="#38a169"/>
+<text x="527" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">CHALLENGE_AUTH</text>
+<rect x="628" y="82" width="10" height="10" fill="#805ad5"/>
+<text x="643" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">MEASUREMENTS</text>
+<rect x="730" y="82" width="10" height="10" fill="#cbd5e1"/>
+<text x="745" y="91" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">chunking + MCTP framing</text>
+<text x="210" y="68" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="start">bytes</text>
+<text x="650" y="68" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="start">round trips</text>
+<text x="24" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">A0</text>
+<text x="48" y="123" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ECDSA P-384 / ECDHE P-384</text>
+<text x="202" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L3</text>
+<rect x="210.0" y="108" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="108" width="1.5" height="20" fill="#a8b3c4"/>
+<rect x="212.2" y="108" width="24.2" height="20" fill="#2b6cb0"/>
+<rect x="236.4" y="108" width="1.3" height="20" fill="#38a169"/>
+<rect x="237.8" y="108" width="3.1" height="20" fill="#805ad5"/>
+<rect x="240.8" y="108" width="0.5" height="20" fill="#cbd5e1"/>
+<text x="598" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">6,559</text>
+<rect x="650" y="112" width="50.0" height="12" fill="#276749"/>
+<text x="808" y="123" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">11</text>
+<text x="24" y="161" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">A1</text>
+<text x="48" y="161" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ECDSA P-521 / ECDHE P-521</text>
+<text x="202" y="161" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L5</text>
+<rect x="210.0" y="146" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="146" width="1.5" height="20" fill="#a8b3c4"/>
+<rect x="212.2" y="146" width="27.4" height="20" fill="#2b6cb0"/>
+<rect x="239.6" y="146" width="1.5" height="20" fill="#38a169"/>
+<rect x="241.1" y="146" width="3.2" height="20" fill="#805ad5"/>
+<rect x="244.3" y="146" width="0.5" height="20" fill="#cbd5e1"/>
+<text x="598" y="161" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">7,292</text>
+<rect x="650" y="150" width="50.0" height="12" fill="#276749"/>
+<text x="808" y="161" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">11</text>
+<text x="24" y="199" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P1</text>
+<text x="48" y="199" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-44 / ML-KEM-512</text>
+<text x="202" y="199" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L2</text>
+<rect x="210.0" y="184" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="184" width="1.5" height="20" fill="#a8b3c4"/>
+<rect x="212.2" y="184" width="176.3" height="20" fill="#2b6cb0"/>
+<rect x="388.5" y="184" width="12.4" height="20" fill="#38a169"/>
+<rect x="400.9" y="184" width="14.2" height="20" fill="#805ad5"/>
+<rect x="415.1" y="184" width="1.9" height="20" fill="#cbd5e1"/>
+<text x="598" y="199" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">43,337</text>
+<rect x="650" y="188" width="50.0" height="12" fill="#276749"/>
+<rect x="700.0" y="188" width="40.9" height="12" fill="#f6ad55"/>
+<text x="808" y="199" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">20</text>
+<text x="834" y="199" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(9 chunk)</text>
+<text x="24" y="237" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P2</text>
+<text x="48" y="237" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-65 / ML-KEM-768</text>
+<text x="202" y="237" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L3</text>
+<rect x="210.0" y="222" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="222" width="1.5" height="20" fill="#a8b3c4"/>
+<rect x="212.2" y="222" width="242.0" height="20" fill="#2b6cb0"/>
+<rect x="454.2" y="222" width="16.7" height="20" fill="#38a169"/>
+<rect x="470.9" y="222" width="18.4" height="20" fill="#805ad5"/>
+<rect x="489.3" y="222" width="2.4" height="20" fill="#cbd5e1"/>
+<text x="598" y="237" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">58,966</text>
+<rect x="650" y="226" width="50.0" height="12" fill="#276749"/>
+<rect x="700.0" y="226" width="54.5" height="12" fill="#f6ad55"/>
+<text x="808" y="237" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">23</text>
+<text x="834" y="237" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(12 chunk)</text>
+<text x="24" y="275" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P3</text>
+<text x="48" y="275" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-87 / ML-KEM-1024</text>
+<text x="202" y="275" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L5</text>
+<rect x="210.0" y="260" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="260" width="1.5" height="20" fill="#a8b3c4"/>
+<rect x="212.2" y="260" width="326.2" height="20" fill="#2b6cb0"/>
+<rect x="538.4" y="260" width="23.0" height="20" fill="#38a169"/>
+<rect x="561.4" y="260" width="24.7" height="20" fill="#805ad5"/>
+<rect x="586.1" y="260" width="3.9" height="20" fill="#cbd5e1"/>
+<text x="598" y="275" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">79,542</text>
+<rect x="650" y="264" width="50.0" height="12" fill="#276749"/>
+<rect x="700.0" y="264" width="100.0" height="12" fill="#f6ad55"/>
+<text x="808" y="275" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">33</text>
+<text x="834" y="275" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(22 chunk)</text>
+<text x="24" y="313" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">S1</text>
+<text x="48" y="313" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">SLH-DSA-SHA2-128s / ML-KEM-512</text>
+<text x="202" y="313" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L1</text>
+<rect x="210.0" y="298" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="210.7" y="298" width="0.5" height="20" fill="#a8b3c4"/>
+<rect x="211.2" y="298" width="237.1" height="20" fill="#2b6cb0"/>
+<rect x="448.3" y="298" width="38.4" height="20" fill="#38a169"/>
+<rect x="486.7" y="298" width="2.5" height="20" fill="#cbd5e1"/>
+<text x="598" y="313" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">58,446</text>
+<rect x="650" y="302" width="31.8" height="12" fill="#276749"/>
+<rect x="681.8" y="302" width="63.6" height="12" fill="#f6ad55"/>
+<text x="808" y="313" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">21</text>
+<text x="834" y="313" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(14 chunk)</text>
+<text x="834" y="313" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#c53030" text-anchor="start">handshake did not complete</text>
+<line x1="24" y1="350" x2="876" y2="350" stroke="#9aa5b1" stroke-width="1"/>
+<text x="24" y="370" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">Version-Capabilities-Algorithms is 152 SPDM bytes in every one of the six arms. Nothing post-quantum costs anything to negotiate.</text>
+<text x="24" y="387" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">At matched NIST level 3 the bytes go x8.99 and the round trips x2.09; at level 5, x10.91 and x3.00.</text>
+<text x="24" y="404" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">The certificate chain is 86% of the post-quantum arm and the MEASUREMENTS response 7%. This flow fetches the chain three times.</text>
+<text x="24" y="506" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="normal" fill="#9aa5b1" text-anchor="start">w8-pqc-matrix-20260914T131557Z · orange is SPDM chunking, which costs a round trip per chunk · every number read from the capture</text>
+</svg>
