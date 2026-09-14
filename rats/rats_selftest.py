@@ -204,8 +204,10 @@ def no_svn_on_either_side(ev: dict, ref: dict):
 
     Here `svn_check` requires the reference to name at least one, so the answer
     is a refusal. It is a deliberately strict reading — a device with no SVN is
-    not appraisable by a policy that has one — and week 7's rollback cases are
-    where it earns its keep.
+    not appraisable by a policy that has one — and it is what stops the
+    one-sided comparison from being defeated by silence: see the
+    `the svn is missing` case below, which is the same clause from the other
+    direction.
     """
     ev["evidences"] = [e for e in ev["evidences"] if "svn" not in e["evidence"]]
     triples = ref["corim"]["unsigned_corim_map"]["corim_tags"][0]["comid_triples"]

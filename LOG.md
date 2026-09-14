@@ -3264,3 +3264,297 @@ That is the same shape as 2026-09-12's third entry, where a claim about DMTF's
 policy was wrong in the direction that flattered it. Both times the false
 sentence was in a supporting role. **Nothing checks the reasoning you use to
 justify a check.**
+
+---
+
+## 2026-09-14 · Day 9 · a rule that had to be shown to do something, and a ratio that was not one number
+
+### The four cases were already on the disk
+
+**現象** `plan/W07` §3 opens Monday with a recipe: write four measurement
+fixtures with `device/gen_measurements.py`, mint one reference value with
+`rats/build_reference.py`, appraise each with `rats/run_appraisal.sh`. Two of
+those three files do not exist. Neither does `rats/cases/`. And the one that
+does exist, `gen_measurements.py`, produces a `.bin` that `rats/appraise.py`
+has no way to accept — it takes a decoded capture, not a fixture.
+
+**假設** 1. the files were renamed and the plan is one rename behind;
+2. the plan predates them and describes what it expected to need;
+3. the plan is describing a *different*, simpler pipeline than the one that was
+   actually built, and the difference matters.
+
+**先驗哪個、為什麼** (2), because it is answerable from a date and because if it
+is true the interesting question is (3). `plan/W07.md`'s header says
+2026-08-11 — day one of fourteen. `rats/` was written on 2026-09-10 and
+2026-09-12. The plan is not one rename behind; it is a month ahead of a design
+it could not have known about.
+
+Then (3), which is the one worth the time. The plan's pipeline appraises the
+**fixture**. The one that was built appraises the **528-byte measurement record
+sliced out of the `MEASUREMENTS` message**, and `rats/README.md` says why in as
+many words: feeding the fixture compares a document against itself, and it
+deletes the conveyance, which is the entire subject of RATS. So the recipe is
+not merely using old names. It is describing an experiment that cannot fail in
+the way the week needs it to.
+
+**根因** **A fourteen-week plan describes each week's work in the tools it
+expects to need**, and six weeks in, the tools exist, are better, and have a
+shape the plan could not have anticipated. The recipe is the first thing to
+rot; the *question* it was written to answer does not rot at all.
+
+And the question was already answered by the disk. `bench/data/w5-tamper-
+20260910T092621Z` holds four real handshakes taken on 2026-09-10 with the
+responder reading four different fixtures: `t0_clean` at SVN 7, `svn9` at 9,
+`svn5` at 5, and `t1_meas` at 7 with one byte of measurement index 1 changed.
+Those are the plan's S-eq, S-up, S-down and S-hash, end to end, already
+provenanced, already committed. Nothing needed generating.
+
+**教訓** Three, and the middle one is the week's.
+
+*Read a plan for its question, not for its commands.* The four cases were the
+point; `run_appraisal.sh` was a guess about how they would be produced.
+
+★ *Changing a judgement is worth nothing; being able to show what the change
+did is the whole of it.* So the old rule was **frozen** rather than deleted —
+`rats/policy-v0-equality.rego`, the same file with `svn == ref` — and the four
+captures are appraised under both. Eight cells, and exactly one is allowed to
+move. Read the frozen column for S-up and S-down and they are the same line:
+that is what "cannot tell an update from an attack" looks like as output rather
+than as a sentence about output. `rats/rats_selftest.py` asserts that the two
+policies differ in code only inside one marked region, and that check was fed a
+policy with an unrelated check disabled and refused it.
+
+And the honest half, which is sharper than the objection the plan anticipated.
+The plan says the cost of `>=` is that it cannot stop a version an attacker
+invented — true, and the digest rule handles it. The real cost is that
+**`>=` only stops a rollback BELOW the reference value.** A device on version 9
+pushed back to 7 satisfies `7 >= 7` and this policy says PASS. Closing that
+needs a reference value that moves with each published firmware, which is a
+property of the release process, or a verifier that remembers the highest
+version it has seen, which needs state that a one-shot derivation does not have.
+Both are beside the result in `docs/rats-pipeline.md` §5 rather than after it.
+
+### Six packets, and a status code that named no flag
+
+**現象** The first run of `harness/run_pair.sh`, built from `plan/W07` §2.2's
+eighteen controlled flags, died immediately on every arm:
+
+```
+ERROR: libspdm_init_connection - 0x8001000a
+```
+
+Six packets. Both emulators echoed every flag back exactly as intended —
+`req_asym - 0x0000`, `mut_auth - 0x00`, `asym - 0x00000080`. Nothing in either
+log named a flag, and `harness/spdm_status.py` has no entry for that code.
+
+**假設** 1. `--ver 1.4` asks for a version this pair does not fully implement;
+2. `--other_param OPAQUE_FMT_1` drops a bit the responder requires, since the
+   default carries `MULTI_KEY_CONN` as well;
+3. one of the four mutual-authentication flags is refused in a combination the
+   parser accepts;
+4. the build is wrong in some way unrelated to flags.
+
+**先驗哪個、為什麼** None of them individually. **Bisection, because the
+hypothesis space is eighteen flags and four of them are new to this script**,
+and because each test is a two-second handshake — the cheapest possible way to
+turn four opinions into one fact. Five configurations: the full set, the set
+with `--other_param` restored to its default, the set without `--other_param`
+at all, the set without `--ver`, and the set without the two requester-signature
+flags.
+
+The last one worked. 22 packets, exit 0. A second bisection over the two flags
+separately showed that either alone is fine and **only the pair is fatal**,
+which turns a guess into a statement about a condition with an `&&` in it.
+
+**根因** `libspdm/library/spdm_responder_lib/libspdm_rsp_algorithms.c`:
+
+```c
+if (MUT_AUTH_CAP is mutually supported || requester advertises EP_INFO_CAP_SIG) {
+    algo_size     = libspdm_get_req_asym_signature_size(req_base_asym_alg);
+    pqc_algo_size = libspdm_get_req_pqc_asym_signature_size(req_pqc_asym_alg);
+    if (((algo_size == 0) && (pqc_algo_size == 0)) ||
+        ((algo_size != 0) && (pqc_algo_size != 0))) {
+        return INVALID_REQUEST;
+    }
+}
+```
+
+**Exactly one requester signature algorithm. Never zero, never both.**
+
+And the trap is one level up: `--mut_auth` and `--basic_mut_auth` are *flow*
+policy. They decide whether the encapsulated exchange runs. They do not clear
+`MUT_AUTH_CAP` or `EP_INFO_CAP_SIG` out of `m_use_requester_capability_flags`,
+and both bits are set by default — which the captures confirm rather than
+assume, since `fields.py` lists both in the requester's advertised flags in
+every arm of every run this project has ever taken.
+
+So `plan/W07` §2.2, which was right about every other default it listed and was
+itself the product of reading the source, contains one line that cannot work.
+
+**教訓** The mechanism first: the requester's own algorithm is **pinned** to one
+classical value in every arm rather than removed, which costs one 4-byte
+`AlgStructure` entry that is byte-identical across all four arms, and the
+per-message-type table proves it rather than a comment claiming it.
+
+Then the rule, and it is a sharpening of a rule this project already had.
+*Read the source, not the help* was already standing; it produced §2.2's list
+and the list is otherwise correct. What it does not cover is this: **a value
+the parser accepts is not a configuration the protocol accepts.** The argument
+parser validates against a table of names; the thing that refuses this lives in
+a different library, in a conditional with two capability flags in it, and
+returns a status code that names none of them. Between "the flag parsed" and
+"the handshake worked" there is a layer, and the only tool that sees into it is
+a capture.
+
+★ And the reason it was caught in two minutes rather than a day: the script
+**refuses to record numbers from a run whose negotiated algorithms are not the
+ones it declared.** That check was written for a different failure — a
+responder silently choosing a different algorithm — and the first thing it ever
+did was refuse a handshake that had not happened at all. A check written for
+one failure mode catching a different one on its first use is the best evidence
+available that it was worth writing.
+
+Filed as upstream candidate thirteen. It is not being sent yet, because the
+first change is still prepared-and-unsent and sending a second finding to a
+project you have never spoken to is a way of having zero conversations.
+
+### I predicted the difference would not move, and it moved by exactly nine signatures
+
+**現象** The post-quantum A/B was run through both measurement flows. The
+ratios came out at **8.99×** for `--meas_op ALL` and **6.01×** for
+`ONE_BY_ONE`, which is what was expected: the index walk adds ~9,000 bytes of
+traffic that is identical in both arms, and a constant added to both sides
+pulls a ratio toward 1.
+
+The prediction that went with it was that the **difference** would be
+unchanged, because a constant added to both sides cancels. It was not:
+
+```
+--meas_op ALL          P2 - A0 = +52,407
+--meas_op ONE_BY_ONE   P2 - A0 = +78,111
+```
+
+25,704 bytes unaccounted for.
+
+**假設** 1. the two `ONE_BY_ONE` arms differ in something besides the
+   algorithms — a contaminated arm, which would invalidate the whole table;
+2. the extra traffic is not constant: the walk makes the post-quantum arm do
+   something more than once;
+3. an arithmetic or tooling error in how the totals were produced.
+
+**先驗哪個、為什麼** (1), first and immediately, because it is the only one of
+the three that would make every number published today worthless, and because
+it is the cheapest to settle: `bench/pcapstat.py` reports bytes per message
+type, and a contaminated arm shows up as *any* non-measurement message
+differing between A0 and P2. Every one of them is equal —
+`NEGOTIATE_ALGORITHMS` 48, `ALGORITHMS` 52, `DIGESTS` 300, `GET_CERTIFICATE`
+48, `CHALLENGE` 44 — and `DELIVER_ENCAPSULATED_RESPONSE` is absent from both.
+So (1) is out, and what remains is a real property of the flow.
+
+**根因** Counted, not inferred, because the arithmetic alone would have been an
+observation dressed as a measurement. Seventeen `MEASUREMENTS` responses in
+each `ONE_BY_ONE` arm:
+
+```
+A0-obo   50  65  105 x5  161  169 x2  185  201 x5  281
+P2-obo   50  65  105 x5  3374 3382 x2 185  3414 x5 3494
+```
+
+Eight are byte-identical between the arms. **Nine differ, and every one of the
+nine differs by exactly 3,213** — 3374−161, 3382−169, 3414−201, 3494−281. That
+is one ML-DSA-65 signature minus one ECDSA P-384 signature, 3,309 − 96, nine
+times, 28,917 bytes.
+
+`--meas_op ONE_BY_ONE` does not merely add constant traffic. It makes the
+responder **sign nine times instead of once**.
+
+**教訓** The result: a post-quantum signature is not a per-handshake cost. It is
+a per-signed-response cost, and the flow decides how many of those there are.
+Both ratios are published, each naming its flow, in `docs/pqc-cost.md` §4 —
+because "post-quantum SPDM is N× bigger" without the flow beside it is a number
+nobody can reproduce and nobody can falsify, and the two numbers here differ by
+half.
+
+The method, which is the part that generalises: **the useful prediction is the
+one that is wrong in a specific number.** "The ratio will shrink" is
+unfalsifiable — it shrank, and it would have taught nothing. "The difference
+will be identical" was wrong by 25,704, and 25,704 divides by 3,213 exactly
+nine times, which pointed straight at the cause. A prediction that cannot be
+wrong arithmetically cannot be informative when it is right.
+
+And the smaller one, which is this repository's eighth or ninth restatement of
+the same thing: the per-message-type table settled hypothesis (1) in one glance
+because two independent parsers already agree on it. The work that makes a
+question cheap to answer is done before the question is asked.
+
+### "Every capture is truncated", said the check that had just been written
+
+**現象** `spdm_dump` stops partway through the post-quantum arm — its
+`LIBSPDM_MAX_CERT_CHAIN_SIZE` is a compile-time constant — so `fields.py` sees
+13,365 of 58,736 SPDM bytes, 22.8%. `bench/pcapstat.py` has reported that
+shortfall since it was written; `fields.py --check`, which is the tool a
+*document's* numbers are checked with, did not. So a line was added to say it.
+
+It reported **every capture in the repository** as truncated, including ones
+whose decode is provably complete.
+
+**假設** 1. the truncation flag is being set wrongly by the parser;
+2. the new line reads the right value and the value is wrong;
+3. the new line does not read the value it thinks it does.
+
+**先驗哪個、為什麼** (3), because (1) and (2) would have made
+`bench/pcapstat.py` misbehave too, and it does not — it takes the truncation
+branch for the post-quantum arm and the byte-for-byte branch for the classical
+one, on the same data, in the same run. One consumer is right and one is wrong,
+so the difference is in the consumers.
+
+**根因** `flatten()` renders every value as a **string**, because its purpose is
+comparing against a `<!--claim k=v-->` in a document. `"False"` is a true
+string. The new line asked `if flat.get("source.decode_truncated")` and got
+truthiness from a five-character string.
+
+**教訓** The fix is one line — read the document, not its rendering — and the
+shape is one this month has now produced four times: a check that fails for a
+reason unrelated to what it checks. `ai` matching `gmail`. A SIGPIPE deciding a
+branch. A count of `SPDM_ERROR` standing in for a count of large-response
+errors, written *today*, in the same sitting. And this.
+
+They have one thing in common and it is worth naming: **every one of them is a
+value crossing a representation boundary** — a word into a regex, a process's
+status into a pipeline's, a category into a total, a boolean into a string. The
+check itself was right in all four cases. What was wrong was the assumption
+that the thing being handed to it still meant what it meant one layer up.
+
+There is no general mechanism for that, which is why the specific ones matter:
+a self-test case per boundary. `bench/pcapstat.py --selftest` now builds three
+`InvalidRequest` and two `LargeResponse` errors and requires them counted
+apart, and four deliberate breaks were applied to a scratch copy to confirm it
+refuses each of them. The string-truthiness one has no companion test and is
+therefore the weakest of the four fixes, which is stated here rather than
+discovered later.
+
+**`TODO(me)`** — Gate 3 is closed. The version rule is `>=`, four captures
+prove it moved exactly one verdict, and CI asserts the whole 2×4 table. What I
+am not sure about is whether freezing the old policy is a pattern or a one-off:
+it cost forty lines and a structural check, and it is the only reason the claim
+"I changed one thing" is checkable. Doing it for every future judgement would
+fill `rats/` with fossils. Not doing it leaves the next change unprovable.
+
+**`TODO(me)`** — Gate 4 has two algorithm groups of six and the apparatus for
+the other four. What is missing is not arms: it is that `bench/pcapstat.py`
+cannot reassemble a certificate chain that arrived through the chunking layer,
+so the chain length for every post-quantum arm comes from the decode alone —
+one tool, not two. Week 8.
+
+**`TODO(me)`** — `c-drills`. `d8` now exists: contract, tests, stub, validated
+four ways. **Eight** drills waiting and **zero** finished. `DONE.txt` has been
+empty for the ninth working day running, and the scorecard — the one number
+this whole track exists to produce — has eight blank rows. The drills are not
+the part of this project that is behind schedule; they are the part that has
+not started.
+
+**`TODO(me)`** — `docs/upstream/` now lists **thirteen** candidates and
+**zero** submissions. The prepared one is two days older than it was.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
+

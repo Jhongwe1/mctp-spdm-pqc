@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 6 of a 14-week programme. The table below is the truth about what
+This is week 7 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -35,15 +35,114 @@ exists today, not what is planned. Planned work is in
 | G0 | environment and version baseline | **complete** — see [`docs/env-baseline.md`](docs/env-baseline.md) |
 | G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
 | G2 | certificate chain, three tamper points | **complete** — **Table 1**, five rows over ten controlled arms, every point measured ([`docs/tamper.md`](docs/tamper.md)). Point 2 needed a proxy and became two arms, which is where the pair that fails identically for opposite reasons turned out to live |
-| G3 | RATS verification pipeline | **in progress** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is now judged FAIL, and the `rats` job turns red if it stops being. Outstanding: the rollback rule, where an upgrade and a downgrade still produce the same verdict — week 7 |
-| G4 | post-quantum cost quantification | not started |
+| G3 | RATS verification pipeline | **complete** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is judged FAIL, and the `rats` job turns red if it stops being. The version rule is now `evidence >= reference`, and the four cases that prove the change moved **exactly one** verdict — and did not loosen the integrity rule — run in CI |
+| G4 | post-quantum cost quantification | **in progress** — **Table 2**, first half: ML-DSA-65 + ML-KEM-768 against ECDSA-P384 + ECDHE-P384 at matched NIST level 3, eighteen control variables pinned and the negotiated result read back off the wire ([`docs/pqc-cost.md`](docs/pqc-cost.md)). Four of six algorithm groups, and **Figure 2**, are week 8 |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. Twelve candidates now carry evidence and none has been sent |
+| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. Thirteen candidates now carry evidence and none has been sent |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 7 established
+
+**A judgement was changed, and the change was measured rather than described.**
+
+Until this week the appraisal policy compared the secure version number for
+**equality**, which is what DMTF's sample policy does. That rule is wrong in
+two opposite directions at once: every device that takes a firmware update
+fails, and a device that is rolled back to an older version is refused *with
+the same check, the same category and the same index* as one that was upgraded.
+Rows `svn5` and `svn9` in last week's Table 3 produced byte-identical output.
+
+The rule is now per index and one-sided — `evidence >= reference`. Changing it
+is worth nothing on its own, so the four cases are run under the new policy
+**and** under a frozen copy of the one it replaced, on the same four captures,
+against the same signed reference value. Eight cells, and exactly one may move:
+
+| case | device SVN | `==` (frozen) | `>=` (live) | |
+|:--|--:|---|---|:--|
+| S-eq · `t0_clean` | 7 | PASS | PASS | |
+| **S-up** · `svn9` | 9 | **FAIL** `svn_mismatch[16]` | **PASS** | ★ |
+| S-down · `svn5` | 5 | FAIL `svn_mismatch[16]` | FAIL **`svn_rollback[16]`** | |
+| S-hash · `t1_meas` | 7 | FAIL `digest_mismatch[1]` | FAIL `digest_mismatch[1]` | |
+
+**S-hash is the row the table would be dishonest without.** Relaxing a rule
+invites exactly one question — *did you relax security?* — and the answer has
+to be a cell rather than an assurance. Its version number is correct and one
+byte of measurement index 1 is not; both columns refuse it, and neither
+column's version check fires at all.
+
+`bash rats/test_svn_policy.sh` produces the table, `harness/verify_repo.sh` and
+CI both run it, and `rats/rats_selftest.py` asserts that the two policies
+differ in code only inside one marked region — so a verdict that moved cannot
+have been moved by anything else. What the loosening **cost** is beside the
+result in [`docs/rats-pipeline.md`](docs/rats-pipeline.md) §5: `>=` stops a
+rollback *below the reference value* and nothing else, so a device on version 9
+pushed back to 7 satisfies it exactly and this policy says PASS.
+
+That closes Gate 3.
+
+---
+
+**Table 2, first half** — post-quantum cost, two algorithm groups of six, at
+matched NIST level 3. Full method, and everything it does not measure, in
+[`docs/pqc-cost.md`](docs/pqc-cost.md).
+
+| quantity | A0 · ECDSA-P384 | P2 · ML-DSA-65 | ratio |
+|---|--:|--:|--:|
+| responder certificate chain | 1,655 B | 16,853 B | **10.18×** |
+| handshake bytes, `--meas_op ALL` | 6,559 B | 58,966 B | **8.99×** |
+| handshake bytes, `--meas_op ONE_BY_ONE` | 15,587 B | 93,698 B | **6.01×** |
+| one signature (`CHALLENGE_AUTH`) | 238 B | 3,451 B | **+3,213 B** |
+| `GET_CERTIFICATE` round trips | 3 | 3 | 1.00× |
+| `CHUNK_RESPONSE` messages | 0 | 12 | — |
+
+**Two rows of that table are the same experiment.** Measured over the flow that
+asks for every measurement in one message, post-quantum authentication costs
+8.99×; measured over the emulator's default flow, which walks every measurement
+index, it costs 6.01×. The walk adds ~9,000 bytes that are identical in both
+arms, and a constant added to both sides pulls a ratio toward 1. **A cost ratio
+is a property of a workload, not of an algorithm**, and either number without
+the flow beside it is unreproducible.
+
+The difference between the two flows is not a constant either, and that is the
+part the totals could not say. `ONE_BY_ONE` makes the responder sign **nine
+times instead of once**: of its seventeen `MEASUREMENTS` responses, eight are
+byte-identical across the two arms and nine differ by exactly 3,213 bytes each
+— one ML-DSA-65 signature minus one ECDSA P-384 signature, counted rather than
+inferred.
+
+**The certificate chain never appears in a `CERTIFICATE` message.** At 16,853
+bytes against a negotiated `DataTransferSize` of 4,608, the responder answers
+`GET_CERTIFICATE` with `ERROR(LargeResponse)` and the chain arrives through
+SPDM's chunking layer. `GET_CERTIFICATE` round trips are 3 in both arms; what
+moved is `CHUNK_RESPONSE`, 0 against 12. A table reporting only the first
+number would have said the post-quantum chain was free.
+
+**Single-variable is a thing that is proved here, not intended.** Eighteen
+flags are pinned, read out of `spdm_emu_common/key.c` rather than out of
+`--help`, and every message that is not the experiment is byte-identical across
+the arms — `NEGOTIATE_ALGORITHMS` 48, `ALGORITHMS` 52, `DIGESTS` 300. Left at
+their defaults, both arms would have carried a requester RSA-3072 certificate
+chain nobody asked for, which in an earlier capture is 22% of the bytes. And
+because *requesting* an algorithm and *negotiating* one are different events,
+every arm declares what it expects to be negotiated in all twelve groups and
+`harness/run_pair.sh` **refuses the run** when the wire disagrees.
+
+That check refused its first ever run, correctly: the flag combination this
+project's own plan specified for switching mutual authentication off makes the
+handshake impossible on this build, and the only diagnostic is a libspdm status
+code that names no flag. It is now upstream candidate thirteen —
+[`docs/upstream/README.md`](docs/upstream/README.md).
+
+**Every ratio above is re-derived from the captures it names** by
+`harness/check_claims.py`, which is new this week and exists because
+`harness/fields.py --check` binds a claim to *one* capture and a ratio belongs
+to neither of its two. Every tolerance in `bench/claims.json` is **0.0**: these
+are byte counts out of committed files, and a non-zero tolerance on a
+deterministic quantity is a check that has been asked not to fail.
 
 ### What week 6 established
 

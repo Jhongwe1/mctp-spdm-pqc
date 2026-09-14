@@ -256,9 +256,10 @@ for a measurement. The requester has no idea what this device's firmware hash
 
 That division is RATS: the Attester reports, the Verifier compares against
 Reference Values, and SPDM is the transport and the authenticity of the report.
-[`docs/rats-roles.md`](rats-roles.md) has the roles. Gate 3 is where the
-comparison gets built, and **this row is the reason it has to be** — the only
-tamper in Table 1 that nothing refuses is the one a reference value would catch.
+[`docs/rats-roles.md`](rats-roles.md) has the roles. Gate 3 is where that
+comparison was built, and **this row is the reason it had to be** — the only
+tamper in Table 1 that nothing refuses is the one a reference value catches, and
+[`rats-pipeline.md`](rats-pipeline.md) Table 3 is it being caught.
 
 ---
 
