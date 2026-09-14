@@ -1,0 +1,5 @@
+arm	meas_op	exit	packets	bytes	negotiated	verdict
+A0-all	ALL	0	22	6559	Hash=SHA_384 MeasHash=SHA_384 Asym=ECDSA_P384 PqcAsym=- DHE=SECP_384_R1 KEM=- AEAD=AES_256_GCM ReqAsym=ECDSA_P384 ReqPqcAsym=- KeySchedule=HMAC_HASH MeasSpec=DMTF OtherParam=OPAQUE_FMT_1	as-declared
+P2-all	ALL	0	46	58966	Hash=SHA_384 MeasHash=SHA_384 Asym=- PqcAsym=ML_DSA_65 DHE=- KEM=ML_KEM_768 AEAD=AES_256_GCM ReqAsym=ECDSA_P384 ReqPqcAsym=- KeySchedule=HMAC_HASH MeasSpec=DMTF OtherParam=OPAQUE_FMT_1	as-declared
+A0-obo	ONE_BY_ONE	0	546	15587	Hash=SHA_384 MeasHash=SHA_384 Asym=ECDSA_P384 PqcAsym=- DHE=SECP_384_R1 KEM=- AEAD=AES_256_GCM ReqAsym=ECDSA_P384 ReqPqcAsym=- KeySchedule=HMAC_HASH MeasSpec=DMTF OtherParam=OPAQUE_FMT_1	as-declared
+P2-obo	ONE_BY_ONE	0	570	93698	Hash=SHA_384 MeasHash=SHA_384 Asym=- PqcAsym=ML_DSA_65 DHE=- KEM=ML_KEM_768 AEAD=AES_256_GCM ReqAsym=ECDSA_P384 ReqPqcAsym=- KeySchedule=HMAC_HASH MeasSpec=DMTF OtherParam=OPAQUE_FMT_1	as-declared
