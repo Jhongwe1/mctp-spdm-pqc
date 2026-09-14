@@ -65,6 +65,10 @@
 # that ships a verdict. Do not edit it to keep up with the live policy; see the
 # SVN-RULE region below.
 #
+# Why this file exists rather than `git show`, what it costs, and the criterion
+# for doing it again — freeze a RELAXATION, not a tightening:
+# docs/decisions/0008-a-superseded-judgement-is-kept-as-a-control.md
+#
 # ── Failing closed ─────────────────────────────────────────────────────────
 #
 # Every check begins `default X := false` and every rule body that could be

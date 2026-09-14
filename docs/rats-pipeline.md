@@ -510,6 +510,11 @@ Three properties of the script are not decoration:
 they already ran cannot cover this: it evaluates one policy, so a change that
 did nothing at all would satisfy it forever.
 
+> **Why a frozen file rather than the history**, what the fossil costs, and the
+> criterion for when a superseded judgement should be kept again — freeze a
+> *relaxation*, not a tightening:
+> [`docs/decisions/0008`](decisions/0008-a-superseded-judgement-is-kept-as-a-control.md).
+
 ### What loosening it cost
 
 Two things, and the first is sharper than the objection people raise.

@@ -53,6 +53,24 @@ request, not a fact.
 > requested and not negotiated. That number was withdrawn and this field exists
 > because of it.
 
+> *Table 2's:* the responder's signature and key-establishment algorithms, and
+> the read-back is no longer a step a person performs. Each arm **declares**
+> what it expects to be negotiated — in all twelve groups the protocol
+> negotiates separately, written out independently of the flags rather than
+> derived from them — and `harness/run_pair.sh` reads the `ALGORITHMS` response
+> back through `harness/fields.py` and **refuses the run** when the wire
+> disagrees. The declaration also names two things that are not algorithms:
+> that no encapsulated exchange happened, and that zero requester certificate
+> bytes crossed the wire, which is how "mutual authentication is off" stops
+> being a flag and becomes an observation.
+>
+> ★ **It refused its first ever run**, for a failure it was not written for:
+> the flag combination the week's plan specified makes the handshake impossible
+> on this build, so there was nothing on the wire to disagree with. A read-back
+> written for "the responder chose something else" catching "the handshake
+> never happened" is the strongest evidence available that the field is worth
+> filling in.
+
 ### 3. Control — taken before the thing being tested exists, if it can be
 
 The arm that should show no effect. A control taken afterwards by the person
@@ -88,6 +106,20 @@ Write the list. Anything not on it is a variable you have not controlled.
 > are in the run's `manifest.json`, hashed, because a list a person maintains
 > is a list that drifts.
 
+> *Table 2's:* eighteen flags, and the list was read out of
+> `spdm_emu/spdm_emu_common/key.c` rather than out of `--help`, because the
+> defaults that matter are the ones nobody names. Left alone, mutual
+> authentication is on and the requester authenticates with RSA-PSS 3072, so
+> **both** arms would carry a requester certificate chain the experiment never
+> asked for — 4,460 bytes, 22% of an earlier capture, identical in both arms.
+> A constant like that cannot corrupt a difference and quietly halves a ratio.
+>
+> ★ And the proof is not the list. It is that **every message which is not the
+> experiment is byte-identical across the arms** — `NEGOTIATE_ALGORITHMS` 48,
+> `ALGORITHMS` 52, `DIGESTS` 300, `GET_CERTIFICATE` 48 — which
+> `bench/pcapstat.py` produces per message type. A list says what was intended
+> to be held still; the per-type table says what was.
+
 ### 5. Dependent variables — and which class they are in
 
 | class | examples | how it is reported |
@@ -101,6 +133,21 @@ Write the list. Anything not on it is a variable you have not controlled.
 > three of the arms. The dominant term in any latency measured there is
 > scheduling and I/O. **Publishing one number that cannot be overturned beats
 > publishing two when the second can.**
+
+> *Table 2's:* class A throughout, and a warning about class A that is easy to
+> miss. A deterministic quantity is not automatically a **comparable** one. The
+> same A/B measured over two measurement flows gives 8.99× and 6.01×, because
+> the flow that walks every measurement index adds ~9,000 bytes that are
+> identical in both arms. Both numbers are deterministic; neither is wrong; and
+> a table quoting one of them without naming the flow cannot be reproduced or
+> refuted.
+>
+> ★ **A ratio is a property of a workload, not of an algorithm.** So the flow
+> is part of the claim, both numbers are published, and each names its own
+> measurement flow in `bench/claims.json`. The difference between the two
+> flows turned out not to be a constant either — the walk makes the responder
+> sign nine times instead of once — which is the finding that would have been
+> invisible if only one flow had been run.
 
 If a class B number ever is reported here, it will be measured at L0 —
 `libspdm`'s `test_crypt`, or `openssl speed` — and reported separately from any

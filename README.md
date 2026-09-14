@@ -666,12 +666,17 @@ harness/       build, capture, health-check and analysis scripts
   spdm_status.py   name the libspdm status an emulator printed
   apply_device_patch.sh   put device/ into the pinned tree, with three guards
   fields.py    read protocol fields out of a decode; assert a document's numbers
+  run_pair.sh  the post-quantum A/B: eighteen flags pinned, and the run fails
+               if the wire did not negotiate what the arm declared
+  check_claims.py  re-derive every published cross-capture ratio, tolerance zero
   mkfigures.py render figures/ from the data, and refuse a drifted one
   verify_repo.sh  everything CI checks, runnable locally
   lib/         shared shell helpers; provenance stamping; the handshake runner
 docs/          baseline, design notes, decision records, roadmap
   handshake-walkthrough.md   every message, field by field, numbers checked by CI
   tamper.md                  Table 1: five tampers, and which layer noticed
+  rats-pipeline.md           Table 3: reference values, a policy, and a verdict
+  pqc-cost.md                Table 2: what post-quantum costs, and over which flow
   measurement.md             how an experiment is run here, with a worked example
   transports.md              what --trans MCTP is, and what it is not
   threat-scope.md            what is and is not claimed, and against whom
@@ -679,6 +684,8 @@ docs/          baseline, design notes, decision records, roadmap
   upstream/    upstream contribution tracking
 bench/
   pcapstat.py  SPDM messages counted from the capture, never from a decode
+  claims.json  every published number derived from more than one capture,
+               with the derivation written out so a machine can redo it
   data/        experiment runs, one directory each, each with manifest.json
 c-drills/      eight C exercises drawn from problems this project hits
 third_party/   upstream commit pins only; no vendored source

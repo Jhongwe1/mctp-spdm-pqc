@@ -209,9 +209,25 @@ moment at which nothing validates. The second common use is multi-tenancy: one
 part, several customers or regions, each with its own anchor.
 
 `SlotID 0xFF` means the chain is **pre-provisioned** — the requester already
-holds it and `GET_CERTIFICATE` is skipped entirely. That is the lever worth
-remembering for Gate 4: a post-quantum chain measured at 16,853 bytes and four
-chunking round trips costs nothing at all if the verifier already has it. Which
+holds it and `GET_CERTIFICATE` is skipped entirely. That is the lever Gate 4
+went on to measure.
+
+<!-- capture: bench/data/w7-pqc-ab-20260914T073732Z/P2-all.decode.txt -->
+A post-quantum chain is
+<!--claim certificate.responder_slot0_bytes=16853-->**16,853 bytes** against a
+negotiated
+<!--claim capabilities.responder.data_transfer_size=4608-->**4,608-byte**
+`DataTransferSize`, so it cannot be answered in one `CERTIFICATE` response at
+all. Each fetch becomes `ERROR(0x0F, LargeResponse)` followed by **four
+`CHUNK_GET` / `CHUNK_RESPONSE` pairs** — and this flow fetches a chain three
+times, so **twelve** of them cross the wire. Counted from the capture by
+`bench/pcapstat.py` and asserted in [`bench/claims.json`](../bench/claims.json)
+rather than read off a decode: `spdm_dump` stops partway through this arm and
+sees only the first four, which is how an earlier draft of this paragraph came
+to say four instead of twelve.
+
+<!-- capture: bench/data/w4-baseline-20260901T054208Z/selfsigned.decode.txt -->
+All of it costs nothing at all if the verifier already holds the chain. Which
 is also why `GET_DIGESTS` exists, and why its 48-byte-per-slot cost stops being
 an optimisation and starts being the mechanism (see
 [`handshake-walkthrough.md`](handshake-walkthrough.md) §4).

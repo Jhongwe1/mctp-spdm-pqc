@@ -7,8 +7,10 @@ evidence against them, and the verdicts that come out.
 python3 rats/appraise.py appraise bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt
 python3 rats/appraise.py appraise bench/data/w5-tamper-20260910T092621Z/t1_meas.decode.txt ; echo $?
 python3 rats/appraise.py matrix --check      # all ten arms, against what they must produce
-python3 rats/appraise.py selftest            # eleven broken pairs, each refused for its own reason
+python3 rats/appraise.py selftest            # every way of breaking it, each refused for its own reason
 python3 rats/cose.py selftest                # the encoders, against RFC 8949's own vectors
+
+bash rats/test_svn_policy.sh                 # ★ four cases x two policies; one cell may move
 
 bash rats/mint_reference.sh                  # the publisher's side
 bash rats/interop.sh                         # compare against DMTF's tools (needs spdm-emu)
@@ -39,11 +41,13 @@ when they differ. `docs/rats-pipeline.md` is the walkthrough;
 | [`appraise.py`](appraise.py) | the Verifier. Capture → evidence → policy → verdict, with the exit code attached |
 | [`cose.py`](cose.py) | CBOR and COSE_Sign1 in the subset a CoRIM needs, no packages; signing and verifying are `openssl` |
 | [`policy.rego`](policy.rego) | the appraisal policy, Rego v1, and a long comment on what DMTF's sample does not check |
-| [`rats_selftest.py`](rats_selftest.py) | eleven broken pairs, each refused, each for a **different** named reason |
+| [`policy-v0-equality.rego`](policy-v0-equality.rego) | **frozen.** The same policy with the secure version number compared for equality, as it stood before 2026-09-14. Not a spare copy — it is the control the change is measured against, and nothing ships a verdict from it. Why it exists rather than `git show`, and when this should be done again: [`docs/decisions/0008`](../docs/decisions/0008-a-superseded-judgement-is-kept-as-a-control.md) |
+| [`test_svn_policy.sh`](test_svn_policy.sh) | the four version cases, run under **both** policies. Eight cells, and exactly one is allowed to differ |
+| [`rats_selftest.py`](rats_selftest.py) | broken pairs, each refused, each for a **different** named reason; two pairs that must be **accepted**; and the assertion that the two policies differ in code only inside one marked region |
 | [`mint_reference.sh`](mint_reference.sh) | the Reference Value Provider's side: capture → CoMID → CBOR → COSE_Sign1 |
 | [`interop.sh`](interop.sh) | this implementation against DMTF's, byte for byte where that is meaningful |
 | [`ref/`](ref) | the signed reference values, and the same document in readable form |
-| [`out/`](out) | one verdict per arm, re-derived by CI — and [`expected.json`](out/expected.json), which says what each one must be and why |
+| [`out/`](out) | one verdict per arm, re-derived by CI — and [`expected.json`](out/expected.json), which says what each one must be and why. [`svn_cases.expected.json`](out/svn_cases.expected.json) does the same for the eight cells of the two-policy table |
 | [`interop/`](interop) | what DMTF's tools produced, committed so CI can check this project still matches without a `spdm-emu` checkout |
 | `keys/ref-signer.pub` | the public half. The private half is not here — see below |
 
@@ -104,3 +108,15 @@ and [`out/expected.json`](out/expected.json) is what it checks against — not a
 snapshot of a previous run, but a per-arm statement of the outcome required and
 the sentence that makes it required. A policy that passed everything would
 reproduce a snapshot perfectly.
+
+Since 2026-09-14 there is a second one, and it is a different shape of claim:
+
+> Loosening the version rule moved **exactly one** verdict, and CI must turn
+> red if it ever moves another.
+
+That is `rats/test_svn_policy.sh`, and it needs the frozen policy to exist:
+the ten-arm matrix above evaluates one policy, so a change that did nothing at
+all would satisfy it forever. The reason the comparison is controlled rather
+than merely suggestive is that `rats_selftest.py` requires the two files to
+differ in code only inside one marked region — so a verdict that moved cannot
+have been moved by something else that changed at the same time.
