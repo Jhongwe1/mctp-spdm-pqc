@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 7 of a 14-week programme. The table below is the truth about what
+This is week 8 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -36,14 +36,97 @@ exists today, not what is planned. Planned work is in
 | G1 | full handshake, field by field | **complete** — seven message pairs annotated against a capture, 164 values asserted by CI, four pairs whose offsets are reconstructed from the wire. What is still transcribed, and the three questions still open, are named in [§10](docs/handshake-walkthrough.md) |
 | G2 | certificate chain, three tamper points | **complete** — **Table 1**, five rows over ten controlled arms, every point measured ([`docs/tamper.md`](docs/tamper.md)). Point 2 needed a proxy and became two arms, which is where the pair that fails identically for opposite reasons turned out to live |
 | G3 | RATS verification pipeline | **complete** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is judged FAIL, and the `rats` job turns red if it stops being. The version rule is now `evidence >= reference`, and the four cases that prove the change moved **exactly one** verdict — and did not loosen the integrity rule — run in CI |
-| G4 | post-quantum cost quantification | **in progress** — **Table 2**, first half: ML-DSA-65 + ML-KEM-768 against ECDSA-P384 + ECDHE-P384 at matched NIST level 3, eighteen control variables pinned and the negotiated result read back off the wire ([`docs/pqc-cost.md`](docs/pqc-cost.md)). Four of six algorithm groups, and **Figure 2**, are week 8 |
+| G4 | post-quantum cost quantification | **complete** — **Table 2** and **Figures 2 and 3**: six algorithm groups over three matched comparisons, a DataTransferSize sweep on a build made to have one, and every signature length in the table re-derived from a message-size difference and landing on its FIPS constant exactly ([`docs/pqc-cost.md`](docs/pqc-cost.md)). The negotiation costs 152 bytes in all six groups; the certificate chain is 86% of the post-quantum arm; and DataTransferSize turns out to be a latency parameter, not a bandwidth one — 3.1% of bytes against 59 round trips over a 32x range |
 | G5 | real transports (QEMU / AF_MCTP) | not started |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. Thirteen candidates now carry evidence and none has been sent |
+| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Seventeen** candidates now carry evidence and none has been sent — the newest is a 55-line patch making `DataTransferSize` settable, with a capture proving it inert where it is not aimed |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 8 established
+
+**Four things were measured that the week's plan did not ask for, and one thing
+the plan asked for turned out to be false.**
+
+Gate 4 wanted six algorithm groups instead of two. It got them, arranged so that
+each is the other half of one question — classical against post-quantum at NIST
+category 3 *and* at category 5, and lattice against hash-based signatures with
+the KEM held fixed. **The gap widens with the level: 8.99× at category 3 and
+10.91× at category 5.** One A/B could not have said that.
+
+**The negotiation is free, and it is free byte for byte.** Six extra arms did
+nothing but Version-Capabilities-Algorithms, and all six captures are 182 bytes —
+identical whether the thing being agreed is ECDSA P-384 or SLH-DSA-SHA2-128s.
+`ALGORITHMS` selects a *bit*. So none of the cost in Table 2 is paid to agree on
+an algorithm; all of it is paid afterwards, and 86% of it is the certificate
+chain. Then the same 152-byte subtotal was found inside every full capture, which
+makes two routes to one number and neither needed the other.
+
+**Every signature length in the table falls out of a message-size difference, and
+every one matches its published constant exactly.** `CHALLENGE_AUTH` is 142 bytes
+of content fixed by the negotiated hash plus one signature. Subtract the 142 and
+the six arms give 96, 132, 2,420, 3,309, 4,627 and 7,856 — ECDSA P-384 and P-521,
+ML-DSA 44/65/87, SLH-DSA-SHA2-128s. **None of those numbers is an input anywhere
+in the pipeline.** Six residuals landing on six FIPS constants is what says the
+measurement is calibrated, and it is also what proves the 142 is constant across
+the arms rather than assumed to be.
+
+★ **`DataTransferSize` is a latency parameter that looks like a bandwidth one.**
+It has no upstream flag — it is a compile-time constant minus transport overhead
+— so a third build flavour was made with a 55-line patch that lets it move at
+run time, and it was swept over a 32× range. **The byte total moves 3.1%. The
+round trips move from 59 to zero.** Each round trip is a bus RTT, which on SMBus
+at 100 kHz is the expensive half of the cost. Week 7 had published that a large
+`DataTransferSize` would remove chunking "while the byte total barely moves" —
+reasoned, not run. It is now run, and the sweep carries its own control: the
+patched build told to use the unpatched value reproduces its capture byte for
+byte, which is the only thing that makes a second build comparable to a first.
+
+**And turning chunking off made it cheaper.** The plan expected `CHUNK_CAP` to be
+absent from the emulator's defaults and to need adding. It is present on both
+sides. Removing it from the responder did not break the post-quantum handshake:
+libspdm windowed `GET_CERTIFICATE` to `DataTransferSize` instead, and the
+handshake got **three round trips shorter and nine bytes smaller**. The three
+`ERROR(LargeResponse)` exchanges chunking needs first are pure overhead at this
+chain size.
+
+Two things had to be fixed before any of that could be believed.
+
+**The analyser could not see the thing being measured.** A chain larger than
+`DataTransferSize` never appears in a `CERTIFICATE` message at all, so
+`pcapstat.py` reported zero chains for every post-quantum arm while the whole
+chain sat in the capture — and the only tool that could reach it was the
+reference decoder, whose decode of that capture is truncated at 22.8%. It now
+reassembles `CHUNK_RESPONSE` sequences out of the capture's own bytes, and three
+independent routes agree on 16,853. It is also shown *refusing*: a gap in
+`ChunkSeqNo`, a lying `ChunkSize`, a `LargeMessageSize` that disagrees with its
+chunks, and a sequence with no `LastChunk` are four of fourteen self-tests.
+`CHUNK_SEND` has no capture to test against here, so it is named as unhandled
+rather than written blind.
+
+★ **And no manifest had ever recorded the crypto library.** libspdm statically
+links its own **OpenSSL 3.5.5** from a submodule; the *system* `openssl` is
+3.0.13, and that is the one every `manifest.json` recorded. ML-DSA, ML-KEM and
+SLH-DSA arrived in OpenSSL 3.5 — so a reader who took the recorded version for
+the backend would have concluded these captures are impossible. Every pin and
+every future manifest now names the vendored commit and version, backfilled
+without recompiling the binaries behind the published captures. The same audit
+found that the device patch applied on 2026-09-01 appeared in no manifest either.
+
+**SLH-DSA does not complete a handshake on this build, and where it stops is the
+finding.** Bisecting on `--exe_conn` with ML-DSA-44 as the control: every
+operation that does not require a signature succeeds, including parsing and
+verifying a certificate chain whose every signature is SLH-DSA; both operations
+that do require one fail. The `CHALLENGE_AUTH` arrives whole, at exactly
+142 + 7,856 bytes, so the responder signed correctly. What is left is
+verification, and the specific status is unrecoverable because a `Release` build
+compiles libspdm's debug output out. The arm stays in Table 2 as a partial
+handshake.
+
+That closes Gate 4. Seventeen upstream candidates now carry evidence, four of
+them from this week, and the newest is a patch rather than a complaint.
 
 ### What week 7 established
 
@@ -666,8 +749,9 @@ harness/       build, capture, health-check and analysis scripts
   spdm_status.py   name the libspdm status an emulator printed
   apply_device_patch.sh   put device/ into the pinned tree, with three guards
   fields.py    read protocol fields out of a decode; assert a document's numbers
-  run_pair.sh  the post-quantum A/B: eighteen flags pinned, and the run fails
-               if the wire did not negotiate what the arm declared
+  run_pair.sh  the post-quantum A/B matrix: twenty arms, eighteen flags pinned,
+               and the run fails if the wire did not negotiate what the arm
+               declared — algorithms, capabilities and DataTransferSize alike
   check_claims.py  re-derive every published cross-capture ratio, tolerance zero
   mkfigures.py render figures/ from the data, and refuse a drifted one
   verify_repo.sh  everything CI checks, runnable locally
@@ -676,14 +760,20 @@ docs/          baseline, design notes, decision records, roadmap
   handshake-walkthrough.md   every message, field by field, numbers checked by CI
   tamper.md                  Table 1: five tampers, and which layer noticed
   rats-pipeline.md           Table 3: reference values, a policy, and a verdict
-  pqc-cost.md                Table 2: what post-quantum costs, and over which flow
+  pqc-cost.md                Table 2: what post-quantum costs, over which flow,
+                             and at which security level
+  fragmentation.md           two layers of splitting: one measured, one computed,
+                             and the formulas both are usually written wrong
   measurement.md             how an experiment is run here, with a worked example
   transports.md              what --trans MCTP is, and what it is not
   threat-scope.md            what is and is not claimed, and against whom
   decisions/   architecture decision records — why, not what
   upstream/    upstream contribution tracking
 bench/
-  pcapstat.py  SPDM messages counted from the capture, never from a decode
+  pcapstat.py  SPDM messages counted from the capture, never from a decode;
+               reassembles what SPDM's chunking layer took apart
+  exp04_fragmentation.py  chunk round trips, modelled and validated against a
+               measured sweep; MCTP packets, computed and labelled computed
   claims.json  every published number derived from more than one capture,
                with the derivation written out so a machine can redo it
   data/        experiment runs, one directory each, each with manifest.json
@@ -696,6 +786,8 @@ device/        where a measurement value comes from: a loader, its file
 figures/       generated by harness/mkfigures.py, never drawn    (from W05)
 rats/          reference values and verification policy          (from W06)
 transport/     real-transport glue                               (from W09)
+  data-transfer-size.patch  55 lines making the parameter that decides round
+               trips settable at run time — upstream candidate 17     (W08)
 negative/      negative and conformance tests                    (from W10)
 ```
 
@@ -703,18 +795,34 @@ Upstream source is not vendored. `third_party/*.pin` records the exact commits
 every result was produced from; `harness/build_spdm_emu.sh` reconstructs the
 build trees from those pins on any machine.
 
-## Two build flavors
+## Three build flavors
 
-Two independent builds are maintained, and every result states which one
+Three independent builds are maintained, and every result states which one
 produced it.
 
-| Flavor | spdm-emu | libspdm | Used for |
-|---|---|---|---|
-| `stable` | 3.8.0 | 3.8.0 | the released-pair control |
-| `pqc` | 4.0.0-rc | 4.0.0-rc | the comparison arms, classical and post-quantum |
+| Flavor | spdm-emu | libspdm | Differs how | Used for |
+|---|---|---|---|---|
+| `stable` | 3.8.0 | 3.8.0 | — | the released-pair control |
+| `pqc` | 4.0.0-rc | 4.0.0-rc | — | every comparison arm, classical and post-quantum |
+| `pqc-dts` | 4.0.0-rc | 4.0.0-rc | larger buffers, plus [`transport/data-transfer-size.patch`](transport/data-transfer-size.patch) | the DataTransferSize sweep only |
 
-**Both arms of a comparison come from one build**, because holding the binary
-constant is what makes the algorithm the variable. The `stable` build is run
+**Every arm of a comparison comes from one build**, because holding the binary
+constant is what makes the algorithm the variable. The third flavour exists
+because `DataTransferSize` is a compile-time constant with no flag, and it is a
+separate flavour rather than a rebuild of `pqc` so that every number already
+published still reproduces from `third_party/spdm-emu-pqc.pin`. Its sweep
+includes the unpatched build's own value as a **control**, and that arm
+reproduces `pqc`'s capture byte for byte — which is the only thing that makes the
+other five comparable to it. [ADR 0009](docs/decisions/0009-a-third-build-flavor.md).
+
+★ **What a pin records was wrong until 2026-09-14, in a way that mattered.**
+libspdm statically links its own OpenSSL from a submodule — **3.5.5** — and the
+*system* `openssl` on this host is 3.0.13. ML-DSA, ML-KEM and SLH-DSA arrived in
+OpenSSL 3.5, so the vendored version is the reason the post-quantum arms run at
+all, and it appeared in no pin and no manifest. Both now carry
+`crypto-openssl-vendored` and `crypto-openssl-version`, backfilled with
+`build_spdm_emu.sh --pin-only`, which rewrites a pin from the tree as it stands
+without recompiling the binaries whose provenance it is fixing. The `stable` build is run
 with identical flags as a control, and week 2 measured what that control is
 worth: the two builds differ in SPDM version negotiated (1.3 against 1.4),
 requester capability bits, certificate chain size (1,591 against 1,655 bytes)
