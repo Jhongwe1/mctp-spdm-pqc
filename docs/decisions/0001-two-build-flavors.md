@@ -1,6 +1,11 @@
 # ADR 0001 — Maintain two pinned build flavors, pinned by spdm-emu tag
 
 **Status:** accepted, revised the same day · **Date:** 2026-08-11 · **Gate:** G0
+**Amended 2026-09-14 by [0009](0009-a-third-build-flavor.md): there is now a
+third flavor, `pqc-dts`. It pins the same upstream pair as `pqc` and differs
+by one compile-time constant and one patch, so the reasoning below about
+pinning by `spdm-emu` tag is unchanged — but "two flavors" in the title is
+the decision as it was taken, not the count today.**
 
 ## Context
 

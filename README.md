@@ -760,7 +760,12 @@ contains a `manifest.json` holding:
   longer describes the binary, and a patched tree that said nothing about being
   patched is exactly the failure the rest of this list exists to prevent
 - the complete command lines that were executed, as executed
-- compiler, OpenSSL, Python and kernel versions
+- compiler, Python and kernel versions, and **both** OpenSSLs: the system
+  binary, and separately the one `libspdm` vendors and statically links, which
+  is the one that computes every signature. Until 2026-09-14 only the first
+  was recorded, and on this host they are 3.0.13 and 3.5.5 — a reader who took
+  the recorded version for the backend would have concluded the post-quantum
+  captures were impossible, because ML-DSA arrived in OpenSSL 3.5
 - SHA-256 and byte count of every artifact in the directory, **including the
   measurement fixtures a tamper run fed to the responder** and **the tamper
   proxy's own report of which byte it changed, where, and what the record's

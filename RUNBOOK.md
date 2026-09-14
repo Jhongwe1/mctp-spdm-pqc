@@ -29,7 +29,7 @@
 | Claude Code 從哪開? | **`C:\Users\Key20\Desktop\mctp-spdm-pqc`** |
 | 程式碼在哪? | repo 就在上面那個路徑;**上游原始碼與 build tree 在 WSL 的 `~/spdm-lab/`(ext4),絕不放 `/mnt/c`** |
 | GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
-| 今天要做什麼? | **① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它現在是唯一一件急的。** **八**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`、`d8`。**實作永遠是你的**,`verify_repo.sh` 會把「八比零」印出來。D8 多要一句:寫下**為什麼回傳值是「想複製幾個」而不是「複製了幾個」** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ W08:另外四組演算法 ＋ **Figure 2**,以及讓 `pcapstat.py` 能把經過 chunking 的憑證鏈重組回來 |
+| 今天要做什麼? | **① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它現在是唯一一件急的。** **八**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`、`d8`。**實作永遠是你的**,`verify_repo.sh` 會把「八比零」印出來。D8 多要一句:寫下**為什麼回傳值是「想複製幾個」而不是「複製了幾個」** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ **W09:真實傳輸(Gate 5)。先跑那兩個前置檢查** —— `qemu-system-x86_64 -device nvme,help | grep -i spdm` 與 `zcat /proc/config.gz | grep CONFIG_MCTP`。**兩個現在都是紅的**(沒裝 qemu、kernel 沒有 CONFIG_MCTP),所以 Gate 5 要嘛裝東西、要嘛照實降級,而在那之前 MCTP 分段數一律標 `[computed]`(`docs/fragmentation.md`)|
 | 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠八題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第九個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
 | ⚠️ W08 之後仍然存在的障礙 | **一個專案裡兩個 OpenSSL。** libspdm 自己編 submodule 那份(**3.5.5**,PQC 就是它做的);系統的 `openssl` 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空,所以**要簽自己的 PQC 憑證那條是紅的**。★ 2026-09-14 補上的不是這件事——這一行從 W07 就在這裡了——補上的是**機制**:在那之前 `manifest.json` 只記系統那個 3.0.13,每一份 pin 只寫 `crypto=openssl`。**知道一件事,跟有東西把它記下來,是兩件事。** 現在 `crypto-openssl-vendored` 與 `crypto-openssl-version` 在三份 pin 裡,而且是用 `--pin-only` 補的,沒有重新編譯 |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
@@ -150,7 +150,9 @@ Responder 回你一個 measurement,比如 `a3f9...`。**然後呢?**
 > **它底下又有一份完整的 libspdm**。
 >
 > 所以一次 clone 會把 OpenSSL 抓兩遍。單一 flavor 的原始碼樹約 2.5 GB,
-> 編譯後約 6~8 GB,兩個 flavor 就接近 20 GB。
+> 編譯後約 6~8 GB,兩個 flavor 就接近 20 GB,**三個接近 30 GB**。
+> (第三個 `pqc-dts` 用 `--seed-from pqc` 複製原始碼樹,所以只多付編譯,
+> 不用再下載一次。)
 >
 > **這是正常的,不是你做錯了。**
 
@@ -342,17 +344,23 @@ bash harness/build_spdm_emu.sh stable --seed-from pqc
 切到 `3.8.0`(libspdm 跟著它的 submodule 指標走)再編一次。省下 20 分鐘和 2.5 GB。
 
 <details>
-<summary><b>為什麼要兩份 build?</b></summary>
+<summary><b>為什麼要三份 build?</b></summary>
 
 後量子演算法是 **2026-08-04** 才進 libspdm 主線的,而且 `4.0.0` 目前是
 **release candidate**。
 
 **我不想讓一個 RC 當我的基準線。** 所以:
 
-| flavor | spdm-emu | libspdm | 用途 |
-|---|---|---|---|
-| `stable` | 3.8.0 | 3.8.0 | 所有 baseline 量測 |
-| `pqc` | 4.0.0-rc | 4.0.0-rc | 只跑後量子實驗 |
+| flavor | spdm-emu | libspdm | 差別 | 用途 |
+|---|---|---|---|---|
+| `stable` | 3.8.0 | 3.8.0 | — | 所有 baseline 量測 |
+| `pqc` | 4.0.0-rc | 4.0.0-rc | — | **每一個比較臂**,古典與後量子都是 |
+| `pqc-dts` | 4.0.0-rc | 4.0.0-rc | buffer 調大 ＋ `transport/data-transfer-size.patch` | **只跑 DataTransferSize 掃描**(W08 加的) |
+
+★ 第三份不是「把 `pqc` 重編」,因為 `pqc` 是所有已發表數字的來源。
+重編它會讓未來每一份 capture 的 DataTransferSize 都變掉,「clone 下來、照 pin 重建、得到同樣的數字」這句話就不成立了。
+掃描裡故意放一個 4608 的點當**對照**,它必須重現 `pqc` 的每一個計數 ——
+見 `docs/decisions/0009-a-third-build-flavor.md` 與 §11.7。
 
 **釘的是 `spdm-emu` 的 tag,libspdm 跟著那個 tag 的 submodule 指標走**,因為
 上游是把這兩個當一組發布跟測試的。**沒有任何一個 `spdm-emu` commit 指向過
@@ -1151,7 +1159,7 @@ t1_meas     沒有錯誤,記錄跟對照組不一樣        <- ★ 這條是要�
 | 用 `| tee` 接 build,結果騙人 | pipeline 的結束碼是**最後一個**指令的 | `set -o pipefail`,或看 `${PIPESTATUS[0]}` |
 | build 跑很久而且電腦很卡 | `-j$(nproc)` 吃滿了 | `JOBS=3 nice -n 19 bash harness/build_spdm_emu.sh pqc` |
 | WSL 上 build 慢到不合理 | **程式碼放在 `/mnt/c/`** | 編譯樹必須在 `~/`。本 repo 預設就是 `~/spdm-lab` |
-| 磁碟滿了 | 兩個 flavor + spdm-dump ≈ 20 GB | `rm -rf ~/spdm-lab/work/spdm-emu-stable`,需要時再 `--seed-from pqc` 重建 |
+| 磁碟滿了 | 三個 flavor + spdm-dump ≈ 30 GB | `rm -rf ~/spdm-lab/work/spdm-emu-stable`,需要時再 `--seed-from pqc` 重建 |
 | QEMU / MCTP 那兩項是 INFO | WSL 核心沒有 `CONFIG_MCTP` | **不影響主線。** 只影響 W09 的真實傳輸實驗 |
 
 ### 還是不行?90 分鐘規則
@@ -1660,6 +1668,8 @@ cd verify
 bash harness/doctor.sh
 bash harness/build_spdm_emu.sh pqc
 bash harness/build_spdm_emu.sh stable --seed-from pqc
+# 只有要重跑 DataTransferSize 掃描才需要第三份:
+bash harness/build_spdm_emu.sh pqc-dts --seed-from pqc
 bash harness/healthcheck.sh pqc --write-baseline
 
 # 4. 對照:新的 BUILD_PIN 應該跟 repo 裡釘的一樣

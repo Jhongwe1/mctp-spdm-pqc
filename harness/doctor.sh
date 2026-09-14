@@ -152,9 +152,9 @@ AVAIL_GB=$(( ${AVAIL_KB:-0} / 1024 / 1024 ))
 if [ "$AVAIL_GB" -ge 25 ]; then
     pass "free space" "${AVAIL_GB} GB available under \$HOME"
 elif [ "$AVAIL_GB" -ge 15 ]; then
-    info "free space" "${AVAIL_GB} GB — enough for one flavor, tight for two"
+    info "free space" "${AVAIL_GB} GB — enough for one flavor, tight for two, short for all three"
 else
-    fail "free space" "${AVAIL_GB} GB — need ~25 GB. Both flavors vendor OpenSSL twice over."
+    fail "free space" "${AVAIL_GB} GB — need ~25 GB for two flavors and ~35 for all three. Each vendors OpenSSL twice over."
 fi
 note "lab dir" "$LAB_DIR"
 note "repo"    "$REPO_ROOT"
