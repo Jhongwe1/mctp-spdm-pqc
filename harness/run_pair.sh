@@ -1,34 +1,62 @@
 #!/usr/bin/env bash
 #
-# harness/run_pair.sh — the post-quantum A/B, with every other variable pinned
-# and the independent variable read back off the wire.
+# harness/run_pair.sh — the post-quantum A/B matrix, with every other variable
+# pinned and the independent variable read back off the wire.
 #
-#     bash harness/run_pair.sh                      # four arms, ~2 minutes
-#     bash harness/run_pair.sh --name w7-pqc-ab
-#     bash harness/run_pair.sh --only A0-all
+#     bash harness/run_pair.sh                        # the week-8 matrix, ~6 min
+#     bash harness/run_pair.sh --set ab               # the original four arms
+#     bash harness/run_pair.sh --set dts --flavor pqc-dts
+#     bash harness/run_pair.sh --only P2-all
+#     bash harness/run_pair.sh --list                 # what each set contains
 #
-# What this measures
-# ------------------
-# Two algorithm sets at the same NIST security level, and nothing else
-# different:
+# The name says "pair" and it now runs up to twenty arms. It keeps the name
+# because every arm in it IS one half of a pair — §"the three comparisons" below
+# — and because eight dated entries in LOG.md name this path. A file renamed for
+# tidiness takes its own history with it.
 #
-#   A0   ECDSA P-384 + ECDHE P-384        the classical baseline
-#   P2   ML-DSA-65   + ML-KEM-768         the post-quantum one
+# ── the three comparisons ───────────────────────────────────────────────────
 #
-# Each is run through two measurement flows, because the flow is part of the
-# claim and reporting one ratio without saying which flow produced it is how a
-# table becomes unfalsifiable:
+# Six algorithm groups, arranged so that each one is the other half of exactly
+# one question. NIST security categories are FIPS 203/204's, not this project's.
+#
+#   A0  ECDSA P-384  + ECDHE P-384        sig cat 3   kex cat 3
+#   A1  ECDSA P-521  + ECDHE P-521        sig cat 5   kex cat 5
+#   P1  ML-DSA-44    + ML-KEM-512         sig cat 2   kex cat 1
+#   P2  ML-DSA-65    + ML-KEM-768         sig cat 3   kex cat 3
+#   P3  ML-DSA-87    + ML-KEM-1024        sig cat 5   kex cat 5
+#   S1  SLH-DSA-SHA2-128s + ML-KEM-512    sig cat 1   kex cat 1
+#
+#   A0 ↔ P2   classical against post-quantum at MATCHED category 3.
+#   A1 ↔ P3   the same question at MATCHED category 5 — so "the gap" can be
+#             shown to be a function of the level rather than one anecdote.
+#   P1 ↔ S1   lattice against hash-based signatures, SAME KEM, so the only
+#             thing that moves is the signature family.
+#
+#   P1 → P2 → P3 is the within-family scaling, which is what decides whether
+#   65 is a knee point or just the middle row.
+#
+# ★ S1 is paired with ML-KEM-512 and not ML-KEM-768. plan/W08 specified 768; at
+# 768 the S1↔P1 comparison would move the KEM and the signature family at once
+# and answer neither question.
+#
+# ── the flows ──────────────────────────────────────────────────────────────
 #
 #   -all   --meas_op ALL          one request, one response, one signature
 #   -obo   --meas_op ONE_BY_ONE   the emulator's default: walk every index
+#   -vca   --exe_conn VCA         Version-Capabilities-Algorithms and stop
 #
-# On 2026-09-14 the two flows differed by 9,108 bytes out of 20,549 in an
-# existing capture — 44% of the total, spent walking measurement indices that
-# are byte-identical between the two algorithm sets. That traffic is a constant
-# across the A/B, so it does not corrupt the DIFFERENCE, and it dilutes the
-# RATIO by almost half. Both numbers are true and they are not the same number.
+# Reporting one ratio without saying which flow produced it is how a table
+# becomes unfalsifiable: on 2026-09-14 the SAME A0/P2 pair gave 8.99x over ALL
+# and 6.01x over ONE_BY_ONE. A constant added to both sides leaves a DIFFERENCE
+# alone and pulls a RATIO toward 1, and ONE_BY_ONE adds about nine kilobytes of
+# index walking to both.
 #
-# ── why the flag list is this long ─────────────────────────────────────────
+# ★ -vca needs no extra flag beyond --exe_conn. --exe_session stays NO_END in
+# every arm, and NO_END alone does not include EXE_SESSION_KEY_EX, so no arm in
+# this script has ever established a secure session. Checked against the
+# captures rather than assumed: no KEY_EXCHANGE appears in any of them.
+#
+# ── why the controlled flag list is this long ──────────────────────────────
 #
 # Single-variable does not mean "I only changed one flag". It means "I can show
 # nothing else moved", and the emulator's defaults move plenty. Read out of
@@ -47,10 +75,11 @@
 #   m_support_other_params_support = OPAQUE_FMT_1|MULTI_KEY_CONN
 #
 # Left alone, mutual authentication is ON and the requester authenticates with
-# RSA-PSS 3072, so both arms carry a requester certificate chain the experiment
-# never asked for. In the 2026-08-28 baseline that chain is 4,460 bytes of
-# DELIVER_ENCAPSULATED_RESPONSE — 22% of the capture — identical in both arms,
-# and therefore invisible in the difference and corrosive to the ratio.
+# RSA-PSS 3072, so every arm carries a requester certificate chain the
+# experiment never asked for. In the 2026-08-28 baseline that chain is 4,460
+# bytes of DELIVER_ENCAPSULATED_RESPONSE — 22% of the capture — identical in
+# both arms, and therefore invisible in the difference and corrosive to the
+# ratio.
 #
 # ── the part that is not a flag ────────────────────────────────────────────
 #
@@ -58,16 +87,18 @@
 # responder does not support what was asked for, SPDM does not fail — it
 # selects something else, and a table built on the flags would be wrong with no
 # symptom. So every arm declares what it EXPECTS to be negotiated, in all
-# eleven groups the protocol negotiates separately, and this script reads the
-# ALGORITHMS response back through harness/fields.py and REFUSES THE RUN when
-# they differ. docs/roadmap.md standing rule 8, and 2026-08-17 in LOG.md is
-# what taking the flag's word for it cost the first time.
+# twelve groups the protocol negotiates separately, plus four derived facts
+# (MutAuth, ReqChain, Chunk, DTS), and this script reads it back through
+# harness/fields.py and REFUSES THE RUN when they differ. docs/roadmap.md
+# standing rule 8, and 2026-08-17 in LOG.md is what taking the flag's word for
+# it cost the first time.
 #
 # Exit codes
 #   0  every arm completed and negotiated exactly what it declared
 #   1  an arm's negotiated algorithms are not what it asked for, or an arm
 #      produced no capture. The captures are KEPT either way: a run that went
 #      wrong is evidence about the tooling and deleting it loses the reason.
+#   2  a set was asked for that this flavor cannot run
 
 set -uo pipefail
 _HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -76,33 +107,23 @@ _HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "${_HERE}/lib/handshake.sh"
 set +e          # an arm may fail; each is judged on its evidence, not on $?
 
-RUN_NAME="w7-pqc-ab"
+RUN_NAME=""
 FLAVOR="pqc"
 ONLY=""
+SETS="matrix,vca,nochunk"
+LIST_ONLY=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --name)    RUN_NAME="${2:?--name needs a value}"; shift 2 ;;
         --flavor)  FLAVOR="${2:?--flavor needs a value}"; shift 2 ;;
         --only)    ONLY="${2:?--only needs an arm label}"; shift 2 ;;
-        -h|--help) sed -n '3,60p' "$0"; exit 0 ;;
+        --set)     SETS="${2:?--set needs one or more of ab,matrix,vca,nochunk,dts}"; shift 2 ;;
+        --list)    LIST_ONLY=1; shift ;;
+        -h|--help) sed -n '3,14p' "$0"; exit 0 ;;
         *)         die "unknown argument '$1'" ;;
     esac
 done
-
-BIN="$(flavor_bin "$FLAVOR")"
-[ -d "$BIN" ] || die "no build for flavor '${FLAVOR}'
-  build it first:  bash harness/build_spdm_emu.sh ${FLAVOR}"
-
-SPDM_DUMP=""
-if command -v spdm_dump >/dev/null 2>&1; then
-    SPDM_DUMP="$(command -v spdm_dump)"
-elif [ -x "${WORK_DIR}/spdm-dump/build/bin/spdm_dump" ]; then
-    SPDM_DUMP="${WORK_DIR}/spdm-dump/build/bin/spdm_dump"
-fi
-[ -n "$SPDM_DUMP" ] || die "spdm_dump not built — run: bash harness/build_spdm_dump.sh
-  A capture whose negotiated algorithms cannot be read back is not evidence of
-  anything, and reading them back is the whole point of this script."
 
 # ── the controlled set ─────────────────────────────────────────────────────
 #
@@ -154,8 +175,8 @@ COMMON=(
     # so the responder still requires the requester to name exactly one
     # signature algorithm for itself.
     #
-    # So it is pinned rather than removed, to the SAME classical value in both
-    # arms. Nothing signs with it — no encapsulated exchange happens — and the
+    # So it is pinned rather than removed, to the SAME classical value in every
+    # arm. Nothing signs with it — no encapsulated exchange happens — and the
     # only thing it puts on the wire is one 4-byte AlgStructure entry that is
     # byte-identical in every arm. Reported as upstream candidate 6 in
     # docs/upstream/README.md.
@@ -163,42 +184,142 @@ COMMON=(
     --req_pqc_asym   NONE
 )
 
-# ── the arms ───────────────────────────────────────────────────────────────
-#
-# label | meas_op | arm-only flags | expected negotiation
-#
-# The expectation is written out independently of the flags rather than derived
-# from them. Deriving it would make the check circular: it would compare the
+# Everything the negotiation must produce that is NOT the independent variable.
+# Written out rather than derived from COMMON: deriving it would compare the
 # flags with themselves and pass on a capture where the responder chose
 # something else entirely.
-ARMS=(
-"A0-all|ALL|--asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE|Hash=SHA_384;MeasHash=SHA_384;AEAD=AES_256_GCM;KeySchedule=HMAC_HASH;Asym=ECDSA_P384;DHE=SECP_384_R1;PqcAsym=;KEM=;ReqAsym=ECDSA_P384;ReqPqcAsym=;MutAuth=off;ReqChain=0"
-"P2-all|ALL|--asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE|Hash=SHA_384;MeasHash=SHA_384;AEAD=AES_256_GCM;KeySchedule=HMAC_HASH;Asym=;DHE=;PqcAsym=ML_DSA_65;KEM=ML_KEM_768;ReqAsym=ECDSA_P384;ReqPqcAsym=;MutAuth=off;ReqChain=0"
-"A0-obo|ONE_BY_ONE|--asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE|Hash=SHA_384;MeasHash=SHA_384;AEAD=AES_256_GCM;KeySchedule=HMAC_HASH;Asym=ECDSA_P384;DHE=SECP_384_R1;PqcAsym=;KEM=;ReqAsym=ECDSA_P384;ReqPqcAsym=;MutAuth=off;ReqChain=0"
-"P2-obo|ONE_BY_ONE|--asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE|Hash=SHA_384;MeasHash=SHA_384;AEAD=AES_256_GCM;KeySchedule=HMAC_HASH;Asym=;DHE=;PqcAsym=ML_DSA_65;KEM=ML_KEM_768;ReqAsym=ECDSA_P384;ReqPqcAsym=;MutAuth=off;ReqChain=0"
+EXPECT_FIXED="Hash=SHA_384;MeasHash=SHA_384;AEAD=AES_256_GCM;KeySchedule=HMAC_HASH;ReqAsym=ECDSA_P384;ReqPqcAsym=;MutAuth=off;ReqChain=0"
+
+# ── the six algorithm groups ───────────────────────────────────────────────
+#
+#   label | arm-only flags | expected negotiation for the four groups that move
+ALGO_GROUPS=(
+"A0|--asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE|Asym=ECDSA_P384;DHE=SECP_384_R1;PqcAsym=;KEM="
+"A1|--asym ECDSA_P521 --dhe SECP_521_R1 --pqc_asym NONE --kem NONE|Asym=ECDSA_P521;DHE=SECP_521_R1;PqcAsym=;KEM="
+"P1|--asym NONE --dhe NONE --pqc_asym ML_DSA_44 --kem ML_KEM_512 --pqc_first TRUE|Asym=;DHE=;PqcAsym=ML_DSA_44;KEM=ML_KEM_512"
+"P2|--asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE|Asym=;DHE=;PqcAsym=ML_DSA_65;KEM=ML_KEM_768"
+"P3|--asym NONE --dhe NONE --pqc_asym ML_DSA_87 --kem ML_KEM_1024 --pqc_first TRUE|Asym=;DHE=;PqcAsym=ML_DSA_87;KEM=ML_KEM_1024"
+"S1|--asym NONE --dhe NONE --pqc_asym SLH_DSA_SHA2_128S --kem ML_KEM_512 --pqc_first TRUE|Asym=;DHE=;PqcAsym=SLH_DSA_SHA2_128S;KEM=ML_KEM_512"
 )
 
-hdr "post-quantum A/B  ·  ${RUN_NAME}"
+# The responder capability list for the -nochunk arms: the twenty-three flags it
+# advertises by default, minus CHUNK.
+#
+# ★ Derived from a CAPTURE, not transcribed from key.c. The names come from
+# bench/data/w7-pqc-ab-*/A0-all.fields.json's capabilities.responder.flags,
+# mapped to the emulator's own CLI spellings in
+# m_spdm_responder_capabilities_string_table. A hand-copied list of twenty-three
+# flags is twenty-three chances to change a second variable, and this arm's whole
+# claim is that exactly one moved — which check_negotiated.py's Chunk clause and
+# the per-message byte table then have to confirm.
+NOCHUNK_CAPS="CACHE,CERT,CHAL,MEAS_SIG,MEAS_FRESH,ENCRYPT,MAC,MUT_AUTH,KEY_EX,PSK_WITH_CONTEXT,ENCAP,HBEAT,KEY_UPD,HANDSHAKE_IN_CLEAR,SET_CERT,CSR,EP_INFO_SIG,MEL,MULTI_KEY_NEG,GET_KEY_PAIR_INFO,SET_KEY_PAIR_INFO,LARGE_RESP"
+
+# The DataTransferSize sweep. 4608 is the unpatched build's compile-time value
+# and is the CONTROL: the patched build told to use it must reproduce the
+# unpatched build's capture, or the patch is not inert and the sweep measures
+# the patch instead of the parameter.
+DTS_POINTS=(1024 2048 4608 8192 16384 32768)
+
+# ── build the arm list ─────────────────────────────────────────────────────
+#
+# label | responder-extra | arm flags | expectation
+ARMS=()
+
+add_arm() { ARMS+=("$1|$2|$3|$4"); }
+
+set_wanted() { case ",${SETS}," in *",$1,"*) return 0 ;; *) return 1 ;; esac; }
+
+for spec in "${ALGO_GROUPS[@]}"; do
+    IFS='|' read -r g extra expect <<<"$spec"
+
+    is_ab=0
+    [ "$g" = "A0" ] || [ "$g" = "P2" ] && is_ab=1
+
+    if set_wanted matrix || { set_wanted ab && [ "$is_ab" -eq 1 ]; }; then
+        add_arm "${g}-all" "" "--meas_op ALL ${extra}"         "${EXPECT_FIXED};${expect}"
+        add_arm "${g}-obo" "" "--meas_op ONE_BY_ONE ${extra}"  "${EXPECT_FIXED};${expect}"
+    fi
+    if set_wanted vca; then
+        add_arm "${g}-vca" "" "--meas_op ALL --exe_conn VCA ${extra}" \
+                "${EXPECT_FIXED};${expect}"
+    fi
+    if set_wanted nochunk && [ "$is_ab" -eq 1 ]; then
+        add_arm "${g}-nochunk" "--cap ${NOCHUNK_CAPS}" "--meas_op ALL ${extra}" \
+                "${EXPECT_FIXED};${expect};Chunk=off"
+    fi
+    if set_wanted dts && [ "$is_ab" -eq 1 ]; then
+        for d in "${DTS_POINTS[@]}"; do
+            add_arm "${g}-dts${d}" "" "--meas_op ALL --data_transfer_size ${d} ${extra}" \
+                    "${EXPECT_FIXED};${expect};DTS=${d}"
+        done
+    fi
+done
+
+[ "${#ARMS[@]}" -gt 0 ] || die "--set '${SETS}' selected no arms (have: ab, matrix, vca, nochunk, dts)"
+
+# --list is a query and answers without a build tree, so the gate below does not
+# apply to it.
+if [ "$LIST_ONLY" -eq 0 ] && set_wanted dts && [ -z "$(flavor_patch "$FLAVOR")" ]; then
+    warn "--set dts needs a flavor carrying transport/data-transfer-size.patch."
+    warn "  Flavor '${FLAVOR}' does not, so --data_transfer_size would be an"
+    warn "  unknown argument and the emulator exits 0 without speaking SPDM."
+    warn "  Try: bash harness/run_pair.sh --set dts --flavor pqc-dts"
+    exit 2
+fi
+
+if [ "$LIST_ONLY" -eq 1 ]; then
+    hdr "arms selected by --set ${SETS}"
+    for spec in "${ARMS[@]}"; do
+        IFS='|' read -r label rextra aflags _ <<<"$spec"
+        printf '  %-14s %s%s\n' "$label" "$aflags" \
+               "${rextra:+   [responder only: ${rextra}]}"
+    done
+    exit 0
+fi
+
+# The run name says which sets produced it, so a directory in bench/data is
+# self-describing without opening its manifest.
+[ -n "$RUN_NAME" ] || RUN_NAME="w8-pqc-$(printf '%s' "$SETS" | tr ',' '-')"
+
+BIN="$(flavor_bin "$FLAVOR")"
+[ -d "$BIN" ] || die "no build for flavor '${FLAVOR}'
+  build it first:  bash harness/build_spdm_emu.sh ${FLAVOR}"
+
+SPDM_DUMP=""
+if command -v spdm_dump >/dev/null 2>&1; then
+    SPDM_DUMP="$(command -v spdm_dump)"
+elif [ -x "${WORK_DIR}/spdm-dump/build/bin/spdm_dump" ]; then
+    SPDM_DUMP="${WORK_DIR}/spdm-dump/build/bin/spdm_dump"
+fi
+[ -n "$SPDM_DUMP" ] || die "spdm_dump not built — run: bash harness/build_spdm_dump.sh
+  A capture whose negotiated algorithms cannot be read back is not evidence of
+  anything, and reading them back is the whole point of this script."
+
+hdr "post-quantum A/B  ·  ${RUN_NAME}  ·  ${#ARMS[@]} arms  ·  flavor ${FLAVOR}"
 
 prov_begin "$RUN_NAME" "$FLAVOR"
 prov_pin_file "${WORK_DIR}/spdm-dump/BUILD_PIN.txt" BUILD_PIN.spdm-dump.txt spdm_dump
 prov_note controlled_flags "${COMMON[*]}"
+prov_note arm_sets "$SETS"
 
 RESULTS="${PROV_RUN_DIR}/arms.tsv"
-printf 'arm\tmeas_op\texit\tpackets\tbytes\tnegotiated\tverdict\n' > "$RESULTS"
+printf 'arm\tflow\texit\tpackets\tbytes\tdts\tchunk_rsp\tnegotiated\tverdict\n' > "$RESULTS"
 
 FAILED=0
 
 for spec in "${ARMS[@]}"; do
-    IFS='|' read -r label meas_op extra expect <<<"$spec"
+    IFS='|' read -r label rextra aflags expect <<<"$spec"
     [ -z "$ONLY" ] || [ "$ONLY" = "$label" ] || continue
 
     prefix="${PROV_RUN_DIR}/${label}"
-    read -r -a extra_arr <<<"$extra"
-    argv=("${COMMON[@]}" --meas_op "$meas_op" "${extra_arr[@]}")
+    arm_arr=(); rsp_arr=()
+    read -r -a arm_arr   <<<"$aflags"
+    [ -z "$rextra" ] || read -r -a rsp_arr <<<"$rextra"
+    argv=("${COMMON[@]}" "${arm_arr[@]}")
+    flow="${label##*-}"
 
-    log "arm '${label}'  (--meas_op ${meas_op})"
-    dim "    ${extra}"
+    log "arm '${label}'"
+    dim "    ${aflags}${rextra:+   [responder: ${rextra}]}"
 
     # ★ The command line, recorded before the run rather than reconstructed
     # after it. Two arms' copies of this file differ in exactly the lines that
@@ -207,12 +328,14 @@ for spec in "${ARMS[@]}"; do
         printf '# %s — flavor %s, build %s\n' "$label" "$FLAVOR" "$(flavor_emu_ref "$FLAVOR")"
         printf '# controlled (identical in every arm):\n'
         printf '#   %s\n' "${COMMON[*]}"
-        printf 'responder: ./spdm_responder_emu %s\n' "${argv[*]}"
+        printf '# declared negotiation: %s\n' "$expect"
+        printf 'responder: ./spdm_responder_emu %s%s\n' "${argv[*]}" \
+               "${rextra:+ ${rextra}}"
         printf 'requester: ./spdm_requester_emu %s --pcap %s.pcap\n' "${argv[*]}" "$label"
     } > "${prefix}.cmdline.txt"
 
     # Cleared per arm rather than once, so a case that forgets to set one
-    # cannot inherit the previous case's. Both are read by lib/handshake.sh,
+    # cannot inherit the previous case's. All three are read by lib/handshake.sh,
     # which the linter cannot see from here -- and a comment beginning with
     # the linter's own name is parsed as a directive, which is how the first
     # version of this note turned SC2034 into SC1072.
@@ -220,6 +343,8 @@ for spec in "${ARMS[@]}"; do
     HS_RESPONDER_ENV=()
     # shellcheck disable=SC2034
     HS_REQUESTER_EXTRA=()
+    # shellcheck disable=SC2034
+    HS_RESPONDER_EXTRA=("${rsp_arr[@]}")
     hs_run "$BIN" "$prefix" "${argv[@]}"
     rc=$?
 
@@ -242,6 +367,22 @@ except Exception:
             || rm -f "${prefix}.fields.json"
     fi
 
+    # Two transport facts straight off the wire, for the results table. Read
+    # from the capture by pcapstat.py rather than from the decode, so the
+    # sweep's independent variable does not depend on a decoder that truncates.
+    dts="-"; chunk_rsp="-"
+    if [ -s "${prefix}.pcap" ]; then
+        read -r dts chunk_rsp < <(python3 "${REPO_ROOT}/bench/pcapstat.py" \
+            "${prefix}.pcap" --json 2>/dev/null | python3 -c '
+import json, sys
+try:
+    s = json.load(sys.stdin)["summary"]
+    print((s["capabilities"]["responder"] or {}).get("data_transfer_size") or "-",
+          (s["chunking"]["messages"] or {}).get("SPDM_CHUNK_GET", 0))
+except Exception:
+    print("-", "-")')
+    fi
+
     # ── the independent variable, read back ───────────────────────────────
     verdict="?"
     negotiated=""
@@ -252,7 +393,7 @@ except Exception:
         negotiated="$(printf '%s' "$out" | head -1)"
         if [ "$vrc" -eq 0 ]; then
             verdict="as-declared"
-            ok "${label}: exit ${rc}, ${pkts} packets, ${bytes} bytes — ${negotiated}"
+            ok "${label}: exit ${rc}, ${pkts} packets, ${bytes} bytes, DTS ${dts} — ${negotiated}"
         else
             verdict="NEGOTIATION-MISMATCH"
             FAILED=1
@@ -265,26 +406,30 @@ except Exception:
         warn "${label}: exit ${rc}, no fields could be read — see ${label}.req.log"
     fi
 
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-        "$label" "$meas_op" "$rc" "$pkts" "$bytes" "$negotiated" "$verdict" >> "$RESULTS"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$label" "$flow" "$rc" "$pkts" "$bytes" "$dts" "$chunk_rsp" \
+        "$negotiated" "$verdict" >> "$RESULTS"
     prov_note "arm_${label//-/_}_verdict" "$verdict"
 done
 
 # ── the independent variable, as a diff ────────────────────────────────────
-
-for flow in all obo; do
-    a="${PROV_RUN_DIR}/A0-${flow}.cmdline.txt"
-    b="${PROV_RUN_DIR}/P2-${flow}.cmdline.txt"
+#
+# One pair per comparison the matrix was designed around. Everything a reader
+# has to take on trust about "single variable" is in these three diffs.
+for pair in A0:P2 A1:P3 P1:S1; do
+    a="${PROV_RUN_DIR}/${pair%%:*}-all.cmdline.txt"
+    b="${PROV_RUN_DIR}/${pair##*:}-all.cmdline.txt"
     if [ -f "$a" ] && [ -f "$b" ]; then
         printf '\n'
-        hdr "A0 vs P2  (--meas_op ${flow})  — everything that differs"
+        hdr "${pair%%:*} vs ${pair##*:}  (--meas_op ALL)  — everything that differs"
         diff "$a" "$b" | grep -E '^[<>]' | sed 's/^/  /'
     fi
 done
 
 printf '\n'
 hdr "arms"
-awk -F'\t' 'NR>1 {printf "  %-8s %-11s %-5s %-7s %-9s %s\n", $1, $2, $3, $4, $5, $7}' "$RESULTS"
+awk -F'\t' 'NR>1 {printf "  %-14s %-13s %-4s %-6s %-9s %-7s %-5s %s\n",
+                         $1, $2, $3, $4, $5, $6, $7, $9}' "$RESULTS"
 
 prov_finish
 
