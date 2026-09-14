@@ -43,7 +43,7 @@
     "checks": {
       "REFERENCE_PRESENT": true,
       "SPDM_HASH_CHECK": true,
-      "SPDM_SVN_CHECK": false
+      "SPDM_SVN_CHECK": true
     },
     "counts": {
       "evidence_digests": 5,
@@ -55,16 +55,12 @@
       "digest_mismatch": [],
       "digest_missing_from_evidence": [],
       "digest_not_in_reference": [],
-      "svn_mismatch": [
-        16
-      ],
       "svn_missing_from_evidence": [],
-      "svn_not_in_reference": []
+      "svn_not_in_reference": [],
+      "svn_rollback": []
     },
-    "error_code": 1,
-    "failed_checks": [
-      "SPDM_SVN_CHECK"
-    ],
-    "verdict": "fail"
+    "error_code": 0,
+    "failed_checks": [],
+    "verdict": "pass"
   }
 }

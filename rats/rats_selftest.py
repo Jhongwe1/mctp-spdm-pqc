@@ -56,6 +56,14 @@ sys.path.insert(0, str(_HERE))
 import appraise as A  # noqa: E402
 import cose  # noqa: E402
 
+# The policy as it was before 2026-09-14: the same file with the secure
+# version number compared for equality. It is not a spare copy — it is the
+# control, and the structural check below requires it to differ from the live
+# policy in exactly one marked region.
+FROZEN = _HERE / "policy-v0-equality.rego"
+REGION_OPEN = "# >>> SVN-RULE"
+REGION_CLOSE = "# <<< SVN-RULE"
+
 # A minimal, entirely synthetic pair. Small enough to read, and NOT taken from
 # a capture: a test whose fixture comes from the same place as the thing it
 # tests cannot detect a change that moves both.
@@ -240,16 +248,67 @@ def extra_block(ev: dict, ref: dict):
     ev["evidences"].append({"evidence": {"index": 3, "digest": [8, D3]}})
 
 
-def changed_svn(ev: dict, ref: dict):
-    ev["evidences"][2]["evidence"]["svn"] = 9
+def _set_ev_svn(ev: dict, value: int):
+    ev["evidences"][2]["evidence"]["svn"] = value
+
+
+def _set_ref_svn(ref: dict, value: int):
+    triples = (ref["corim"]["unsigned_corim_map"]["corim_tags"][0]
+               ["comid_triples"]["comid_reference_triples"])
+    for t in triples:
+        if "comid_svn" in t[1]["comid_mval"]:
+            t[1]["comid_mval"]["comid_svn"] = value
+            return
+    raise AssertionError("the base reference has no secure version number")
+
+
+def rolled_back_svn(ev: dict, ref: dict):
+    """The device reports a version BELOW the reference value.
+
+    Until 2026-09-14 this and an upgrade were the same case: the policy asked
+    for equality, so both were refused by svn_mismatch and the two refusals
+    were byte-identical. The category this must now name is the whole of the
+    change — a verdict that cannot say which direction it saw cannot be acted
+    on, because the two directions call for opposite responses.
+    """
+    _set_ev_svn(ev, 5)
 
 
 def missing_svn(ev: dict, ref: dict):
+    """The reference names a secure version number and the evidence has none.
+
+    ★ The clause a reader is most likely to think is pedantic, and the one
+    that matters most after the rule was loosened: if silence satisfied a
+    one-sided comparison, the cheapest way to defeat a rollback rule would be
+    to stop answering it.
+    """
     del ev["evidences"][2]
 
 
 def extra_svn(ev: dict, ref: dict):
     ev["evidences"].append({"evidence": {"index": 17, "svn": 3}})
+
+
+# ── the 64-bit boundary ─────────────────────────────────────────────────────
+#
+# DSP0274 carries the secure version number as an 8-byte little-endian value,
+# so the top of its range is 2**64 - 1 — and this repository's captures show
+# it as `07 00 00 00 00 00 00 00` on the wire. Everything between that wire
+# format and the comparison goes through JSON, and JSON numbers are where
+# 64-bit integers go to lose their last digits: an IEEE-754 double carries 53
+# bits of mantissa, so 2**64 - 1 and 2**64 - 2 are the SAME double.
+#
+# If any layer here did that, the pair below would collapse into one value and
+# a rollback at the top of the range would appraise as PASS. That is not a
+# hypothetical shape of bug — it is the shape of every "large integer through
+# JSON" defect — and whether OPA has it is a question with a one-command
+# answer, which is why it is a test rather than a paragraph.
+UINT64_MAX = 2**64 - 1
+
+
+def rollback_at_the_top_of_the_range(ev: dict, ref: dict):
+    _set_ref_svn(ref, UINT64_MAX)
+    _set_ev_svn(ev, UINT64_MAX - 1)
 
 
 CASES = [
@@ -264,9 +323,34 @@ CASES = [
     ("the algorithm changed", changed_algorithm, "digest_mismatch",             "PASS"),
     ("a block is missing",    missing_block,    "digest_missing_from_evidence", "fail"),
     ("a block nobody vouched for", extra_block, "digest_not_in_reference",      "fail"),
-    ("the svn changed",       changed_svn,      "svn_mismatch",                 "fail"),
+    ("the svn went backwards", rolled_back_svn, "svn_rollback",                "fail"),
     ("the svn is missing",    missing_svn,      "svn_missing_from_evidence",    "fail"),
     ("an svn nobody vouched for", extra_svn,    "svn_not_in_reference",         "fail"),
+    ("a rollback at 2**64 - 1", rollback_at_the_top_of_the_range,
+                                                "svn_rollback",                 "fail"),
+]
+
+# Pairs that must be ACCEPTED, and one of them was not until 2026-09-14.
+#
+# Every case above is a refusal, and a file made only of refusals can be
+# satisfied by a policy that refuses everything. These two are the other
+# direction, and the second column is what makes them evidence rather than
+# reassurance: the frozen policy's answer to the same input. A case whose
+# before and after agree is not testing the change.
+
+def upgraded_svn(ev: dict, ref: dict):
+    _set_ev_svn(ev, 9)
+
+
+def upgrade_at_the_top_of_the_range(ev: dict, ref: dict):
+    _set_ref_svn(ref, UINT64_MAX - 1)
+    _set_ev_svn(ev, UINT64_MAX)
+
+
+ACCEPTED = [
+    # name                            mutation      under the frozen policy
+    ("the svn moved forward",         upgraded_svn,               "fail"),
+    ("an upgrade at 2**64 - 1",       upgrade_at_the_top_of_the_range, "fail"),
 ]
 
 # Every category the policy can report — the three named checks and the six
@@ -282,10 +366,35 @@ CATEGORIES = {
     "digest_mismatch",
     "digest_missing_from_evidence",
     "digest_not_in_reference",
-    "svn_mismatch",
+    "svn_rollback",
     "svn_missing_from_evidence",
     "svn_not_in_reference",
 }
+
+
+def code_outside_region(path: Path) -> tuple[list[str], int]:
+    """The policy's executable lines, minus comments, blanks and the region.
+
+    Comments are dropped because the two files explain different things and
+    must be free to; what has to be identical is the code. The region markers
+    are dropped with everything between them, because that is the part the
+    change is allowed to live in.
+    """
+    kept: list[str] = []
+    inside = False
+    regions = 0
+    for line in path.read_text(encoding="utf-8").splitlines():
+        s = line.strip()
+        if s.startswith(REGION_OPEN):
+            inside, regions = True, regions + 1
+            continue
+        if s.startswith(REGION_CLOSE):
+            inside = False
+            continue
+        if inside or not s or s.startswith("#"):
+            continue
+        kept.append(s)
+    return kept, regions
 
 
 def _evaluate(ev: dict, ref: dict, policy: Path, tmp: Path) -> dict:
@@ -333,7 +442,7 @@ def run() -> int:
             if out["verdict"] != "pass":
                 bad(f"{label}: the base pair did not pass ({out})")
 
-        print("ten broken pairs, each refused, each for the stated reason")
+        print(f"{len(CASES)} broken pairs, each refused, each for the stated reason")
         for name, mutate, category, setwise in CASES:
             ev, ref = base_evidence(), base_reference()
             mutate(ev, ref)
@@ -361,6 +470,69 @@ def run() -> int:
                     f"sample, or the sample's behaviour has been misread.")
             mark = "  <- set comparison ACCEPTS this" if got == "PASS" else ""
             print(f"    ok   {name:<30} refused by {category}{mark}")
+
+        print("pairs that must be ACCEPTED, and were not before the rule changed")
+        for name, mutate, was in ACCEPTED:
+            ev, ref = base_evidence(), base_reference()
+            mutate(ev, ref)
+
+            checks += 1
+            out = _evaluate(ev, ref, A.POLICY, tmp)
+            if out["verdict"] != "pass":
+                bad(f"{name}: REFUSED by this policy ({sorted(_blocked_by(out))}) "
+                    f"and must not have been. A version rule that refuses an "
+                    f"upgrade turns every machine that takes the next update "
+                    f"red on the day the reference value is published.")
+                continue
+
+            # And the frozen policy, which is the only thing that makes the
+            # line above evidence: a case both policies accept says nothing
+            # about the change.
+            checks += 1
+            before = _evaluate(ev, ref, FROZEN, tmp)
+            got = "pass" if before["verdict"] == "pass" else "fail"
+            if got != was:
+                bad(f"{name}: the frozen policy answered {got}, expected {was}. "
+                    f"If the two policies now agree here, this case is no "
+                    f"longer testing the change.")
+            else:
+                print(f"    ok   {name:<30} accepted here, {was} under `==`")
+
+        print("the two policies differ in ONE marked region, and nowhere else")
+        checks += 1
+        live_code, live_regions = code_outside_region(A.POLICY)
+        frozen_code, frozen_regions = code_outside_region(FROZEN)
+        if live_regions != 1 or frozen_regions != 1:
+            bad(f"expected exactly one {REGION_OPEN} region per file; found "
+                f"{live_regions} in {A.POLICY.name} and {frozen_regions} in "
+                f"{FROZEN.name}")
+        elif live_code != frozen_code:
+            import difflib
+            d = "\n".join(list(difflib.unified_diff(
+                frozen_code, live_code, "frozen", "live", lineterm="", n=1))[:24])
+            bad("the two policies differ OUTSIDE the SVN-RULE region, so the "
+                "four-case table is no longer a controlled comparison — a "
+                "verdict that moved could have been moved by this instead:\n"
+                f"{d}\n"
+                "        Decide deliberately what the control should be. Do "
+                "not edit the frozen file into agreement.")
+        else:
+            print(f"    {len(live_code)} lines of shared code, identical")
+
+        # Standing rule 11: the check above has to be observed rejecting
+        # something, or it is a string comparison that happens to agree.
+        checks += 1
+        drifted = tmp / "drifted.rego"
+        drifted.write_text(
+            A.POLICY.read_text(encoding="utf-8").replace(
+                "count(digest_missing) == 0", "count(digest_missing) >= 0", 1),
+            encoding="utf-8")
+        if code_outside_region(drifted)[0] == frozen_code:
+            bad("a policy with a check disabled outside the region compared "
+                "EQUAL to the frozen one — the structural check cannot see the "
+                "thing it exists to see")
+        else:
+            print("    a change outside the region is detected")
 
         print("every failure category the policy can name has been provoked")
         checks += 1
@@ -406,6 +578,27 @@ def run() -> int:
         checks += 1
         if A.json_to_cbor(authored) != blob:
             bad("encoding the same document twice produced different bytes")
+
+        print("a secure version number at the top of its range survives CBOR")
+        # The policy comparison is tested against 2**64 - 1 above; this is the
+        # OTHER half of the same hazard, one layer down. A reference value is
+        # signed as CBOR and decoded before the policy ever sees it, so an
+        # encoder that rounded here would hand the policy a number nobody
+        # signed — and the signature would still verify, because it covers the
+        # bytes that were rounded.
+        checks += 1
+        big = base_reference()
+        _set_ref_svn(big, UINT64_MAX)
+        doc = big["corim"]["unsigned_corim_map"]
+        back = A.cbor_to_json(A.json_to_cbor(doc)).get("corim", {}).get(
+            "unsigned_corim_map", {})
+        seen = [tr[1]["comid_mval"]["comid_svn"] for tr in
+                back.get("corim_tags", [{}])[0].get("comid_triples", {})
+                .get("comid_reference_triples", [])
+                if "comid_svn" in tr[1]["comid_mval"]]
+        if seen != [UINT64_MAX]:
+            bad(f"a secure version number of 2**64 - 1 came back as {seen}; the "
+                f"document a verifier compares against is not the one signed")
 
         print("both spellings of an algorithm encode to the same bytes")
         checks += 1

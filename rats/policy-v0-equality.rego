@@ -1,8 +1,8 @@
-# rats/policy.rego — the appraisal policy: what makes a measurement acceptable.
+# rats/policy-v0-equality.rego — the appraisal policy AS IT WAS, frozen.
 #
 # Evaluated by Open Policy Agent:
 #
-#     opa eval --format json -i opa.input -d rats/policy.rego "data.spdm.output"
+#     opa eval --format json -i opa.input -d rats/policy-v0-equality.rego "data.spdm.output"
 #
 # and by rats/appraise.py, which is the same call with the exit code attached.
 #
@@ -50,15 +50,20 @@
 #      algorithm identifier and requires it to agree, so a SHA-384 digest can
 #      never satisfy a SHA-512 reference value by coincidence of hex.
 #
-#   5. **The secure version number is compared for EQUALITY.** The sample asks
-#      `ev_svn == ref_svn`, so an upgraded device and a DOWNGRADED one are
-#      refused by the same check with the same message. This policy compares
-#      per index and one-sided — see the SVN-RULE region below, which is where
-#      the whole of that change lives and is the only code this file does not
-#      share with rats/policy-v0-equality.rego.
-#
 # None of this makes the sample wrong for what it is — a demonstration that the
 # three tools connect. It makes it the wrong thing to ship a verdict from.
+#
+# ── FROZEN ─────────────────────────────────────────────────────────────────
+#
+# ★ This file is not the live policy. It is the state rats/policy.rego was in
+# before 2026-09-14, kept so that the change made that day can be MEASURED:
+# the same four captures are appraised under both files and the resulting 2x4
+# table is what says the new rule behaves differently, and differently in
+# exactly one cell. bash rats/test_svn_policy.sh produces it.
+#
+# It is referenced by that script and by rats/rats_selftest.py, and by nothing
+# that ships a verdict. Do not edit it to keep up with the live policy; see the
+# SVN-RULE region below.
 #
 # ── Failing closed ─────────────────────────────────────────────────────────
 #
@@ -163,63 +168,23 @@ hash_check if {
 
 # >>> SVN-RULE ─────────────────────────────────────────────────────────────
 #
-# Everything between this marker and its closing pair is the ONLY code that
-# differs from rats/policy-v0-equality.rego, and rats/rats_selftest.py asserts
-# that — comments aside, the two files are identical outside this region. That
-# assertion is what makes the four-case table in docs/rats-pipeline.md a
-# controlled comparison rather than two unrelated runs: when the same evidence
-# reaches a different verdict under the two policies, this region is the only
-# thing that can have caused it.
+# ★ THIS FILE IS FROZEN. It is the "before" of week 7's policy change and it
+# exists for one purpose: to be run against the same four captures as
+# rats/policy.rego, so that "the new rule behaves differently" is a measured
+# 2x4 table rather than a claim. Do not fix, extend or tidy it. If the live
+# policy grows a check outside the region markers, rats/rats_selftest.py turns
+# red and the right response is to decide deliberately what the control should
+# be — not to edit this file into agreement.
 #
-# ── what changed, and what deliberately did not ────────────────────────────
-#
-# Equality was wrong in two opposite directions at once. An upgraded device
-# fails, so a published reference value breaks every machine that took the
-# update. A DOWNGRADED device also fails — with the same check, the same
-# message and the same exit code — so the verdict could not distinguish the
-# routine case from the attack, which is the only distinction a rollback rule
-# exists to make.
-#
-# The comparison is now per index and one-sided: every index the reference
-# names must carry a secure version number at least as high as the reference's.
-# Three things were NOT loosened, and each is its own named category so that a
-# refusal says which one fired:
-#
-#   * svn_rollback   — evidence BELOW the reference. The attack.
-#   * svn_missing    — the reference names an index and the evidence has no
-#                      secure version number for it. This must fail, and it is
-#                      the clause a reader is most likely to think is
-#                      pedantic: if silence passed, the cheapest way to defeat
-#                      a rollback rule would be to stop answering it.
-#   * svn_unexpected — evidence carries a secure version number for an index
-#                      the reference does not name. The reference value is the
-#                      complete statement of what good looks like; a version
-#                      claim nobody vouched for is not evidence of anything.
-#
-# ── what this rule still cannot see ───────────────────────────────────────
-#
-# ★ `>=` stops a rollback BELOW THE REFERENCE VALUE, and nothing else. A device
-# running version 9 that is pushed back to version 7 satisfies this rule
-# exactly, because the reference says 7. That is a real rollback and this
-# policy reports PASS.
-#
-# Closing it needs one of two things this repository does not have: a reference
-# value that moves forward with every firmware the vendor publishes, which is a
-# property of the release process rather than of a policy file; or a verifier
-# that remembers the highest version it has ever seen from a given device,
-# which needs state, and everything here is a one-shot derivation with none.
-# docs/limitations.md carries both, beside the result rather than after it.
-#
-# And the other half, which the four cases are what prove: loosening the
-# version rule does not loosen the integrity rule. The two are AND-ed. A
-# version number higher than the reference and invented by an attacker still
-# has to present firmware digests that match the reference value — which is
-# case S-hash, where the version is correct and one byte of a measurement is
-# not.
+# What it does: the secure version number is compared for EQUALITY, which is
+# what DMTF's SpdmSamplePolicy.rego does. Its consequence is the reason it was
+# replaced, and the reason is visible in the table: an UPGRADED device (svn9)
+# and a DOWNGRADED one (svn5) are refused by the same check, with the same
+# message and the same exit code.
 
-svn_rollback contains idx if {
-	some idx, floor in ref_svn
-	ev_svn[idx] < floor
+svn_mismatch contains idx if {
+	some idx, want in ref_svn
+	ev_svn[idx] != want
 }
 
 svn_missing contains idx if {
@@ -236,18 +201,13 @@ default svn_check := false
 
 svn_check if {
 	count(ref_svn) > 0
-	count(svn_rollback) == 0
+	count(svn_mismatch) == 0
 	count(svn_missing) == 0
 	count(svn_unexpected) == 0
 }
 
-# The per-index detail this rule contributes to the verdict. It lives inside
-# the region because the CATEGORY NAMES are part of what changed: a refusal
-# that used to say svn_mismatch now says svn_rollback, and docs/roadmap.md
-# standing rule 16 requires the code rather than the sentence to be the thing
-# tests compare.
 svn_detail := {
-	"svn_rollback": svn_rollback,
+	"svn_mismatch": svn_mismatch,
 	"svn_missing_from_evidence": svn_missing,
 	"svn_not_in_reference": svn_unexpected,
 }

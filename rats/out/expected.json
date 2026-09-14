@@ -57,12 +57,11 @@
     "svn5": {
       "outcome": "fail",
       "blocked_by": ["SPDM_SVN_CHECK"],
-      "because": "the secure version number is 5 where the reference value says 7 — a ROLLBACK. Correctly refused"
+      "because": "the secure version number is 5 where the reference value says 7 — a ROLLBACK, and since 2026-09-14 it is refused under its own category, svn_rollback, rather than as an undifferentiated mismatch. The verdict did not change on that day; what changed is that the verdict can now say which direction it saw"
     },
     "svn9": {
-      "outcome": "fail",
-      "blocked_by": ["SPDM_SVN_CHECK"],
-      "because": "the secure version number is 9 where the reference value says 7 — an UPGRADE, refused for exactly the same reason and with exactly the same message as the rollback above. That is wrong in practice and it is wrong on purpose this week: the policy compares SVN for equality, which is what DMTF's sample does. Week 7 changes it to evidence >= reference and has to prove, with four cases, that loosening the version rule did not loosen the integrity rule. This row is the before"
+      "outcome": "pass",
+      "because": "★ the secure version number is 9 where the reference value says 7 — an UPGRADE. Until 2026-09-14 this row read fail, refused with exactly the same check, category and index as the rollback above; the two arms produced byte-identical output, which is what it means for a policy to be unable to tell an update from an attack. It is the one arm whose verdict the rule change moved, and rats/test_svn_policy.sh asserts that it is the ONLY one. What a pass here does not mean: the version is higher than the reference, so the version rule has nothing to object to, and everything else about the device still had to satisfy the digest rule — see t1_meas, where it did not"
     }
   }
 }

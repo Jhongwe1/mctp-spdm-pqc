@@ -55,11 +55,11 @@
       "digest_mismatch": [],
       "digest_missing_from_evidence": [],
       "digest_not_in_reference": [],
-      "svn_mismatch": [
-        16
-      ],
       "svn_missing_from_evidence": [],
-      "svn_not_in_reference": []
+      "svn_not_in_reference": [],
+      "svn_rollback": [
+        16
+      ]
     },
     "error_code": 1,
     "failed_checks": [

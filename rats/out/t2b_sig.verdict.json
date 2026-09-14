@@ -55,9 +55,9 @@
       "digest_mismatch": [],
       "digest_missing_from_evidence": [],
       "digest_not_in_reference": [],
-      "svn_mismatch": [],
       "svn_missing_from_evidence": [],
-      "svn_not_in_reference": []
+      "svn_not_in_reference": [],
+      "svn_rollback": []
     },
     "error_code": 0,
     "failed_checks": [],
