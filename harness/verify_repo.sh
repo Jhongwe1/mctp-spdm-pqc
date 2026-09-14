@@ -152,13 +152,59 @@ else
 fi
 
 step "python syntax (analysis tools)"
-if python3 -m py_compile harness/fields.py bench/pcapstat.py                          harness/check_claims.py harness/lib/check_negotiated.py \
+if python3 -m py_compile harness/fields.py bench/pcapstat.py \
+                         harness/check_claims.py \
+                         harness/lib/check_negotiated.py \
+                         harness/lib/ci_tools_check.py \
                          device/gen_measurements.py rats/cose.py \
                          rats/appraise.py rats/rats_selftest.py; then
     good "fields.py, pcapstat.py, gen_measurements.py and rats/ compile"
 else
     bad "an analysis tool has a syntax error"
 fi
+
+step "every CI job installs the tools it runs"
+# ★ 2026-09-14. The badge had been red for two days: verify_repo.sh hard-fails
+# without `opa`, which is correct, and the job that runs it never installed
+# `opa`, which is not. The script was right and the job was wrong, and neither
+# was visible from the other.
+#
+# harness/lib/ci_tools_check.py states the invariant that was violated — a job
+# must not run a tool it does not install — and derives it from the
+# consumed-by= field the pins already carry.
+if out="$(python3 harness/lib/ci_tools_check.py 2>&1)"; then
+    printf '%s' "$out" | sed 's/^/  /'
+    good "no CI job runs a pinned tool its runner will not have"
+else
+    printf '%s' "$out" | sed 's/^/  /'
+    bad "a CI job runs a tool it does not install — that is a red build nobody reads"
+fi
+
+step "and that check can still say no"
+# Standing rule 11. A regex over a file that has only ever met a correct file is
+# a string search that happens to match. So it is given a copy of the workflow
+# with the install step deleted — which is exactly the state this repository was
+# in between 2026-09-12 and 2026-09-14.
+CIW="$(mktemp -d)"
+mkdir -p "${CIW}/.github/workflows" "${CIW}/third_party"
+cp third_party/*.pin "${CIW}/third_party/"
+python3 - "$CIW" <<'PY'
+import pathlib
+import re
+import sys
+
+src = pathlib.Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+broken = re.sub(r"      - name: Install Open Policy Agent.*?(?=^      - name:)",
+                "", src, flags=re.S | re.M)
+(pathlib.Path(sys.argv[1]) / ".github" / "workflows" / "ci.yml").write_text(
+    broken, encoding="utf-8")
+PY
+if python3 harness/lib/ci_tools_check.py "$CIW" >/dev/null 2>&1; then
+    bad "the workflow check accepted a job that runs opa without installing it"
+else
+    good "a job that runs a pinned tool it does not install is refused"
+fi
+rm -rf "$CIW"
 
 step "the measurement source module compiles, rejects, and agrees with its writer"
 # device/measurement_source.c is compiled twice: here on its own under two

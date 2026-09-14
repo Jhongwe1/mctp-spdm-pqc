@@ -3533,6 +3533,95 @@ refuses each of them. The string-truthiness one has no companion test and is
 therefore the weakest of the four fixes, which is stated here rather than
 discovered later.
 
+### The badge was red for two days and the script was right
+
+**現象** *"好像 run fail 用 gh 看一下"* — asked after everything else in this
+entry was written, committed and pushed. `gh run list`:
+
+```
+failure  docs: the front doors of what week seven added   2026-09-14
+failure  docs: the week's commands, in the quick reference 2026-09-14
+failure  bench: the health check, after the flow moved     2026-09-14
+failure  log: the paperwork that covered a different project 2026-09-12
+failure  log: day eight, and a sentence reasoned not run    2026-09-12
+failure  log: the two defects that exist somewhere else     2026-09-12
+success  docs: a runbook command citing last week's run     2026-09-10
+```
+
+**Six consecutive red builds**, starting two days before any of today's work.
+Every local run of `harness/verify_repo.sh` in that window passed, including
+four today.
+
+**假設** 1. something in today's eleven commits broke it;
+2. it has been broken since 2026-09-12 and today is incidental;
+3. the runner and this workstation differ in something neither reports.
+
+**先驗哪個、為什麼** (2) first, and it is answerable before reading a single
+log line: the first red run is `34702651918`, pushed on 2026-09-12, and today's
+work did not exist then. That reorders everything — it is not a regression to
+find, it is a state to explain. Then (3), by diffing the failures:
+
+```
+2026-09-12  FAIL rats/appraise.py self-test failed — a policy that cannot reject is not a policy
+2026-09-14  FAIL rats/appraise.py self-test failed — a policy that cannot reject is not a policy
+            FAIL opa is not installed, so the appraisal cannot be evaluated
+```
+
+One root cause, reported once and then twice. Nothing from this week added a
+failure; the second line is 2026-09-13's own change making the same condition
+louder.
+
+**根因** **The `verify` job never installed `opa`.** Only the `rats` job did.
+
+`harness/verify_repo.sh` hard-fails without `opa` — deliberately, since
+2026-09-13, on the grounds that *a self-test that passes by not running is
+worse than no self-test*. That reasoning is correct and the entry above this
+one records measuring it. The job that runs that script had an environment
+that could not satisfy it.
+
+So two things were true at once and **neither was visible from the other**: the
+script was right, and the job was wrong. Locally `opa` is on `PATH`, so every
+local run agreed with the script. On the runner it is not, so every remote run
+agreed with the job.
+
+★ And `third_party/opa.pin` had been carrying this line the whole time:
+
+```
+consumed-by=rats/policy.rego,rats/appraise.py,harness/verify_repo.sh,.github/workflows/ci.yml
+```
+
+**The pin already named both the script that needs the tool and the workflow
+that has to provide it.** The fact was written down, in the right file, before
+the defect existed. Nothing read it.
+
+**教訓** Three, and they are in increasing order of how much they generalise.
+
+The fix: both jobs install `opa`, and the download URL is now read out of
+`third_party/opa.pin` rather than written into the workflow, because two copies
+of a version are two places for it to drift from the pin — which is the rule
+this repository already had and had not applied to its own CI.
+
+The mechanism: `harness/lib/ci_tools_check.py` states the invariant that was
+violated — **a job must not run a tool it does not install** — and derives it
+from `consumed-by=` rather than from a second list. It is given a copy of the
+workflow with the install step deleted, which is the exact state of
+2026-09-12, and required to refuse it; it names both jobs.
+
+And the rule, which is the one worth keeping: **"it passes here" and "it passes
+in CI" are different claims, and only one of them is the one being made.**
+Every summary written this week said `verify_repo.sh` passes. Every one of them
+was true, and none of them was the claim a reader of the badge would take from
+it. The end-of-day sequence now ends with `gh run watch --exit-status` rather
+than with `git push`, because a push is not a result.
+
+There is a fourth, and it is uncomfortable enough to write down plainly. The
+repository has a standing warning that **green is not protection**, repeated in
+three documents. It had no warning about the opposite, which turns out to be
+cheaper to fall into: **red and unread protects nothing either, and it looks
+exactly like working.** Six builds is not an oversight, it is a habit, and the
+habit was that the badge was something this project produced rather than
+something it read.
+
 **`TODO(me)`** — Gate 3 is closed. The version rule is `>=`, four captures
 prove it moved exactly one verdict, and CI asserts the whole 2×4 table. What I
 am not sure about is whether freezing the old policy is a pattern or a one-off:
@@ -3555,6 +3644,14 @@ not started.
 
 **`TODO(me)`** — `docs/upstream/` now lists **thirteen** candidates and
 **zero** submissions. The prepared one is two days older than it was.
+
+**`TODO(me)`** — The badge. Six red builds went unread, and the mechanism
+added today only catches the *next* job that runs a tool it does not install.
+What I do not have is anything that notices a red build at all — the check
+runs inside CI, so a CI failing for a new reason reports it to the same place
+nobody was looking. The only fix I can see is the habit, which is now step four
+of the daily sequence in `RUNBOOK.md` §11, and a habit is what this repository
+replaces with a mechanism wherever it can.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
 

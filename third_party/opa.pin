@@ -9,7 +9,7 @@ platform=linux/amd64
 wasm=available
 url=https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static
 installed-at=2026-09-12T14:47:00Z
-consumed-by=rats/policy.rego,rats/appraise.py,harness/verify_repo.sh,.github/workflows/ci.yml
+consumed-by=rats/policy.rego,rats/policy-v0-equality.rego,rats/appraise.py,rats/rats_selftest.py,rats/test_svn_policy.sh,harness/verify_repo.sh,.github/workflows/ci.yml
 # Every verdict in rats/out/ was produced by this binary evaluating
 # rats/policy.rego. third_party/README.md's argument for pinning spdm-dump
 # applies here word for word: the bytes have provenance and the reading of them
@@ -21,6 +21,11 @@ consumed-by=rats/policy.rego,rats/appraise.py,harness/verify_repo.sh,.github/wor
 # SpdmSamplePolicy.rego is v0 and produces eleven rego_parse_error messages on
 # this binary. A patch release of OPA is not a reason to fail a build; a
 # different policy language is.
+#
+# consumed-by= is not documentation. harness/lib/ci_tools_check.py reads it and
+# refuses a CI job that runs one of these files without installing the tool —
+# which is the defect that kept the badge red from 2026-09-12 to 2026-09-14,
+# while this line already named both harness/verify_repo.sh and the workflow.
 #
 # Not vendored, and not committed. It is a 64 MB static binary belonging to
 # somebody else, and the same three reasons in third_party/README.md apply. The

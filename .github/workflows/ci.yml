@@ -66,6 +66,18 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
 
+      - name: Install Open Policy Agent
+        # ★ The version is read out of third_party/opa.pin, not written here.
+        # Two copies of a download URL are two places for it to drift from the
+        # pin, and CLAUDE.md's rule is that the pin is the single truth about
+        # a version. The pin's own consumed-by= line already named this file.
+        run: |
+          url="$(awk -F= '/^url=/{print $2}' third_party/opa.pin)"
+          test -n "$url" || { echo "third_party/opa.pin has no url="; exit 1; }
+          curl -fsSL -o /tmp/opa "$url"
+          sudo install -m 0755 /tmp/opa /usr/local/bin/opa
+          opa version
+
       - name: harness/verify_repo.sh
         run: bash harness/verify_repo.sh
 
@@ -76,9 +88,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Open Policy Agent
+        # ★ The version is read out of third_party/opa.pin, not written here.
+        # Two copies of a download URL are two places for it to drift from the
+        # pin, and CLAUDE.md's rule is that the pin is the single truth about
+        # a version. The pin's own consumed-by= line already named this file.
         run: |
-          curl -fsSL -o /tmp/opa \
-            https://openpolicyagent.org/downloads/v1.20.2/opa_linux_amd64_static
+          url="$(awk -F= '/^url=/{print $2}' third_party/opa.pin)"
+          test -n "$url" || { echo "third_party/opa.pin has no url="; exit 1; }
+          curl -fsSL -o /tmp/opa "$url"
           sudo install -m 0755 /tmp/opa /usr/local/bin/opa
           opa version
 

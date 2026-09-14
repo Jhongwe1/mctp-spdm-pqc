@@ -1254,6 +1254,34 @@ Tested: <你怎麼驗證的>
 `-s` 會加上 `Signed-off-by:`。**從第一個 commit 就用上游格式**,因為之後要送
 Gerrit,現在練起來那時候不用重學。
 
+```bash
+# ★ 四、push 之後,把那次 CI 跑完的結果讀出來。這一步不是選配。
+git push origin main
+gh run watch --exit-status      # 紅就在這裡停,不要等到下次才發現
+#   或事後補看:
+gh run list --limit 3
+gh run view --log-failed
+```
+
+> ### 🔴 為什麼要加這一步:2026-09-12 到 09-14,badge 紅了兩天沒人看
+>
+> `verify_repo.sh` 在**沒有 `opa`** 的時候會直接紅——那是 09-13 刻意改的,
+> 理由是「一個因為沒跑而通過的自測,比沒有自測更糟」。**而跑它的那個 CI job
+> 從來沒有裝 `opa`。**
+>
+> 兩件事同時成立,而且從彼此都看不出來:**腳本是對的,job 是錯的。**
+> 本機全綠,因為本機裝了 `opa`;CI 全紅,因為 runner 沒有。
+> **「在我這裡會過」跟「在 CI 會過」是兩個不同的主張**,而我兩天只驗了前者。
+>
+> 現在 `verify_repo.sh` 有一條檢查在守它:`harness/lib/ci_tools_check.py`
+> 從 `third_party/*.pin` 的 `consumed-by=` 推出「哪個 job 跑了哪個工具」,
+> 只要有 job 跑了它沒裝的工具就變紅。**那個 `consumed-by=` 兩天前就已經
+> 同時寫著 `harness/verify_repo.sh` 跟 `.github/workflows/ci.yml` 了——
+> pin 檔比 CI 更早知道。**
+>
+> 但機制只擋得住下一次。**這一次是靠有人去看 badge 才發現的**,所以
+> 「push 完把結果讀出來」也一起變成流程裡的一步。
+
 > ### ⚠️ 但這個 repo 的 trailer 慣例**不能直接帶去上游**
 >
 > 這裡每一個 commit 都有 `Co-Authored-By: Claude …`。在這個 repo 裡是對的;
