@@ -31,11 +31,12 @@
 #     hs_run <bin_dir> <out_prefix> [emulator args...]
 #     rc=$?
 #
-# Two arrays change what hs_run does, and both are cleared by their callers
+# Three arrays change what hs_run does, and all are cleared by their callers
 # rather than by this file, so that a case which forgets to set one cannot
 # inherit the previous case's:
 #     HS_RESPONDER_ENV     NAME=VALUE strings, applied to the responder only
 #     HS_REQUESTER_EXTRA   arguments appended to the requester only
+#     HS_RESPONDER_EXTRA   arguments appended to the responder only
 #
 # Leaves <out_prefix>.rsp.log, <out_prefix>.req.log and <out_prefix>.pcap.
 #
@@ -76,6 +77,36 @@ HS_RESPONDER_ENV=()
 # differs between the two sides should be justified in the caller first, and
 # this comment is where the justification for the one that exists lives.
 HS_REQUESTER_EXTRA=()
+
+# Arguments appended to the RESPONDER's command line only. Empty by default.
+#
+# It exists for exactly one flag, and like --port above the asymmetry is imposed
+# by the tool rather than chosen. Two things about `--cap`, both read out of
+# spdm_emu at the commit in third_party/spdm-emu-pqc.pin on 2026-09-14:
+#
+#   1. It is RESPONDER-ONLY IN EFFECT. The parser stores it in
+#      m_use_capability_flags, and only spdm_responder_spdm.c:174 reads that
+#      variable back. spdm_requester_spdm.c never mentions it. So the requester
+#      parses --cap, prints `cap - 0x...` as confirmation, and ignores it.
+#
+#   2. Its value names are validated against a DIFFERENT TABLE per program —
+#      m_spdm_requester_capabilities_string_table for one binary and
+#      m_spdm_responder_capabilities_string_table for the other. The responder's
+#      own advertised set contains MEAS_SIG, MEL, CACHE and CSR, none of which
+#      exist in the requester's table. So passing one responder capability list
+#      to both sides does not merely waste a flag on the requester: the
+#      requester rejects it.
+#
+# ★ And rejects it by `print_usage(); exit(0)`, so a mistake here leaves a
+# process that exited SUCCESSFULLY without speaking SPDM. What catches it is
+# hs_wait_for_responder returning 91 and the caller finding no capture — not the
+# exit status, which is the same 0 a good run gives. Upstream candidates 14 and
+# 15 in docs/upstream/README.md.
+#
+# Only sides that genuinely cannot share a flag belong here. Anything that both
+# ends must agree on — an algorithm, a version, a flow — must stay in the shared
+# list, because an arm where the two disagree about --asym is not an arm.
+HS_RESPONDER_EXTRA=()
 
 hs_cleanup() {
     if [ -n "$HS_RESPONDER_PID" ] && kill -0 "$HS_RESPONDER_PID" 2>/dev/null; then
@@ -142,11 +173,13 @@ hs_run() {
     cd "$bin" || return 90
 
     if [ "${#HS_RESPONDER_ENV[@]}" -gt 0 ]; then
-        hs_note_cmd env "${HS_RESPONDER_ENV[@]}" "./spdm_responder_emu" "$@"
-        env "${HS_RESPONDER_ENV[@]}" ./spdm_responder_emu "$@" >"$rsp_log" 2>&1 &
+        hs_note_cmd env "${HS_RESPONDER_ENV[@]}" "./spdm_responder_emu" "$@" \
+            "${HS_RESPONDER_EXTRA[@]}"
+        env "${HS_RESPONDER_ENV[@]}" ./spdm_responder_emu "$@" \
+            "${HS_RESPONDER_EXTRA[@]}" >"$rsp_log" 2>&1 &
     else
-        hs_note_cmd "./spdm_responder_emu" "$@"
-        ./spdm_responder_emu "$@" >"$rsp_log" 2>&1 &
+        hs_note_cmd "./spdm_responder_emu" "$@" "${HS_RESPONDER_EXTRA[@]}"
+        ./spdm_responder_emu "$@" "${HS_RESPONDER_EXTRA[@]}" >"$rsp_log" 2>&1 &
     fi
     HS_RESPONDER_PID=$!
 

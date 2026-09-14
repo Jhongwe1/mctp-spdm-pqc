@@ -37,11 +37,22 @@ that lets a classical algorithm survive into a post-quantum arm.
 
     MutAuth=off   the capture must carry no encapsulated exchange at all
     ReqChain=0    no requester certificate chain bytes on the wire
+    Chunk=off|on  whether SPDM's chunking layer carried anything
+    DTS=4608      the DataTransferSize BOTH ends advertised, in bytes
 
-Those two are not algorithm groups; they are the observable consequence of
+The first two are not algorithm groups; they are the observable consequence of
 --mut_auth, --basic_mut_auth, --req_asym and --req_pqc_asym being off, and they
 are checked separately because four flags that each independently switch the
 same traffic back on is four chances to have written the list from memory.
+
+`Chunk` and `DTS` arrived on 2026-09-14 for the DataTransferSize sweep, and they
+are the same rule applied to the transport. DataTransferSize is the sweep's
+independent variable, `--data_transfer_size` is a flag, and a flag is a request:
+if a build ignores it — which every unpatched build does, since upstream has no
+such flag — the sweep silently becomes six identical runs. So the value is read
+back out of the GET_CAPABILITIES and CAPABILITIES messages and required to be
+the one asked for, on BOTH ends, which additionally catches the case where the
+flag reached one binary and not the other.
 """
 
 from __future__ import annotations
@@ -57,7 +68,13 @@ from pathlib import Path
 GROUPS = ["Hash", "MeasHash", "Asym", "PqcAsym", "DHE", "KEM", "AEAD",
           "ReqAsym", "ReqPqcAsym", "KeySchedule", "MeasSpec", "OtherParam"]
 
-DERIVED = {"MutAuth", "ReqChain"}
+DERIVED = {"MutAuth", "ReqChain", "Chunk", "DTS"}
+
+# Every message type SPDM's chunking layer uses. Counted rather than inspected:
+# whether the layer ran at all is the question, and one message of any of the
+# four answers it.
+CHUNK_COUNTS = ("chunk_get_count", "chunk_response_count",
+                "chunk_send_count", "chunk_send_ack_count")
 
 
 def as_list(v) -> list[str]:
@@ -96,6 +113,8 @@ def main() -> int:
     neg = (doc.get("algorithms") or {}).get("negotiated") or {}
     mutual = doc.get("mutual_auth") or {}
     cert = doc.get("certificate") or {}
+    chunking = doc.get("chunking") or {}
+    caps = doc.get("capabilities") or {}
 
     print(summarise(neg, mutual))
 
@@ -131,6 +150,48 @@ def main() -> int:
             if str(got_n) != want_raw.strip():
                 problems.append(f"ReqChain: {got_n} bytes of requester chain on "
                                 f"the wire, expected {want_raw.strip()}")
+            continue
+
+        if key == "Chunk":
+            present = [k for k in CHUNK_COUNTS if k in chunking]
+            if not present:
+                problems.append(
+                    "Chunk: the decode reports none of "
+                    f"{', '.join(CHUNK_COUNTS)} — nothing was checked, which is "
+                    "the failure mode this clause exists to avoid")
+                continue
+            total = sum(int(chunking.get(k) or 0) for k in present)
+            asked = want_raw.strip()
+            if asked == "off" and total:
+                problems.append(
+                    f"Chunk: the capture carries {total} chunking messages and "
+                    "this arm declared none. Chunking needs CHUNK_CAP at BOTH "
+                    "ends, so an arm that removed it from one end and still "
+                    "chunked did not remove what it thought it did")
+            elif asked == "on" and not total:
+                problems.append(
+                    "Chunk: no chunking messages, and this arm declared some. "
+                    "Either the message fit inside DataTransferSize after all, "
+                    "or CHUNK_CAP is missing from an end")
+            elif asked not in ("off", "on"):
+                problems.append(f"Chunk: want off or on, got {asked!r}")
+            continue
+
+        if key == "DTS":
+            # Both ends, because the flag is passed to both and a build that
+            # honoured it in one binary only would otherwise pass.
+            asked = want_raw.strip()
+            for side in ("requester", "responder"):
+                got_n = (caps.get(side) or {}).get("data_transfer_size")
+                if got_n is None:
+                    problems.append(f"DTS: the decode has no {side} "
+                                    "DataTransferSize to check")
+                elif str(got_n) != asked:
+                    problems.append(
+                        f"DTS: the {side} advertised {got_n} bytes, and this arm "
+                        f"asked for {asked}. --data_transfer_size is a request; "
+                        "a build without transport/data-transfer-size.patch "
+                        "parses nothing and advertises its compile-time value")
             continue
 
         if key not in GROUPS:
