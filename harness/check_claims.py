@@ -109,6 +109,20 @@ def dotted(doc, path: str):
 
 
 def term(spec: dict) -> float:
+    """One number: either read out of a capture, or a stated constant.
+
+    ★ A `const` term is how a measurement is compared with a number from OUTSIDE
+    this repository — a signature length in FIPS 204, or the fixed part of a
+    message counted out of DSP0274's field layout. It is deliberately a
+    different shape from a capture term so that a reader can see which half of a
+    comparison came from the wire. A claim with two `const` terms would be
+    arithmetic asserting itself, and `selftest` refuses one.
+    """
+    if "const" in spec:
+        if "tool" in spec or "capture" in spec or "path" in spec:
+            raise Unreachable("a term is either a const or a capture reading, "
+                              "not both")
+        return float(spec["const"])
     return float(dotted(tool_output(spec["tool"], spec["capture"]), spec["path"]))
 
 
@@ -144,9 +158,23 @@ def derive(d: dict) -> float:
             raise Unreachable("the denominator derives to zero")
         return term(d["numerator"]) / den
     if kind == "delta":
+        if "const" in d.get("minuend", {}) and "const" in d.get("subtrahend", {}):
+            raise Unreachable("both terms are constants; this asserts arithmetic "
+                              "rather than a measurement")
         return term(d["minuend"]) - term(d["subtrahend"])
     if kind == "value":
         return term(d["of"])
+    if kind == "spread":
+        # ★ max minus min across a list of readings, which is how "this quantity
+        # is the same in all six arms" becomes one assertion instead of five
+        # pairwise ones. A spread of zero over six captures is a stronger claim
+        # than five deltas, because adding a seventh arm strengthens it for free
+        # while five deltas would silently keep testing six.
+        terms = d["terms"]
+        if len(terms) < 2:
+            raise Unreachable("a spread needs at least two terms")
+        vals = [term(t) for t in terms]
+        return max(vals) - min(vals)
     if kind == "rats_expected_fail_rate":
         return rats_expected_fail_rate(d)
     raise Unreachable(f"no derivation called {kind!r}")

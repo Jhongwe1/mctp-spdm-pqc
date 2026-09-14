@@ -21,10 +21,19 @@
     "absorb: the same file gives the same answer or the file changed. A non-zero",
     "tolerance on a deterministic quantity is a check that has been asked not to",
     "fail. The day something timing-related is published, it will arrive with a",
-    "median, a p95 and a stated number of runs instead of a tolerance."
+    "median, a p95 and a stated number of runs instead of a tolerance.",
+    "",
+    "★ A term may be a `const` instead of a capture reading, and that is how a",
+    "measurement gets compared with a number from OUTSIDE this repository — a",
+    "signature length in FIPS 204, or a message's fixed part counted out of",
+    "DSP0274's field layout. The two shapes are deliberately different so a",
+    "reader can see which half of a comparison came off the wire."
   ],
   "runs": {
     "pqc_ab": "bench/data/w7-pqc-ab-20260914T073732Z",
+    "matrix": "bench/data/w8-pqc-matrix-20260914T131557Z",
+    "dts_sweep": "bench/data/w8-dts-sweep-20260914T133120Z",
+    "dts_sweep_rejected": "bench/data/w8-dts-sweep-20260914T132232Z",
     "tamper": "bench/data/w5-tamper-20260910T092621Z"
   },
   "claims": {
@@ -33,81 +42,302 @@
       "tolerance_pct": 0.0,
       "unit": "ratio",
       "meaning": "responder slot 0 certificate chain, ML-DSA-65 over ECDSA-P384, same build and the same DMTF sample chain layout",
-      "table": "docs/pqc-cost.md#tbl2",
+      "table": "docs/pqc-cost.md#2-table-2--the-measured-cost",
       "derivation": {
         "kind": "ratio",
-        "numerator": {"tool": "fields", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "certificate.responder_slot0_bytes"},
-        "denominator": {"tool": "fields", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "certificate.responder_slot0_bytes"}
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "certificates.slots.0.chain_bytes"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-all", "path": "certificates.slots.0.chain_bytes"}
       },
-      "note": "read through the DECODE rather than through bench/pcapstat.py. The post-quantum chain is larger than the negotiated DataTransferSize, so it arrives in CHUNK_RESPONSE messages that pcapstat's chain walk does not reassemble; spdm_dump does reassemble them. Two tools, one reachable quantity, and the one that can reach it is named here"
+      "note": "★ read from the CAPTURE by both terms now. Until 2026-09-14 the numerator had to come through spdm_dump's decode, because the post-quantum chain arrives inside CHUNK_RESPONSE and pcapstat's chain walk read CERTIFICATE. pcapstat reassembles the chunk sequence as of that date, so this ratio no longer depends on a decoder whose own output is truncated"
     },
-    "pqc_handshake_ratio_mldsa65_vs_ecdsa384_meas_op_all": {
+    "pqc_chain_reassembly_agrees_with_windowed_fetch": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ the SAME chain by two routes through the SAME tool: reassembled out of a chunk sequence in P2-all, and walked out of plain CERTIFICATE messages in P2-nochunk, where removing the responder's CHUNK_CAP made libspdm fetch it in DataTransferSize-sized windows instead. Zero is the assertion",
+      "table": "docs/pqc-cost.md#8--the-chain-does-not-arrive-in-certificate-and-now-three-tools-agree-on-it-anyway",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "certificates.slots.0.chain_bytes"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-nochunk", "path": "certificates.slots.0.chain_bytes"}
+      }
+    },
+    "pqc_handshake_ratio_level3_meas_op_all": {
       "value": 8.990089952736698,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "total captured bytes, ML-DSA-65 over ECDSA-P384, with --meas_op ALL: one GET_MEASUREMENTS, one signed response",
-      "table": "docs/pqc-cost.md#tbl2",
+      "meaning": "total captured bytes at matched NIST category 3, ML-DSA-65+ML-KEM-768 over ECDSA-P384+ECDHE-P384, with --meas_op ALL: one GET_MEASUREMENTS, one signed response",
+      "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
       "derivation": {
         "kind": "ratio",
-        "numerator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "captured_bytes_total"},
-        "denominator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "captured_bytes_total"}
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-all", "path": "captured_bytes_total"}
       }
     },
-    "pqc_handshake_ratio_mldsa65_vs_ecdsa384_meas_op_one_by_one": {
+    "pqc_handshake_ratio_level3_meas_op_one_by_one": {
       "value": 6.011291460832745,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "★ the same ratio over the emulator's DEFAULT measurement flow, which walks every measurement index. It is a different number, and publishing either one without naming the flow is the thing that makes a cost table unfalsifiable",
-      "table": "docs/pqc-cost.md#tbl2",
+      "meaning": "★ the same ratio over the emulator's DEFAULT measurement flow, which walks every measurement index. It is a different number, and publishing either one without naming the flow is what makes a cost table unfalsifiable",
+      "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
       "derivation": {
         "kind": "ratio",
-        "numerator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-obo", "path": "captured_bytes_total"},
-        "denominator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-obo", "path": "captured_bytes_total"}
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-obo", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-obo", "path": "captured_bytes_total"}
       }
     },
-    "pqc_signature_bytes_delta_mldsa65_vs_ecdsa384": {
-      "value": 3213,
+    "pqc_handshake_ratio_level5_meas_op_all": {
+      "value": 10.908118486012068,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "★★ the SECOND matched comparison, at NIST category 5: ML-DSA-87+ML-KEM-1024 over ECDSA-P521+ECDHE-P521. 10.91x against 8.99x at category 3 is what two algorithm groups could not show — the gap is a function of the security level, not one number",
+      "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P3-all", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A1-all", "path": "captured_bytes_total"}
+      }
+    },
+    "pqc_handshake_ratio_level5_meas_op_one_by_one": {
+      "value": 7.548771676300578,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "and the same flow dilution at category 5: 7.55x against 10.91x. Both directions of conditionality, on both comparisons",
+      "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P3-obo", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A1-obo", "path": "captured_bytes_total"}
+      }
+    },
+    "signature_bytes_ecdsa_p384_from_the_wire": {
+      "value": 96,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "★ what one signature costs, isolated: CHALLENGE_AUTH carries exactly one, and the two arms' messages are identical except for it. ML-DSA-65 signs 3309 bytes where ECDSA-P384 signs 96, and this delta is what the two captures say",
-      "table": "docs/pqc-cost.md#tbl2",
+      "meaning": "★ CHALLENGE_AUTH carries exactly one signature and 142 bytes of content fixed by the negotiated hash: 4 header + 48 chain hash + 32 nonce + 48 summary hash + 2 opaque length + 8 opaque data. Subtract it and what is left is the signature. 96 is ECDSA P-384's r||s, and NOTHING in this pipeline was told that",
+      "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
       "derivation": {
         "kind": "delta",
-        "minuend": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "by_type.SPDM_CHALLENGE_AUTH.bytes"},
-        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "by_type.SPDM_CHALLENGE_AUTH.bytes"}
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "signature_bytes_ecdsa_p521_from_the_wire": {
+      "value": 132,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "the same subtraction on the P-521 arm. 132 is 2 x 66, SEC 1's r||s at that curve",
+      "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A1-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "signature_bytes_ml_dsa_44_from_the_wire": {
+      "value": 2420,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "FIPS 204's ML-DSA-44 signature length, reproduced from a message-size difference",
+      "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P1-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "signature_bytes_ml_dsa_65_from_the_wire": {
+      "value": 3309,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ FIPS 204's ML-DSA-65 signature length, 3309, reproduced from a message-size difference. This is the strongest single number in Table 2: six residuals landing on six published constants is not something a miscalibrated tool does, and it is what says the 142 is constant across the arms rather than assumed to be",
+      "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "signature_bytes_ml_dsa_87_from_the_wire": {
+      "value": 4627,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "FIPS 204's ML-DSA-87 signature length. ★ Note where it comes from: at ML-DSA-87 the CHALLENGE_AUTH itself exceeds the 4,608-byte DataTransferSize, so there is no single CHALLENGE_AUTH message on the wire to measure. logical_by_type is the de-chunked view, and this arm is the reason it exists",
+      "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P3-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "signature_bytes_slh_dsa_sha2_128s_from_the_wire": {
+      "value": 7856,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ FIPS 205's SLH-DSA-SHA2-128s signature length, reassembled from the two chunks its CHALLENGE_AUTH arrived in. It matters because this arm's handshake does NOT complete: the responder signed correctly and at the right length, and the requester still exited 1, which is what narrows the failure to signature verification",
+      "table": "docs/pqc-cost.md#12-slh-dsa-the-certificates-work-and-the-signatures-do-not",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/S1-all", "path": "logical_by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"const": 142}
+      }
+    },
+    "vca_bytes_spread_across_all_six_groups": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★★ max minus min of the Version-Capabilities-Algorithms-only captures over all six algorithm groups. Zero means the negotiation is byte-identical whether it selects ECDSA P-384 or SLH-DSA — so not one byte of post-quantum cost is paid to AGREE on the algorithm. Written as a spread rather than five pairwise deltas so that a seventh group strengthens it for free",
+      "table": "docs/pqc-cost.md#5--negotiation-is-free-and-it-is-free-to-four-significant-figures",
+      "derivation": {
+        "kind": "spread",
+        "terms": [
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-vca", "path": "captured_bytes_total"},
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A1-vca", "path": "captured_bytes_total"},
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P1-vca", "path": "captured_bytes_total"},
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-vca", "path": "captured_bytes_total"},
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P3-vca", "path": "captured_bytes_total"},
+          {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/S1-vca", "path": "captured_bytes_total"}
+        ]
+      }
+    },
+    "vca_bytes_standalone_matches_the_subtotal_inside_a_full_run": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ two routes to the negotiation's cost. A whole capture that does nothing but negotiate holds 152 SPDM bytes; the same six message types inside the FULL post-quantum capture add up to the same 152. So the subtotal is trustworthy without the standalone arm, and the standalone arm is what says so",
+      "table": "docs/pqc-cost.md#5--negotiation-is-free-and-it-is-free-to-four-significant-figures",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-vca", "path": "spdm_bytes_total"},
+        "subtrahend": {"const": 152}
       }
     },
     "cert_roundtrips_mldsa65": {
       "value": 3,
       "tolerance_pct": 0.0,
       "unit": "GET_CERTIFICATE requests",
-      "meaning": "how many times the requester asked for a certificate chain in the post-quantum arm. A round trip is a latency cost that a byte count does not show",
-      "table": "docs/pqc-cost.md#tbl2",
+      "meaning": "how many times the requester asked for a certificate chain in the post-quantum arm. A round trip is a latency cost a byte count does not show",
+      "table": "docs/pqc-cost.md#2-table-2--the-measured-cost",
       "derivation": {
         "kind": "value",
-        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "certificates.roundtrips"}
+        "of": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "certificates.roundtrips"}
       }
     },
     "cert_roundtrips_ecdsa384": {
       "value": 3,
       "tolerance_pct": 0.0,
       "unit": "GET_CERTIFICATE requests",
-      "meaning": "the same count in the classical arm. If the two are equal, the post-quantum chain cost bytes and not round trips at THIS DataTransferSize, which is a claim about the transport rather than about the algorithm",
-      "table": "docs/pqc-cost.md#tbl2",
+      "meaning": "the same count in the classical arm. Equal, so at THIS DataTransferSize the post-quantum chain cost bytes and not certificate-layer round trips — it cost them at the chunking layer instead, which is a claim about the transport rather than about the algorithm",
+      "table": "docs/pqc-cost.md#2-table-2--the-measured-cost",
       "derivation": {
         "kind": "value",
-        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "certificates.roundtrips"}
+        "of": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-all", "path": "certificates.roundtrips"}
       }
     },
-    "pqc_chunk_responses_mldsa65": {
+    "pqc_chunk_roundtrips_mldsa65": {
       "value": 12,
       "tolerance_pct": 0.0,
-      "unit": "CHUNK_RESPONSE messages",
-      "meaning": "★ the round trips the chain actually cost, which are NOT GET_CERTIFICATE: the chain exceeds the negotiated DataTransferSize, so SPDM's chunking layer carries it. The classical arm has none of these",
-      "table": "docs/pqc-cost.md#tbl2",
+      "unit": "CHUNK_GET requests",
+      "meaning": "★ the round trips the chain actually cost, which are NOT GET_CERTIFICATE: the chain exceeds the negotiated DataTransferSize, so SPDM's chunking layer carries it and each chunk is a complete request/response exchange. The classical arm has none",
+      "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
       "derivation": {
         "kind": "value",
-        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "chunking.messages.SPDM_CHUNK_RESPONSE"}
+        "of": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "chunking.messages.SPDM_CHUNK_GET"}
+      }
+    },
+    "max_spdm_msg_size_advertised_by_the_classical_arm": {
+      "value": 163840,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★★ the platform-layer finding, read off the wire in the arm that negotiates ECDSA P-384. 163840 is 0x28000, and spdm_emu.h picks it ONLY because SLH-DSA is compiled in — ML-DSA-only would give 0x8000 and neither would give 0x1200. So the buffer requirement an endpoint advertises is set by the worst algorithm its firmware CAN do, not the one it negotiated, and it is announced before any algorithm is chosen. On a root of trust with 256 KB of SRAM that is a BOM decision made by a #define",
+      "table": "docs/pqc-cost.md#11--the-platform-layer-and-a-160-kb-buffer-nobody-negotiated",
+      "derivation": {
+        "kind": "value",
+        "of": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/A0-all", "path": "capabilities.responder.max_spdm_msg_size"}
+      }
+    },
+    "dts_patch_is_inert_at_the_default_value": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★★ the control that makes the DataTransferSize sweep admissible. The patched build (pqc-dts: larger buffers plus transport/data-transfer-size.patch) told to advertise 4608 — the value the UNPATCHED build computes — must reproduce the unpatched build's capture. Zero difference in captured bytes is that assertion. A diff cannot establish this; only a capture can. ADR 0009",
+      "table": "docs/decisions/0009-a-third-build-flavor.md",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts4608", "path": "captured_bytes_total"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "captured_bytes_total"}
+      }
+    },
+    "dts_patch_is_inert_in_round_trips_too": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "CHUNK_GET requests",
+      "meaning": "the same control on the quantity the sweep is about, because two captures can have equal byte totals and different message counts",
+      "table": "docs/decisions/0009-a-third-build-flavor.md",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts4608", "path": "chunking.messages.SPDM_CHUNK_GET"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "chunking.messages.SPDM_CHUNK_GET"}
+      }
+    },
+    "dts_sweep_byte_spread_fraction": {
+      "value": 1.0309837996551665,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "★ captured bytes at the smallest DataTransferSize over the largest, across a 32x range of the parameter. 1.031 — a 3.1% spread — is the half of the finding that says DataTransferSize is NOT a bandwidth knob",
+      "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts1024", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts32768", "path": "captured_bytes_total"}
+      }
+    },
+    "dts_sweep_chunk_roundtrips_at_the_smallest": {
+      "value": 59,
+      "tolerance_pct": 0.0,
+      "unit": "CHUNK_GET requests",
+      "meaning": "★ and the other half. Same 32x range, same two captures as the claim above: round trips go from 59 to 0 while the bytes move 3.1%. Each one is a bus RTT",
+      "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
+      "derivation": {
+        "kind": "value",
+        "of": {"tool": "pcapstat", "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts1024", "path": "chunking.messages.SPDM_CHUNK_GET"}
+      }
+    },
+    "removing_chunk_cap_cost_fewer_bytes_not_more": {
+      "value": -9,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ P2 with the responder's CHUNK_CAP removed, minus P2 with it. NEGATIVE: turning chunking off made the post-quantum handshake nine bytes smaller and three round trips shorter, because libspdm then windows GET_CERTIFICATE to DataTransferSize instead of asking for the whole chain, being refused with ERROR(LargeResponse) three times, and chunking. A statement about libspdm's requester policy, not about DSP0274",
+      "table": "docs/pqc-cost.md#10--turning-chunking-off-made-it-cheaper-which-is-the-opposite-of-what-was-expected",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-nochunk", "path": "captured_bytes_total"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "captured_bytes_total"}
+      }
+    },
+    "removing_chunk_cap_cost_fewer_packets": {
+      "value": -6,
+      "tolerance_pct": 0.0,
+      "unit": "packets",
+      "meaning": "the same arm pair in packets: 40 against 46, which is three fewer request/response exchanges. Twelve windowed certificate fetches replace three refusals plus twelve chunk round trips",
+      "table": "docs/pqc-cost.md#10--turning-chunking-off-made-it-cheaper-which-is-the-opposite-of-what-was-expected",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-nochunk", "path": "packets"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "packets"}
+      }
+    },
+    "mldsa_knee_point_44_to_65_is_cheaper_than_65_to_87": {
+      "value": null,
+      "claimed": false,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ the reason this project recommends ML-DSA-65 rather than repeating a default: 44→65 costs +15,629 captured bytes and 65→87 costs +20,576, so 65 is where the curve bends. Stated as a null because the quantity a machine should assert is a DIFFERENCE OF DIFFERENCES, and check_claims.py has no kind for that. The two increments are each derivable from the captures named here, and docs/pqc-cost.md §13 shows the arithmetic; a `second_difference` kind is week 10's if a second such claim appears",
+      "table": "docs/pqc-cost.md#13-which-level-to-ship-and-why-the-table-decides-it-rather-than-a-default",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P3-all", "path": "captured_bytes_total"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w8-pqc-matrix-20260914T131557Z/P2-all", "path": "captured_bytes_total"}
       }
     },
     "tamper_detect_rate": {
