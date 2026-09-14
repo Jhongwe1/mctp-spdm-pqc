@@ -1849,8 +1849,31 @@ def check(doc_path: Path, repo_root: Path) -> int:
                 flat = {}
                 continue
             messages, meta = parse_decode(target.read_text(encoding="utf-8", errors="replace"))
-            flat = flatten(extract(messages, meta, target))
+            # The document is kept beside the flattened form because flatten()
+            # renders every value as a STRING for comparison against a claim,
+            # and "False" is a true string. The first version of the truncation
+            # note below read the flattened key and reported every capture in
+            # the repository as truncated — a check firing for a reason
+            # unrelated to what it checks, for the fourth time this month.
+            doc = extract(messages, meta, target)
+            flat = flatten(doc)
             print(f"  capture : {capture_name}  ({len(messages)} messages decoded)")
+            # ★ A truncated decode answers some questions correctly and others
+            # with a prefix, in the same file. `certificate.responder_slot0_bytes`
+            # is read from a length field that arrives early and is right;
+            # `message_bytes.total` is a running sum and is short by whatever
+            # spdm_dump did not reach. Both are checkable here, and only one of
+            # them should be quoted.
+            #
+            # So say it, every time, rather than expecting whoever writes the
+            # next claim to remember which capture this was. 2026-08-11's
+            # lesson in one line: a short decode is not a short handshake.
+            src = doc.get("source") or {}
+            if src.get("decode_truncated"):
+                print(f"  --      this decode is TRUNCATED "
+                      f"({src.get('truncation_reason')}). Numbers read from a "
+                      f"length field are still right; running totals are short "
+                      f"by whatever the decoder did not reach")
             continue
 
         for claim in CLAIM_RE.finditer(line):
