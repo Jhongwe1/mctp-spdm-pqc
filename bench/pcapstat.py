@@ -288,11 +288,6 @@ def messages(path: Path) -> tuple[dict, list[dict]]:
         "spdm_bytes_total": sum(e["spdm_bytes"] for e in parsed),
         "by_type": dict(sorted(by_type.items(), key=lambda kv: (-kv[1]["bytes"], kv[0]))),
     }
-    # The identity harness/verify_repo.sh already asserts between pcapcount.py
-    # and fields.py, restated here from this tool's own numbers so that it is
-    # checked against the thing it is derived from rather than against a
-    # remembered constant.
-    stats["certificates"] = certificates(out)
     # ★ The independent variable, and the threshold that decides how many
     # messages a given number of bytes takes. Both are read from the capture's
     # own bytes; harness/fields.py reaches the same two from spdm_dump's
@@ -301,6 +296,48 @@ def messages(path: Path) -> tuple[dict, list[dict]]:
     stats["capabilities"] = capabilities(out)
     stats["errors"] = errors(out)
     stats["chunking"] = chunking(stats["by_type"], stats["errors"])
+
+    # ── the capture as the two endpoints saw it ─────────────────────────────
+    #
+    # Everything above this line counts what went over the wire and is left
+    # alone: by_type, spdm_bytes_total and the chunking counts are wire facts,
+    # bench/claims.json asserts several of them at a tolerance of zero, and a
+    # reassembled view would make them count some bytes twice.
+    #
+    # The certificate walk is the one thing that wants the other view, because
+    # a chain larger than DataTransferSize is never in a CERTIFICATE message at
+    # all. Before 2026-09-14 that made this tool report zero chains for every
+    # post-quantum arm while the whole chain sat in the file.
+    logical, stats["chunking"]["reassembled"] = dechunk(out)
+
+    # ── the same by-type table, over the logical view ───────────────────────
+    #
+    # ★ `by_type` is the wire and `logical_by_type` is what the two endpoints
+    # exchanged. For an unchunked capture they are identical. For a chunked one
+    # `by_type` has SPDM_CHUNK_RESPONSE where `logical_by_type` has
+    # SPDM_CERTIFICATE, and the second is the only one a question like "how big
+    # is a CHALLENGE_AUTH at ML-DSA-87" can be asked of — at that algorithm the
+    # message exceeds DataTransferSize and there IS no single CHALLENGE_AUTH
+    # message on the wire to measure.
+    #
+    # Both are published because a reader needs both and they answer different
+    # questions. Addressing a reassembled message by its type rather than by its
+    # position in the chunk sequence is also what keeps bench/claims.json from
+    # breaking when a flow gains a message.
+    logical_by_type: dict[str, dict] = {}
+    for e in logical:
+        if e.get("name") is None or e.get("spdm_bytes") is None:
+            continue
+        slot = logical_by_type.setdefault(e["name"], {"count": 0, "bytes": 0})
+        slot["count"] += 1
+        slot["bytes"] += e["spdm_bytes"]
+    stats["logical_by_type"] = dict(sorted(logical_by_type.items(),
+                                           key=lambda kv: (-kv[1]["bytes"], kv[0])))
+    # The identity harness/verify_repo.sh already asserts between pcapcount.py
+    # and fields.py, restated here from this tool's own numbers so that it is
+    # checked against the thing it is derived from rather than against a
+    # remembered constant.
+    stats["certificates"] = certificates(logical)
     stats["framing_accounts_for_the_difference"] = (
         framing is not None
         and stats["captured_bytes_total"]
@@ -561,6 +598,205 @@ def errors(entries: list[dict]) -> dict:
     return dict(sorted(out.items(), key=lambda kv: (-kv[1], kv[0])))
 
 
+# ── CHUNK_RESPONSE, reassembled ─────────────────────────────────────────────
+#
+# DSP0274 1.4.0 §"CHUNK_RESPONSE response message". Offsets, not a guess:
+#
+#   0  SPDMVersion            4  ChunkSeqNo      (2 bytes)
+#   1  RequestResponseCode    6  Reserved        (2 bytes)
+#   2  Param1 = attributes    8  ChunkSize       (4 bytes)
+#   3  Param2 = Handle       12  LargeMessageSize (4 bytes, FIRST CHUNK ONLY)
+#
+# so the header is 16 bytes when ChunkSeqNo is 0 and 12 afterwards, and
+# SPDMchunk follows it. Checked against the captures before being relied on:
+# in bench/data/w8-pqc-matrix-*/P2-all.pcap the first CHUNK_RESPONSE is 4,352
+# SPDM bytes with ChunkSize 0x10f0 = 4,336, and 4,352 - 4,336 = 16; the second
+# is 4,352 with ChunkSize 0x10f4 = 4,340, and the difference is 12.
+CHUNK_RSP_HEADER_BYTES = 12
+CHUNK_RSP_FIRST_HEADER_BYTES = 16
+CHUNK_ATTR_LAST = 0x01
+
+
+def dechunk(entries: list[dict]) -> tuple[list[dict], dict]:
+    """Put back together the messages SPDM's chunking layer took apart.
+
+    Returns (logical_entries, report). `logical_entries` is the capture as the
+    two endpoints saw it: every completed CHUNK_RESPONSE sequence replaced by
+    the single message it carried, everything else passed through untouched.
+
+    ★ Why this exists, and why it does not change any existing number.
+    ------------------------------------------------------------------
+    A certificate chain larger than the negotiated DataTransferSize never
+    appears in a CERTIFICATE message at all. The responder answers
+    ERROR(LargeResponse) and the chain arrives inside CHUNK_RESPONSE, so
+    certificates() — which reads CERTIFICATE — reported zero chains for every
+    post-quantum arm while every byte of the chain sat in the capture.
+    `docs/pqc-cost.md` §5 said reassembling them was week 8's job; this is it.
+    Until then the only tool that could reach the post-quantum chain length was
+    spdm_dump, whose LIBSPDM_MAX_CERT_CHAIN_SIZE is a compile-time 0x1000 and
+    which therefore truncates its own decode of the thing being measured. One
+    tool, one route, and that route is a prefix.
+    ★ Standing rule 12: where two tools can reach the same quantity by
+    different routes, they are made to agree. This is the second route, and it
+    reads the capture's own bytes rather than another program's rendering.
+    Nothing above this function is recomputed from the result — by_type,
+    spdm_bytes_total and the chunking counts stay exactly what went over the
+    wire, because that is what they are for and because bench/claims.json
+    asserts several of them at a tolerance of zero.
+
+    What it refuses to do
+    ---------------------
+    CHUNK_SEND and CHUNK_SEND_ACK carry a large REQUEST the other way, with a
+    different tail layout. Not one capture in this repository contains either,
+    so there is nothing to test an implementation against, and an untested
+    reassembler that silently produced a plausible message would be worse than
+    an absent one. They are counted and named as unhandled instead.
+    """
+    report: dict = {
+        "sequences": [],
+        "notes": [],
+        "messages_recovered": 0,
+        "bytes_recovered": 0,
+        "unhandled": {},
+    }
+    logical: list[dict] = []
+    open_seq: dict | None = None
+
+    def close(seq: dict, ok: bool, why: str | None = None) -> None:
+        rec = {
+            "handle": seq["handle"],
+            "packets": seq["packets"],
+            "chunks": len(seq["packets"]),
+            "declared_total": seq["declared_total"],
+            "assembled_bytes": len(seq["bytes"]),
+            # What the sequence cost on the wire, as against what it carried.
+            # The difference is the chunking layer's own overhead, and a figure
+            # that attributes every byte of a capture to a phase needs both.
+            "wire_bytes": seq["wire_bytes"],
+            "complete": ok,
+        }
+        if why:
+            rec["why"] = why
+            report["notes"].append(f"packets {seq['packets'][0]}-"
+                                   f"{seq['packets'][-1]}: {why}")
+        if ok:
+            # What the sequence turned out to be carrying. Worth recording: at
+            # ML-DSA-87 it is no longer only certificates — a CHALLENGE_AUTH
+            # with a 4,627-byte signature also exceeds a 4,608-byte
+            # DataTransferSize, and a reader looking at twenty-two chunk round
+            # trips needs to know which messages they belong to.
+            rec["carried"] = SPDM_CODES.get(seq["bytes"][1],
+                                            f"UNKNOWN_0x{seq['bytes'][1]:02x}")
+        report["sequences"].append(rec)
+        if not ok:
+            return
+        msg = bytes(seq["bytes"])
+        report["messages_recovered"] += 1
+        report["bytes_recovered"] += len(msg)
+        logical.append({
+            "packet": seq["packets"][0],
+            "captured_bytes": None,
+            "framing_bytes": None,
+            "spdm_bytes": len(msg),
+            "code": msg[1],
+            "name": SPDM_CODES.get(msg[1], f"UNKNOWN_0x{msg[1]:02x}"),
+            "direction": "RSP->REQ" if not is_request(msg[1]) else "REQ->RSP",
+            "version": spdm_version(msg[0]),
+            "why": None,
+            "reassembled_from": list(seq["packets"]),
+            "_spdm": msg,
+        })
+
+    for e in entries:
+        name = e.get("name")
+
+        if name in ("SPDM_CHUNK_SEND", "SPDM_CHUNK_SEND_ACK"):
+            report["unhandled"][name] = report["unhandled"].get(name, 0) + 1
+            logical.append(e)
+            continue
+
+        if name != "SPDM_CHUNK_RESPONSE" or "_spdm" not in e:
+            # A CHUNK_GET is the request half and carries no payload; it is kept
+            # so a reader can still count round trips in the logical view.
+            logical.append(e)
+            continue
+
+        msg = e["_spdm"]
+        if len(msg) < CHUNK_RSP_HEADER_BYTES:
+            report["notes"].append(
+                f"packet {e['packet']}: CHUNK_RESPONSE is {len(msg)} bytes, too "
+                f"few for its {CHUNK_RSP_HEADER_BYTES}-byte header")
+            continue
+        attr = msg[2]
+        handle = msg[3]
+        seq_no = int.from_bytes(msg[4:6], "little")
+        size = int.from_bytes(msg[8:12], "little")
+        first = seq_no == 0
+        head = CHUNK_RSP_FIRST_HEADER_BYTES if first else CHUNK_RSP_HEADER_BYTES
+        large_total = int.from_bytes(msg[12:16], "little") if first else None
+        payload = msg[head:head + size]
+
+        if len(payload) != size:
+            report["notes"].append(
+                f"packet {e['packet']}: ChunkSize says {size}, the message "
+                f"carries {len(payload)} after a {head}-byte header")
+            if open_seq is not None:
+                close(open_seq, False, "a chunk in this sequence was short")
+                open_seq = None
+            continue
+
+        if first:
+            if open_seq is not None:
+                close(open_seq, False,
+                      "a new sequence began before this one's LastChunk")
+            open_seq = {"handle": handle, "packets": [e["packet"]],
+                        "declared_total": large_total, "next_seq": 1,
+                        "wire_bytes": len(msg),
+                        "bytes": bytearray(payload)}
+        else:
+            if open_seq is None:
+                report["notes"].append(
+                    f"packet {e['packet']}: ChunkSeqNo {seq_no} with no "
+                    f"sequence open — the first chunk is missing from this "
+                    f"capture")
+                continue
+            if handle != open_seq["handle"]:
+                close(open_seq, False,
+                      f"handle changed from {open_seq['handle']} to {handle} "
+                      f"mid-sequence")
+                open_seq = None
+                continue
+            if seq_no != open_seq["next_seq"]:
+                close(open_seq, False,
+                      f"ChunkSeqNo jumped from {open_seq['next_seq'] - 1} to "
+                      f"{seq_no}; a chunk is missing and the bytes either side "
+                      f"of the gap do not join")
+                open_seq = None
+                continue
+            open_seq["packets"].append(e["packet"])
+            open_seq["next_seq"] += 1
+            open_seq["wire_bytes"] += len(msg)
+            open_seq["bytes"] += payload
+
+        if attr & CHUNK_ATTR_LAST:
+            total = open_seq["declared_total"]
+            got = len(open_seq["bytes"])
+            if total is not None and got != total:
+                close(open_seq, False,
+                      f"LargeMessageSize declared {total} bytes and the chunks "
+                      f"add up to {got}")
+            else:
+                close(open_seq, True)
+            open_seq = None
+
+    if open_seq is not None:
+        close(open_seq, False,
+              "the capture ends before LastChunk — this message was still "
+              "arriving")
+
+    return logical, report
+
+
 def chunking(by_type: dict, by_error: dict) -> dict:
     """How much of this capture is the SPDM-layer chunking of a large message.
 
@@ -672,9 +908,16 @@ def certificates(entries: list[dict]) -> dict:
                 "first_packet": e["packet"],
                 "declared_total": portion + remainder,
                 "large": large,
+                # Which route this chain reached the walk by. A chain that came
+                # through chunking is the same chain, and a reader who cannot
+                # tell the two apart cannot tell why a capture has three
+                # CERTIFICATE messages in one arm and none in another.
+                "via": "chunking" if e.get("reassembled_from") else "certificate",
                 "portions": [],
                 "bytes": bytearray(),
             }
+        elif e.get("reassembled_from") and current["via"] == "certificate":
+            current["via"] = "mixed"
         current["portions"].append(portion)
         current["bytes"] += chunk
         if remainder == 0:
@@ -700,6 +943,7 @@ def _settle_chain(chain: dict, hash_bytes: int | None) -> dict:
         "direction": chain["direction"],
         "first_packet": chain["first_packet"],
         "large_form": chain.get("large"),
+        "via": chain.get("via"),
         "messages": len(chain["portions"]),
         "portions": chain["portions"],
         "chain_bytes": total,
@@ -825,6 +1069,45 @@ def _error_response(code: int) -> bytes:
     return bytes([0x14, 0x7F, code, 0x00, 0x00])
 
 
+def _certificate_response(portion: int, slot: int = 0, remainder: int = 0) -> bytes:
+    """A small-form CERTIFICATE response whose chain closes.
+
+    The chain body is a Length field the walk has to agree with plus a 48-byte
+    root hash plus filler, so that a reassembled message can be checked all the
+    way through to `closes` rather than only to its length.
+    """
+    body = bytearray(portion)
+    body[0:4] = struct.pack("<I", portion)          # Length, Reserved zero
+    for i in range(4, portion):
+        body[i] = (i * 7) & 0xFF
+    head = bytes([0x14, 0x02, slot, 0x00]) + struct.pack("<HH", portion, remainder)
+    return head + bytes(body)
+
+
+def _chunked(message: bytes, chunk_size: int) -> list[bytes]:
+    """Split one SPDM message into the CHUNK_RESPONSE sequence that carries it.
+
+    Built from DSP0274's field offsets, not copied from a capture: a fixture
+    taken from the same place as the parser it tests cannot detect a change that
+    moves both. The first chunk carries LargeMessageSize and so has a 16-byte
+    header; the rest have 12.
+    """
+    out: list[bytes] = []
+    off = 0
+    seq = 0
+    while off < len(message):
+        piece = message[off:off + chunk_size]
+        off += len(piece)
+        last = 0x01 if off >= len(message) else 0x00
+        head = bytes([0x14, 0x06, last, 0x01]) + struct.pack("<HH", seq, 0)
+        head += struct.pack("<I", len(piece))
+        if seq == 0:
+            head += struct.pack("<I", len(message))
+        out.append(head + piece)
+        seq += 1
+    return out
+
+
 def selftest() -> int:
     """Feed every parser added for the post-quantum A/B something wrong."""
     import shutil
@@ -900,6 +1183,88 @@ def selftest() -> int:
             bad(f"large_response_errors counted "
                 f"{stats['chunking']['large_response_errors']} of 5 errors, "
                 f"and only 2 of them say the response did not fit")
+
+        # ── the chunk reassembler, and the four ways it must refuse ─────────
+        #
+        # Standing rule 11: a check is worth what it rejects. A reassembler
+        # that concatenated payloads and trusted the result would pass the
+        # first of these five and every one of the other four would be a
+        # silently wrong certificate chain — which is the exact quantity this
+        # was written to measure.
+        print("a chunked message comes back byte-identical")
+        checks += 1
+        carried = _certificate_response(portion=600)
+        p = _synthetic_capture(_chunked(carried, chunk_size=256), tmp / "k1.pcap")
+        stats = messages(p)[0]
+        rep = stats["chunking"]["reassembled"]
+        if rep["messages_recovered"] != 1 or rep["bytes_recovered"] != len(carried):
+            bad(f"reassembly recovered {rep['messages_recovered']} message(s) "
+                f"and {rep['bytes_recovered']} bytes, built 1 and "
+                f"{len(carried)}")
+        chains = stats["certificates"]["slots"]
+        if len(chains) != 1 or chains[0]["chain_bytes"] != 600:
+            bad(f"the chain walk saw {len(chains)} chain(s) through the "
+                f"reassembled message: {chains}")
+        elif chains[0]["via"] != "chunking":
+            bad(f"the chain came through chunking and is recorded as "
+                f"{chains[0]['via']!r}")
+
+        print("a gap in ChunkSeqNo is refused, not joined")
+        checks += 1
+        parts = _chunked(carried, chunk_size=256)
+        del parts[1]                       # drop ChunkSeqNo 1
+        p = _synthetic_capture(parts, tmp / "k2.pcap")
+        rep = messages(p)[0]["chunking"]["reassembled"]
+        if rep["messages_recovered"] != 0:
+            bad("a sequence missing its second chunk was reassembled anyway; "
+                "the bytes either side of a gap do not join and the result "
+                "would be a chain of the right length and the wrong content")
+
+        print("a lying ChunkSize is refused")
+        checks += 1
+        parts = _chunked(carried, chunk_size=256)
+        bad_chunk = bytearray(parts[1])
+        bad_chunk[8:12] = struct.pack("<I", 4096)      # claim far more than is there
+        parts[1] = bytes(bad_chunk)
+        p = _synthetic_capture(parts, tmp / "k3.pcap")
+        rep = messages(p)[0]["chunking"]["reassembled"]
+        if rep["messages_recovered"] != 0:
+            bad("a chunk claiming 4096 bytes it does not carry was accepted")
+
+        print("a LargeMessageSize that disagrees with the chunks is refused")
+        checks += 1
+        parts = _chunked(carried, chunk_size=256)
+        first = bytearray(parts[0])
+        first[12:16] = struct.pack("<I", len(carried) + 8)
+        parts[0] = bytes(first)
+        p = _synthetic_capture(parts, tmp / "k4.pcap")
+        rep = messages(p)[0]["chunking"]["reassembled"]
+        if rep["messages_recovered"] != 0:
+            bad("a sequence whose declared total exceeds its chunks by 8 bytes "
+                "was accepted; the two equations are the only thing that says "
+                "the message is whole")
+
+        print("a sequence that never sends LastChunk is refused")
+        checks += 1
+        parts = _chunked(carried, chunk_size=256)
+        last = bytearray(parts[-1])
+        last[2] = 0x00                                  # clear LastChunk
+        parts[-1] = bytes(last)
+        p = _synthetic_capture(parts, tmp / "k5.pcap")
+        rep = messages(p)[0]["chunking"]["reassembled"]
+        if rep["messages_recovered"] != 0:
+            bad("a sequence with no LastChunk was treated as complete")
+
+        print("CHUNK_SEND is named as unhandled rather than mis-parsed")
+        # The honest half of rule 11: no capture here contains one, so there is
+        # nothing to test a reassembler against, and it says so instead.
+        checks += 1
+        send = bytearray(_chunked(carried, chunk_size=256)[0])
+        send[1] = 0x85                                  # CHUNK_SEND
+        p = _synthetic_capture([bytes(send)], tmp / "k6.pcap")
+        rep = messages(p)[0]["chunking"]["reassembled"]
+        if rep["unhandled"].get("SPDM_CHUNK_SEND") != 1:
+            bad(f"a CHUNK_SEND was not reported as unhandled: {rep['unhandled']}")
 
         print("the agreement test refuses a pair that does not agree")
         checks += 1
@@ -997,6 +1362,38 @@ def cross_check(path: Path, stats: dict) -> int:
     # not previously produce: how much of a capture the reference decoder does
     # not see. Requiring equality here would be requiring a truncated file to
     # equal a whole one.
+    # ── the certificate chain, by two routes that share no input ────────────
+    #
+    # ★ This is the pairing docs/pqc-cost.md §5 could not make until 2026-09-14.
+    # The post-quantum chain arrives inside CHUNK_RESPONSE, so there used to be
+    # exactly one tool that could state its length: spdm_dump, whose decode of
+    # that very capture is truncated. One route, and that route a prefix.
+    #
+    # Now this tool reassembles the chunk sequence out of the capture's own
+    # bytes, and fields.py still reads spdm_dump's rendering. Neither sees the
+    # other's input, and a chain length is a number a chain walk can get wrong
+    # in a way that looks right — which is why it is checked BEFORE the
+    # truncation guard: spdm_dump reassembles the chain and then gives up
+    # thousands of bytes later, so this comparison is available on exactly the
+    # captures where the by-type totals are not.
+    mine_chain = next((c["chain_bytes"] for c in
+                       (stats.get("certificates") or {}).get("slots") or []
+                       if c.get("closes")), None)
+    theirs_chain = ((got.get("certificate") or {}).get("responder_slot0_bytes"))
+    if mine_chain is not None and theirs_chain is not None:
+        if mine_chain != theirs_chain:
+            print(f"  FAIL responder slot 0 chain: capture says {mine_chain}, "
+                  f"decode says {theirs_chain}")
+            early += 1
+        else:
+            via = next((c.get("via") for c in stats["certificates"]["slots"]
+                        if c.get("closes")), "?")
+            print(f"  ok    responder slot 0 chain agrees: {mine_chain} bytes "
+                  f"(this tool reached it through {via})")
+    elif theirs_chain is not None:
+        print(f"  --    the decode reports a {theirs_chain}-byte chain and this "
+              "tool reassembled none; see certificates.notes")
+
     src = got.get("source") or {}
     if src.get("decode_truncated"):
         seen = mb["total"]
