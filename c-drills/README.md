@@ -80,7 +80,7 @@ it reports what has been finished and never claims anything else.
 | D4 | `d4_bst_delete.c` | a two-children delete whose in-order successor has a right child of its own | not used here — the one drill lifted from an interview rather than from this repo |
 | D2 | `d2_offset_length.c` | `off + len` wrapping, so the check says yes and the read goes outside the buffer | GHSA-m4wc-xmvg-369f, and every length this repository's parsers take off the wire |
 | D7 | `d7_ring_buffer.c` | `head == tail` is both empty and full; and `rb_len` as `head - tail`, which underflows the moment the writer wraps | the tamper proxy's framing, and week 9's `transport/af_mctp_glue.c` |
-| D8 | length-bounded string copy | the truncation case, and who writes the terminator | the other real advisory class |
+| D8 | `d8_bounded_copy.c` | the truncation case, and who writes the terminator — plus a source that has no terminator to find | GHSA-j54w-759w-xj3m, where `GET_CSR`'s `RequesterInfo` overran a fixed stack buffer because the length the specification allows and the buffer the implementation has are different numbers; week 11's `negative/test_oversized_field.c` |
 
 Each file states its own contract, its boundaries, and its time box at the top.
 The tests are provided. The implementation is not, and should not be — the
@@ -133,6 +133,25 @@ failed it on the first attempt:
   the test that teaches it**, and the only reason it was visible is that rule
   15 requires running against the stub — the condition with nothing to do with
   the exercise, again.
+
+- **D8**, in week seven, was compiled four ways, because it has two wrong
+  versions worth separating and they fail differently. The stub built and
+  failed; a correct implementation passed 38 of 38.
+
+  The `strncpy` version — the mistake the drill exists to teach — was caught
+  **twice over**, and the first catch is the interesting one: a named check,
+  *"nothing past the NUL was written"*, fires because `strncpy` pads the whole
+  destination when the source is short. It is the behaviour nobody expects and
+  the one that has nothing to do with safety; the unterminated-on-truncation
+  behaviour, which is the dangerous half, showed up a moment later as a
+  stack-buffer-overflow.
+
+  The `memcpy(dst, src, dstsz - 1)` version — copy as much as fits without
+  asking how long the source is — **never reached a check at all.** It died
+  inside the very first call, reading a three-character string literal for
+  thirty-one bytes. No assertion separates it from a correct implementation;
+  AddressSanitizer does, and that is the whole argument for the sanitizers
+  being in `CFLAGS` rather than in a "run this occasionally" note.
 
 ## Why D6 is not about the transport framing
 
