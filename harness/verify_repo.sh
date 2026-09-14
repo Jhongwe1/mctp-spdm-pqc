@@ -1460,6 +1460,24 @@ if command -v opa >/dev/null 2>&1; then
         bad "the appraisal matrix does not match rats/out/expected.json"
     fi
     rm -f /tmp/rats-matrix.$$
+
+    # ── and the version rule was loosened in ONE direction only ────────────
+    #
+    # The matrix above says every arm still reaches the outcome it must. It
+    # cannot say what CHANGED on 2026-09-14, because it only ever runs one
+    # policy, and "the results are what the file says" keeps being true after
+    # a change that did nothing. So four of those arms are run again under the
+    # live policy AND under a frozen copy of the one it replaced, and exactly
+    # one cell is allowed to move. Two would mean something besides the
+    # version rule was relaxed; none would mean the change was cosmetic.
+    if bash rats/test_svn_policy.sh > /tmp/rats-svn.$$ 2>&1; then
+        sed -n '/^case /,/^  captures/p' /tmp/rats-svn.$$ | sed 's/^/  /'
+        good "four SVN cases under two policies, and one cell moved"
+    else
+        sed 's/^/  /' /tmp/rats-svn.$$
+        bad "the SVN case table disagrees with rats/out/svn_cases.expected.json"
+    fi
+    rm -f /tmp/rats-svn.$$
 else
     # Not a skip. The step above — rats/appraise.py selftest — already refuses
     # to run without an engine, on the grounds that a self-test which passes by

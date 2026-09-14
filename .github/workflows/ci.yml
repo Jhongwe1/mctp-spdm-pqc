@@ -85,11 +85,22 @@ jobs:
       - name: The encoders, against RFC 8949's own vectors
         run: python3 rats/cose.py selftest
 
-      - name: The policy, against eleven broken pairs
+      - name: The policy, against every way of breaking it
         run: python3 rats/appraise.py selftest
 
       - name: Every arm of the capture matrix, against what it must produce
         run: python3 rats/appraise.py matrix --check
+
+      # The step above runs ONE policy, so it cannot say what changed when the
+      # secure-version-number rule was loosened on 2026-09-14 — a change that
+      # did nothing at all would satisfy it. This runs four of the same arms
+      # under the live policy and under a frozen copy of the one it replaced,
+      # and requires exactly one verdict to have moved: the legitimately
+      # upgraded device. The rollback stays refused and the arm whose
+      # measurement was altered stays refused, which is what says the
+      # integrity half was not relaxed along with the version half.
+      - name: The version rule was loosened in one direction only
+        run: bash rats/test_svn_policy.sh
 
       # The two assertions above are about documents. This one is about the
       # shell: a verifier whose only channel is stdout cannot be used in a

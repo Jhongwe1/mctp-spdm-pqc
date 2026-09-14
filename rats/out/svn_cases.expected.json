@@ -1,0 +1,75 @@
+{
+  "_what_this_is": [
+    "The four secure-version-number cases, each appraised under BOTH the live",
+    "policy and the frozen one it replaced, and what every cell must produce.",
+    "",
+    "bash rats/test_svn_policy.sh reads this, re-derives all eight cells from",
+    "captures already in the repository, and fails when any of them disagrees.",
+    ".github/workflows/ci.yml runs it.",
+    "",
+    "Why both policies. Changing an appraisal rule is worth nothing on its own;",
+    "what is worth something is being able to show WHICH verdicts moved and",
+    "which did not. One column is the rule as DMTF's sample writes it — the",
+    "secure version number compared for equality. The other is the rule as this",
+    "project writes it — per index, and one-sided. The same four captures and",
+    "the same signed reference value go through both.",
+    "",
+    "The four captures are real handshakes, taken on 2026-09-10 with the",
+    "responder reading four different measurement fixtures. The evidence is the",
+    "528-byte measurement record sliced out of each MEASUREMENTS message, not",
+    "the fixture file: appraising the fixture would compare a document against",
+    "itself and pass for every input. rats/README.md says the same at length.",
+    "",
+    "★ All four share ONE reference value, rats/ref/clean.corim, minted from the",
+    "clean capture. Minting one per case is the mistake that makes every case",
+    "pass while looking thorough, because the evidence and the reference would",
+    "then come from the same bytes."
+  ],
+  "run": "bench/data/w5-tamper-20260910T092621Z",
+  "reference": "rats/ref/clean.corim",
+  "policies": {
+    "before": "rats/policy-v0-equality.rego",
+    "after": "rats/policy.rego"
+  },
+  "outcome_changes_expected": ["S-up"],
+  "_outcome_changes_expected": [
+    "★ The assertion the whole file exists for. Exactly one of the four cases",
+    "may reach a different VERDICT under the two policies. A change that moved",
+    "two cells would have loosened something besides the version rule, and a",
+    "change that moved none would not have done anything."
+  ],
+  "cases": {
+    "S-eq": {
+      "arm": "t0_clean",
+      "device_svn": 7,
+      "reference_svn": 7,
+      "proves": "the control. The device is exactly what the reference value describes, so anything but a pass in either column means the comparison is broken rather than strict",
+      "before": {"outcome": "pass", "blocked_by": [], "detail": {}},
+      "after": {"outcome": "pass", "blocked_by": [], "detail": {}}
+    },
+    "S-up": {
+      "arm": "svn9",
+      "device_svn": 9,
+      "reference_svn": 7,
+      "proves": "★ the cell that moves. A legitimately UPGRADED device — firmware newer than the published reference value — is refused by equality and accepted by the new rule. This is the entire practical case for the change: under the old rule, publishing a reference value turns every machine that takes the next update red",
+      "before": {"outcome": "fail", "blocked_by": ["SPDM_SVN_CHECK"], "detail": {"svn_mismatch": [16]}},
+      "after": {"outcome": "pass", "blocked_by": [], "detail": {}}
+    },
+    "S-down": {
+      "arm": "svn5",
+      "device_svn": 5,
+      "reference_svn": 7,
+      "proves": "★ rollback protection survived the change. Note the before column: equality refuses this with the SAME check, the SAME category and the SAME index as S-up above — the two rows are byte-identical, which is exactly the complaint. The new rule refuses it under its own name, svn_rollback, so a verdict can now say which of the two directions it saw",
+      "before": {"outcome": "fail", "blocked_by": ["SPDM_SVN_CHECK"], "detail": {"svn_mismatch": [16]}},
+      "after": {"outcome": "fail", "blocked_by": ["SPDM_SVN_CHECK"], "detail": {"svn_rollback": [16]}}
+    },
+    "S-hash": {
+      "arm": "t1_meas",
+      "device_svn": 7,
+      "reference_svn": 7,
+      "proves": "★ the integrity rule was not loosened. The version number is correct and ONE BYTE of measurement index 1 was changed on the device before it hashed and signed. Both columns refuse it, by digest_mismatch, and neither column's SVN check fires at all. Without this case the honest question — 'you relaxed a rule, did you relax security?' — has no answer but assertion",
+      "before": {"outcome": "fail", "blocked_by": ["SPDM_HASH_CHECK"], "detail": {"digest_mismatch": [1]}},
+      "after": {"outcome": "fail", "blocked_by": ["SPDM_HASH_CHECK"], "detail": {"digest_mismatch": [1]}}
+    }
+  }
+}
