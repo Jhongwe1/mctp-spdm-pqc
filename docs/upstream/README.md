@@ -35,6 +35,7 @@ needs a date attached to it.
 | Fifth candidate found while writing a proxy | **done** | 2026-09-10 | `spdm-emu`: `command.h` documents the socket payload as starting at the SPDM header when a transport byte precedes it — see below |
 | Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
 | Thirteenth found while pinning an A/B's control variables | **done** | 2026-09-14 | `spdm-emu`: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back, and then makes the handshake impossible — the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported, and `--mut_auth NO` does not clear that capability bit. Six packets and a bare status code. See below |
+| Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: `--cap` is parsed by the requester and never read; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
 | **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | 2026-09-12 | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
@@ -696,13 +697,156 @@ that work, and the bisection that isolated the pair is in `LOG.md` for
 2026-09-14. What this project does instead is pin the requester's own signature
 algorithm to one classical value in every arm, which costs one 4-byte
 `AlgStructure` entry that is byte-identical across the whole matrix —
-[`../pqc-cost.md`](../pqc-cost.md) §6.
+[`../pqc-cost.md`](../pqc-cost.md) §3.
 
 **Not yet reported.** It goes in the queue behind
 [`0001-corim-verify.md`](0001-corim-verify.md), which is prepared and waiting on
 a keystroke that is the author's; sending a second finding to a project before
 the first one has been sent is a way of having zero conversations rather than
 two.
+
+## Four more, from measuring across the transport — 2026-09-14
+
+All four came out of one week's work: building a DataTransferSize sweep and a
+six-group algorithm matrix. Two are argument-handling, one is an algorithm that
+does not work, and one is a missing knob with a patch attached.
+
+### ⑭ `--cap` is parsed by the requester and then never read
+
+`spdm_emu_common/spdm_emu.c:859` parses `--cap` into `m_use_capability_flags`,
+validates every name against a per-program table, and prints the result back:
+
+```
+cap - 0x8882f7c6
+```
+
+Exactly one place reads that variable:
+
+```
+$ grep -rn 'm_use_capability_flags' spdm_emu/
+spdm_emu/spdm_responder_emu/spdm_responder_spdm.c:174:    if (m_use_capability_flags != 0) {
+spdm_emu/spdm_responder_emu/spdm_responder_spdm.c:175:        m_use_responder_capability_flags = m_use_capability_flags;
+spdm_emu/spdm_device_attester_sample/spdm_device_attester_spdm.c:189:    ...
+spdm_emu/spdm_emu_common/key.c:63:uint32_t m_use_capability_flags = 0;
+spdm_emu/spdm_emu_common/nv_storage.c:227:    ...
+spdm_emu/spdm_emu_common/spdm_emu.c:884: ...
+```
+
+`spdm_requester_spdm.c` never mentions it. **So `--cap` on
+`spdm_requester_emu` has no effect, and confirms in writing that it did.** It is
+not a documentation gap: the flag is echoed, which is what makes it worth
+reporting — a user who checks that their flag was accepted gets a yes.
+
+**Why it was found:** this project needed a post-quantum arm with the
+responder's `CHUNK_CAP` removed, to measure what SPDM's chunking layer is worth
+([`../pqc-cost.md`](../pqc-cost.md) §10). Passing one capability list to both
+binaries seemed wasteful rather than impossible; reading the source before
+writing the arm is what turned it into a finding instead of a puzzle.
+
+**What could be reported:** either read `m_use_capability_flags` in the
+requester as the responder does, or reject `--cap` there. Two lines either way.
+
+### ⑮ An unrecognised or invalid argument exits 0
+
+Every argument-validation failure in `process_args` ends the same way:
+
+```c
+printf("invalid --slot_count %s\n", argv[1]);
+print_usage(program_name);
+exit(0);                       /* <- zero */
+```
+
+`grep -c 'exit(0)' spdm_emu/spdm_emu_common/spdm_emu.c` finds it throughout. So
+a script that typos a flag gets a process which **exited successfully and never
+spoke SPDM**, and `$?` says nothing happened wrong.
+
+This is the same class as finding ⑤ in the 2026-09-12 batch, where `verify`
+reported failure on stdout and exited 0, and it is the reason this project's own
+harness judges an arm on its capture rather than on an exit status: what catches
+a bad flag in `harness/run_pair.sh` is `hs_wait_for_responder` timing out and
+there being no capture, not the status code. `EXIT_FAILURE` on the invalid-input
+paths would be a mechanical change and would break nothing that was working.
+
+### ⑯ ★ No signed operation completes with SLH-DSA on this build
+
+DMTF ships sample certificate chains for **twelve** SLH-DSA parameter sets,
+`--pqc_asym` accepts all twelve, and `LIBSPDM_SLH_DSA_*_SUPPORT` defaults to 1.
+With `SLH_DSA_SHA2_128S` selected and everything else held constant, bisecting
+on `--exe_conn` (ML-DSA-44 as the control, same flags):
+
+| `--exe_conn` | responder signs? | SLH-DSA-SHA2-128s | ML-DSA-44 |
+|---|:--:|:--:|:--:|
+| `VCA` | no | exit 0 | exit 0 |
+| `DIGEST` | no | exit 0 | exit 0 |
+| `DIGEST,CERT` | no | **exit 0**, 54 packets | exit 0 |
+| `DIGEST,CERT,MEAS` | yes | **exit 1** | exit 0 |
+| `DIGEST,CERT,CHAL` | yes | **exit 1** | exit 0 |
+| `DIGEST,CERT,CHAL,MEAS` | yes | **exit 1** | exit 0 |
+
+Every unsigned operation completes; both signed ones fail. What that rules out,
+with the capture that rules it out:
+
+- **not negotiation** — `ALGORITHMS` selects `SLH_DSA_SHA2_128S`, asserted per
+  arm by `harness/lib/check_negotiated.py`;
+- **not chunking** — the 24,782-byte chain arrives in six `CHUNK_RESPONSE`,
+  twice, and `bench/pcapstat.py` reassembles it and finds the chain closes;
+- **not X.509** — `DIGEST,CERT` exits 0, so a chain whose every signature is
+  SLH-DSA was parsed and verified;
+- **not signing** — the `CHALLENGE_AUTH` arrives whole, through two chunks, at
+  7,998 bytes, which is 142 + **7,856**: FIPS 205's SLH-DSA-SHA2-128s signature
+  length exactly. The responder produced a correct-length signature.
+
+**What is left is SPDM-signature verification on the requester.** The libspdm
+status is not recoverable from this build: `TARGET=Release` compiles
+`LIBSPDM_DEBUG` out, so the requester exits 1 having printed nothing at all — an
+observation in its own right, and the reason a `Debug` rebuild is the next step
+rather than a guess about `slhdsa_ext.c`.
+
+**Evidence:** `bench/data/w8-pqc-matrix-20260914T131557Z/S1-*`, and the arm is
+kept in Table 2 as a partial handshake rather than deleted.
+
+### ⑰ `DataTransferSize` cannot be set at run time — with a patch
+
+`DataTransferSize` decides whether a message crosses the wire once or as a
+chunking exchange, and a chunk costs a complete request/response round trip. On
+this project's post-quantum arm, moving it over a 32× range moves the byte total
+3.1% and the round trips from 59 to 0 ([`../pqc-cost.md`](../pqc-cost.md) §9). It
+is the parameter a BMC or RoT integrator actually tunes.
+
+`spdm-emu` has no flag for it. It is
+
+```
+LIBSPDM_DATA_TRANSFER_SIZE = LIBSPDM_RECEIVER_BUFFER_SIZE - (header + tail)
+```
+
+in `spdm_emu_common/spdm_emu.h`, so measuring across it means one build per
+value.
+
+**A patch exists:** [`../../transport/data-transfer-size.patch`](../../transport/data-transfer-size.patch),
+55 added lines across five files, no deletions. It adds
+`--data_transfer_size <bytes>`, range-checked against
+`SPDM_MIN_DATA_TRANSFER_SIZE_VERSION_12` below and the build's own compile-time
+ceiling above, and it can only *lower* the advertised value — a device that
+advertised more than its buffer holds would be lying to its peer.
+
+One implementation note worth passing on, because it is the obvious approach and
+it silently does nothing: `libspdm_set_data(...,
+LIBSPDM_DATA_CAPABILITY_DATA_TRANSFER_SIZE, ...)` after the buffers are
+registered returns `LIBSPDM_STATUS_INVALID_STATE_LOCAL` (0x80010002). The
+working route is to register a smaller receive buffer, which is where libspdm
+derives the value from in the first place.
+
+**Verified inert where it is not aimed:** the patched build told to use the
+unpatched build's value produces a byte-identical capture — 58,966 bytes, 46
+packets, 12 chunk round trips. `bench/claims.json` asserts it as
+`dts_patch_is_inert_at_the_default_value`, and
+[ADR 0009](../decisions/0009-a-third-build-flavor.md) is why that assertion
+rather than a small diff is what makes the sweep admissible.
+
+**Not yet reported**, and this one is the most likely of the seventeen to be
+wanted: it is a feature with a patch, a test matrix and a control, aimed at a
+parameter the project's own CI already has two workflows about
+(`chunk_check.yml`, `chunk_device_sample.yml`).
 
 ## Three identity traps, all of which are silent until they are not
 
