@@ -1,0 +1,126 @@
+{
+  "_what_this_is": [
+    "Every number this repository publishes that is derived from MORE THAN ONE",
+    "capture, with the derivation written out so a machine can redo it.",
+    "",
+    "python3 harness/check_claims.py       re-derives every claimed value",
+    "python3 harness/check_claims.py --show  prints what each one derives to",
+    "",
+    "harness/fields.py --check already guards the numbers a document quotes",
+    "from the capture named beside it. That binds one claim to ONE capture,",
+    "which is the right shape for 'the measurement record is 528 bytes' and the",
+    "wrong shape for a ratio, which has two captures and belongs to neither.",
+    "This file owns exactly that gap and nothing else.",
+    "",
+    "A value of null is not a placeholder. It means the quantity is named, the",
+    "derivation is written, and the answer is not known — normally because a",
+    "tool cannot reach it yet. The reason is in the claim.",
+    "",
+    "Every tolerance_pct is 0.0. These are bytes and round trips re-derived from",
+    "captures that are committed here, so there is nothing for a tolerance to",
+    "absorb: the same file gives the same answer or the file changed. A non-zero",
+    "tolerance on a deterministic quantity is a check that has been asked not to",
+    "fail. The day something timing-related is published, it will arrive with a",
+    "median, a p95 and a stated number of runs instead of a tolerance."
+  ],
+  "runs": {
+    "pqc_ab": "bench/data/w7-pqc-ab-20260914T073732Z",
+    "tamper": "bench/data/w5-tamper-20260910T092621Z"
+  },
+  "claims": {
+    "pqc_certchain_ratio_mldsa65_vs_ecdsa384": {
+      "value": 10.183081570996979,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "responder slot 0 certificate chain, ML-DSA-65 over ECDSA-P384, same build and the same DMTF sample chain layout",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "fields", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "certificate.responder_slot0_bytes"},
+        "denominator": {"tool": "fields", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "certificate.responder_slot0_bytes"}
+      },
+      "note": "read through the DECODE rather than through bench/pcapstat.py. The post-quantum chain is larger than the negotiated DataTransferSize, so it arrives in CHUNK_RESPONSE messages that pcapstat's chain walk does not reassemble; spdm_dump does reassemble them. Two tools, one reachable quantity, and the one that can reach it is named here"
+    },
+    "pqc_handshake_ratio_mldsa65_vs_ecdsa384_meas_op_all": {
+      "value": 8.990089952736698,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "total captured bytes, ML-DSA-65 over ECDSA-P384, with --meas_op ALL: one GET_MEASUREMENTS, one signed response",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "captured_bytes_total"}
+      }
+    },
+    "pqc_handshake_ratio_mldsa65_vs_ecdsa384_meas_op_one_by_one": {
+      "value": 6.011291460832745,
+      "tolerance_pct": 0.0,
+      "unit": "ratio",
+      "meaning": "★ the same ratio over the emulator's DEFAULT measurement flow, which walks every measurement index. It is a different number, and publishing either one without naming the flow is the thing that makes a cost table unfalsifiable",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "ratio",
+        "numerator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-obo", "path": "captured_bytes_total"},
+        "denominator": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-obo", "path": "captured_bytes_total"}
+      }
+    },
+    "pqc_signature_bytes_delta_mldsa65_vs_ecdsa384": {
+      "value": 3213,
+      "tolerance_pct": 0.0,
+      "unit": "bytes",
+      "meaning": "★ what one signature costs, isolated: CHALLENGE_AUTH carries exactly one, and the two arms' messages are identical except for it. ML-DSA-65 signs 3309 bytes where ECDSA-P384 signs 96, and this delta is what the two captures say",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "by_type.SPDM_CHALLENGE_AUTH.bytes"},
+        "subtrahend": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "by_type.SPDM_CHALLENGE_AUTH.bytes"}
+      }
+    },
+    "cert_roundtrips_mldsa65": {
+      "value": 3,
+      "tolerance_pct": 0.0,
+      "unit": "GET_CERTIFICATE requests",
+      "meaning": "how many times the requester asked for a certificate chain in the post-quantum arm. A round trip is a latency cost that a byte count does not show",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "value",
+        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "certificates.roundtrips"}
+      }
+    },
+    "cert_roundtrips_ecdsa384": {
+      "value": 3,
+      "tolerance_pct": 0.0,
+      "unit": "GET_CERTIFICATE requests",
+      "meaning": "the same count in the classical arm. If the two are equal, the post-quantum chain cost bytes and not round trips at THIS DataTransferSize, which is a claim about the transport rather than about the algorithm",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "value",
+        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/A0-all", "path": "certificates.roundtrips"}
+      }
+    },
+    "pqc_chunk_responses_mldsa65": {
+      "value": 12,
+      "tolerance_pct": 0.0,
+      "unit": "CHUNK_RESPONSE messages",
+      "meaning": "★ the round trips the chain actually cost, which are NOT GET_CERTIFICATE: the chain exceeds the negotiated DataTransferSize, so SPDM's chunking layer carries it. The classical arm has none of these",
+      "table": "docs/pqc-cost.md#tbl2",
+      "derivation": {
+        "kind": "value",
+        "of": {"tool": "pcapstat", "capture": "bench/data/w7-pqc-ab-20260914T073732Z/P2-all", "path": "chunking.messages.SPDM_CHUNK_RESPONSE"}
+      }
+    },
+    "tamper_detect_rate": {
+      "value": 1.0,
+      "tolerance_pct": 0.0,
+      "unit": "fraction",
+      "meaning": "of the capture arms that rats/out/expected.json says MUST be rejected, the fraction the committed verdicts reject. Anything but 1.0 is the assertion this repository exists to make, failing",
+      "table": "docs/rats-pipeline.md#table-3",
+      "derivation": {
+        "kind": "rats_expected_fail_rate",
+        "expected": "rats/out/expected.json",
+        "verdicts": "rats/out"
+      }
+    }
+  }
+}

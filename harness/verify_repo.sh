@@ -642,6 +642,35 @@ else
     bad "$fails capture(s) where the two parsers disagree"
 fi
 
+step "every published cross-capture number still comes out of its captures"
+# fields.py --check guards a number against the ONE capture named beside it.
+# A ratio has two captures and belongs to neither, so it has nowhere to live
+# under that mechanism — and a ratio is exactly the form every post-quantum
+# cost claim takes. bench/claims.json writes the derivation out; this re-runs
+# it. Tolerances there are all zero, because these are byte counts re-derived
+# from committed captures and a tolerance would only be absorbing a change in
+# the file.
+if out="$(python3 harness/check_claims.py 2>&1)"; then
+    printf '%s
+' "$out" | sed -n '$p' | sed 's/^/  /'
+    good "bench/claims.json re-derives from the captures it names"
+else
+    printf '%s
+' "$out" | sed 's/^/  /'
+    bad "a published number no longer comes out of its capture"
+fi
+# And the companion, because a checker that has only seen agreeing inputs is a
+# float comparison that happens to agree.
+if out="$(python3 harness/check_claims.py --selftest 2>&1)"; then
+    printf '%s
+' "$out" | sed -n '$p' | sed 's/^/  /'
+    good "the claims checker refuses a value that has drifted"
+else
+    printf '%s
+' "$out" | sed 's/^/  /'
+    bad "harness/check_claims.py --selftest failed"
+fi
+
 step "the stock measurement record is the same in every baseline ever taken"
 # docs/tamper.md's whole argument rests on one digest: the 528-byte measurement
 # record a responder produces when nothing has been done to it. Two claims lean
