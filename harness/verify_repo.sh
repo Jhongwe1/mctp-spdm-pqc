@@ -152,7 +152,7 @@ else
 fi
 
 step "python syntax (analysis tools)"
-if python3 -m py_compile harness/fields.py bench/pcapstat.py \
+if python3 -m py_compile harness/fields.py bench/pcapstat.py                          harness/check_claims.py harness/lib/check_negotiated.py \
                          device/gen_measurements.py rats/cose.py \
                          rats/appraise.py rats/rats_selftest.py; then
     good "fields.py, pcapstat.py, gen_measurements.py and rats/ compile"
@@ -608,6 +608,21 @@ step "a second parser reaches the same per-message byte counts"
 # through the post-quantum arm, so the two tools are genuinely not looking at
 # the same thing there, and pcapstat prints how much of the capture the decoder
 # does not see instead of demanding that a prefix equal a whole.
+# Before requiring the two parsers to agree, require the new one to be capable
+# of disagreeing. bench/pcapstat.py --selftest builds ALGORITHMS responses and
+# ERROR responses byte by byte, parses them, and then hands the comparison a
+# pair that does not match — standing rule 11, applied to a check that is
+# otherwise a dictionary comparison over inputs that have always matched.
+if out="$(python3 bench/pcapstat.py --selftest 2>&1)"; then
+    printf '%s
+' "$out" | sed -n '$p' | sed 's/^/  /'
+    good "the capture parsers refuse a wrong answer before being asked for a right one"
+else
+    printf '%s
+' "$out" | sed 's/^/  /'
+    bad "bench/pcapstat.py --selftest failed"
+fi
+
 fails=0
 total=0
 shopt -s nullglob
