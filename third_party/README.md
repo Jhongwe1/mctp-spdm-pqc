@@ -5,6 +5,7 @@ of commit hashes every result in this repository was produced from.
 
 ```
 spdm-emu-pqc.pin       flavor=pqc      the post-quantum build
+spdm-emu-pqc-dts.pin   flavor=pqc-dts  the same pair, one constant moved
 spdm-emu-stable.pin    flavor=stable   the baseline build
 spdm-dump.pin                          the decoder every result is read through
 spdm-h.pin                             the header a hand-written table was copied from
@@ -43,11 +44,26 @@ Three reasons, in order of how much they matter:
    corpora. A full source tree is around 2.5 GB per flavor, and the build
    output several times that.
 
+★ **And that vendored OpenSSL is now pinned too, because it had to be.** Until
+2026-09-14 these pins recorded `crypto=openssl` and nothing else, while
+`manifest.json` separately recorded the *system* `openssl` version. Those are two
+different programs: libspdm builds and statically links its own copy from a
+submodule, and on this host they are 3.5.5 and 3.0.13. ML-DSA, ML-KEM and
+SLH-DSA arrived in OpenSSL 3.5, so **every post-quantum byte this project has
+published came from a library whose version appeared nowhere** — and a reader who
+took the recorded one for the backend would have concluded the captures are
+impossible. Every pin now carries `crypto-openssl-vendored` (the submodule
+commit) and `crypto-openssl-version`. `build_spdm_emu.sh --pin-only` backfilled
+them into the existing trees without recompiling, so the binaries behind the
+published captures were not replaced in order to fix their own provenance; it
+carries `built-at` forward for the same reason.
+
 ## Contents
 
 | File | What it pins |
 |---|---|
 | `spdm-emu-pqc.pin` | `spdm-emu` and `libspdm` at the post-quantum release candidate, plus compiler, cmake, kernel and build date |
+| `spdm-emu-pqc-dts.pin` | the same pair as `spdm-emu-pqc.pin`, built with larger buffers and carrying `transport/data-transfer-size.patch`. It differs from that pin in exactly four lines — `flavor`, `cflags`, and the patch's path and SHA-256 — which is the point: a flavor that is a *parameter* change rather than a version change should look like one. [ADR 0009](../docs/decisions/0009-a-third-build-flavor.md) |
 | `spdm-emu-stable.pin` | the same fields for the baseline release pair |
 | `spdm-dump.pin` | the offline decoder, and the certificate-chain ceiling measured out of the compiled binary |
 | `spdm-h.pin` | the SHA-256 of the header whose capability-bit names `harness/fields.py` copied, and the libspdm commit it was read at |

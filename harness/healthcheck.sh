@@ -271,15 +271,38 @@ else
     fi
 fi
 
-section "8. system OpenSSL — only affects signing a POST-QUANTUM chain (W07-W08)"
-openssl version 2>&1 | sed 's/^/  /'
+section "8. TWO OpenSSLs — and only one of them signs anything on the wire"
+# ★ This section is the one most likely to be misread, so it prints both.
+#
+# The `openssl` binary below is NOT the crypto backend. libspdm builds and
+# statically links its own from a submodule, and on this host the two are 3.0.13
+# and 3.5.5. ML-DSA, ML-KEM and SLH-DSA arrived in OpenSSL 3.5, so the vendored
+# one is the reason the post-quantum arms above completed at all — and the system
+# one is why this project cannot sign a post-quantum chain of its OWN.
+#
+# Until 2026-09-14 only the system version appeared in any manifest, so a reader
+# had the version that explains a limitation and not the one that explains a
+# result. Printed side by side here for the same reason it is in every pin now.
+printf '  system openssl binary : '
+openssl version 2>&1 | sed 's/^//'
+OSSL_SUB="$(flavor_dir "$FLAVOR")/libspdm/os_stub/openssllib/openssl"
+if [ -d "$OSSL_SUB" ]; then
+    printf '  vendored into libspdm : OpenSSL %s (%s)\n' \
+        "$(awk -F= '/^MAJOR=/{a=$2} /^MINOR=/{b=$2} /^PATCH=/{c=$2}
+                    END {print (a == "" ? "unknown" : a"."b"."c)}' \
+              "${OSSL_SUB}/VERSION.dat" 2>/dev/null)" \
+        "$(git -C "$OSSL_SUB" rev-parse --short HEAD 2>/dev/null || echo 'no commit')"
+    printf '  %s\n' "^ this is the one that computed every signature above"
+else
+    printf '  vendored into libspdm : NOT FOUND at %s\n' "$OSSL_SUB"
+fi
 # Captured rather than piped — see harness/doctor.sh for what the pipeline
 # form does on a machine that actually has ML-DSA.
 OSSL_ALGS="$(openssl list -signature-algorithms 2>/dev/null || true)"
 if grep -qi 'ml-dsa' <<<"$OSSL_ALGS"; then
-    verdict PASS 8 "system OpenSSL offers ML-DSA"
+    verdict PASS 8 "system OpenSSL offers ML-DSA, so a post-quantum chain of this project's own is possible"
 else
-    verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5) — the W03 chain is ECDSA-P384 and did not need it; a PQC chain will"
+    verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5), so this project cannot sign a PQC chain of its OWN — the measurements above used libspdm's vendored copy and are unaffected"
 fi
 
 section "9. QEMU with an SPDM-capable device (W09 transport work)"

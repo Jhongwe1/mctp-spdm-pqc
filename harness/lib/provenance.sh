@@ -78,6 +78,89 @@ prov_begin() {
     # Fold in the upstream build pin, so each field lands in the manifest as a
     # first-class key (libspdm, spdm-emu, libspdm-version, ...).
     prov_pin "$flavor" BUILD_PIN.txt
+
+    # ...and the two things the pin does not say. Both were found on 2026-09-14
+    # while auditing the post-quantum A/B, and both had been true since the day
+    # they were introduced.
+    prov_patch  "$flavor"
+    prov_crypto "$flavor"
+}
+
+# prov_patch <flavor>
+#
+# Whether this flavor's build tree is the pinned commit or the pinned commit
+# PLUS a patch from this repository.
+#
+# harness/apply_device_patch.sh has left DEVICE_PATCH.txt beside BUILD_PIN.txt
+# since 2026-09-01, and until 2026-09-14 nothing folded it into a manifest. So
+# every capture taken in between was produced by a binary that is not the one a
+# reader rebuilds from third_party/*.pin, and no capture said so. The captures
+# are still valid — the patch reads measurements from a file only when
+# SPDM_MEASUREMENTS_FILE is set, and the A/B clears it per arm — but "still
+# valid" is a thing the reader has to be able to check, and they could not.
+#
+# ★ Absent is a real answer here, unlike a missing BUILD_PIN: an unpatched tree
+# is the normal case. So it is recorded as `no` rather than as a failure, which
+# is the same distinction prov_begin's repo_dirty had to learn.
+prov_patch() {
+    local flavor="${1:?prov_patch needs a flavor}" dir stamp
+    dir="$(flavor_dir "$flavor" 2>/dev/null || true)"
+    stamp="${dir}/DEVICE_PATCH.txt"
+    if [ -n "$dir" ] && [ -f "$stamp" ]; then
+        prov_note device_patch_applied yes
+        prov_pin_file "$stamp" DEVICE_PATCH.txt device_patch
+    else
+        prov_note device_patch_applied no
+    fi
+
+    # A flavor may also require a patch of its own (pqc-dts does). Recording
+    # that it is REQUIRED is separate from recording that it is present: a tree
+    # missing its flavor's patch produces numbers for a different experiment.
+    local want
+    want="$(flavor_patch "$flavor" 2>/dev/null || true)"
+    if [ -n "$want" ]; then
+        prov_note flavor_patch_required "$want"
+        if [ -f "${REPO_ROOT}/${want}" ]; then
+            prov_note flavor_patch_sha256 \
+                "$(sha256sum "${REPO_ROOT}/${want}" | cut -d' ' -f1)"
+        else
+            prov_note flavor_patch_sha256 "MISSING from this checkout"
+        fi
+    fi
+}
+
+# prov_crypto <flavor>
+#
+# The crypto library that actually computed every signature in the capture.
+#
+# ★ This is not `openssl_cli` above. libspdm builds and statically links its OWN
+# OpenSSL from a submodule; the system `openssl` binary is a different program
+# of a different version that never touches a handshake. On this host the gap is
+# 3.0.13 against 3.5.5, and it is the whole reason the post-quantum arms work at
+# all: ML-DSA, ML-KEM and SLH-DSA arrived in OpenSSL 3.5, so a reader who took
+# `openssl_cli` for the backend would conclude the captures are impossible.
+#
+# Found 2026-09-14. Before that date the library that produced every
+# post-quantum byte this project has published appeared in no manifest and no
+# pin. Recorded here rather than only in BUILD_PIN.txt so that the trees built
+# before the fix are covered too, without rebuilding them.
+prov_crypto() {
+    local flavor="${1:?prov_crypto needs a flavor}" dir ossl
+    dir="$(flavor_dir "$flavor" 2>/dev/null || true)"
+    ossl="${dir}/libspdm/os_stub/openssllib/openssl"
+
+    if [ -n "$dir" ] && [ -d "$ossl" ]; then
+        prov_note crypto_backend "openssl (vendored by libspdm, statically linked)"
+        prov_note crypto_openssl_version \
+            "$(awk -F= '/^MAJOR=/{a=$2} /^MINOR=/{b=$2} /^PATCH=/{c=$2}
+                        END {print (a == "" ? "unknown" : a"."b"."c)}' \
+                   "${ossl}/VERSION.dat" 2>/dev/null || echo unknown)"
+        prov_note crypto_openssl_commit \
+            "$(git -C "$ossl" rev-parse HEAD 2>/dev/null || echo unknown)"
+    else
+        prov_note crypto_backend \
+            "UNKNOWN — no vendored OpenSSL tree at ${ossl#"${WORK_DIR}/"}"
+    fi
 }
 
 # prov_pin <flavor> <dest-filename>
