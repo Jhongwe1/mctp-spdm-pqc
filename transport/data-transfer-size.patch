@@ -1,0 +1,131 @@
+diff --git a/spdm_emu/spdm_emu_common/key.c b/spdm_emu/spdm_emu_common/key.c
+index 2fbe636..9bcb7df 100644
+--- a/spdm_emu/spdm_emu_common/key.c
++++ b/spdm_emu/spdm_emu_common/key.c
+@@ -9,6 +9,7 @@
+ uint8_t m_use_version = 0;
+ uint8_t m_use_secured_message_version = 0;
+ bool m_decap_tdisp = false;
++uint32_t m_use_data_transfer_size = 0;
+ uint32_t m_use_requester_capability_flags =
+     (0 |
+      SPDM_GET_CAPABILITIES_REQUEST_FLAGS_CERT_CAP | /* conflict with SPDM_GET_CAPABILITIES_REQUEST_FLAGS_PUB_KEY_ID_CAP */
+diff --git a/spdm_emu/spdm_emu_common/spdm_emu.c b/spdm_emu/spdm_emu_common/spdm_emu.c
+index 7a83c99..faa6217 100644
+--- a/spdm_emu/spdm_emu_common/spdm_emu.c
++++ b/spdm_emu/spdm_emu_common/spdm_emu.c
+@@ -88,6 +88,7 @@ void print_usage(const char *name)
+     printf("   [--exe_mode SHUTDOWN|CONTINUE]\n");
+     printf("   [--exe_conn VER_ONLY|VCA|DIGEST|CERT|CHAL|MEAS|MEL|GET_CSR|SET_CERT|GET_KEY_PAIR_INFO|SET_KEY_PAIR_INFO|EP_INFO|SUPPORTED_ALGO]\n");
+     printf("   [--exe_session KEY_EX|PSK|NO_END|KEY_UPDATE|HEARTBEAT|MEAS|MEL|DIGEST|CERT|GET_CSR|SET_CERT|GET_KEY_PAIR_INFO|SET_KEY_PAIR_INFO|EP_INFO|APP]\n");
++    printf("   [--data_transfer_size <bytes>]\n");
+     printf("   [--pcap <pcap_file_name>]\n");
+     printf("   [--priv_key_mode PEM|RAW]\n");
+     printf("   [--verbose | -v]\n");
+@@ -129,6 +130,9 @@ void print_usage(const char *name)
+     printf("   [--pqc_asym] is PQC asym algorithm. By default, ML_DSA_44,ML_DSA_65,ML_DSA_87 is used.\n");
+     printf("   [--req_pqc_asym] is requester PQC asym algorithm. By default, ML_DSA_44,ML_DSA_65,ML_DSA_87 is used.\n");
+     printf("   [--kem] is KEM algorithm. By default, ML_KEM_512,ML_KEM_768,ML_KEM_1024 is used.\n");
++    printf("   [--data_transfer_size] is the DataTransferSize this endpoint advertises, in bytes.\n");
++    printf("       By default the compile-time LIBSPDM_DATA_TRANSFER_SIZE is used. It can only be\n");
++    printf("       lowered: never above the receive buffer, never below the SPDM 1.2 minimum.\n");
+     printf("   [--key_schedule] is key schedule algorithm. By default, HMAC_HASH is used.\n");
+     printf("   [--other_param] is other parameter support. By default, OPAQUE_FMT_1,MULTI_KEY_CONN is used.\n");
+     printf("           Above algorithms also support multiple flags. Please use ',' for them.\n");
+@@ -1443,6 +1447,32 @@ void process_args(char *program_name, int argc, char *argv[])
+             }
+         }
+ 
++        if (strcmp(argv[0], "--data_transfer_size") == 0) {
++            if (argc >= 2) {
++                unsigned long dts = strtoul(argv[1], NULL, 0);
++                if ((dts < SPDM_MIN_DATA_TRANSFER_SIZE_VERSION_12) ||
++                    (dts > LIBSPDM_DATA_TRANSFER_SIZE)) {
++                    printf("invalid --data_transfer_size %s"
++                           " (must be %d..%d for this build)\n",
++                           argv[1],
++                           SPDM_MIN_DATA_TRANSFER_SIZE_VERSION_12,
++                           LIBSPDM_DATA_TRANSFER_SIZE);
++                    print_usage(program_name);
++                    exit(0);
++                }
++                m_use_data_transfer_size = (uint32_t)dts;
++                printf("data_transfer_size - 0x%08x\n",
++                       m_use_data_transfer_size);
++                argc -= 2;
++                argv += 2;
++                continue;
++            } else {
++                printf("invalid --data_transfer_size\n");
++                print_usage(program_name);
++                exit(0);
++            }
++        }
++
+         if (strcmp(argv[0], "--slot_count") == 0) {
+             if (argc >= 2) {
+                 if (!get_value_from_name(
+diff --git a/spdm_emu/spdm_emu_common/spdm_emu.h b/spdm_emu/spdm_emu_common/spdm_emu.h
+index 85d1c64..f81677c 100644
+--- a/spdm_emu/spdm_emu_common/spdm_emu.h
++++ b/spdm_emu/spdm_emu_common/spdm_emu.h
+@@ -228,6 +228,33 @@ bool write_bytes(const SOCKET socket, const uint8_t *buffer,
+                                              LIBSPDM_TRANSPORT_ADDITIONAL_SIZE)
+ #define LIBSPDM_DATA_TRANSFER_SIZE LIBSPDM_RECEIVER_DATA_TRANSFER_SIZE
+ 
++/* Overrides the DataTransferSize this endpoint ADVERTISES. Zero means "use
++ * LIBSPDM_DATA_TRANSFER_SIZE", which is the unpatched behaviour. Set by
++ * --data_transfer_size.
++ *
++ * It can only be lowered, never raised: DataTransferSize is what an endpoint
++ * tells its peer it can receive in one message, and advertising more than the
++ * buffer can hold is a lie the peer acts on. */
++extern uint32_t m_use_data_transfer_size;
++
++/* The receiver buffer size to register with libspdm, which is where
++ * DataTransferSize comes from: libspdm_register_device_buffer_func subtracts
++ * the transport header and tail and keeps the remainder as the advertised
++ * value. So the way to advertise less is to register less.
++ *
++ * The overhead term is written as the difference between the two macros above
++ * rather than as LIBSPDM_TRANSPORT_ADDITIONAL_SIZE, so that it stays equal to
++ * whatever the default path subtracts even if those definitions move. It is
++ * exact for the transports that register that same overhead — MCTP and
++ * PCI_DOE. For SOCKET_TRANSPORT_TYPE_NONE, which registers zero header and
++ * tail, the advertised value comes out one overhead high; the harness reads
++ * DataTransferSize back out of the CAPABILITIES messages and fails the run on
++ * any mismatch, so this cannot pass unnoticed. */
++#define LIBSPDM_EFFECTIVE_RECEIVER_BUFFER_SIZE                       \
++    ((m_use_data_transfer_size == 0) ? LIBSPDM_RECEIVER_BUFFER_SIZE  \
++     : (m_use_data_transfer_size +                                   \
++        (LIBSPDM_RECEIVER_BUFFER_SIZE - LIBSPDM_DATA_TRANSFER_SIZE)))
++
+ #if (LIBSPDM_SENDER_BUFFER_SIZE > LIBSPDM_RECEIVER_BUFFER_SIZE)
+ #define LIBSPDM_MAX_SENDER_RECEIVER_BUFFER_SIZE LIBSPDM_SENDER_BUFFER_SIZE
+ #else
+diff --git a/spdm_emu/spdm_requester_emu/spdm_requester_spdm.c b/spdm_emu/spdm_requester_emu/spdm_requester_spdm.c
+index 3251a73..1840f82 100644
+--- a/spdm_emu/spdm_requester_emu/spdm_requester_spdm.c
++++ b/spdm_emu/spdm_requester_emu/spdm_requester_spdm.c
+@@ -222,7 +222,7 @@ void *spdm_client_init(void)
+     }
+     libspdm_register_device_buffer_func(spdm_context,
+                                         LIBSPDM_SENDER_BUFFER_SIZE,
+-                                        LIBSPDM_RECEIVER_BUFFER_SIZE,
++                                        LIBSPDM_EFFECTIVE_RECEIVER_BUFFER_SIZE,
+                                         spdm_device_acquire_sender_buffer,
+                                         spdm_device_release_sender_buffer,
+                                         spdm_device_acquire_receiver_buffer,
+diff --git a/spdm_emu/spdm_responder_emu/spdm_responder_spdm.c b/spdm_emu/spdm_responder_emu/spdm_responder_spdm.c
+index 9c9c740..73c6e6e 100644
+--- a/spdm_emu/spdm_responder_emu/spdm_responder_spdm.c
++++ b/spdm_emu/spdm_responder_emu/spdm_responder_spdm.c
+@@ -217,7 +217,7 @@ void *spdm_server_init(void)
+     }
+     libspdm_register_device_buffer_func(spdm_context,
+                                         LIBSPDM_SENDER_BUFFER_SIZE,
+-                                        LIBSPDM_RECEIVER_BUFFER_SIZE,
++                                        LIBSPDM_EFFECTIVE_RECEIVER_BUFFER_SIZE,
+                                         spdm_device_acquire_sender_buffer,
+                                         spdm_device_release_sender_buffer,
+                                         spdm_device_acquire_receiver_buffer,

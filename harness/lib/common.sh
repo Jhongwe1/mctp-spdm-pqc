@@ -80,8 +80,8 @@ jobs_default() {
 
 # ------------------------------------------------------------- flavors ------
 #
-# Two build flavors. See docs/decisions/0001-two-build-flavors.md for why this
-# project carries both.
+# Three build flavors. See docs/decisions/0001-two-build-flavors.md for why this
+# project carries the first two, and 0009 for the third.
 #
 # What is pinned is the SPDM-EMU tag, and libspdm follows that tag's submodule
 # pointer. This is the opposite of the obvious approach — pin libspdm, take
@@ -101,9 +101,51 @@ jobs_default() {
 
 flavor_emu_ref() {
     case "$1" in
-        stable) echo "3.8.0"   ;;   # released pair; the baseline for every table
-        pqc)    echo "4.0.0-rc";;   # 2026-08-04 RC; the only pair with ML-DSA/ML-KEM
-        *)      die "unknown flavor '$1' (expected: stable | pqc)" ;;
+        stable)  echo "3.8.0"   ;;  # released pair; the baseline for every table
+        pqc)     echo "4.0.0-rc";;  # 2026-08-04 RC; the only pair with ML-DSA/ML-KEM
+        pqc-dts) echo "4.0.0-rc";;  # the SAME pair as pqc — see flavor_cflags
+        *)       die "unknown flavor '$1' (expected: stable | pqc | pqc-dts)" ;;
+    esac
+}
+
+# ── the third flavor, and why it is a flavor rather than a rebuild ───────────
+#
+# DataTransferSize is the single most consequential transport parameter for
+# post-quantum SPDM: it decides whether a certificate chain arrives in one
+# CERTIFICATE response or in a chunking exchange, and chunking costs a round
+# trip per chunk. spdm-emu has no flag for it. It is
+#
+#     LIBSPDM_DATA_TRANSFER_SIZE = LIBSPDM_RECEIVER_BUFFER_SIZE - (header + tail)
+#
+# in spdm_emu/spdm_emu_common/spdm_emu.h, and libspdm derives the advertised
+# value from the buffer sizes handed to libspdm_register_device_buffer_func.
+#
+# So `pqc-dts` is the pqc pair rebuilt with larger buffers plus
+# transport/data-transfer-size.patch, which adds a `--data_transfer_size` flag
+# that LOWERS the advertised value at run time. One build then sweeps the whole
+# range instead of one build per point.
+#
+# ★ It is a separate flavor and not a rebuild of `pqc` because `pqc` is the
+# build every number already published came from. Rebuilding it with different
+# buffers would change the DataTransferSize in every future capture and quietly
+# break "clone, rebuild from the pin, get the same numbers". The sweep's
+# 4608-byte point is run on `pqc-dts` and compared against `pqc`'s capture
+# instead, which makes the patch's inertness a measurement rather than a claim.
+flavor_cflags() {
+    case "$1" in
+        # 0x8080 - 0x80 of transport header+tail = 0x8000 exactly, so the
+        # ceiling this build can advertise is a round 32768 bytes.
+        pqc-dts) echo "-DLIBSPDM_SENDER_BUFFER_SIZE=0x8080 -DLIBSPDM_RECEIVER_BUFFER_SIZE=0x8080" ;;
+        *)       echo "" ;;
+    esac
+}
+
+# Which patch from this repository a flavor's tree must carry, if any. Empty
+# means the tree is upstream's.
+flavor_patch() {
+    case "$1" in
+        pqc-dts) echo "transport/data-transfer-size.patch" ;;
+        *)       echo "" ;;
     esac
 }
 
