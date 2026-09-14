@@ -1,0 +1,323 @@
+spdm_dump version 0.1
+PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP), MaxPacketSize - 65536
+1 (1789391819) MCTP(5) REQ->RSP SPDM(10, 0x84) SPDM_GET_VERSION () 
+  SPDM Message:
+    0000: 10 84 00 00
+2 (1789391819) MCTP(5) RSP->REQ SPDM(10, 0x04) SPDM_VERSION (1.4.0.0) 
+  SPDM Message:
+    0000: 10 04 00 00 00 01 00 14
+3 (1789391819) MCTP(5) REQ->RSP SPDM(14, 0xe1) SPDM_GET_CAPABILITIES (Flags=0x8882f7c6, CTExponent=0x00, ExtFlags=0x0000, DataTransSize=0x00001200, MaxSpdmMsgSize=0x00028000) 
+  SPDM Message:
+    0000: 14 e1 00 00 00 00 00 00 c6 f7 82 88 00 12 00 00 00 80 02 00
+4 (1789391819) MCTP(5) RSP->REQ SPDM(14, 0x61) SPDM_CAPABILITIES (Flags=0xb99afbf7, CTExponent=0x00, ExtFlags=0x0000, DataTransSize=0x00001200, MaxSpdmMsgSize=0x00028000) 
+  SPDM Message:
+    0000: 14 61 00 00 00 00 00 00 f7 fb 9a b9 00 12 00 00 00 80 02 00
+5 (1789391819) MCTP(5) REQ->RSP SPDM(14, 0xe3) SPDM_NEGOTIATE_ALGORITHMS (MeasSpec=0x01(DMTF), OtherParam=0x02(OPAQUE_FMT_1), Hash=0x00000002(SHA_384), Asym=0x00000000(), PqcAsym=0x00000001(ML_DSA_44), MelSpec=0x01(DMTF), AEAD=0x0002(AES_256_GCM), ReqAsym=0x0080(ECDSA_P384), KeySchedule=0x0001(HMAC_HASH), KEM=0x0001(ML_KEM_512)) 
+  SPDM Message:
+    0000: 14 e3 04 00 30 00 01 02 00 00 00 00 02 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+    0020: 03 20 02 00 04 20 80 00 05 20 01 00 07 20 01 00
+6 (1789391819) MCTP(5) RSP->REQ SPDM(14, 0x63) SPDM_ALGORITHMS (MeasSpec=0x01(DMTF), OtherParam=0x02(OPAQUE_FMT_1), Hash=0x00000002(SHA_384), MeasHash=0x00000004(SHA_384), Asym=0x00000000(<Unknown>), PqcAsym=0x01(ML_DSA_44), MelSpec=0x01(DMTF), AEAD=0x0002(AES_256_GCM), ReqAsym=0x0080(ECDSA_P384), KeySchedule=0x0001(HMAC_HASH), KEM=0x0001(ML_KEM_512)) 
+  SPDM Message:
+    0000: 14 63 04 00 34 00 01 02 04 00 00 00 00 00 00 00 02 00 00 00 01 00 00 00 00 00 00 00 00 00 00 01
+    0020: 00 00 00 00 03 20 02 00 04 20 80 00 05 20 01 00 07 20 01 00
+7 (1789391819) MCTP(5) REQ->RSP SPDM(14, 0x81) SPDM_GET_DIGESTS () 
+  SPDM Message:
+    0000: 14 81 00 00
+8 (1789391820) MCTP(5) RSP->REQ SPDM(14, 0x01) SPDM_DIGESTS (SupportedSlotMask=0x03, ProvisionedSlotMask=0x03) 
+  SPDM Message:
+    0000: 14 01 03 03 b9 6b 31 d9 aa 52 f8 22 fd 9e 5b 54 1b 3d 61 ec 3c 8c 60 f1 38 99 80 b2 92 3d f6 c1
+    0020: b4 7f 96 a7 1b 95 67 88 27 62 63 d0 54 1c dd da d6 87 7b 14 18 29 27 0a ce a0 f8 50 0f e1 f3 3a
+    0040: db 57 06 36 3d cf 7a 96 f6 af 32 c0 23 5c ff 03 b4 88 fb 6d 4e ab 24 35 60 0e f8 56 88 e9 0e 77
+    0060: bd f1 46 4c
+9 (1789391820) MCTP(5) REQ->RSP SPDM(14, 0x82) SPDM_GET_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(), Offset=0x00000000, Length=0x00027ff0) 
+  SPDM Message:
+    0000: 14 82 80 00 00 00 00 00 00 00 00 00 f0 7f 02 00
+10 (1789391820) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x0f(LargeResponse), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 0f 00 01
+11 (1789391820) MCTP(5) REQ->RSP SPDM(14, 0x86) SPDM_CHUNK_GET (Handle=0x01, ChunkSeqNo=0x00000000) 
+  SPDM Message:
+    0000: 14 86 00 01 00 00 00 00
+12 (1789391820) MCTP(5) RSP->REQ SPDM(14, 0x06) SPDM_CHUNK_RESPONSE (Attr=0x00(), Handle=0x01, ChunkSeqNo=0x00000000, ChunkSize=0x000010f0, LargeMsgSize=0x00002ffa) 
+  SPDM Message:
+    0000: 14 06 00 01 00 00 00 00 f0 10 00 00 fa 2f 00 00 14 02 80 00 00 00 00 00 ea 2f 00 00 00 00 00 00
+    0020: ea 2f 00 00 69 28 39 84 0e c3 78 b8 1a ca 0b 85 2d 24 56 74 cb fe 22 3f 78 6b dd 56 3e 1c ce 2b
+    0040: f8 ae ac 14 fe b1 4f c6 92 41 8a 3c 9c 93 f9 dc 84 6f 0b ab 30 82 0f a5 30 82 06 1b a0 03 02 01
+    0060: 02 02 14 6d ba 2a de 10 65 5d f8 2a 71 ef 8e cc 0d 59 6f 15 a0 5b b9 30 0b 06 09 60 86 48 01 65
+    0080: 03 04 03 11 30 22 31 20 30 1e 06 03 55 04 03 0c 17 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 6d 6c
+    00a0: 64 73 61 34 34 20 63 61 30 1e 17 0d 32 35 30 34 32 33 30 38 32 39 35 31 5a 17 0d 33 35 30 34 32
+    00c0: 31 30 38 32 39 35 31 5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 44 4d 54 46 20 6c 69 62 73 70 64
+    00e0: 6d 20 6d 6c 64 73 61 34 34 20 63 61 30 82 05 32 30 0b 06 09 60 86 48 01 65 03 04 03 11 03 82 05
+    0100: 21 00 80 55 6f 8f 1d 26 f5 76 32 4d 0b 2f f3 b0 75 c3 d7 c7 2b bd b2 8b 0e 2b c3 2e 21 e8 f5 62
+    0120: 91 24 15 5e bc 62 31 29 30 0b 81 80 af d2 68 8a 59 7a f2 b1 1b 3b e7 44 10 b0 f9 e6 29 05 18 34
+    0140: b1 88 16 9e 49 63 62 33 99 41 9d 88 d6 de 3e 22 c5 e9 2b 5a a9 4a ca 66 17 31 92 47 cf dd 28 cb
+    0160: 2d 48 61 03 2d 8b 78 a0 db 55 58 ef f9 68 e9 66 58 59 34 a8 94 73 fa 06 08 cf 24 50 7e fb 81 bf
+    0180: 49 18 f9 f6 65 59 e1 0c ae 05 76 97 48 59 f5 fb c0 b1 01 18 cd f9 81 e7 e9 e4 72 b0 b8 e2 59 8d
+    01a0: 1c c7 1a bb 60 19 b9 06 8d 83 0a 7d bd be d9 d7 39 73 fd e5 9e 12 15 4a 00 1f 4e 29 57 70 ca bc
+    01c0: 46 c4 63 cd 92 c6 1b 88 43 05 1f 69 47 37 92 0a c6 3a 8f a8 df ea 03 95 d2 c8 26 d5 9c 2b 82 d5
+    01e0: ae 06 76 f8 58 92 0e 59 be 85 9a 94 6d 24 14 0d 7d dc b9 23 0b 94 e4 32 2d a9 f8 bd 61 55 55 d2
+    0200: 30 2d c2 06 73 fb bb 94 ae af 8d 97 c3 3f 88 a9 d4 06 68 0c 0c 24 20 d2 e9 c3 dd 0f 5e f2 26 f6
+    0220: 8b e6 4c 2e f4 9d d0 d4 67 fb 2c 69 dd c3 90 6a e4 00 1e 84 95 93 4b ed 89 db 08 e7 5b 7b d8 3a
+    0240: 06 3a 7e 98 c9 39 b4 63 8b 0e a6 d7 dd 85 25 32 b5 93 d6 cb 3c 15 42 bc 35 c2 63 14 cf 65 19 fa
+    0260: 2b 90 db d7 0c ff 5f 26 1f 94 dc eb 80 ad 18 5f ca 44 48 a6 6f 8e 8b 9d 70 83 c2 37 6d 41 b6 97
+    0280: 33 62 96 8d 72 64 3a cd 29 95 72 43 dc 42 a2 33 fa 90 c7 80 90 3c 30 67 e6 7c 5b 61 04 3a 63 43
+    02a0: 9f dd db 0e 44 ae c7 6f b5 f0 0e c6 65 78 8f 08 3f d7 7f a2 f3 14 22 59 38 ac a4 a3 ff 38 e5 3e
+    02c0: 7f c2 36 03 1b ef 76 ee b4 db 1a d2 21 66 de 19 70 66 c4 19 58 3b 3b 99 07 35 e3 96 85 30 6d 9c
+    02e0: 61 c5 cf 5a 10 37 59 1c 5c 0c aa ca df d0 eb 33 6d ea 64 e7 15 a9 01 c7 3f 37 c6 89 14 98 22 75
+    0300: fe b4 a4 41 3a 23 da 8b 96 f9 82 5d f6 f5 f4 d7 64 2c 18 cc 28 96 fc eb fb 64 5c 8d 9d c1 29 90
+    0320: 43 bc 36 cf 51 af 8d ee 92 05 05 88 67 ad ba 38 f4 89 8a d7 2d db ff 0a a6 b6 83 8d 54 8e ec 81
+    0340: 45 df 7b a4 82 d8 54 e9 5d db 20 44 63 e7 af fe 02 56 61 6f 19 55 53 6e f6 ee c1 36 55 78 16 9a
+    0360: 43 84 e0 0d d6 15 a5 26 9e 22 dc 90 c2 55 c3 fd 04 cb 8a 43 7d 04 11 9c d0 5f 8b d2 00 4d 91 1e
+    0380: bf 8d cc 11 16 00 59 93 02 a6 2b 55 0e d9 79 92 a5 c3 2a f5 4c f5 57 02 08 e8 d5 7c 74 d6 fd 0e
+    03a0: a8 1d 98 8b 0c 1a aa a0 78 26 6d 85 0c 59 e9 50 fd 46 35 70 e4 1a 94 a5 de 32 87 b9 d2 c5 ac 7a
+    03c0: e9 ba 36 9f 5d 13 a6 51 78 94 52 50 42 9c 53 b7 d9 c1 9e 3f b2 db c3 e0 14 9f c2 ef 9b 54 21 26
+    03e0: 98 7e bd c7 20 f3 07 13 f4 be cf 24 f9 6c 09 55 df 2a b5 da 58 d4 c9 5b 15 52 21 25 fa fe b2 0a
+    0400: ba 38 ad 55 f3 05 59 3b 34 6a 3d 78 e1 93 57 03 03 29 6e 52 21 14 0a 8d f6 75 96 9c 5a 9c 88 ab
+    0420: 01 4a bb 29 bb fe 5d 9a a6 13 f9 4f 54 20 11 13 d2 60 d8 c5 f5 49 2d 0d c3 7f eb 1c 98 2f 96 9f
+    0440: 05 50 fa 75 54 16 7e 18 cc 37 83 95 87 94 7e cc b4 4f 09 b8 cb a9 03 00 99 13 91 43 0f e2 06 94
+    0460: 47 68 e3 15 36 9e 14 a2 47 c9 9f a5 2f c6 6b f6 a1 d0 fe f2 61 ad fe 60 5a fd aa 72 fe 36 aa d5
+    0480: cf 82 6b af 2b 4b 04 5a b7 c6 e7 42 48 17 d6 39 0e 81 0a 89 84 0a 80 c9 7f 56 20 d6 46 80 5a 10
+    04a0: 1f a4 08 a3 ca 96 1d db 82 fa c7 0a 7a c2 33 43 73 05 1a 13 1c 57 f4 82 94 68 b3 06 69 82 8d dc
+    04c0: 1e 73 f4 f5 be f2 00 b0 0f 1e b7 97 67 9f 58 ea 74 e1 d2 49 5a 36 a3 ec d0 84 cd e4 7a 7e bc f2
+    04e0: 42 8d d4 ff 87 b0 9b 93 c4 6f b4 a2 e1 fa 9f 6a 7e 3a 3a 02 d9 ca 09 6a 8e ec 43 4e be 39 6c 18
+    0500: cf 1c d9 e5 6a de 28 ee a2 7a c2 0d ce a3 74 d8 1d 84 ba 5f ee d5 d8 bb 97 56 14 8b 6b 43 80 02
+    0520: 09 06 95 d0 dd 14 82 1d cb 4a 06 a0 4d 44 52 91 38 6b 60 62 0e c2 2e 23 ab f4 f2 1f cf 1a 98 02
+    0540: 02 29 12 89 6e 87 aa d1 78 66 cf b4 40 ab 93 2b ca 15 f7 c9 d9 99 c4 d3 07 95 f1 3e 7c 6d 58 86
+    0560: c0 8d 5a ec 2b e4 92 c2 02 38 c8 98 9d ba 4d 69 24 0c 3d 3a 6b b4 d2 7e 22 ae df 28 4c 3d b6 36
+    0580: b7 17 7b 3d 24 b5 e9 1f 1a b9 80 57 38 9e e3 0a ca d7 43 a5 f8 00 7c 1e d9 1e c0 fe f4 8c 90 c9
+    05a0: 9a b3 70 b2 89 a8 39 8a 8f 78 5d a2 20 d4 13 b1 2e 16 a9 b6 e2 fb fa 27 48 b5 4c 6e 56 1e aa cc
+    05c0: b0 73 a5 cb 4a a4 aa c0 c6 8d 99 80 02 7d 2e 20 c7 a6 6b a8 04 8b bd fa 63 7c 54 2b 1a 97 3c dc
+    05e0: 75 40 42 d7 5b 01 4e 93 40 29 35 b8 f9 dc 65 ed 7a 63 8f d7 14 87 cc 4f b3 de 7f 75 e2 be 86 0c
+    0600: b6 f1 d3 2c e6 27 11 2a d1 e8 b9 00 c9 3d 13 cf f8 68 2c a0 96 3b ec d0 50 7a 4c f5 df 01 25 50
+    0620: 3a 09 a3 53 30 51 30 1d 06 03 55 1d 0e 04 16 04 14 f5 d9 15 bc 9f c2 54 fe c5 53 1f f7 b3 42 c9
+    0640: bd a3 b1 87 18 30 1f 06 03 55 1d 23 04 18 30 16 80 14 f5 d9 15 bc 9f c2 54 fe c5 53 1f f7 b3 42
+    0660: c9 bd a3 b1 87 18 30 0f 06 03 55 1d 13 01 01 ff 04 05 30 03 01 01 ff 30 0b 06 09 60 86 48 01 65
+    0680: 03 04 03 11 03 82 09 75 00 74 4d 20 62 cb 10 56 fb 56 c0 81 da 87 65 04 99 05 b0 1d 88 e6 cf f3
+    06a0: e4 e1 54 e0 ca da 16 ec c2 1d 6b 13 98 0b 1f 52 e3 b0 e7 15 ac 59 75 0d f5 7e c8 79 b6 c6 79 2f
+    06c0: 2b 37 9d 9b 4c b6 e8 c3 66 eb 86 1e 76 ba 40 bb 14 0b d3 54 23 ab f1 2d 1f 5e 1e 47 a0 3f 71 3c
+    06e0: d7 35 75 a7 0a 0d df 9f 39 57 b8 f1 3b 70 12 b6 ff ee a9 81 d1 c1 64 83 93 fe b4 cd 8b bc f1 b5
+    0700: bb f3 ac 45 c9 18 7a c1 b0 90 85 a5 ae 5d 81 2b e8 a3 2a df 23 27 55 6b 87 9b 15 45 93 f1 25 88
+    0720: 4c 98 04 64 42 7e 54 df 83 81 53 db ca 9f 03 1b 92 42 cf cd e2 f0 30 a4 90 9e 18 00 c5 b6 03 b4
+    0740: 00 c7 c7 02 c1 bb 40 c3 5a 24 47 a1 bf 46 36 9d 34 9a 7f 67 9c a2 7d a2 1a 03 49 5b f3 8a 4d e0
+    0760: db 0d 2b fe fe 7f 1c 04 7a f2 4d 43 b7 1d 2a c9 e6 8b a0 46 38 4f d8 77 4c 68 08 b9 16 a8 97 8a
+    0780: ea 91 c5 70 3e ad b6 20 3f 45 cc fa 77 7a 54 ff 68 37 2a 6c 0b ed 12 4a 92 a5 20 c4 a6 ec 11 b0
+    07a0: 42 fa c7 12 4c c1 ea cd d3 d4 39 97 47 37 5c e4 c2 6a 0c 4c a1 78 bd 45 76 27 0d c3 bc 31 8b 1e
+    07c0: 56 5b 24 b4 10 92 7a c8 dc 7b ba fb b5 2a 6e 8c 5e 9a 5a f4 9d 50 e7 e2 3c c6 fa 19 32 f7 13 05
+    07e0: b0 3f 9a f5 fe 12 22 2a fa 3d 0b 33 01 96 2e 33 21 a6 27 64 00 6b 0d 33 ba a9 02 e2 83 87 fe 52
+    0800: 09 a0 b1 95 4d f5 b2 57 4e 27 f7 9e ba 92 f1 da b3 04 ea 65 da 30 0d 55 4f ba 55 ef 00 4b 01 6c
+    0820: e6 74 9b 88 78 4a 5d 84 09 63 e9 42 a4 cb 0c 1b f0 30 f6 f8 63 12 79 86 1e 01 f6 f5 79 33 f8 21
+    0840: f0 07 38 25 7f d1 70 9b 2e 22 8a 26 f7 2f b4 f9 45 9d 3e cf 8a 31 02 b8 12 cd df 65 61 1f b8 15
+    0860: b8 78 88 2b ba 3a 16 77 53 09 4a bc a0 d0 25 c5 f8 34 83 2d 6e 3c 94 2c 34 fa f5 eb 55 f2 97 88
+    0880: f9 46 de d8 c6 e9 0d ef 0b e0 a4 39 89 63 cf ea 16 23 a7 9e a3 69 d3 7a 1f 9c b2 5f 19 65 af be
+    08a0: 3b 14 47 e0 e7 1d 0e e7 94 3a da b0 82 b0 af 59 37 86 4f e5 c0 06 90 05 02 5d 0c 27 37 56 e6 3c
+    08c0: 1a 2a b3 a6 13 e2 3e 80 69 9f 7d 1b d9 05 2d d1 99 62 f2 13 11 7a ef 99 83 67 cd da 17 09 34 95
+    08e0: f8 8a 75 f9 d1 1c 84 1b d9 00 85 6f c5 cd 9b e1 32 a3 21 1e df 09 56 7a aa 45 82 22 da 94 9e 5d
+    0900: d6 9c d9 93 69 90 3b ff b8 64 c6 85 a8 fc e7 f8 3a bc 50 87 a9 bd 93 cf fb c6 12 c0 35 bc fa 85
+    0920: d8 24 3a e5 dc ae 2e 16 ba d9 32 4b 21 90 90 75 34 53 28 9e b8 3a 65 ad 3c f8 b9 b7 3e ad 10 17
+    0940: 65 e9 ae 66 3e 84 ee 02 f2 66 59 25 c1 d8 89 63 cf 8c cb 71 4b da 0c 40 f2 54 33 ed c6 05 46 ff
+    0960: 78 a4 1e 49 57 b7 84 78 35 0a 9a 28 4a 0a 29 54 45 e3 ee f4 01 24 7e 46 c4 4f ee d1 2f d6 59 e9
+    0980: fe 64 07 19 da ea 91 71 19 4f 2c 9b 5c ab cc 3d 49 09 51 8e aa ff 2e a6 53 f4 26 88 14 e9 19 12
+    09a0: 17 98 8b 53 c9 d5 6f 5d b0 03 17 98 d2 88 0c c4 c7 d1 06 80 29 c0 e4 64 75 b8 ed 3e 8d 33 85 e6
+    09c0: 40 8a 60 f5 65 e3 20 5a aa b1 15 32 a2 27 e9 e5 18 19 77 bb 31 17 7a 1c e6 e1 25 a2 fa 06 3d a3
+    09e0: b7 ff 2a a3 5c 8e 31 26 50 cc 1d d6 f8 af 1a 1c 16 f2 9f da 07 5a 89 e9 9b 4f cb c4 96 f5 7d c2
+    0a00: 67 31 74 29 af 93 2b 26 20 96 87 a1 ea e2 9e fe 0b 60 cf ec 88 72 0d a1 7b b6 c4 27 e7 9c 27 65
+    0a20: d6 93 fb fd 96 e5 a1 2f e7 9e 8d b8 51 74 91 56 eb df f4 0d 6f 17 df 97 1e 65 37 8c d9 27 f1 24
+    0a40: fc 7d 2e 3a 47 52 b4 fb e9 f6 be 4a f7 34 24 10 4b da 2a 91 ca 76 8c 1f 38 83 5d 16 14 3f 1a c2
+    0a60: a1 28 21 4c 0a 41 4b b6 c5 50 48 97 9e 53 b2 34 21 fd de 25 b5 f4 65 72 19 fc 16 9e b9 55 57 46
+    0a80: 7c 2f 21 47 ab 5e 8b d1 6d b9 37 dd 33 59 ea e9 2c 53 4a 10 c5 22 f5 e5 04 62 5b 97 1f bb f8 d8
+    0aa0: d8 77 67 99 b7 af 59 d3 b1 ca e4 9f 33 a6 ca 2c 33 0c f9 c5 78 52 22 f7 f5 3e b9 5f 74 10 aa 6e
+    0ac0: d6 78 c2 ba 1c 05 0a fc 54 03 67 ff d2 5c 0b ad 1e fd 58 90 11 b9 f8 27 8b b8 3d a5 40 09 e1 a0
+    0ae0: 7d 31 7c 65 38 60 55 00 a7 bd a6 3b 69 7a 57 30 60 a0 14 f7 01 6e 5a f8 cc 64 f1 24 55 71 23 42
+    0b00: 70 dc 06 29 84 fd 8f 73 f1 ad de 5b 91 d9 e9 a1 e5 39 b8 52 d2 4c 0c 8e a7 05 ad e5 17 1f 67 ed
+    0b20: 7f 83 7c 29 a0 9e cb d9 36 68 b0 4f b8 08 a7 07 15 d5 47 3a b7 8f dc e5 ed 89 0a aa 6e fe 18 62
+    0b40: c3 0a 0c 5f d7 9d af 85 48 77 f3 8d 16 3d 3a 26 ee 64 d3 c2 85 0b 55 1b 48 e3 51 7f 57 f6 d2 21
+    0b60: 44 33 ab 50 3a b4 cd 70 8f 62 5f aa 68 a1 57 7f 53 21 42 0b aa bf d1 5c f5 40 50 09 1c 1f c8 88
+    0b80: bf 00 40 5d d3 3a 48 c9 c7 3f e4 88 f0 d2 19 cc e9 fc c3 53 5c a2 8c d0 40 27 cf 42 5e 0d 56 f2
+    0ba0: 30 c6 fb e4 dc 4a 9d e2 64 12 07 3d 34 fe 30 6a cb 8a 85 2a f8 c0 3e af 0c 44 f1 20 82 4e e3 fa
+    0bc0: 88 18 d7 5e 6b 27 c6 21 29 9a a6 b7 15 74 45 2f 22 e5 cf 2d c7 0f b5 69 59 7a 3f 14 48 e0 21 4c
+    0be0: 43 3d f1 d9 a5 08 f4 b3 d7 f5 4d d3 ed ab 58 17 98 f6 da 5e 4d 64 74 17 d0 97 74 a6 68 2f b5 d8
+    0c00: 79 53 60 84 9a c6 54 41 7c 86 b7 5a 75 c5 61 7a 02 97 f8 30 3e 49 02 79 65 01 a5 e6 1c a5 e2 1b
+    0c20: 1d ec 57 89 d3 57 1f 54 4d 7f f0 30 57 d5 40 9d a4 c3 ef 04 9d 2f a3 06 33 83 1e 29 60 c5 5c 23
+    0c40: bb 13 f6 09 fa 79 04 13 42 03 d1 4f 20 59 ad b3 89 4c ce 6e e3 e0 a2 76 05 49 06 dc 8b 07 1f 72
+    0c60: 54 2e 5c be 46 de 0e 94 ac 3b 72 05 de 8a 2d 05 cd c0 1b 30 b6 82 74 15 f6 1e d5 32 38 40 96 f5
+    0c80: bd b0 f0 82 99 36 26 9c 79 0f 15 de 2f 89 aa fd 1c 0e ec 7f af 24 65 ac f4 ca 60 12 94 3b 6a d8
+    0ca0: 19 36 4c 54 71 f3 2e 28 6e 1c e7 96 a3 6e 42 0f cc 0f 75 75 25 9b eb 09 dc 1c de 4d 3a 4a 84 4c
+    0cc0: cf 21 0d 65 3b 0d 6b c2 90 b6 32 0f ce 9f 7f d8 ef 08 59 4b 11 2a 5c 41 39 3d 3e 15 17 8a 00 14
+    0ce0: 92 a5 60 0f 62 bc 44 b8 66 db 51 c6 06 85 1e fe ab 64 35 03 2e 98 54 6d 65 b4 12 08 aa 48 3e 5c
+    0d00: 30 7b cf d4 24 e1 f1 d6 96 c3 3e af d9 37 c4 47 ed 37 46 4b ac 52 13 c4 3c b2 71 58 f4 26 98 64
+    0d20: 73 5a 60 f3 27 bb d3 30 7c 79 99 1c 06 19 18 fc 2f f8 40 20 24 04 c9 91 1b b2 20 77 3f 5e d7 f5
+    0d40: 81 11 2e b1 05 d1 75 f9 bc 69 bf 73 42 f2 a0 57 27 62 a2 8a ad 8c 9c 96 a6 a9 91 ca 1f 74 66 6e
+    0d60: 5a 76 08 62 cd 08 03 24 79 5e 6a 85 fe 24 19 d6 3b 6e 91 32 57 d8 c6 86 58 03 ba 1d 8f c3 b4 48
+    0d80: 3d 48 39 9e 85 02 09 b7 a7 05 20 24 02 59 c3 81 5f 58 11 f2 b3 3b 43 41 b2 30 d5 08 63 d7 b4 86
+    0da0: 1a 45 3c f0 83 c7 46 09 0c 2f 33 dc 56 ba 2c bd 0a 43 5d 7b 57 cf 64 6a b4 5c b4 8c 28 46 d4 18
+    0dc0: 6c 5b a3 1b 72 fd b6 8f 28 59 22 a0 a0 05 60 35 89 39 08 fb 51 00 1d 5c c8 15 c9 4b ce 75 a3 c9
+    0de0: 85 5c 51 47 58 f9 c5 b5 96 39 9e 24 2f 20 3b b0 3f 02 c5 e2 9a 01 77 69 d1 9c 01 8a 3a ec f0 f1
+    0e00: 38 31 a7 16 1d f3 cb cd 57 1f c3 34 ae ea 54 94 fa f4 8f e8 30 c8 0e 04 42 9d f7 dc 52 97 3f ff
+    0e20: c1 4e 62 5e d9 c1 16 dc ec 4e 6d d5 9a e2 53 2d 41 dd 4e 42 b0 9a 0c 1b 1f 9e 03 ce b3 64 76 d1
+    0e40: 38 32 3a 4f e6 ef 6c 7a df 57 2b e4 f3 92 41 74 21 13 48 96 0e bc 85 86 e0 cc 87 43 b6 28 ff 7a
+    0e60: 66 33 83 58 51 f1 46 7e 91 f1 05 71 0f 1e 6a 1c ac 48 ea 29 bc 19 41 fe 96 fe 6a 44 1d 96 91 1a
+    0e80: 76 ce b8 4c 3b a0 5c 62 ed 00 fb b4 ea f2 2c 1b e2 e4 50 4c 28 89 06 f4 16 d9 7b ec 92 ad a5 3b
+    0ea0: 02 c8 87 b7 ae 83 f5 f9 b8 6b d0 3b 1a ac 8c 44 bf 38 75 2d 57 14 f9 17 53 4d b7 fe f1 bc 10 78
+    0ec0: b7 27 a4 d1 d3 45 f5 8d 95 e8 89 3c f9 23 bb f6 c8 42 c8 18 10 d0 10 18 96 33 1d 71 6f 0f d1 b9
+    0ee0: 3a 40 31 ba c8 ce 62 2c 32 66 8d 19 f1 71 47 3f 22 39 00 3e e8 5a 43 4f 63 bc b6 23 57 6d 00 40
+    0f00: 01 09 27 ab a7 26 20 ce 63 f1 aa b2 d2 4e b8 8c 87 84 43 89 ec 0d 89 ef 6a 2f 2b b9 6b 5c 45 1c
+    0f20: dd e0 bd 47 5b 2e 18 75 c8 17 41 b3 2b 4d 0e 08 bb 3f 44 01 53 00 33 8b 70 eb 09 e9 b3 06 e5 a1
+    0f40: 45 66 71 8b 6f 50 70 f5 23 a1 b7 70 82 2f 55 cd 10 e3 1c ae 80 6f d7 2b 8f 17 6d 40 e6 9a 64 10
+    0f60: 55 99 03 4b c1 95 eb 99 f1 49 1a e3 ba 5e 6c 82 c7 ee 2e 7f 3b 36 57 9f 2c e7 b5 2b f0 ab d6 a9
+    0f80: e7 2e 4b ea 87 b5 19 55 1b ea e6 76 d2 22 7b 23 df 63 c7 cb 64 41 ca d2 4b 88 82 bf 58 bd ad d4
+    0fa0: 48 1f cd 42 94 66 c7 16 84 00 03 08 1f 3d 40 59 65 77 95 99 a4 ae c0 d6 ee fa 3b 49 71 73 9f c1
+    0fc0: ee fb 12 36 59 83 90 93 a8 ad c6 c9 cc d5 de e9 ee f1 ff 24 41 73 75 79 7e 84 a7 ba c0 c6 d7 dd
+    0fe0: eb 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 11 19 2a 38 30 82 0f
+    1000: cd 30 82 06 43 a0 03 02 01 02 02 01 01 30 0b 06 09 60 86 48 01 65 03 04 03 11 30 22 31 20 30 1e
+    1020: 06 03 55 04 03 0c 17 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 6d 6c 64 73 61 34 34 20 63 61 30 1e
+    1040: 17 0d 32 35 30 34 32 33 30 38 32 39 35 31 5a 17 0d 33 35 30 34 32 31 30 38 32 39 35 31 5a 30 31
+    1060: 31 2f 30 2d 06 03 55 04 03 0c 26 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 6d 6c 64 73 61 34 34 20
+    1080: 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30 82 05 32 30 0b 06 09 60 86 48 01 65 03 04
+    10a0: 03 11 03 82 05 21 00 fb 22 e5 4f 2d ba 97 e3 2c 5b e4 77 72 ef da ee 47 18 6b ea 02 c9 33 ae 22
+    10c0: e3 22 99 47 c2 19 e3 eb 95 b5 8f 8b 3c 8f ac a6 6a af f6 67 12 d0 bb 50 65 92 2b aa b7 c5 d8 d3
+    10e0: b6 e8 f0 88 ff f0 41 10 a5 97 74 23 00 6a a2 05 af 78 53 19 60 ae 87 9a 64 0d dc f1 cd 01 94 4c
+13 (1789391820) MCTP(5) REQ->RSP SPDM(14, 0x86) SPDM_CHUNK_GET (Handle=0x01, ChunkSeqNo=0x00000001) 
+  SPDM Message:
+    0000: 14 86 00 01 01 00 00 00
+14 (1789391820) MCTP(5) RSP->REQ SPDM(14, 0x06) SPDM_CHUNK_RESPONSE (Attr=0x00(), Handle=0x01, ChunkSeqNo=0x00000001, ChunkSize=0x000010f4) 
+  SPDM Message:
+    0000: 14 06 00 01 01 00 00 00 f4 10 00 00 92 d5 bd 43 71 25 82 86 1c a3 ee c8 8e c5 81 f4 c4 bf c3 c3
+    0020: 1f 57 9c 22 4b 65 b8 78 cd ca a5 5c 55 b0 7c 39 eb 20 f3 15 1b 78 34 04 46 9d f6 c2 92 74 c8 49
+    0040: 89 b9 61 30 7a b0 7d dd 36 3b 20 5f e2 aa 5a 0f 22 4f 40 6b 8c 5e 12 34 b8 5c 09 17 18 a1 86 14
+    0060: a4 37 c9 b3 1e 7a be 0e b0 29 63 23 8a 7e bc 4c bd 2b 0e 4b d2 bd 1d 48 0b 48 e3 23 ce 54 11 c8
+    0080: b1 cf 73 ea b6 7b 8f 92 dd c8 f6 6e 65 dd 1e 49 23 aa 58 7e d8 43 55 b7 f1 38 e8 a5 87 7f 30 63
+    00a0: 20 34 81 8b 3a de 8e 8f 2e 56 32 fb 1c eb 69 b3 8c 7e 71 78 99 96 c8 11 27 f5 ef b6 f1 90 3e 4b
+    00c0: 3d 1e 4f 35 26 d5 cd 5b 5e 38 d6 98 6f d0 88 6a 46 0b a3 e4 1a 47 60 09 68 20 84 bf 31 b0 ae cf
+    00e0: 26 d5 1d c0 34 6a 87 df 1d d7 26 e1 e5 c2 35 4c 4d 35 53 23 ae 4b f3 5a 8c b1 66 9d 5e 35 90 d7
+    0100: ef 68 68 21 2b fe ac 34 cf cc fe 11 ba 8b 3a 9d 56 e1 0f d0 a4 34 b3 bc b1 4e 02 62 a5 31 6e d7
+    0120: 7a 40 51 96 f7 88 53 cd 04 ca 1e d8 25 39 e0 a8 05 2d a1 ef 43 5b 3a 20 a0 88 7c 2c 92 0b 34 85
+    0140: 6d 98 e1 fe 16 2d 6f 0d 3d 29 bc 3b e2 35 37 33 31 18 9e 9b e5 58 2c 4f 63 fe bf c1 3f 82 f8 e6
+    0160: d9 a6 fb 67 e2 3a 7a a4 c8 e9 98 f4 b4 79 c1 21 3e a7 24 d1 ab 0f 7b e5 e4 31 43 63 5b 82 82 c6
+    0180: ed ab 86 c3 dc a5 7a 67 4c 71 ae 22 4e cb 0c b3 83 71 77 61 e8 5b d6 c8 73 0e 12 59 cc f2 93 5a
+    01a0: b2 13 ae 7e 22 b3 69 1b 43 5d d5 f6 c4 2f d8 b6 94 be 3d b8 02 30 8e 16 99 fb b7 17 57 eb ce c4
+    01c0: 55 b3 8e 6e 5f 61 6d ea d3 5b a4 f6 19 f2 8f fa c3 09 9e e4 0d 89 8f 79 03 f6 e1 3f b2 dd a4 08
+    01e0: 67 56 58 88 f2 f0 16 cc 24 22 63 6c 0d fc b6 83 93 02 1b 2d 7b bf 76 2b 68 f8 68 db 60 1b b5 2c
+    0200: 04 d4 21 fc d0 cd 0a bc 11 94 b4 e0 96 89 e1 36 a3 49 b4 eb 22 f2 78 50 5d 9f ca 1b 3e ec 81 d5
+    0220: 18 33 c8 2f 2e ad f1 c4 85 e9 6f 84 ec 18 02 19 fc ec 00 d7 9b 61 12 27 de 51 3c 55 0e b1 b4 51
+    0240: 98 2b 7a 5f af 0f d2 38 83 2a 4a 2a 61 39 47 c2 c4 d5 6f 8e 74 7e e5 64 86 e9 46 80 68 d0 b3 db
+    0260: 2f c1 d1 94 d6 06 d4 1f 5e 44 04 2a f8 de fd c5 97 d8 6a e2 35 79 40 3a 9f 88 8a 33 63 b0 fb 4b
+    0280: 91 a6 03 be 16 f7 09 72 a5 f7 83 73 41 9b c5 45 78 c2 92 93 87 c2 cd 31 77 7d 1f 4e 65 83 c0 62
+    02a0: cf 6a 19 fa b9 8c 31 62 6c f9 cd 28 92 9e 80 db 33 4c fc 7f 05 8a 8e 57 5b c5 ae 3d 5a 8a ed a7
+    02c0: f4 c8 0e ae 12 33 83 da bc 40 2d d4 ff f9 f8 75 34 b5 b5 8a d9 c1 1a 5f e8 e3 34 af 0b dd 31 74
+    02e0: 27 15 6a 9d 8b 26 79 c5 a8 ae b7 48 41 26 08 75 e6 fc 3f 4a 32 9c 76 1a 71 b2 57 74 81 ae 4c 26
+    0300: 78 6b bc 2a 34 3d 13 4f e4 d1 9f 9b b5 36 15 f5 63 7a 40 49 c0 ae 3a aa 15 dd d7 8a 8e a7 73 2c
+    0320: f7 31 6b 3a c3 39 cf e2 c4 4a 25 ad 73 b0 c8 18 fc db dc 8a ae 71 cc 97 6f a7 25 46 c3 f3 27 27
+    0340: cd 35 9d a2 33 93 dc 60 07 0e fe 6e ac 08 f4 b5 07 2a d2 59 3f 9c c6 e2 5f 3b ab 63 03 4f ae f6
+    0360: 79 85 8f c8 0d cc 04 96 37 97 aa b9 20 43 dc a0 65 ef 3a bb e4 12 d0 2c bb 08 6f 12 33 59 d4 6d
+    0380: 17 c5 e4 86 0e 34 64 c7 76 f1 71 54 65 00 d3 b8 3b 51 0e 0d 67 ef cb 68 a4 ca 5e e4 96 c1 53 a5
+    03a0: 5b 70 fc 86 25 24 be 0f bb fe ae 09 e8 98 2b 21 e3 b5 3f 36 85 63 e8 a6 fd 7d 6c b4 6c 09 03 ce
+    03c0: 20 fa 3a f1 b4 6e 90 84 bc a1 6d 53 33 54 d6 58 5f de d1 c1 eb c6 e4 65 12 77 d1 b7 01 ee 6c 37
+    03e0: 07 b5 a4 e6 e7 32 eb 00 13 d5 78 0a 13 f2 c4 63 86 42 c0 e1 c2 93 66 c7 ae fa 25 23 71 d1 39 62
+    0400: 0c 26 09 3a ed 3c 49 af 0f c3 b8 dd 6f 12 42 9f e7 da ed 4b 2b e6 61 91 8f 46 53 6e 05 0b f4 cb
+    0420: 18 39 7b d0 84 44 ef 29 aa 04 eb 52 1b 83 8b 5b 07 d6 2a 94 9c ec 1b 67 47 39 22 9a ab ce aa da
+    0440: 2d ca 92 7c 6c 5c 6b 69 ec 88 1b dc 46 3a 94 0c 79 6b d2 19 c7 64 3b c9 93 9b 74 49 33 b4 e0 d3
+    0460: 86 25 ea 8c d3 51 26 25 4a a1 15 8d 6e 27 b7 64 7c 59 71 ab 45 c4 0e 00 e1 43 03 cc d3 96 23 2e
+    0480: e6 ba b0 31 fa 47 bb f2 61 c2 50 f6 39 bb be e3 44 e1 63 e3 5f ac 20 93 19 71 3a b3 88 c3 dc c4
+    04a0: 92 9d ba 5e 1d 7a 2c a4 8e 6a 01 02 a0 57 9f e9 ac e6 81 de 7e 62 ca d6 61 99 a8 63 39 bd ab e7
+    04c0: e1 88 c2 2d 93 30 b1 1a 7b 1c bb bf d5 0c 3b cf 36 9d 86 a3 7f 30 7d 30 0c 06 03 55 1d 13 04 05
+    04e0: 30 03 01 01 ff 30 0b 06 03 55 1d 0f 04 04 03 02 01 fe 30 1d 06 03 55 1d 0e 04 16 04 14 ec 39 ea
+    0500: 34 3a cc 1e 04 9f 54 8a 76 cf 7f 29 88 10 5d 99 eb 30 20 06 03 55 1d 25 01 01 ff 04 16 30 14 06
+    0520: 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03 02 30 1f 06 03 55 1d 23 04 18 30 16 80 14
+    0540: f5 d9 15 bc 9f c2 54 fe c5 53 1f f7 b3 42 c9 bd a3 b1 87 18 30 0b 06 09 60 86 48 01 65 03 04 03
+    0560: 11 03 82 09 75 00 63 ab c8 cc 21 fe bc 48 49 ef 5c 4d 08 48 ac 8b 44 7e 25 85 15 06 2a ee 7f 8e
+    0580: cf 4c 93 1a b9 01 65 c4 c1 07 fb 37 65 01 c3 f9 4f 61 42 fa dc 72 46 b9 5e 61 76 0f 56 7a bf 06
+    05a0: a1 b1 14 13 dd 94 a4 f3 6f 6d 21 55 c6 c4 58 31 32 55 20 a3 8b b3 b0 33 e1 c1 d0 34 22 37 26 7d
+    05c0: db 73 40 cb 70 00 a6 cc ba 76 d7 3d c8 4b 03 e1 a7 cf 46 72 8d 7e e0 0e 60 7e db 09 5a 6c 4e 2f
+    05e0: c4 e7 e0 b1 17 2a 5c 49 06 7d 0d 73 e0 ea d3 b6 20 70 5e f6 dc 0a c6 90 f8 63 99 c4 5f 2c 87 bf
+    0600: 81 f3 d5 08 76 4f ca df 4b 14 b6 c9 e8 62 bc 15 20 66 13 3c f5 3f 77 18 e1 bd 95 df fb c0 04 0c
+    0620: 81 9f 77 51 30 f2 02 4a 08 c4 03 74 0b 25 d7 e1 64 88 45 f2 b0 e4 b4 f3 10 c5 98 31 89 4d 4f e7
+    0640: da 1a 86 70 2d ee f6 d6 e9 e1 95 74 cb b7 15 43 82 25 c6 5d aa a7 c8 cd 05 a1 fa 85 31 6a 6b 06
+    0660: cd 3b b1 82 09 f7 c0 8e 9f fe a2 e4 bc 67 79 37 dc 6f c2 d6 40 c5 35 6a 18 33 5e 2b 43 9a 21 89
+    0680: 4c e4 2d 4c ce bd 5b 90 a8 2b 56 67 d0 55 96 f6 ea 41 41 47 3a 13 fe 42 ea b1 f4 57 87 92 82 80
+    06a0: 87 ce 43 ca cf 8f 8b 63 f1 f0 23 29 66 c5 c5 50 70 fd 08 8d ab d5 e1 aa 1e bb 9c 08 2c 6d 29 af
+    06c0: e6 03 8f 77 8c d8 6c 78 f1 3f 6e bd 28 bf 98 84 ac ac d8 6f 9d 85 11 ff 6b de 0d 16 78 47 3e ae
+    06e0: 1a 8c c4 0e 1e ac d8 ad 51 7e f3 9c df fd 94 b9 e6 86 ce 90 e2 e8 6f 40 b3 16 f7 34 64 c3 b9 9f
+    0700: a4 af 00 fb 30 f4 70 37 42 c8 45 1b ba 5d 04 ae f7 53 7a 8c 4f c1 a6 88 c3 f0 11 7f 1f 56 95 e4
+    0720: ef 3e 9d 82 11 db df da 2a db 48 4e 49 a9 95 04 fd 0f 6b 82 89 42 55 30 d7 c9 6e b0 f2 31 27 1d
+    0740: b3 b6 9d 50 37 b3 53 6e fc e4 45 13 ca b4 c7 25 a9 54 ba f3 da f6 13 f5 7c a0 0e 07 a9 0f d1 81
+    0760: db ba f4 3e ae c9 6e 15 03 03 25 89 73 c7 95 18 6c f8 3b 9b 2b 41 bf fa 41 cd 04 68 80 af 72 1e
+    0780: 26 5b 5f 9d 4c 71 a7 89 bc 8c 20 db b6 df 17 8b 97 ca aa e9 e0 b5 cf 2b b3 6a 5b b8 fe c6 bd b3
+    07a0: 5e a1 21 ac e3 7d 53 ff 56 5f ad ee 86 60 86 92 a1 a7 d7 87 71 12 62 25 a5 a0 4f 3a e6 76 98 2f
+    07c0: 05 10 1e 0b 6c b6 47 83 c4 9b 1d f0 ee 1e 27 12 d8 4a b2 50 eb a4 db a4 cc e0 9c e1 1f d8 32 14
+    07e0: 1d 36 54 d9 61 6b a7 c6 00 5c b1 60 a3 05 c9 fa 5f 70 13 b9 52 2b 3d 26 1e a3 e8 13 37 f0 76 3e
+    0800: 5a d3 2e d0 bf 73 46 db 75 08 ee c9 32 ad ab 01 7e cc 0c 43 39 58 08 a4 83 bb 8d f0 e5 21 a0 57
+    0820: ea da 45 c3 aa ec 1e 89 aa 31 47 74 4d e8 fb 99 57 3e ea 71 bb 22 94 c2 3b 57 49 05 b0 ea f5 ee
+    0840: 0b ed 4f ef b6 9a dd 65 54 b1 22 14 83 fc ea 27 e9 04 b5 28 f1 d8 ba 98 cb e9 d9 4b af d8 74 a1
+    0860: c8 c7 c7 11 6c 13 7a 2b 3e 33 30 45 62 c1 04 a9 b8 22 19 2b b5 d6 0d 99 9e 08 61 15 f7 f2 5d d7
+    0880: 4f e3 b6 bf 4e d4 56 ae 13 ed df 7e 9f 90 08 47 90 d4 fd 72 b5 44 e0 0c b2 79 12 e6 5a a3 de 5e
+    08a0: 15 39 a3 ad 0e 47 2c ce 44 82 ee 56 cb 50 84 f0 c1 3c f4 0b 77 5d 55 80 b2 60 80 5e 4a bb 9f 3c
+    08c0: 9f 5e 31 bd 8c ec 09 c5 f8 59 43 0d 5d 73 a1 91 fe 31 6e f5 78 d2 92 e2 8b 1a b2 3d 06 d9 6e 19
+    08e0: 7d ef de 21 5a 85 e7 98 a1 8f 00 d3 48 80 15 2b 12 03 3d 4d f5 c5 b3 28 85 06 87 ef ab ef 80 43
+    0900: ea 1e 38 a2 ae 11 05 7d 88 03 d1 5c d2 77 0f 11 f9 02 dc b5 9f 04 0f b5 a3 c3 9f 9b d6 9a b3 e2
+    0920: b8 30 19 8e cc 42 14 1e 6e ef 56 4a 3c 82 8c cb 22 6f 4e 5c 7e d5 2e 0c 5f 88 45 4a 3d 38 7f 47
+    0940: 58 7c 7d d3 60 ec 9e f7 05 d0 ee 9c 8f 27 b9 ab 2e 77 18 22 cf aa 37 da bd 0d cc bc ac a7 42 53
+    0960: 42 82 7c 81 da 31 67 8f cc a2 12 92 1e ee 1a 0f 43 f3 32 e9 13 cb 7e 26 3f 4e 2c 4c 04 3a 3e 33
+    0980: f8 a4 9b 51 be 50 7b 06 82 78 bf c1 b2 d9 8d b1 3a cd 98 e0 ee ec 70 8b 80 d3 65 7a 5e 8e 6a a6
+    09a0: 3b 6b 9e a8 25 1d 77 99 ca b1 25 cb af 60 bd bd fe 1b 56 36 bf b1 89 a1 b6 91 60 16 b9 1e ca 36
+    09c0: 69 c9 c4 9e 65 3c af 1d 46 5d 78 2f 39 75 a9 dc 25 00 e7 cf b0 de f7 76 8b 4a ca ba fd e3 95 dc
+    09e0: 24 1a 55 6d 77 1a 46 2b ea 33 f9 e8 39 2f ce 5d 4f 90 a0 a9 3d 3a 72 68 66 d8 51 d0 63 20 12 de
+    0a00: 62 cc 24 86 f3 c8 3c 16 e9 30 f7 69 ae e3 b6 71 a4 cd 94 87 93 9c 72 38 90 22 58 9b 2d 53 71 04
+    0a20: ea 47 eb 60 68 4a 25 d5 78 1b ce 8c 48 b1 18 24 e2 87 ec 59 95 bb f3 41 1a 3a 38 d6 09 0d f5 44
+    0a40: a7 b5 8c ec 5b 62 b7 22 ae f3 b6 88 20 34 55 33 64 27 b5 f9 06 e4 09 a7 cc c7 98 12 7d c1 b9 1a
+    0a60: d8 af e2 3b 76 bf 83 3f 0e 2f e2 94 27 b6 86 68 a6 45 5a 9d 2e c1 25 25 c1 09 3b 5a 47 c1 85 4f
+    0a80: 5d b9 e8 e8 01 29 eb cf 46 57 61 bd 29 06 a5 af 89 05 0d dc 3f 04 14 6f 12 87 f3 e7 06 a7 55 4a
+    0aa0: e9 58 65 c1 25 1a a7 98 be dd 8f 34 97 44 96 4d 29 63 b3 2d 65 ee cd 5d 2d 1d 44 56 3b dd 24 5b
+    0ac0: 2f 22 50 af f4 91 ac 47 20 76 00 9a a7 42 6d 9d 6b ae f1 00 75 d8 95 10 21 71 52 23 4a 57 ca 2d
+    0ae0: b6 e8 fd 70 16 8c 90 de 83 c6 2f c0 6f a4 f8 d7 4e c5 14 dc 99 41 d7 3d a6 d6 a0 69 47 3a 2a 08
+    0b00: f6 f4 09 3e 4a 98 98 be 64 29 47 da 3c 95 ed e3 fd ec 74 30 ca a9 bc c5 ac 2d 00 03 e8 02 87 cc
+    0b20: c6 16 22 d1 9c ce c2 cf 7d cc 29 5b f6 de b5 aa a0 3e 59 98 3c ed 8b fb 39 a4 fb 87 1c d4 25 05
+    0b40: f0 21 72 4c b3 11 db 87 86 4b 08 51 4f c7 6d 39 0f 79 93 dd 6c 30 5e a9 b1 7f b7 71 b0 a8 57 1e
+    0b60: ab c3 2d 6e 06 7c 23 4a 6e be e7 b1 94 60 7e 77 35 bf b2 e7 e8 37 bd 3f 36 77 0f c7 99 0d 7b ff
+    0b80: 5b c9 88 b4 05 79 a1 50 f5 9a 10 59 ac 7a 1d 24 3d c0 3b ef 46 a6 c1 0c 4d 56 df 14 6f 17 b7 0b
+    0ba0: eb 26 59 fe b7 70 58 fa 5b be c3 06 7e f5 7b a5 d0 f0 09 cd 29 0b a5 fb d3 84 03 3c 66 84 a0 2f
+    0bc0: d4 60 56 4d bf 3f 58 ca 46 1c 73 93 1d 5c 0d c4 bc c8 75 1c 88 1e f7 83 d6 7a 44 18 2c 49 e8 7a
+    0be0: 42 2a aa ea f8 12 10 6d a5 ea 56 7e 4f 0b 36 1c d1 d2 fc b1 79 23 a4 59 54 3a b0 a9 8a 75 3e 01
+    0c00: 5b e5 3f 6d 0a 62 7a 2e 39 cc 80 70 c2 80 80 3c 9e 07 62 c9 76 8d 50 f2 b7 c3 3b c8 69 6d 51 00
+    0c20: 1e ca b3 39 d7 76 1e 0b 47 28 a0 cd d5 ed f4 93 0d e8 8b a8 a5 33 54 c2 6e 1c c3 5a 27 09 6a 12
+    0c40: 7d 1e 16 89 45 47 2e 5d 28 e0 e7 29 b2 50 49 4a d8 bb 1e 63 e5 d7 42 bc 60 6d 0a 8d 07 f1 e2 bb
+    0c60: 06 1e 8b cf 13 1e 6f c9 9e f9 ca 65 ac 58 5a ee 27 5f 92 6b 11 4e 5c 28 43 28 d7 9d 8d fa f5 f5
+    0c80: fc d7 74 d8 f8 b7 a5 a9 b2 31 48 cb 07 b7 75 69 37 52 59 ad dd dc 6d b9 f5 8a 89 31 52 81 44 a7
+    0ca0: 3a e6 5e 86 39 17 bc 25 9b b4 07 4b ef 42 16 7f e4 80 a5 ad 21 9b e4 85 e0 7b 52 18 37 34 82 9a
+    0cc0: 8a c7 9f fc 35 1b b5 7d 60 cc 98 b2 67 48 09 d2 6e 94 3c 56 99 59 e4 b7 24 6b 2c f0 3d da 01 48
+    0ce0: c2 f4 9a 58 fa 07 d4 41 a0 61 9f 55 d1 02 1a 3a 4e 7c 58 06 4b 66 d2 54 f3 b8 96 d5 92 e1 95 65
+    0d00: fc 60 74 25 22 08 64 72 f7 1f 8b c4 81 e1 63 34 e6 32 4e 3f 65 c0 77 b8 7a 7c 70 29 b1 c8 d0 cc
+    0d20: 3d bf 99 4d b9 48 3a 36 8a 64 d7 70 39 c4 ad 1e 9b 1b d5 ac 13 5a fd dd 31 a6 a8 98 09 40 89 ec
+    0d40: 82 35 55 90 92 96 5c f2 a9 ef 7a 69 3f fd 12 2c 80 44 fa 62 ec c6 c5 2d bf 1b f2 17 88 d6 63 be
+    0d60: c1 84 9d 11 24 1e 21 c8 6a ee fe 75 bc 14 8b b1 47 f2 07 49 57 b2 65 38 c8 e3 8c c5 9c a3 2c 77
+    0d80: 2a f7 46 f6 2b 56 b9 cf 19 58 30 e4 55 81 85 d6 b2 ce 10 e0 b8 a6 c1 aa 31 37 ed 4c 27 21 d4 c1
+    0da0: 70 ee 72 02 41 7d d1 a5 bc 0e 01 6f ca 23 24 a4 09 2c 80 3b 58 49 8e 1f c7 f0 b2 1a d5 da fe 40
+    0dc0: 41 2b bc 6c fb b6 df d1 ed 25 c8 13 cc 79 29 d7 94 79 5b 85 7d bc ab 6c d6 f6 da e3 0c e4 f8 b9
+    0de0: e4 32 96 d6 28 d8 9c f4 3f 55 3c 37 7d da 01 6d 84 0d 6d d3 91 e8 77 ba 94 b0 47 e4 9b 76 ca 5b
+    0e00: 86 b5 34 a8 84 00 e1 6f 8a 3f c6 50 c1 6b 77 28 6f ef 61 b5 74 43 48 c4 b5 56 0c 1c 04 ed 5b a9
+    0e20: db 66 62 26 7b 56 8b 28 7e f0 5d 28 32 fa 12 d9 af 93 64 91 ec 42 c5 2f ce 6a c5 1a b8 95 74 a8
+    0e40: 6e 94 ce 71 40 1d 51 ce f5 da 3b 1d d5 a5 a0 ea 0b 73 29 f4 95 e5 40 a4 32 49 7b a8 9c bf d4 26
+    0e60: b0 b7 6c 9e 57 8e 54 ce 85 4b 75 6f 2a 88 7e 29 75 d3 38 27 7e a2 b2 9f 70 d9 2b 13 6a 44 66 3d
+    0e80: a2 b0 00 e9 24 cc 0d 2d 2e 35 4b 50 52 66 73 88 8c 8f a7 ae b2 bf c0 c1 d1 d6 dd ec 0c 1a 33 36
+    0ea0: 39 48 4c 65 69 72 7c 89 8a 94 95 a1 a8 ad b0 b3 c5 d9 e7 22 27 39 63 6f 70 74 7b 8b 8f a0 ab bc
+    0ec0: bf c1 ce df e8 e9 eb ef fd 0d 1a 35 36 90 95 a3 f4 fa 00 00 00 00 16 2d 43 4c 30 82 10 38 30 82
+    0ee0: 06 ae a0 03 02 01 02 02 01 03 30 0b 06 09 60 86 48 01 65 03 04 03 11 30 31 31 2f 30 2d 06 03 55
+    0f00: 04 03 0c 26 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 6d 6c 64 73 61 34 34 20 69 6e 74 65 72 6d 65
+    0f20: 64 69 61 74 65 20 63 65 72 74 30 1e 17 0d 32 35 30 34 32 33 30 38 32 39 35 31 5a 17 0d 33 35 30
+    0f40: 34 32 31 30 38 32 39 35 31 5a 30 2e 31 2c 30 2a 06 03 55 04 03 0c 23 44 4d 54 46 20 6c 69 62 73
+    0f60: 70 64 6d 20 6d 6c 64 73 61 34 34 20 72 65 73 70 6f 6e 64 65 72 20 63 65 72 74 30 82 05 32 30 0b
+    0f80: 06 09 60 86 48 01 65 03 04 03 11 03 82 05 21 00 55 33 e2 f7 b5 ef 3b 71 e8 f5 bd 71 96 ac 5e 29
+    0fa0: 34 2d e1 e6 c3 5d a2 c3 81 32 57 85 e1 a1 b8 8e 38 cf 69 ff 1e 38 9f e4 e4 f5 ab 2e b6 bd 80 63
+    0fc0: 27 19 d0 ca db c6 89 9e 2b a6 f1 5b 2a d9 1d e0 aa fb 8d 0a e2 10 58 c6 f8 62 00 71 87 42 6f 1e
+    0fe0: 84 00 37 62 84 82 80 57 79 18 9d f6 e4 88 52 a5 97 aa 8a e2 b3 3c 71 e2 2e 25 82 ea 67 bc 99 4a
+    1000: b6 c9 b7 66 4b 81 b8 37 a5 66 ba a2 0e 96 77 f7 23 a9 ab 2c a5 7f 1f 97 3c d8 98 c1 cc ca 32 78
+    1020: 21 e3 4a 3e fd 82 97 76 6e b0 c8 ef f1 18 3d 3d 92 63 1b 62 fe ab 16 1a 75 b2 2f 17 64 d1 47 8a
+    1040: 46 50 21 ba fb c5 9d e9 f9 cb 95 75 a7 7a 46 c6 6d 9c 11 07 d0 02 7c 5d 19 2b 2e 3f 39 02 7c 09
+    1060: bc d8 57 0c 9d 78 c6 d5 64 f4 81 dc 82 65 66 77 a2 77 26 ef 47 0d 95 48 51 5a 13 5f 2e ac 1f 89
+    1080: 24 75 0c ef f8 48 fd 92 fe c9 7f 50 be 1d 29 b7 6e f1 8e 42 34 c5 6a e8 77 6c 40 2c 70 a0 9c 82
+    10a0: 0e 65 24 79 7f 77 3c 36 88 51 3f 18 c6 77 3c b1 bb dd 2d bb 0e 4e 17 f5 1f 90 2d 9b 8b 63 d5 24
+    10c0: 9f 95 ed f9 b1 e4 b9 2c f1 f3 3a c8 a6 28 f7 42 3d d5 8e 72 ce 94 4a 5b 34 e9 51 8b 28 74 49 55
+    10e0: d2 1d a9 a3 a7 80 d4 45 75 ec 06 ac 6f a7 ab 27 5f 2d e3 f8 15 ea 21 16 a7 a9 26 0b 61 b4 c3 11
+15 (1789391820) MCTP(5) REQ->RSP SPDM(14, 0x86) SPDM_CHUNK_GET (Handle=0x01, ChunkSeqNo=0x00000002) 
+  SPDM Message:
+    0000: 14 86 00 01 02 00 00 00
+16 (1789391820) MCTP(5) RSP->REQ SPDM(14, 0x06) SPDM_CHUNK_RESPONSE (Attr=0x01(LastChunk), Handle=0x01, ChunkSeqNo=0x00000002, ChunkSize=0x00000e16) SPDM(14, 0x02) SPDM_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(NONE), PortLen=0x00002fea, RemLen=0x00000000) SPDM cert_chain is too larger. Please increase LIBSPDM_MAX_CERT_CHAIN_SIZE and rebuild.

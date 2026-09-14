@@ -1,0 +1,26 @@
+ver - 0x14
+sec_ver - 0x12
+hash - 0x00000002
+meas_hash - 0x00000004
+aead - 0x0002
+other_param - 0x0002
+key_schedule - 0x0001
+meas_att - 0x00
+meas_sum - 0xff
+slot_count - 0x01
+slot_id - 0x00
+exe_conn - 0x0000001e
+exe_session - 0x00000004
+basic_mut_auth - 0x00
+mut_auth - 0x00
+req_asym - 0x0080
+req_pqc_asym - 0x00000000
+meas_op - 0xff
+exe_conn - 0x00000000
+asym - 0x00000000
+dhe - 0x0000
+pqc_asym - 0x00000004
+kem - 0x00000004
+pqc_first - 0x01
+connect success!
+Client stopped

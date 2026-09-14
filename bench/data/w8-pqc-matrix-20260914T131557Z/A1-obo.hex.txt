@@ -1,0 +1,1931 @@
+spdm_dump version 0.1
+PcapFile: Magic - 'a1b2c3d4', version2.4, DataLink - 291 (MCTP), MaxPacketSize - 65536
+1 (1789391791) MCTP(5) REQ->RSP SPDM(10, 0x84) SPDM_GET_VERSION () 
+  SPDM Message:
+    0000: 10 84 00 00
+2 (1789391791) MCTP(5) RSP->REQ SPDM(10, 0x04) SPDM_VERSION (1.4.0.0) 
+  SPDM Message:
+    0000: 10 04 00 00 00 01 00 14
+3 (1789391791) MCTP(5) REQ->RSP SPDM(14, 0xe1) SPDM_GET_CAPABILITIES (Flags=0x8882f7c6, CTExponent=0x00, ExtFlags=0x0000, DataTransSize=0x00001200, MaxSpdmMsgSize=0x00028000) 
+  SPDM Message:
+    0000: 14 e1 00 00 00 00 00 00 c6 f7 82 88 00 12 00 00 00 80 02 00
+4 (1789391791) MCTP(5) RSP->REQ SPDM(14, 0x61) SPDM_CAPABILITIES (Flags=0xb99afbf7, CTExponent=0x00, ExtFlags=0x0000, DataTransSize=0x00001200, MaxSpdmMsgSize=0x00028000) 
+  SPDM Message:
+    0000: 14 61 00 00 00 00 00 00 f7 fb 9a b9 00 12 00 00 00 80 02 00
+5 (1789391791) MCTP(5) REQ->RSP SPDM(14, 0xe3) SPDM_NEGOTIATE_ALGORITHMS (MeasSpec=0x01(DMTF), OtherParam=0x02(OPAQUE_FMT_1), Hash=0x00000002(SHA_384), Asym=0x00000100(ECDSA_P521), PqcAsym=0x00000000(), MelSpec=0x01(DMTF), DHE=0x0020(SECP_521_R1), AEAD=0x0002(AES_256_GCM), ReqAsym=0x0080(ECDSA_P384), KeySchedule=0x0001(HMAC_HASH)) 
+  SPDM Message:
+    0000: 14 e3 04 00 30 00 01 02 00 01 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+    0020: 02 20 20 00 03 20 02 00 04 20 80 00 05 20 01 00
+6 (1789391791) MCTP(5) RSP->REQ SPDM(14, 0x63) SPDM_ALGORITHMS (MeasSpec=0x01(DMTF), OtherParam=0x02(OPAQUE_FMT_1), Hash=0x00000002(SHA_384), MeasHash=0x00000004(SHA_384), Asym=0x00000100(ECDSA_P521), PqcAsym=0x00(<Unknown>), MelSpec=0x01(DMTF), DHE=0x0020(SECP_521_R1), AEAD=0x0002(AES_256_GCM), ReqAsym=0x0080(ECDSA_P384), KeySchedule=0x0001(HMAC_HASH)) 
+  SPDM Message:
+    0000: 14 63 04 00 34 00 01 02 04 00 00 00 00 01 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+    0020: 00 00 00 00 02 20 20 00 03 20 02 00 04 20 80 00 05 20 01 00
+7 (1789391791) MCTP(5) REQ->RSP SPDM(14, 0x81) SPDM_GET_DIGESTS () 
+  SPDM Message:
+    0000: 14 81 00 00
+8 (1789391791) MCTP(5) RSP->REQ SPDM(14, 0x01) SPDM_DIGESTS (SupportedSlotMask=0x03, ProvisionedSlotMask=0x03) 
+  SPDM Message:
+    0000: 14 01 03 03 c3 64 a7 c5 26 f8 b1 63 94 2d a4 ca 99 ee 37 e1 0a 56 c1 32 22 70 21 b1 b1 4c 86 69
+    0020: 6f 95 90 c7 e2 cf 65 74 9f 67 c7 d9 a5 06 8d f0 48 6b fe 9f d3 8c 88 dd 56 d1 d2 24 ca b9 e0 1b
+    0040: fc fa d3 37 46 3b d5 02 aa 8f 9d f3 91 98 98 8e be 13 50 28 0f 39 c7 0f be d8 c1 52 2a 3b a3 0e
+    0060: 3d 4a 82 dd
+9 (1789391791) MCTP(5) REQ->RSP SPDM(14, 0x82) SPDM_GET_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(), Offset=0x00000000, Length=0x00027ff0) 
+  SPDM Message:
+    0000: 14 82 80 00 00 00 00 00 00 00 00 00 f0 7f 02 00
+10 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x02) SPDM_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(NONE), PortLen=0x00000755, RemLen=0x00000000) 
+  SPDM Message:
+    0000: 14 02 80 00 00 00 00 00 55 07 00 00 00 00 00 00 55 07 00 00 a8 fd 0b d7 2d d9 1b 7e 98 f9 dc c6
+    0020: ba 5d 56 67 80 a4 74 41 c8 76 21 6e 1f 4c b0 de 7a 75 95 a4 cd 14 d3 06 db 64 10 8b 5a ed 49 82
+    0040: 86 97 04 1e 30 82 02 1e 30 82 01 80 a0 03 02 01 02 02 14 51 d3 8c 09 4e ae cb b7 bc a2 93 b0 d9
+    0060: 26 68 84 03 bb af 58 30 0a 06 08 2a 86 48 ce 3d 04 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16
+    0080: 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33
+    00a0: 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32 35 38 33 39 5a 30 21 31 1f 30 1d 06 03 55 04
+    00c0: 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 81 9b 30 10 06 07
+    00e0: 2a 86 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 00 d1 96 36 d9 99 a4 f1 cc 42 ff 9e ca
+    0100: f1 23 57 88 f6 91 63 d2 63 e0 2b 5e a3 28 82 5a bb fb 06 46 17 ed 38 2b 3d 36 8b 79 60 64 9c 75
+    0120: b4 9f 91 c3 d5 85 22 74 9b 85 7b 1f c1 95 c2 60 20 7b fb 43 4c 00 bf c0 bc 6d 5a f3 0c e4 fb de
+    0140: 00 e2 82 26 75 44 5b 23 8e 35 e1 d0 4c 64 80 76 14 34 83 64 bc d7 76 3c 64 cd cc 75 99 4a 84 fe
+    0160: 05 9b 57 b0 3c 82 a9 69 7a eb f1 e5 30 1a 03 06 58 cc f3 2e bc 96 40 a3 53 30 51 30 1d 06 03 55
+    0180: 1d 0e 04 16 04 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 1f 06 03 55 1d
+    01a0: 23 04 18 30 16 80 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 0f 06 03 55
+    01c0: 1d 13 01 01 ff 04 05 30 03 01 01 ff 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8b 00 30 81 87 02
+    01e0: 42 01 ad a1 2d 2f a8 51 56 cf 68 14 ab 76 70 a3 23 a4 71 19 23 24 0c f0 da f6 5b 3d fc 14 ab 2c
+    0200: 92 24 0c 42 23 bb bd 89 a7 d6 9f 50 9f 00 5c be 4b 99 f3 63 bb 60 b9 0e c1 56 a1 a7 a2 00 b2 10
+    0220: 3f 0f f9 02 41 00 ed 81 51 8a 3c fc eb 8a 17 c3 1e b2 ad 9a 02 84 dd 80 dc 93 d3 d9 df b9 87 eb
+    0240: db 5e 14 c2 6c 64 e5 33 6d 80 7e 35 32 d4 1f be dd 00 e9 94 b4 41 5c 7e b2 ef 0f 18 e0 bf fd 73
+    0260: a6 70 bf cd b0 14 30 82 02 47 30 82 01 a8 a0 03 02 01 02 02 01 01 30 0a 06 08 2a 86 48 ce 3d 04
+    0280: 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35
+    02a0: 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32
+    02c0: 35 38 33 39 5a 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45
+    02e0: 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86
+    0300: 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 01 8d 96 7f d5 cf e1 80 1e a9 5e 97 53 c0 e1
+    0320: c8 a3 0c b7 6b e0 e4 27 6d e1 d3 25 a1 c4 59 11 9f d8 e0 d1 80 65 3f 30 c0 3f 9a 58 8c 9c 63 52
+    0340: 3e 21 4c 14 bf a6 87 74 41 35 64 02 08 7d dc 1e 54 8e 89 01 77 66 2d c3 91 45 67 99 00 1e e6 93
+    0360: 68 25 f7 47 d6 69 20 6e 11 03 a5 35 59 6c f3 a4 5a 6a c0 f5 d1 c1 ca 60 2c 25 c9 71 9b 05 e1 89
+    0380: cd 47 8f e6 28 65 0e e5 35 f0 8d 7a 1e 0a 2a c6 4a 88 19 15 e6 a3 7f 30 7d 30 0c 06 03 55 1d 13
+    03a0: 04 05 30 03 01 01 ff 30 0b 06 03 55 1d 0f 04 04 03 02 01 fe 30 1d 06 03 55 1d 0e 04 16 04 14 ea
+    03c0: 42 9d 81 20 4a aa 4b 83 97 37 da 9f b9 aa ce b3 6c 9d 94 30 20 06 03 55 1d 25 01 01 ff 04 16 30
+    03e0: 14 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03 02 30 1f 06 03 55 1d 23 04 18 30 16
+    0400: 80 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 0a 06 08 2a 86 48 ce 3d 04
+    0420: 03 04 03 81 8c 00 30 81 88 02 42 01 e9 21 44 58 04 c1 1c df b4 00 1b cf 5b 32 15 b4 e4 ed 2c c9
+    0440: 15 96 7a 30 36 69 8e 8b 06 ad b3 23 56 46 21 c4 9c e3 f8 ad 6e 5f 58 eb 11 9b de 75 95 1c 38 20
+    0460: 65 a0 60 6f 5a e8 b2 5c 8f 3d 4a 84 ff 02 42 01 a1 a3 b8 b2 ed 9d 04 74 8c c8 f4 dc a1 69 ad 9a
+    0480: 01 0a ab e6 9c 15 bc f4 a4 39 d0 e0 f5 75 ab c7 a7 46 70 f8 09 3f 18 b1 1d c3 6f 4b 2c 7b e6 43
+    04a0: aa f8 b9 ca b8 04 b0 d6 9d 12 f9 41 ac 3b 22 5e 76 30 82 02 b0 30 82 02 13 a0 03 02 01 02 02 01
+    04c0: 03 30 0a 06 08 2a 86 48 ce 3d 04 03 04 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c
+    04e0: 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30
+    0500: 1e 17 0d 32 36 30 36 32 33 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32 35 38 33 39 5a 30
+    0520: 2d 31 2b 30 29 06 03 55 04 03 0c 22 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20
+    0540: 72 65 73 70 6f 6e 64 65 72 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86 48 ce 3d 02 01 06 05 2b 81
+    0560: 04 00 23 03 81 86 00 04 00 7b 69 03 d8 41 b7 f4 5f 11 24 1b 0b f1 dd f4 4d 39 eb 74 59 9f d9 51
+    0580: ae ea 2b d7 fc fa 6b b6 29 10 32 2f c1 33 0f 3a 16 fd 63 aa 70 99 03 13 3e c2 0f 78 b0 0d c0 31
+    05a0: 13 c3 a4 79 83 a2 83 1d 41 fa 00 24 4c ee f2 38 e2 d1 73 6d 91 51 12 92 91 f1 60 d5 2e 4f dc c4
+    05c0: 7f 9d 15 f0 80 f3 69 c5 ac 49 85 fc ae d2 6b 10 11 6a 91 f4 b2 5c 3e 84 a1 eb 1d a2 e7 c7 62 ae
+    05e0: 22 51 71 38 3f 99 d2 89 d4 c9 6a 17 a3 81 dd 30 81 da 30 0c 06 03 55 1d 13 01 01 ff 04 02 30 00
+    0600: 30 0b 06 03 55 1d 0f 04 04 03 02 05 e0 30 1d 06 03 55 1d 0e 04 16 04 14 aa 92 1a 14 da a4 fb e2
+    0620: c0 03 d0 73 b0 26 97 aa b6 4a 8f a6 30 31 06 03 55 1d 11 04 2a 30 28 a0 26 06 0a 2b 06 01 04 01
+    0640: 83 1c 82 12 01 a0 18 0c 16 41 43 4d 45 3a 57 49 44 47 45 54 3a 31 32 33 34 35 36 37 38 39 30 30
+    0660: 2a 06 03 55 1d 25 01 01 ff 04 20 30 1e 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03
+    0680: 02 06 08 2b 06 01 05 05 07 03 09 30 1e 06 0a 2b 06 01 04 01 83 1c 82 12 06 04 10 30 0e 30 0c 06
+    06a0: 0a 2b 06 01 04 01 83 1c 82 12 02 30 1f 06 03 55 1d 23 04 18 30 16 80 14 ea 42 9d 81 20 4a aa 4b
+    06c0: 83 97 37 da 9f b9 aa ce b3 6c 9d 94 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8a 00 30 81 86 02
+    06e0: 41 6e 20 a4 c1 17 0b 62 ca 56 d1 3a 9e 10 35 17 65 b7 4c 3a 0a dd 10 1b dc ef 12 b9 d4 d5 de 70
+    0700: 2b f4 30 d4 7a 87 f3 95 db d1 44 91 85 bd 21 0c 6c 31 63 f2 c1 7b 83 9f d1 2f f9 ac 37 b2 01 47
+    0720: c2 2d 02 41 46 da aa 84 6a a0 05 02 e4 b5 ac 13 44 d9 e2 06 dc 7f 28 54 b6 f6 b4 5e d7 3b b5 0f
+    0740: 3e 9f 05 25 76 f0 28 a1 05 7d bf ac 47 94 3e c6 80 83 a8 78 2d 7b 36 5c ed fa 02 29 9a 6f 4c 4e
+    0760: 5c ea 0d 72 27
+11 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0x82) SPDM_GET_CERTIFICATE (SlotID=0x01, LargeCert=0x80, Attr=0x00(), Offset=0x00000000, Length=0x00027ff0) 
+  SPDM Message:
+    0000: 14 82 81 00 00 00 00 00 00 00 00 00 f0 7f 02 00
+12 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x02) SPDM_CERTIFICATE (SlotID=0x01, LargeCert=0x80, Attr=0x00(NONE), PortLen=0x00000753, RemLen=0x00000000) 
+  SPDM Message:
+    0000: 14 02 81 00 00 00 00 00 53 07 00 00 00 00 00 00 53 07 00 00 5b 9a a1 40 63 e3 3a e8 82 6f 89 22
+    0020: 83 06 2b a1 82 65 79 97 de 2c 7a ac 5b 96 09 da 7a 5f 30 5b c9 dc 4e 6a 6b 82 fb 44 02 d5 fd 33
+    0040: 55 a0 35 45 30 82 02 1e 30 82 01 80 a0 03 02 01 02 02 14 67 9b 8b e4 22 d8 04 05 16 8d 3c 1a 73
+    0060: 25 1d 86 c8 a0 1a 7f 30 0a 06 08 2a 86 48 ce 3d 04 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16
+    0080: 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33
+    00a0: 30 32 35 39 30 37 5a 17 0d 33 36 30 36 32 30 30 32 35 39 30 37 5a 30 21 31 1f 30 1d 06 03 55 04
+    00c0: 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 81 9b 30 10 06 07
+    00e0: 2a 86 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 00 10 1e 1a 26 59 71 82 fd 0b 43 ee 02
+    0100: 1d 2f 5e 08 65 34 9d f4 e2 57 b4 ca 97 e2 ac 28 64 bc 6d c0 1e 2a e2 25 14 48 b2 39 79 d4 10 7d
+    0120: 4c 24 3c c2 4e 0d 85 d4 61 23 e5 0d 78 92 5b 7e 7d ba 9b 39 cf 01 61 d0 c7 9a 7e 7f 76 33 e2 7b
+    0140: f0 f6 bf f7 77 a6 a5 df ee ac 39 ec 24 9a 9c 9d 3e a9 41 aa 12 b1 77 de 83 5e 50 5d f9 7e 01 40
+    0160: a6 e7 e4 4c 3c 40 1a 4c 5a cc ce 26 ee 17 70 04 67 aa 00 3f ed de 6c a3 53 30 51 30 1d 06 03 55
+    0180: 1d 0e 04 16 04 14 35 1c a0 60 6d a4 04 d7 09 79 2d 12 26 7a cd 6e af 46 15 1a 30 1f 06 03 55 1d
+    01a0: 23 04 18 30 16 80 14 35 1c a0 60 6d a4 04 d7 09 79 2d 12 26 7a cd 6e af 46 15 1a 30 0f 06 03 55
+    01c0: 1d 13 01 01 ff 04 05 30 03 01 01 ff 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8b 00 30 81 87 02
+    01e0: 41 7d 04 32 9a 64 24 ac 8a 79 2f 2a 74 4b 06 0c 35 c1 2e 47 28 b5 c8 ff 8b 92 f7 2b 13 60 99 ae
+    0200: 7b 6f da 5d 4e c7 ca eb 53 43 db d4 56 0d 7d c8 21 aa d6 2f fc ec 62 2d 28 53 dc 9e 9e 88 ac 60
+    0220: b6 a3 02 42 01 65 57 54 bd 46 17 b6 59 8f e3 1f e9 4b 1c 00 b5 ea 48 8e 55 be 44 e0 86 0d 1f 92
+    0240: ff e3 de a6 2e cd 15 b0 21 78 aa bf c8 7f 23 02 d2 06 07 ee c1 06 39 61 22 46 e7 bb 7a 2b e7 f2
+    0260: c8 c7 b9 b0 78 d7 30 82 02 45 30 82 01 a8 a0 03 02 01 02 02 01 01 30 0a 06 08 2a 86 48 ce 3d 04
+    0280: 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35
+    02a0: 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33 30 32 35 39 30 37 5a 17 0d 33 36 30 36 32 30 30 32
+    02c0: 35 39 30 37 5a 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45
+    02e0: 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86
+    0300: 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 01 8d 96 7f d5 cf e1 80 1e a9 5e 97 53 c0 e1
+    0320: c8 a3 0c b7 6b e0 e4 27 6d e1 d3 25 a1 c4 59 11 9f d8 e0 d1 80 65 3f 30 c0 3f 9a 58 8c 9c 63 52
+    0340: 3e 21 4c 14 bf a6 87 74 41 35 64 02 08 7d dc 1e 54 8e 89 01 77 66 2d c3 91 45 67 99 00 1e e6 93
+    0360: 68 25 f7 47 d6 69 20 6e 11 03 a5 35 59 6c f3 a4 5a 6a c0 f5 d1 c1 ca 60 2c 25 c9 71 9b 05 e1 89
+    0380: cd 47 8f e6 28 65 0e e5 35 f0 8d 7a 1e 0a 2a c6 4a 88 19 15 e6 a3 7f 30 7d 30 0c 06 03 55 1d 13
+    03a0: 04 05 30 03 01 01 ff 30 0b 06 03 55 1d 0f 04 04 03 02 01 fe 30 1d 06 03 55 1d 0e 04 16 04 14 ea
+    03c0: 42 9d 81 20 4a aa 4b 83 97 37 da 9f b9 aa ce b3 6c 9d 94 30 20 06 03 55 1d 25 01 01 ff 04 16 30
+    03e0: 14 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03 02 30 1f 06 03 55 1d 23 04 18 30 16
+    0400: 80 14 35 1c a0 60 6d a4 04 d7 09 79 2d 12 26 7a cd 6e af 46 15 1a 30 0a 06 08 2a 86 48 ce 3d 04
+    0420: 03 04 03 81 8a 00 30 81 86 02 41 3c eb ae 0a ee 4b 23 b8 34 a0 40 bf 2d 9f 9b 08 c0 f2 7b 2d 24
+    0440: 66 02 07 69 bc 6c 37 ec 55 ab 4f 72 b7 13 ba a1 79 0a c9 f6 6a 64 ea 1c 6d 13 6d 1c d2 0f 4f 09
+    0460: 00 24 bd 23 2e 14 8f ec be c4 c4 98 02 41 40 37 e9 c8 65 70 2c 86 e5 d2 05 9b e0 13 d4 c6 81 50
+    0480: 38 a1 9f de a6 ca 89 43 b4 55 3c 45 bb 40 21 ed 01 20 b8 9c 03 cd ed 66 9c 0e 77 c8 83 de 36 64
+    04a0: 66 4a 99 4f ca ca 26 ff 2f 37 0b f4 4d 14 87 30 82 02 b0 30 82 02 13 a0 03 02 01 02 02 01 03 30
+    04c0: 0a 06 08 2a 86 48 ce 3d 04 03 04 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c 69 62
+    04e0: 73 70 64 6d 20 45 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30 1e 17
+    0500: 0d 32 36 30 36 32 33 30 32 35 39 30 37 5a 17 0d 33 36 30 36 32 30 30 32 35 39 30 37 5a 30 2d 31
+    0520: 2b 30 29 06 03 55 04 03 0c 22 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 72 65
+    0540: 73 70 6f 6e 64 65 72 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86 48 ce 3d 02 01 06 05 2b 81 04 00
+    0560: 23 03 81 86 00 04 00 7b 69 03 d8 41 b7 f4 5f 11 24 1b 0b f1 dd f4 4d 39 eb 74 59 9f d9 51 ae ea
+    0580: 2b d7 fc fa 6b b6 29 10 32 2f c1 33 0f 3a 16 fd 63 aa 70 99 03 13 3e c2 0f 78 b0 0d c0 31 13 c3
+    05a0: a4 79 83 a2 83 1d 41 fa 00 24 4c ee f2 38 e2 d1 73 6d 91 51 12 92 91 f1 60 d5 2e 4f dc c4 7f 9d
+    05c0: 15 f0 80 f3 69 c5 ac 49 85 fc ae d2 6b 10 11 6a 91 f4 b2 5c 3e 84 a1 eb 1d a2 e7 c7 62 ae 22 51
+    05e0: 71 38 3f 99 d2 89 d4 c9 6a 17 a3 81 dd 30 81 da 30 0c 06 03 55 1d 13 01 01 ff 04 02 30 00 30 0b
+    0600: 06 03 55 1d 0f 04 04 03 02 05 e0 30 1d 06 03 55 1d 0e 04 16 04 14 aa 92 1a 14 da a4 fb e2 c0 03
+    0620: d0 73 b0 26 97 aa b6 4a 8f a6 30 31 06 03 55 1d 11 04 2a 30 28 a0 26 06 0a 2b 06 01 04 01 83 1c
+    0640: 82 12 01 a0 18 0c 16 41 43 4d 45 3a 57 49 44 47 45 54 3a 31 32 33 34 35 36 37 38 39 30 30 2a 06
+    0660: 03 55 1d 25 01 01 ff 04 20 30 1e 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03 02 06
+    0680: 08 2b 06 01 05 05 07 03 09 30 1e 06 0a 2b 06 01 04 01 83 1c 82 12 06 04 10 30 0e 30 0c 06 0a 2b
+    06a0: 06 01 04 01 83 1c 82 12 02 30 1f 06 03 55 1d 23 04 18 30 16 80 14 ea 42 9d 81 20 4a aa 4b 83 97
+    06c0: 37 da 9f b9 aa ce b3 6c 9d 94 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8a 00 30 81 86 02 41 36
+    06e0: 00 9b c0 3f dd 46 09 a2 d7 f4 e7 9f 4f 7f 48 1c 33 ae a7 78 4f dc 0e 27 5d 84 f3 f0 d7 f5 93 f5
+    0700: 84 7a a3 00 05 e8 6d a1 9d 8e 5e ae e9 cd 97 a0 43 cb 15 56 1d 0c a8 a9 50 5a 2a 75 32 7a 6a cf
+    0720: 02 41 6e 96 aa a4 a9 fc 09 33 5a 81 f8 85 25 34 cc 38 fd 9c 23 fa 80 94 82 87 98 b6 29 29 f7 b9
+    0740: b6 7b 2b 7a b0 23 15 83 58 f0 09 dc 9d 41 69 10 f6 e9 d4 57 68 7b ec 8d a3 17 9a ba 1a 57 0c 8f
+    0760: 56 33 99
+13 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0x83) SPDM_CHALLENGE (SlotID=0x00, HashType=0xff(AllHash)) 
+  SPDM Message:
+    0000: 14 83 00 ff 2d dc 40 53 d1 b5 b5 07 ef 1f a8 6f 85 b4 d4 11 0a 2a 42 bd 1b 2c 68 36 46 56 a3 e3
+    0020: 99 23 98 95 11 22 33 44 55 66 77 88
+14 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x03) SPDM_CHALLENGE_AUTH (Attr=0x00(, SlotID=0x00), SlotMask=0x03) 
+  SPDM Message:
+    0000: 14 03 00 03 c3 64 a7 c5 26 f8 b1 63 94 2d a4 ca 99 ee 37 e1 0a 56 c1 32 22 70 21 b1 b1 4c 86 69
+    0020: 6f 95 90 c7 e2 cf 65 74 9f 67 c7 d9 a5 06 8d f0 48 6b fe 9f 98 28 e1 1e 71 0e b1 e4 b7 00 fd 0d
+    0040: 59 da a7 c1 fa f4 d6 64 b4 26 90 49 b0 46 8d ce 76 90 f3 69 3a ef 5b 27 5a 50 e3 74 46 b6 46 10
+    0060: a5 da 1d 53 75 5c 89 70 10 26 08 4a 79 6f 5a d8 7d ca 18 41 bd 2f 06 70 12 4e ff 55 41 c5 2d 87
+    0080: 19 ad 0e 80 00 00 11 22 33 44 55 66 77 88 00 a6 b6 e3 29 30 26 39 95 ab 2c 2b a6 c7 68 8e 4d ab
+    00a0: e6 5f e0 0f a6 2e 33 0f d3 30 3a 87 3a b4 f5 8a 58 12 f8 92 fe b2 67 49 af bb 83 c8 52 98 13 6f
+    00c0: a2 b2 f2 0c e0 07 41 a3 7d ab 00 33 22 88 99 b2 01 da 6b 59 93 38 a4 2b bf ce b5 85 c9 1f 4d e8
+    00e0: d0 74 f2 25 c2 f9 a9 68 bb d2 18 42 4d ee 4d 02 4f f1 ba 07 fb 64 ba b4 c7 45 97 30 73 e8 85 5b
+    0100: 9e b1 ae da 2b 8d 66 41 80 c4 36 ba 7b f6 14 fe b9 6b
+15 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0x81) SPDM_GET_DIGESTS () 
+  SPDM Message:
+    0000: 14 81 00 00
+16 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x01) SPDM_DIGESTS (SupportedSlotMask=0x03, ProvisionedSlotMask=0x03) 
+  SPDM Message:
+    0000: 14 01 03 03 c3 64 a7 c5 26 f8 b1 63 94 2d a4 ca 99 ee 37 e1 0a 56 c1 32 22 70 21 b1 b1 4c 86 69
+    0020: 6f 95 90 c7 e2 cf 65 74 9f 67 c7 d9 a5 06 8d f0 48 6b fe 9f d3 8c 88 dd 56 d1 d2 24 ca b9 e0 1b
+    0040: fc fa d3 37 46 3b d5 02 aa 8f 9d f3 91 98 98 8e be 13 50 28 0f 39 c7 0f be d8 c1 52 2a 3b a3 0e
+    0060: 3d 4a 82 dd
+17 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0x82) SPDM_GET_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(), Offset=0x00000000, Length=0x00027ff0) 
+  SPDM Message:
+    0000: 14 82 80 00 00 00 00 00 00 00 00 00 f0 7f 02 00
+18 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x02) SPDM_CERTIFICATE (SlotID=0x00, LargeCert=0x80, Attr=0x00(NONE), PortLen=0x00000755, RemLen=0x00000000) 
+  SPDM Message:
+    0000: 14 02 80 00 00 00 00 00 55 07 00 00 00 00 00 00 55 07 00 00 a8 fd 0b d7 2d d9 1b 7e 98 f9 dc c6
+    0020: ba 5d 56 67 80 a4 74 41 c8 76 21 6e 1f 4c b0 de 7a 75 95 a4 cd 14 d3 06 db 64 10 8b 5a ed 49 82
+    0040: 86 97 04 1e 30 82 02 1e 30 82 01 80 a0 03 02 01 02 02 14 51 d3 8c 09 4e ae cb b7 bc a2 93 b0 d9
+    0060: 26 68 84 03 bb af 58 30 0a 06 08 2a 86 48 ce 3d 04 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16
+    0080: 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33
+    00a0: 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32 35 38 33 39 5a 30 21 31 1f 30 1d 06 03 55 04
+    00c0: 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 43 41 30 81 9b 30 10 06 07
+    00e0: 2a 86 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 00 d1 96 36 d9 99 a4 f1 cc 42 ff 9e ca
+    0100: f1 23 57 88 f6 91 63 d2 63 e0 2b 5e a3 28 82 5a bb fb 06 46 17 ed 38 2b 3d 36 8b 79 60 64 9c 75
+    0120: b4 9f 91 c3 d5 85 22 74 9b 85 7b 1f c1 95 c2 60 20 7b fb 43 4c 00 bf c0 bc 6d 5a f3 0c e4 fb de
+    0140: 00 e2 82 26 75 44 5b 23 8e 35 e1 d0 4c 64 80 76 14 34 83 64 bc d7 76 3c 64 cd cc 75 99 4a 84 fe
+    0160: 05 9b 57 b0 3c 82 a9 69 7a eb f1 e5 30 1a 03 06 58 cc f3 2e bc 96 40 a3 53 30 51 30 1d 06 03 55
+    0180: 1d 0e 04 16 04 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 1f 06 03 55 1d
+    01a0: 23 04 18 30 16 80 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 0f 06 03 55
+    01c0: 1d 13 01 01 ff 04 05 30 03 01 01 ff 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8b 00 30 81 87 02
+    01e0: 42 01 ad a1 2d 2f a8 51 56 cf 68 14 ab 76 70 a3 23 a4 71 19 23 24 0c f0 da f6 5b 3d fc 14 ab 2c
+    0200: 92 24 0c 42 23 bb bd 89 a7 d6 9f 50 9f 00 5c be 4b 99 f3 63 bb 60 b9 0e c1 56 a1 a7 a2 00 b2 10
+    0220: 3f 0f f9 02 41 00 ed 81 51 8a 3c fc eb 8a 17 c3 1e b2 ad 9a 02 84 dd 80 dc 93 d3 d9 df b9 87 eb
+    0240: db 5e 14 c2 6c 64 e5 33 6d 80 7e 35 32 d4 1f be dd 00 e9 94 b4 41 5c 7e b2 ef 0f 18 e0 bf fd 73
+    0260: a6 70 bf cd b0 14 30 82 02 47 30 82 01 a8 a0 03 02 01 02 02 01 01 30 0a 06 08 2a 86 48 ce 3d 04
+    0280: 03 04 30 21 31 1f 30 1d 06 03 55 04 03 0c 16 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35
+    02a0: 32 31 20 43 41 30 1e 17 0d 32 36 30 36 32 33 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32
+    02c0: 35 38 33 39 5a 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45
+    02e0: 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86
+    0300: 48 ce 3d 02 01 06 05 2b 81 04 00 23 03 81 86 00 04 01 8d 96 7f d5 cf e1 80 1e a9 5e 97 53 c0 e1
+    0320: c8 a3 0c b7 6b e0 e4 27 6d e1 d3 25 a1 c4 59 11 9f d8 e0 d1 80 65 3f 30 c0 3f 9a 58 8c 9c 63 52
+    0340: 3e 21 4c 14 bf a6 87 74 41 35 64 02 08 7d dc 1e 54 8e 89 01 77 66 2d c3 91 45 67 99 00 1e e6 93
+    0360: 68 25 f7 47 d6 69 20 6e 11 03 a5 35 59 6c f3 a4 5a 6a c0 f5 d1 c1 ca 60 2c 25 c9 71 9b 05 e1 89
+    0380: cd 47 8f e6 28 65 0e e5 35 f0 8d 7a 1e 0a 2a c6 4a 88 19 15 e6 a3 7f 30 7d 30 0c 06 03 55 1d 13
+    03a0: 04 05 30 03 01 01 ff 30 0b 06 03 55 1d 0f 04 04 03 02 01 fe 30 1d 06 03 55 1d 0e 04 16 04 14 ea
+    03c0: 42 9d 81 20 4a aa 4b 83 97 37 da 9f b9 aa ce b3 6c 9d 94 30 20 06 03 55 1d 25 01 01 ff 04 16 30
+    03e0: 14 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03 02 30 1f 06 03 55 1d 23 04 18 30 16
+    0400: 80 14 64 21 5e f4 a1 21 b0 80 91 1d a7 58 10 53 b8 aa ca a0 56 5f 30 0a 06 08 2a 86 48 ce 3d 04
+    0420: 03 04 03 81 8c 00 30 81 88 02 42 01 e9 21 44 58 04 c1 1c df b4 00 1b cf 5b 32 15 b4 e4 ed 2c c9
+    0440: 15 96 7a 30 36 69 8e 8b 06 ad b3 23 56 46 21 c4 9c e3 f8 ad 6e 5f 58 eb 11 9b de 75 95 1c 38 20
+    0460: 65 a0 60 6f 5a e8 b2 5c 8f 3d 4a 84 ff 02 42 01 a1 a3 b8 b2 ed 9d 04 74 8c c8 f4 dc a1 69 ad 9a
+    0480: 01 0a ab e6 9c 15 bc f4 a4 39 d0 e0 f5 75 ab c7 a7 46 70 f8 09 3f 18 b1 1d c3 6f 4b 2c 7b e6 43
+    04a0: aa f8 b9 ca b8 04 b0 d6 9d 12 f9 41 ac 3b 22 5e 76 30 82 02 b0 30 82 02 13 a0 03 02 01 02 02 01
+    04c0: 03 30 0a 06 08 2a 86 48 ce 3d 04 03 04 30 30 31 2e 30 2c 06 03 55 04 03 0c 25 44 4d 54 46 20 6c
+    04e0: 69 62 73 70 64 6d 20 45 43 50 35 32 31 20 69 6e 74 65 72 6d 65 64 69 61 74 65 20 63 65 72 74 30
+    0500: 1e 17 0d 32 36 30 36 32 33 30 32 35 38 33 39 5a 17 0d 33 36 30 36 32 30 30 32 35 38 33 39 5a 30
+    0520: 2d 31 2b 30 29 06 03 55 04 03 0c 22 44 4d 54 46 20 6c 69 62 73 70 64 6d 20 45 43 50 35 32 31 20
+    0540: 72 65 73 70 6f 6e 64 65 72 20 63 65 72 74 30 81 9b 30 10 06 07 2a 86 48 ce 3d 02 01 06 05 2b 81
+    0560: 04 00 23 03 81 86 00 04 00 7b 69 03 d8 41 b7 f4 5f 11 24 1b 0b f1 dd f4 4d 39 eb 74 59 9f d9 51
+    0580: ae ea 2b d7 fc fa 6b b6 29 10 32 2f c1 33 0f 3a 16 fd 63 aa 70 99 03 13 3e c2 0f 78 b0 0d c0 31
+    05a0: 13 c3 a4 79 83 a2 83 1d 41 fa 00 24 4c ee f2 38 e2 d1 73 6d 91 51 12 92 91 f1 60 d5 2e 4f dc c4
+    05c0: 7f 9d 15 f0 80 f3 69 c5 ac 49 85 fc ae d2 6b 10 11 6a 91 f4 b2 5c 3e 84 a1 eb 1d a2 e7 c7 62 ae
+    05e0: 22 51 71 38 3f 99 d2 89 d4 c9 6a 17 a3 81 dd 30 81 da 30 0c 06 03 55 1d 13 01 01 ff 04 02 30 00
+    0600: 30 0b 06 03 55 1d 0f 04 04 03 02 05 e0 30 1d 06 03 55 1d 0e 04 16 04 14 aa 92 1a 14 da a4 fb e2
+    0620: c0 03 d0 73 b0 26 97 aa b6 4a 8f a6 30 31 06 03 55 1d 11 04 2a 30 28 a0 26 06 0a 2b 06 01 04 01
+    0640: 83 1c 82 12 01 a0 18 0c 16 41 43 4d 45 3a 57 49 44 47 45 54 3a 31 32 33 34 35 36 37 38 39 30 30
+    0660: 2a 06 03 55 1d 25 01 01 ff 04 20 30 1e 06 08 2b 06 01 05 05 07 03 01 06 08 2b 06 01 05 05 07 03
+    0680: 02 06 08 2b 06 01 05 05 07 03 09 30 1e 06 0a 2b 06 01 04 01 83 1c 82 12 06 04 10 30 0e 30 0c 06
+    06a0: 0a 2b 06 01 04 01 83 1c 82 12 02 30 1f 06 03 55 1d 23 04 18 30 16 80 14 ea 42 9d 81 20 4a aa 4b
+    06c0: 83 97 37 da 9f b9 aa ce b3 6c 9d 94 30 0a 06 08 2a 86 48 ce 3d 04 03 04 03 81 8a 00 30 81 86 02
+    06e0: 41 6e 20 a4 c1 17 0b 62 ca 56 d1 3a 9e 10 35 17 65 b7 4c 3a 0a dd 10 1b dc ef 12 b9 d4 d5 de 70
+    0700: 2b f4 30 d4 7a 87 f3 95 db d1 44 91 85 bd 21 0c 6c 31 63 f2 c1 7b 83 9f d1 2f f9 ac 37 b2 01 47
+    0720: c2 2d 02 41 46 da aa 84 6a a0 05 02 e4 b5 ac 13 44 d9 e2 06 dc 7f 28 54 b6 f6 b4 5e d7 3b b5 0f
+    0740: 3e 9f 05 25 76 f0 28 a1 05 7d bf ac 47 94 3e c6 80 83 a8 78 2d 7b 36 5c ed fa 02 29 9a 6f 4c 4e
+    0760: 5c ea 0d 72 27
+19 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0x81) SPDM_GET_DIGESTS () 
+  SPDM Message:
+    0000: 14 81 00 00
+20 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x01) SPDM_DIGESTS (SupportedSlotMask=0x03, ProvisionedSlotMask=0x03) 
+  SPDM Message:
+    0000: 14 01 03 03 c3 64 a7 c5 26 f8 b1 63 94 2d a4 ca 99 ee 37 e1 0a 56 c1 32 22 70 21 b1 b1 4c 86 69
+    0020: 6f 95 90 c7 e2 cf 65 74 9f 67 c7 d9 a5 06 8d f0 48 6b fe 9f d3 8c 88 dd 56 d1 d2 24 ca b9 e0 1b
+    0040: fc fa d3 37 46 3b d5 02 aa 8f 9d f3 91 98 98 8e be 13 50 28 0f 39 c7 0f be d8 c1 52 2a 3b a3 0e
+    0060: 3d 4a 82 dd
+21 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x00(TotalNum)) 
+  SPDM Message:
+    0000: 14 e0 00 00 aa bb cc dd ee ff 00 00
+22 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (TotalMeasIndex=0x08) 
+  SPDM Message:
+    0000: 14 60 08 00 00 00 00 00 91 be f7 8a 7e 8a 94 77 86 95 27 3a e0 6b f5 f1 0d 6a 5a c9 fc 3f a8 f3
+    0020: c5 75 69 bb f8 4f 96 b1 00 00 aa bb cc dd ee ff 00 00
+23 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x01) 
+  SPDM Message:
+    0000: 14 e0 00 01 aa bb cc dd ee ff 00 01
+24 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037) 
+  SPDM Message:
+    0000: 14 60 00 00 01 37 00 00 01 01 33 00 00 30 00 a1 d6 75 5d 00 a6 6c 12 e3 b5 f8 fe 51 44 41 59 4e
+    0020: d8 6e 8a 82 1d dc 55 b2 96 1f a7 1b 6d 8a 12 f8 f4 25 88 b7 c5 d8 36 2b 22 c6 dd 53 29 50 dc 8d
+    0040: 6c 2d 6f c3 bc d9 d2 7d 47 da d5 64 41 f5 ff 9d 16 f5 b3 6b 0f 4c 6f c5 c2 60 c8 3f f1 40 6b 00
+    0060: 00 aa bb cc dd ee ff 00 01
+25 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x02) 
+  SPDM Message:
+    0000: 14 e0 00 02 aa bb cc dd ee ff 00 02
+26 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037) 
+  SPDM Message:
+    0000: 14 60 00 00 01 37 00 00 02 01 33 00 01 30 00 54 2d d4 0a 5c 22 4d c4 e7 05 82 0d 38 4f 38 c0 d5
+    0020: 9b 79 e1 28 e6 2a 79 72 32 01 0b 55 42 58 78 17 2b ed f2 68 d7 4a 0c 68 9d 9d 7c be 33 cf 86 48
+    0040: 5f e8 5e 37 52 3c 1c 2c 49 8a 96 ae 78 38 b2 ae dc 46 c5 1b ae 68 cc bf 98 5e ea 70 da b3 60 00
+    0060: 00 aa bb cc dd ee ff 00 02
+27 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x03) 
+  SPDM Message:
+    0000: 14 e0 00 03 aa bb cc dd ee ff 00 03
+28 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037) 
+  SPDM Message:
+    0000: 14 60 00 00 01 37 00 00 03 01 33 00 02 30 00 95 f8 56 71 91 2f 24 98 89 51 d8 1b b4 37 44 cf 8e
+    0020: c3 3b 0f 86 ca 9d 76 48 47 79 38 5a 82 2e 9d 81 f1 4f 4d 55 10 89 4b 44 24 2b 1b 83 a2 a2 c8 52
+    0040: 2e 5b 50 e9 f1 a0 27 8c 17 fc 80 b6 86 12 7f ae a0 ac ac e3 73 b9 a0 84 5b 70 dc 62 fc 84 76 00
+    0060: 00 aa bb cc dd ee ff 00 03
+29 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x04) 
+  SPDM Message:
+    0000: 14 e0 00 04 aa bb cc dd ee ff 00 04
+30 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037) 
+  SPDM Message:
+    0000: 14 60 00 00 01 37 00 00 04 01 33 00 03 30 00 cd 4d da 8e b0 5d 30 be 81 09 57 e9 4a 9e b0 3e 20
+    0020: 70 4b 88 76 6c 81 5e 97 2f d9 74 cf 3e f2 c2 89 ec 03 50 8b de 94 45 3f f0 1b 17 c2 69 8a 90 d3
+    0040: e4 3b 44 35 7e 7e e6 c2 1c ba 98 3d a3 0e ed 1c 01 8e bb dc 79 d0 17 bc f8 db 55 96 79 57 4d 00
+    0060: 00 aa bb cc dd ee ff 00 04
+31 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x05) 
+  SPDM Message:
+    0000: 14 e0 00 05 aa bb cc dd ee ff 00 05
+32 (1789391792) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+33 (1789391792) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x06) 
+  SPDM Message:
+    0000: 14 e0 00 06 aa bb cc dd ee ff 00 06
+34 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+35 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x07) 
+  SPDM Message:
+    0000: 14 e0 00 07 aa bb cc dd ee ff 00 07
+36 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+37 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x08) 
+  SPDM Message:
+    0000: 14 e0 00 08 aa bb cc dd ee ff 00 08
+38 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+39 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x09) 
+  SPDM Message:
+    0000: 14 e0 00 09 aa bb cc dd ee ff 00 09
+40 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+41 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0a) 
+  SPDM Message:
+    0000: 14 e0 00 0a aa bb cc dd ee ff 00 0a
+42 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+43 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0b) 
+  SPDM Message:
+    0000: 14 e0 00 0b aa bb cc dd ee ff 00 0b
+44 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+45 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0c) 
+  SPDM Message:
+    0000: 14 e0 00 0c aa bb cc dd ee ff 00 0c
+46 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+47 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0d) 
+  SPDM Message:
+    0000: 14 e0 00 0d aa bb cc dd ee ff 00 0d
+48 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+49 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0e) 
+  SPDM Message:
+    0000: 14 e0 00 0e aa bb cc dd ee ff 00 0e
+50 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+51 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x0f) 
+  SPDM Message:
+    0000: 14 e0 00 0f aa bb cc dd ee ff 00 0f
+52 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+53 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x10) 
+  SPDM Message:
+    0000: 14 e0 00 10 aa bb cc dd ee ff 00 10
+54 (1789391793) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x0000000f) 
+  SPDM Message:
+    0000: 14 60 00 00 01 0f 00 00 10 01 0b 00 87 08 00 07 00 00 00 00 00 00 00 44 c9 f8 83 16 fc 75 61 76
+    0020: 1e ac 2e 8c 8c a5 2e 68 87 91 98 42 38 48 f2 43 6d 9c f9 b3 77 95 12 00 00 aa bb cc dd ee ff 00
+    0040: 10
+55 (1789391793) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x11) 
+  SPDM Message:
+    0000: 14 e0 00 11 aa bb cc dd ee ff 00 11
+56 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037) 
+  SPDM Message:
+    0000: 14 60 00 00 01 37 00 00 11 01 33 00 08 30 00 f0 a9 50 2b bd b0 57 b9 4c 26 e8 80 5c 50 7d 20 dc
+    0020: 7a 4a fc 4f 0f ff 25 f6 03 01 26 40 0c 18 0b 8f c0 41 a9 2f 12 69 0f ab f7 0d 56 15 96 6e 5b bd
+    0040: b4 19 d4 8e f6 98 49 10 de 4a 29 f2 6e be c8 c8 67 1a b5 a9 7e 7e f3 31 b8 89 8e 04 df 7c 5a 00
+    0060: 00 aa bb cc dd ee ff 00 11
+57 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x12) 
+  SPDM Message:
+    0000: 14 e0 00 12 aa bb cc dd ee ff 00 12
+58 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+59 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x13) 
+  SPDM Message:
+    0000: 14 e0 00 13 aa bb cc dd ee ff 00 13
+60 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+61 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x14) 
+  SPDM Message:
+    0000: 14 e0 00 14 aa bb cc dd ee ff 00 14
+62 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+63 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x15) 
+  SPDM Message:
+    0000: 14 e0 00 15 aa bb cc dd ee ff 00 15
+64 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+65 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x16) 
+  SPDM Message:
+    0000: 14 e0 00 16 aa bb cc dd ee ff 00 16
+66 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+67 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x17) 
+  SPDM Message:
+    0000: 14 e0 00 17 aa bb cc dd ee ff 00 17
+68 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+69 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x18) 
+  SPDM Message:
+    0000: 14 e0 00 18 aa bb cc dd ee ff 00 18
+70 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+71 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x19) 
+  SPDM Message:
+    0000: 14 e0 00 19 aa bb cc dd ee ff 00 19
+72 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+73 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1a) 
+  SPDM Message:
+    0000: 14 e0 00 1a aa bb cc dd ee ff 00 1a
+74 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+75 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1b) 
+  SPDM Message:
+    0000: 14 e0 00 1b aa bb cc dd ee ff 00 1b
+76 (1789391794) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+77 (1789391794) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1c) 
+  SPDM Message:
+    0000: 14 e0 00 1c aa bb cc dd ee ff 00 1c
+78 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+79 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1d) 
+  SPDM Message:
+    0000: 14 e0 00 1d aa bb cc dd ee ff 00 1d
+80 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+81 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1e) 
+  SPDM Message:
+    0000: 14 e0 00 1e aa bb cc dd ee ff 00 1e
+82 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+83 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x1f) 
+  SPDM Message:
+    0000: 14 e0 00 1f aa bb cc dd ee ff 00 1f
+84 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+85 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x20) 
+  SPDM Message:
+    0000: 14 e0 00 20 aa bb cc dd ee ff 00 20
+86 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+87 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x21) 
+  SPDM Message:
+    0000: 14 e0 00 21 aa bb cc dd ee ff 00 21
+88 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+89 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x22) 
+  SPDM Message:
+    0000: 14 e0 00 22 aa bb cc dd ee ff 00 22
+90 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+91 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x23) 
+  SPDM Message:
+    0000: 14 e0 00 23 aa bb cc dd ee ff 00 23
+92 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+93 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x24) 
+  SPDM Message:
+    0000: 14 e0 00 24 aa bb cc dd ee ff 00 24
+94 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+95 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x25) 
+  SPDM Message:
+    0000: 14 e0 00 25 aa bb cc dd ee ff 00 25
+96 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+97 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x26) 
+  SPDM Message:
+    0000: 14 e0 00 26 aa bb cc dd ee ff 00 26
+98 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+99 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x27) 
+  SPDM Message:
+    0000: 14 e0 00 27 aa bb cc dd ee ff 00 27
+100 (1789391795) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+101 (1789391795) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x28) 
+  SPDM Message:
+    0000: 14 e0 00 28 aa bb cc dd ee ff 00 28
+102 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+103 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x29) 
+  SPDM Message:
+    0000: 14 e0 00 29 aa bb cc dd ee ff 00 29
+104 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+105 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2a) 
+  SPDM Message:
+    0000: 14 e0 00 2a aa bb cc dd ee ff 00 2a
+106 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+107 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2b) 
+  SPDM Message:
+    0000: 14 e0 00 2b aa bb cc dd ee ff 00 2b
+108 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+109 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2c) 
+  SPDM Message:
+    0000: 14 e0 00 2c aa bb cc dd ee ff 00 2c
+110 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+111 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2d) 
+  SPDM Message:
+    0000: 14 e0 00 2d aa bb cc dd ee ff 00 2d
+112 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+113 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2e) 
+  SPDM Message:
+    0000: 14 e0 00 2e aa bb cc dd ee ff 00 2e
+114 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+115 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x2f) 
+  SPDM Message:
+    0000: 14 e0 00 2f aa bb cc dd ee ff 00 2f
+116 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+117 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x30) 
+  SPDM Message:
+    0000: 14 e0 00 30 aa bb cc dd ee ff 00 30
+118 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+119 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x31) 
+  SPDM Message:
+    0000: 14 e0 00 31 aa bb cc dd ee ff 00 31
+120 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+121 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x32) 
+  SPDM Message:
+    0000: 14 e0 00 32 aa bb cc dd ee ff 00 32
+122 (1789391796) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+123 (1789391796) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x33) 
+  SPDM Message:
+    0000: 14 e0 00 33 aa bb cc dd ee ff 00 33
+124 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+125 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x34) 
+  SPDM Message:
+    0000: 14 e0 00 34 aa bb cc dd ee ff 00 34
+126 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+127 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x35) 
+  SPDM Message:
+    0000: 14 e0 00 35 aa bb cc dd ee ff 00 35
+128 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+129 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x36) 
+  SPDM Message:
+    0000: 14 e0 00 36 aa bb cc dd ee ff 00 36
+130 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+131 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x37) 
+  SPDM Message:
+    0000: 14 e0 00 37 aa bb cc dd ee ff 00 37
+132 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+133 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x38) 
+  SPDM Message:
+    0000: 14 e0 00 38 aa bb cc dd ee ff 00 38
+134 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+135 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x39) 
+  SPDM Message:
+    0000: 14 e0 00 39 aa bb cc dd ee ff 00 39
+136 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+137 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3a) 
+  SPDM Message:
+    0000: 14 e0 00 3a aa bb cc dd ee ff 00 3a
+138 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+139 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3b) 
+  SPDM Message:
+    0000: 14 e0 00 3b aa bb cc dd ee ff 00 3b
+140 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+141 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3c) 
+  SPDM Message:
+    0000: 14 e0 00 3c aa bb cc dd ee ff 00 3c
+142 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+143 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3d) 
+  SPDM Message:
+    0000: 14 e0 00 3d aa bb cc dd ee ff 00 3d
+144 (1789391797) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+145 (1789391797) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3e) 
+  SPDM Message:
+    0000: 14 e0 00 3e aa bb cc dd ee ff 00 3e
+146 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+147 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x3f) 
+  SPDM Message:
+    0000: 14 e0 00 3f aa bb cc dd ee ff 00 3f
+148 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+149 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x40) 
+  SPDM Message:
+    0000: 14 e0 00 40 aa bb cc dd ee ff 00 40
+150 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+151 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x41) 
+  SPDM Message:
+    0000: 14 e0 00 41 aa bb cc dd ee ff 00 41
+152 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+153 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x42) 
+  SPDM Message:
+    0000: 14 e0 00 42 aa bb cc dd ee ff 00 42
+154 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+155 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x43) 
+  SPDM Message:
+    0000: 14 e0 00 43 aa bb cc dd ee ff 00 43
+156 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+157 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x44) 
+  SPDM Message:
+    0000: 14 e0 00 44 aa bb cc dd ee ff 00 44
+158 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+159 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x45) 
+  SPDM Message:
+    0000: 14 e0 00 45 aa bb cc dd ee ff 00 45
+160 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+161 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x46) 
+  SPDM Message:
+    0000: 14 e0 00 46 aa bb cc dd ee ff 00 46
+162 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+163 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x47) 
+  SPDM Message:
+    0000: 14 e0 00 47 aa bb cc dd ee ff 00 47
+164 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+165 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x48) 
+  SPDM Message:
+    0000: 14 e0 00 48 aa bb cc dd ee ff 00 48
+166 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+167 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x49) 
+  SPDM Message:
+    0000: 14 e0 00 49 aa bb cc dd ee ff 00 49
+168 (1789391798) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+169 (1789391798) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4a) 
+  SPDM Message:
+    0000: 14 e0 00 4a aa bb cc dd ee ff 00 4a
+170 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+171 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4b) 
+  SPDM Message:
+    0000: 14 e0 00 4b aa bb cc dd ee ff 00 4b
+172 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+173 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4c) 
+  SPDM Message:
+    0000: 14 e0 00 4c aa bb cc dd ee ff 00 4c
+174 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+175 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4d) 
+  SPDM Message:
+    0000: 14 e0 00 4d aa bb cc dd ee ff 00 4d
+176 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+177 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4e) 
+  SPDM Message:
+    0000: 14 e0 00 4e aa bb cc dd ee ff 00 4e
+178 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+179 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x4f) 
+  SPDM Message:
+    0000: 14 e0 00 4f aa bb cc dd ee ff 00 4f
+180 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+181 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x50) 
+  SPDM Message:
+    0000: 14 e0 00 50 aa bb cc dd ee ff 00 50
+182 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+183 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x51) 
+  SPDM Message:
+    0000: 14 e0 00 51 aa bb cc dd ee ff 00 51
+184 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+185 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x52) 
+  SPDM Message:
+    0000: 14 e0 00 52 aa bb cc dd ee ff 00 52
+186 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+187 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x53) 
+  SPDM Message:
+    0000: 14 e0 00 53 aa bb cc dd ee ff 00 53
+188 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+189 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x54) 
+  SPDM Message:
+    0000: 14 e0 00 54 aa bb cc dd ee ff 00 54
+190 (1789391799) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+191 (1789391799) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x55) 
+  SPDM Message:
+    0000: 14 e0 00 55 aa bb cc dd ee ff 00 55
+192 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+193 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x56) 
+  SPDM Message:
+    0000: 14 e0 00 56 aa bb cc dd ee ff 00 56
+194 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+195 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x57) 
+  SPDM Message:
+    0000: 14 e0 00 57 aa bb cc dd ee ff 00 57
+196 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+197 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x58) 
+  SPDM Message:
+    0000: 14 e0 00 58 aa bb cc dd ee ff 00 58
+198 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+199 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x59) 
+  SPDM Message:
+    0000: 14 e0 00 59 aa bb cc dd ee ff 00 59
+200 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+201 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5a) 
+  SPDM Message:
+    0000: 14 e0 00 5a aa bb cc dd ee ff 00 5a
+202 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+203 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5b) 
+  SPDM Message:
+    0000: 14 e0 00 5b aa bb cc dd ee ff 00 5b
+204 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+205 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5c) 
+  SPDM Message:
+    0000: 14 e0 00 5c aa bb cc dd ee ff 00 5c
+206 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+207 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5d) 
+  SPDM Message:
+    0000: 14 e0 00 5d aa bb cc dd ee ff 00 5d
+208 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+209 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5e) 
+  SPDM Message:
+    0000: 14 e0 00 5e aa bb cc dd ee ff 00 5e
+210 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+211 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x5f) 
+  SPDM Message:
+    0000: 14 e0 00 5f aa bb cc dd ee ff 00 5f
+212 (1789391800) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+213 (1789391800) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x60) 
+  SPDM Message:
+    0000: 14 e0 00 60 aa bb cc dd ee ff 00 60
+214 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+215 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x61) 
+  SPDM Message:
+    0000: 14 e0 00 61 aa bb cc dd ee ff 00 61
+216 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+217 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x62) 
+  SPDM Message:
+    0000: 14 e0 00 62 aa bb cc dd ee ff 00 62
+218 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+219 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x63) 
+  SPDM Message:
+    0000: 14 e0 00 63 aa bb cc dd ee ff 00 63
+220 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+221 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x64) 
+  SPDM Message:
+    0000: 14 e0 00 64 aa bb cc dd ee ff 00 64
+222 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+223 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x65) 
+  SPDM Message:
+    0000: 14 e0 00 65 aa bb cc dd ee ff 00 65
+224 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+225 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x66) 
+  SPDM Message:
+    0000: 14 e0 00 66 aa bb cc dd ee ff 00 66
+226 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+227 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x67) 
+  SPDM Message:
+    0000: 14 e0 00 67 aa bb cc dd ee ff 00 67
+228 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+229 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x68) 
+  SPDM Message:
+    0000: 14 e0 00 68 aa bb cc dd ee ff 00 68
+230 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+231 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x69) 
+  SPDM Message:
+    0000: 14 e0 00 69 aa bb cc dd ee ff 00 69
+232 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+233 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6a) 
+  SPDM Message:
+    0000: 14 e0 00 6a aa bb cc dd ee ff 00 6a
+234 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+235 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6b) 
+  SPDM Message:
+    0000: 14 e0 00 6b aa bb cc dd ee ff 00 6b
+236 (1789391801) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+237 (1789391801) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6c) 
+  SPDM Message:
+    0000: 14 e0 00 6c aa bb cc dd ee ff 00 6c
+238 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+239 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6d) 
+  SPDM Message:
+    0000: 14 e0 00 6d aa bb cc dd ee ff 00 6d
+240 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+241 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6e) 
+  SPDM Message:
+    0000: 14 e0 00 6e aa bb cc dd ee ff 00 6e
+242 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+243 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x6f) 
+  SPDM Message:
+    0000: 14 e0 00 6f aa bb cc dd ee ff 00 6f
+244 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+245 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x70) 
+  SPDM Message:
+    0000: 14 e0 00 70 aa bb cc dd ee ff 00 70
+246 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+247 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x71) 
+  SPDM Message:
+    0000: 14 e0 00 71 aa bb cc dd ee ff 00 71
+248 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+249 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x72) 
+  SPDM Message:
+    0000: 14 e0 00 72 aa bb cc dd ee ff 00 72
+250 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+251 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x73) 
+  SPDM Message:
+    0000: 14 e0 00 73 aa bb cc dd ee ff 00 73
+252 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+253 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x74) 
+  SPDM Message:
+    0000: 14 e0 00 74 aa bb cc dd ee ff 00 74
+254 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+255 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x75) 
+  SPDM Message:
+    0000: 14 e0 00 75 aa bb cc dd ee ff 00 75
+256 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+257 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x76) 
+  SPDM Message:
+    0000: 14 e0 00 76 aa bb cc dd ee ff 00 76
+258 (1789391802) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+259 (1789391802) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x77) 
+  SPDM Message:
+    0000: 14 e0 00 77 aa bb cc dd ee ff 00 77
+260 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+261 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x78) 
+  SPDM Message:
+    0000: 14 e0 00 78 aa bb cc dd ee ff 00 78
+262 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+263 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x79) 
+  SPDM Message:
+    0000: 14 e0 00 79 aa bb cc dd ee ff 00 79
+264 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+265 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7a) 
+  SPDM Message:
+    0000: 14 e0 00 7a aa bb cc dd ee ff 00 7a
+266 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+267 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7b) 
+  SPDM Message:
+    0000: 14 e0 00 7b aa bb cc dd ee ff 00 7b
+268 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+269 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7c) 
+  SPDM Message:
+    0000: 14 e0 00 7c aa bb cc dd ee ff 00 7c
+270 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+271 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7d) 
+  SPDM Message:
+    0000: 14 e0 00 7d aa bb cc dd ee ff 00 7d
+272 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+273 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7e) 
+  SPDM Message:
+    0000: 14 e0 00 7e aa bb cc dd ee ff 00 7e
+274 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+275 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x7f) 
+  SPDM Message:
+    0000: 14 e0 00 7f aa bb cc dd ee ff 00 7f
+276 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+277 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x80) 
+  SPDM Message:
+    0000: 14 e0 00 80 aa bb cc dd ee ff 00 80
+278 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+279 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x81) 
+  SPDM Message:
+    0000: 14 e0 00 81 aa bb cc dd ee ff 00 81
+280 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+281 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x82) 
+  SPDM Message:
+    0000: 14 e0 00 82 aa bb cc dd ee ff 00 82
+282 (1789391803) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+283 (1789391803) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x83) 
+  SPDM Message:
+    0000: 14 e0 00 83 aa bb cc dd ee ff 00 83
+284 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+285 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x84) 
+  SPDM Message:
+    0000: 14 e0 00 84 aa bb cc dd ee ff 00 84
+286 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+287 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x85) 
+  SPDM Message:
+    0000: 14 e0 00 85 aa bb cc dd ee ff 00 85
+288 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+289 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x86) 
+  SPDM Message:
+    0000: 14 e0 00 86 aa bb cc dd ee ff 00 86
+290 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+291 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x87) 
+  SPDM Message:
+    0000: 14 e0 00 87 aa bb cc dd ee ff 00 87
+292 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+293 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x88) 
+  SPDM Message:
+    0000: 14 e0 00 88 aa bb cc dd ee ff 00 88
+294 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+295 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x89) 
+  SPDM Message:
+    0000: 14 e0 00 89 aa bb cc dd ee ff 00 89
+296 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+297 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8a) 
+  SPDM Message:
+    0000: 14 e0 00 8a aa bb cc dd ee ff 00 8a
+298 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+299 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8b) 
+  SPDM Message:
+    0000: 14 e0 00 8b aa bb cc dd ee ff 00 8b
+300 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+301 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8c) 
+  SPDM Message:
+    0000: 14 e0 00 8c aa bb cc dd ee ff 00 8c
+302 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+303 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8d) 
+  SPDM Message:
+    0000: 14 e0 00 8d aa bb cc dd ee ff 00 8d
+304 (1789391804) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+305 (1789391804) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8e) 
+  SPDM Message:
+    0000: 14 e0 00 8e aa bb cc dd ee ff 00 8e
+306 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+307 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x8f) 
+  SPDM Message:
+    0000: 14 e0 00 8f aa bb cc dd ee ff 00 8f
+308 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+309 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x90) 
+  SPDM Message:
+    0000: 14 e0 00 90 aa bb cc dd ee ff 00 90
+310 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+311 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x91) 
+  SPDM Message:
+    0000: 14 e0 00 91 aa bb cc dd ee ff 00 91
+312 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+313 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x92) 
+  SPDM Message:
+    0000: 14 e0 00 92 aa bb cc dd ee ff 00 92
+314 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+315 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x93) 
+  SPDM Message:
+    0000: 14 e0 00 93 aa bb cc dd ee ff 00 93
+316 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+317 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x94) 
+  SPDM Message:
+    0000: 14 e0 00 94 aa bb cc dd ee ff 00 94
+318 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+319 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x95) 
+  SPDM Message:
+    0000: 14 e0 00 95 aa bb cc dd ee ff 00 95
+320 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+321 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x96) 
+  SPDM Message:
+    0000: 14 e0 00 96 aa bb cc dd ee ff 00 96
+322 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+323 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x97) 
+  SPDM Message:
+    0000: 14 e0 00 97 aa bb cc dd ee ff 00 97
+324 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+325 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x98) 
+  SPDM Message:
+    0000: 14 e0 00 98 aa bb cc dd ee ff 00 98
+326 (1789391805) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+327 (1789391805) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x99) 
+  SPDM Message:
+    0000: 14 e0 00 99 aa bb cc dd ee ff 00 99
+328 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+329 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9a) 
+  SPDM Message:
+    0000: 14 e0 00 9a aa bb cc dd ee ff 00 9a
+330 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+331 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9b) 
+  SPDM Message:
+    0000: 14 e0 00 9b aa bb cc dd ee ff 00 9b
+332 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+333 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9c) 
+  SPDM Message:
+    0000: 14 e0 00 9c aa bb cc dd ee ff 00 9c
+334 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+335 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9d) 
+  SPDM Message:
+    0000: 14 e0 00 9d aa bb cc dd ee ff 00 9d
+336 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+337 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9e) 
+  SPDM Message:
+    0000: 14 e0 00 9e aa bb cc dd ee ff 00 9e
+338 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+339 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0x9f) 
+  SPDM Message:
+    0000: 14 e0 00 9f aa bb cc dd ee ff 00 9f
+340 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+341 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa0) 
+  SPDM Message:
+    0000: 14 e0 00 a0 aa bb cc dd ee ff 00 a0
+342 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+343 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa1) 
+  SPDM Message:
+    0000: 14 e0 00 a1 aa bb cc dd ee ff 00 a1
+344 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+345 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa2) 
+  SPDM Message:
+    0000: 14 e0 00 a2 aa bb cc dd ee ff 00 a2
+346 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+347 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa3) 
+  SPDM Message:
+    0000: 14 e0 00 a3 aa bb cc dd ee ff 00 a3
+348 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+349 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa4) 
+  SPDM Message:
+    0000: 14 e0 00 a4 aa bb cc dd ee ff 00 a4
+350 (1789391806) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+351 (1789391806) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa5) 
+  SPDM Message:
+    0000: 14 e0 00 a5 aa bb cc dd ee ff 00 a5
+352 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+353 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa6) 
+  SPDM Message:
+    0000: 14 e0 00 a6 aa bb cc dd ee ff 00 a6
+354 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+355 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa7) 
+  SPDM Message:
+    0000: 14 e0 00 a7 aa bb cc dd ee ff 00 a7
+356 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+357 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa8) 
+  SPDM Message:
+    0000: 14 e0 00 a8 aa bb cc dd ee ff 00 a8
+358 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+359 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xa9) 
+  SPDM Message:
+    0000: 14 e0 00 a9 aa bb cc dd ee ff 00 a9
+360 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+361 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xaa) 
+  SPDM Message:
+    0000: 14 e0 00 aa aa bb cc dd ee ff 00 aa
+362 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+363 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xab) 
+  SPDM Message:
+    0000: 14 e0 00 ab aa bb cc dd ee ff 00 ab
+364 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+365 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xac) 
+  SPDM Message:
+    0000: 14 e0 00 ac aa bb cc dd ee ff 00 ac
+366 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+367 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xad) 
+  SPDM Message:
+    0000: 14 e0 00 ad aa bb cc dd ee ff 00 ad
+368 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+369 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xae) 
+  SPDM Message:
+    0000: 14 e0 00 ae aa bb cc dd ee ff 00 ae
+370 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+371 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xaf) 
+  SPDM Message:
+    0000: 14 e0 00 af aa bb cc dd ee ff 00 af
+372 (1789391807) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+373 (1789391807) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb0) 
+  SPDM Message:
+    0000: 14 e0 00 b0 aa bb cc dd ee ff 00 b0
+374 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+375 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb1) 
+  SPDM Message:
+    0000: 14 e0 00 b1 aa bb cc dd ee ff 00 b1
+376 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+377 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb2) 
+  SPDM Message:
+    0000: 14 e0 00 b2 aa bb cc dd ee ff 00 b2
+378 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+379 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb3) 
+  SPDM Message:
+    0000: 14 e0 00 b3 aa bb cc dd ee ff 00 b3
+380 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+381 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb4) 
+  SPDM Message:
+    0000: 14 e0 00 b4 aa bb cc dd ee ff 00 b4
+382 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+383 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb5) 
+  SPDM Message:
+    0000: 14 e0 00 b5 aa bb cc dd ee ff 00 b5
+384 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+385 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb6) 
+  SPDM Message:
+    0000: 14 e0 00 b6 aa bb cc dd ee ff 00 b6
+386 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+387 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb7) 
+  SPDM Message:
+    0000: 14 e0 00 b7 aa bb cc dd ee ff 00 b7
+388 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+389 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb8) 
+  SPDM Message:
+    0000: 14 e0 00 b8 aa bb cc dd ee ff 00 b8
+390 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+391 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xb9) 
+  SPDM Message:
+    0000: 14 e0 00 b9 aa bb cc dd ee ff 00 b9
+392 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+393 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xba) 
+  SPDM Message:
+    0000: 14 e0 00 ba aa bb cc dd ee ff 00 ba
+394 (1789391808) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+395 (1789391808) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xbb) 
+  SPDM Message:
+    0000: 14 e0 00 bb aa bb cc dd ee ff 00 bb
+396 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+397 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xbc) 
+  SPDM Message:
+    0000: 14 e0 00 bc aa bb cc dd ee ff 00 bc
+398 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+399 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xbd) 
+  SPDM Message:
+    0000: 14 e0 00 bd aa bb cc dd ee ff 00 bd
+400 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+401 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xbe) 
+  SPDM Message:
+    0000: 14 e0 00 be aa bb cc dd ee ff 00 be
+402 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+403 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xbf) 
+  SPDM Message:
+    0000: 14 e0 00 bf aa bb cc dd ee ff 00 bf
+404 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+405 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc0) 
+  SPDM Message:
+    0000: 14 e0 00 c0 aa bb cc dd ee ff 00 c0
+406 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+407 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc1) 
+  SPDM Message:
+    0000: 14 e0 00 c1 aa bb cc dd ee ff 00 c1
+408 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+409 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc2) 
+  SPDM Message:
+    0000: 14 e0 00 c2 aa bb cc dd ee ff 00 c2
+410 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+411 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc3) 
+  SPDM Message:
+    0000: 14 e0 00 c3 aa bb cc dd ee ff 00 c3
+412 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+413 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc4) 
+  SPDM Message:
+    0000: 14 e0 00 c4 aa bb cc dd ee ff 00 c4
+414 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+415 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc5) 
+  SPDM Message:
+    0000: 14 e0 00 c5 aa bb cc dd ee ff 00 c5
+416 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+417 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc6) 
+  SPDM Message:
+    0000: 14 e0 00 c6 aa bb cc dd ee ff 00 c6
+418 (1789391809) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+419 (1789391809) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc7) 
+  SPDM Message:
+    0000: 14 e0 00 c7 aa bb cc dd ee ff 00 c7
+420 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+421 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc8) 
+  SPDM Message:
+    0000: 14 e0 00 c8 aa bb cc dd ee ff 00 c8
+422 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+423 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xc9) 
+  SPDM Message:
+    0000: 14 e0 00 c9 aa bb cc dd ee ff 00 c9
+424 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+425 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xca) 
+  SPDM Message:
+    0000: 14 e0 00 ca aa bb cc dd ee ff 00 ca
+426 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+427 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xcb) 
+  SPDM Message:
+    0000: 14 e0 00 cb aa bb cc dd ee ff 00 cb
+428 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+429 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xcc) 
+  SPDM Message:
+    0000: 14 e0 00 cc aa bb cc dd ee ff 00 cc
+430 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+431 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xcd) 
+  SPDM Message:
+    0000: 14 e0 00 cd aa bb cc dd ee ff 00 cd
+432 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+433 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xce) 
+  SPDM Message:
+    0000: 14 e0 00 ce aa bb cc dd ee ff 00 ce
+434 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+435 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xcf) 
+  SPDM Message:
+    0000: 14 e0 00 cf aa bb cc dd ee ff 00 cf
+436 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+437 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd0) 
+  SPDM Message:
+    0000: 14 e0 00 d0 aa bb cc dd ee ff 00 d0
+438 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+439 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd1) 
+  SPDM Message:
+    0000: 14 e0 00 d1 aa bb cc dd ee ff 00 d1
+440 (1789391810) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+441 (1789391810) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd2) 
+  SPDM Message:
+    0000: 14 e0 00 d2 aa bb cc dd ee ff 00 d2
+442 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+443 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd3) 
+  SPDM Message:
+    0000: 14 e0 00 d3 aa bb cc dd ee ff 00 d3
+444 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+445 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd4) 
+  SPDM Message:
+    0000: 14 e0 00 d4 aa bb cc dd ee ff 00 d4
+446 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+447 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd5) 
+  SPDM Message:
+    0000: 14 e0 00 d5 aa bb cc dd ee ff 00 d5
+448 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+449 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd6) 
+  SPDM Message:
+    0000: 14 e0 00 d6 aa bb cc dd ee ff 00 d6
+450 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+451 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd7) 
+  SPDM Message:
+    0000: 14 e0 00 d7 aa bb cc dd ee ff 00 d7
+452 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+453 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd8) 
+  SPDM Message:
+    0000: 14 e0 00 d8 aa bb cc dd ee ff 00 d8
+454 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+455 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xd9) 
+  SPDM Message:
+    0000: 14 e0 00 d9 aa bb cc dd ee ff 00 d9
+456 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+457 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xda) 
+  SPDM Message:
+    0000: 14 e0 00 da aa bb cc dd ee ff 00 da
+458 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+459 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xdb) 
+  SPDM Message:
+    0000: 14 e0 00 db aa bb cc dd ee ff 00 db
+460 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+461 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xdc) 
+  SPDM Message:
+    0000: 14 e0 00 dc aa bb cc dd ee ff 00 dc
+462 (1789391811) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+463 (1789391811) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xdd) 
+  SPDM Message:
+    0000: 14 e0 00 dd aa bb cc dd ee ff 00 dd
+464 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+465 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xde) 
+  SPDM Message:
+    0000: 14 e0 00 de aa bb cc dd ee ff 00 de
+466 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+467 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xdf) 
+  SPDM Message:
+    0000: 14 e0 00 df aa bb cc dd ee ff 00 df
+468 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+469 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe0) 
+  SPDM Message:
+    0000: 14 e0 00 e0 aa bb cc dd ee ff 00 e0
+470 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+471 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe1) 
+  SPDM Message:
+    0000: 14 e0 00 e1 aa bb cc dd ee ff 00 e1
+472 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+473 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe2) 
+  SPDM Message:
+    0000: 14 e0 00 e2 aa bb cc dd ee ff 00 e2
+474 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+475 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe3) 
+  SPDM Message:
+    0000: 14 e0 00 e3 aa bb cc dd ee ff 00 e3
+476 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+477 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe4) 
+  SPDM Message:
+    0000: 14 e0 00 e4 aa bb cc dd ee ff 00 e4
+478 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+479 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe5) 
+  SPDM Message:
+    0000: 14 e0 00 e5 aa bb cc dd ee ff 00 e5
+480 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+481 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe6) 
+  SPDM Message:
+    0000: 14 e0 00 e6 aa bb cc dd ee ff 00 e6
+482 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+483 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe7) 
+  SPDM Message:
+    0000: 14 e0 00 e7 aa bb cc dd ee ff 00 e7
+484 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+485 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe8) 
+  SPDM Message:
+    0000: 14 e0 00 e8 aa bb cc dd ee ff 00 e8
+486 (1789391812) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+487 (1789391812) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xe9) 
+  SPDM Message:
+    0000: 14 e0 00 e9 aa bb cc dd ee ff 00 e9
+488 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+489 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xea) 
+  SPDM Message:
+    0000: 14 e0 00 ea aa bb cc dd ee ff 00 ea
+490 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+491 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xeb) 
+  SPDM Message:
+    0000: 14 e0 00 eb aa bb cc dd ee ff 00 eb
+492 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+493 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xec) 
+  SPDM Message:
+    0000: 14 e0 00 ec aa bb cc dd ee ff 00 ec
+494 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+495 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xed) 
+  SPDM Message:
+    0000: 14 e0 00 ed aa bb cc dd ee ff 00 ed
+496 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+497 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xee) 
+  SPDM Message:
+    0000: 14 e0 00 ee aa bb cc dd ee ff 00 ee
+498 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+499 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xef) 
+  SPDM Message:
+    0000: 14 e0 00 ef aa bb cc dd ee ff 00 ef
+500 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+501 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf0) 
+  SPDM Message:
+    0000: 14 e0 00 f0 aa bb cc dd ee ff 00 f0
+502 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+503 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf1) 
+  SPDM Message:
+    0000: 14 e0 00 f1 aa bb cc dd ee ff 00 f1
+504 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+505 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf2) 
+  SPDM Message:
+    0000: 14 e0 00 f2 aa bb cc dd ee ff 00 f2
+506 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+507 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf3) 
+  SPDM Message:
+    0000: 14 e0 00 f3 aa bb cc dd ee ff 00 f3
+508 (1789391813) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+509 (1789391813) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf4) 
+  SPDM Message:
+    0000: 14 e0 00 f4 aa bb cc dd ee ff 00 f4
+510 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+511 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf5) 
+  SPDM Message:
+    0000: 14 e0 00 f5 aa bb cc dd ee ff 00 f5
+512 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+513 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf6) 
+  SPDM Message:
+    0000: 14 e0 00 f6 aa bb cc dd ee ff 00 f6
+514 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+515 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf7) 
+  SPDM Message:
+    0000: 14 e0 00 f7 aa bb cc dd ee ff 00 f7
+516 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+517 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf8) 
+  SPDM Message:
+    0000: 14 e0 00 f8 aa bb cc dd ee ff 00 f8
+518 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+519 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xf9) 
+  SPDM Message:
+    0000: 14 e0 00 f9 aa bb cc dd ee ff 00 f9
+520 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+521 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xfa) 
+  SPDM Message:
+    0000: 14 e0 00 fa aa bb cc dd ee ff 00 fa
+522 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+523 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xfb) 
+  SPDM Message:
+    0000: 14 e0 00 fb aa bb cc dd ee ff 00 fb
+524 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+525 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xfc) 
+  SPDM Message:
+    0000: 14 e0 00 fc aa bb cc dd ee ff 00 fc
+526 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x7f) SPDM_ERROR (ErrCode=0x01(InvalidRequset), ErrData=0x00) 
+  SPDM Message:
+    0000: 14 7f 01 00
+527 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x00(), MeasOp=0xfd) 
+  SPDM Message:
+    0000: 14 e0 00 fd aa bb cc dd ee ff 00 fd
+528 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000087) 
+  SPDM Message:
+    0000: 14 60 00 00 01 87 00 00 fd 01 83 00 84 80 00 fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0020: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0040: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0060: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0080: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 86 d4 07 6a d7 1d b6 0b 29 fa 58 12 f7 ff 2d 27 9c
+    00a0: b2 a8 fe 76 8b 85 b1 ba c0 aa a0 44 c0 e9 94 00 00 aa bb cc dd ee ff 00 fd
+529 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0xfe, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 fe 99 f8 70 19 69 68 65 f1 39 fa 8b 9c 2a 9f fc 9c af cd fa b9 b2 54 f5 5d 37 5e 4d 6e
+    0020: 36 cf a2 00 00 aa bb cc dd ee ff 00 fe
+530 (1789391814) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000017, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 17 00 00 fe 01 13 00 85 10 00 3f 00 00 00 04 00 00 00 1f 00 00 00 11 00 00 00 29
+    0020: 4c 7f 78 f6 c9 85 c2 24 63 63 61 38 11 5f 4c 50 5e c1 41 63 e0 42 8e ee 36 fb f1 07 86 c9 73 00
+    0040: 00 aa bb cc dd ee ff 00 fe 01 47 84 99 8d aa ca e1 c5 74 7b 30 f5 87 28 e9 c6 51 d7 3f 25 45 2d
+    0060: 78 3e b2 94 21 f7 f0 52 e6 46 71 8c 96 01 95 45 6b 1c d3 62 96 5f 83 db 10 a6 7c e9 6d 7a c1 7e
+    0080: 47 8a 55 ed 78 fd ee 1e d4 44 55 00 40 6a fb f6 58 f8 64 31 57 38 36 4b 03 37 c0 d8 ec 99 67 2b
+    00a0: 23 32 0d 2c 86 52 cc ec 62 c7 ee fa 26 a6 5e bc 20 b5 26 03 26 e3 ff 4b d8 1b b4 28 e4 1b 39 38
+    00c0: 7b 2a 04 a3 28 65 60 3d f7 2a d0 c5 81
+531 (1789391814) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x01, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 01 ce ab 1c 35 57 24 dd 36 7f 88 97 10 6c 6c fe a9 e6 19 ad 9a 7c 32 12 a3 01 ee d8 ce
+    0020: b5 8d d4 ef 00 aa bb cc dd ee ff 00 01
+532 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 37 00 00 01 01 33 00 00 30 00 a1 d6 75 5d 00 a6 6c 12 e3 b5 f8 fe 51 44 41 59 4e
+    0020: d8 6e 8a 82 1d dc 55 b2 96 1f a7 1b 6d 8a 12 f8 f4 25 88 b7 c5 d8 36 2b 22 c6 dd 53 29 50 dc ff
+    0040: 25 8d 6a 95 8f e9 c6 e9 09 4c 18 fd 30 65 48 ae 93 66 08 48 98 4d 0b 4f 65 95 e2 2e 7c 55 8d 00
+    0060: 00 aa bb cc dd ee ff 00 01 00 f0 0c b3 79 db 1c d9 a7 59 da cc 68 2d 38 18 2e 8d 4d 9e f5 53 56
+    0080: 8d b0 47 dd b3 7d 93 2b 30 30 97 cd f6 d1 f7 dd 28 54 d1 28 26 a6 27 30 dd 51 25 3a 2a 74 b1 eb
+    00a0: 72 2f e7 dd c2 19 0a 4e 80 a9 bf 00 b7 cf c2 ac df 94 d9 67 57 37 f3 e6 6f 19 91 43 fb 46 bd 13
+    00c0: 22 f4 05 b1 b5 cc 88 68 5f fe 1b 05 4c 1b 37 bc d2 6c 16 e8 2c 3d 8c 17 1b b6 06 a8 41 c5 6d 65
+    00e0: 24 4a f1 ef ec a0 9a 68 11 05 67 7d a0
+533 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x02, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 02 81 4c 4d 99 7c 1b 24 73 3d ef 34 37 e7 88 47 92 d5 9c 2a f5 6e 95 ec 6a 8f 9f 84 c7
+    0020: b5 7f 41 5a 00 aa bb cc dd ee ff 00 02
+534 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 37 00 00 02 01 33 00 01 30 00 54 2d d4 0a 5c 22 4d c4 e7 05 82 0d 38 4f 38 c0 d5
+    0020: 9b 79 e1 28 e6 2a 79 72 32 01 0b 55 42 58 78 17 2b ed f2 68 d7 4a 0c 68 9d 9d 7c be 33 cf 86 e4
+    0040: 32 8e d1 8a 61 32 30 a5 83 33 bb d3 19 ef 7e c7 c9 ed af 87 be aa 39 c9 ea 33 61 a9 db 8f 0f 00
+    0060: 00 aa bb cc dd ee ff 00 02 01 fc e7 2e d0 96 8a fa ca a5 37 e2 96 9f 17 96 ac 8e fc 04 8a 26 1e
+    0080: a6 53 e2 62 37 65 40 83 07 a7 18 b8 3c b0 13 77 23 8e 49 b4 e7 a7 73 cd bd 4b 9b 15 1c 37 f2 02
+    00a0: 70 d5 f3 9f ee 5f 0b 49 a9 da d5 01 08 98 e3 11 3f 24 b3 69 6f 92 31 9e 2a a9 e5 26 f6 c1 9d 00
+    00c0: cd dc 4d 82 73 56 2b 69 2d 30 fe e7 1b 52 dd cf b5 50 50 a1 14 53 87 b8 17 06 26 dd ea df ba ba
+    00e0: 20 96 0e 2d 98 2e ca 3a 09 e9 94 0d 16
+535 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x03, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 03 ad 7f 1d 1b 35 c6 67 c7 d3 61 52 6c cd b4 13 6e 5c dd 12 9f 68 46 25 4c a7 ca d1 9e
+    0020: d3 5a fc d9 00 aa bb cc dd ee ff 00 03
+536 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 37 00 00 03 01 33 00 02 30 00 95 f8 56 71 91 2f 24 98 89 51 d8 1b b4 37 44 cf 8e
+    0020: c3 3b 0f 86 ca 9d 76 48 47 79 38 5a 82 2e 9d 81 f1 4f 4d 55 10 89 4b 44 24 2b 1b 83 a2 a2 c8 79
+    0040: 6c be 8b 83 f0 a5 48 16 3b f1 86 4a bc 43 fa 4e f5 0a 4f 76 bc 7d 74 5e 60 05 9f e8 3e 7d 32 00
+    0060: 00 aa bb cc dd ee ff 00 03 00 9a a2 e4 19 12 57 a7 f7 aa 02 de 77 03 82 b2 31 8c b4 5b 65 2f c5
+    0080: aa 6e e0 8b 13 9e e4 4f 90 55 d4 1d c4 86 60 8f 13 57 d1 46 a6 92 83 c3 72 3c 0b cc 82 84 34 3f
+    00a0: d9 04 66 3f f7 fa 26 56 18 01 d0 00 e2 f6 df f9 84 25 a9 c0 a0 da 47 7a 65 de 5e 0d 61 bc e2 3e
+    00c0: 59 e0 85 36 43 ed ae b7 ac 2b 54 15 06 16 44 63 5b 7f 15 96 8e 91 a4 6a 34 9f 7e 4f 6e cb 71 5c
+    00e0: ef b0 d5 da 33 d8 60 25 53 4f 39 58 f7
+537 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x04, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 04 a5 98 df 18 28 6e 0d f7 f7 47 49 c0 44 49 c3 a8 5f 6c 6c 84 45 1a a8 03 e5 ad 03 14
+    0020: 49 a7 bd a0 00 aa bb cc dd ee ff 00 04
+538 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 37 00 00 04 01 33 00 03 30 00 cd 4d da 8e b0 5d 30 be 81 09 57 e9 4a 9e b0 3e 20
+    0020: 70 4b 88 76 6c 81 5e 97 2f d9 74 cf 3e f2 c2 89 ec 03 50 8b de 94 45 3f f0 1b 17 c2 69 8a 90 2b
+    0040: fd 09 26 8c aa 17 1d 62 17 69 55 d7 7c b8 6c 90 1c 7b 8c 4c 64 82 b8 a1 8c 18 3d d2 ea a9 eb 00
+    0060: 00 aa bb cc dd ee ff 00 04 00 2b f0 c3 93 8c 3d 8f cb c4 a5 13 45 54 2f 13 e7 73 57 0c b0 62 67
+    0080: bd ca 45 05 0c a2 3f 69 64 59 21 0c 2c 16 78 f2 f7 db cf 30 e3 61 61 43 8e 33 e0 ef 27 bd 99 83
+    00a0: 56 e8 8f ac 93 4e 5f 1f 9b ea a5 01 28 fd 22 32 9c 1c 5c 6f 3d d3 46 6c 49 a6 e8 f1 4e 7e ac e7
+    00c0: 20 80 e2 05 67 15 a2 65 95 cb 23 14 1e bd 70 82 dc e1 9e 76 c4 70 0c c6 96 1b 60 56 d7 51 f1 53
+    00e0: 70 d5 db 3d 4d 52 fb b5 df 3e 2d cc 23
+539 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x10, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 10 db 20 6d f6 8e 07 14 d4 95 a2 60 a5 76 22 f5 85 8f 69 5e fc fc 8f 80 d8 41 c4 d0 2c
+    0020: 61 b4 a5 f6 00 aa bb cc dd ee ff 00 10
+540 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x0000000f, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 0f 00 00 10 01 0b 00 87 08 00 07 00 00 00 00 00 00 00 61 c2 02 2b 1a 6b 30 48 e1
+    0020: d9 ba 0a 2d cd c5 3b c6 79 48 17 7f 96 d4 38 04 d4 ca c2 d0 54 72 cd 00 00 aa bb cc dd ee ff 00
+    0040: 10 01 81 1d 36 89 9c 03 7b e2 4a de e9 e0 aa d0 ca bd 42 8f c8 11 14 b4 df 3e 1e 07 3c 63 f6 c8
+    0060: 0a af c6 a0 cc bf aa 7b 53 15 22 a0 f6 0b 5c 48 31 2e 35 e8 e1 4b 80 fc b7 9b 5b 2c 25 48 9f 68
+    0080: f5 41 38 01 88 06 ac 99 35 c1 7f a8 b5 8b 76 0e 24 17 f6 7c ea 20 1a 4b 7f 38 ce 8b 10 75 42 51
+    00a0: 42 9d eb 40 e0 ef 09 66 80 66 79 86 60 57 f9 29 c9 05 64 60 06 ef 16 cb f8 11 40 29 00 58 62 19
+    00c0: 73 9d 35 4f e6
+541 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0x11, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 11 43 dc a5 02 cf eb 14 4e 57 29 53 d5 34 f5 f2 a3 29 3d 55 c2 a5 68 89 55 e5 27 55 7c
+    0020: 1a 7c 7f 2b 00 aa bb cc dd ee ff 00 11
+542 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000037, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 37 00 00 11 01 33 00 08 30 00 f0 a9 50 2b bd b0 57 b9 4c 26 e8 80 5c 50 7d 20 dc
+    0020: 7a 4a fc 4f 0f ff 25 f6 03 01 26 40 0c 18 0b 8f c0 41 a9 2f 12 69 0f ab f7 0d 56 15 96 6e 5b fe
+    0040: 8c 89 ed c4 9b 5d 18 02 8d 25 34 77 87 cb 89 4e a6 44 ce 95 23 c3 34 b7 c1 35 af 9b a5 54 89 00
+    0060: 00 aa bb cc dd ee ff 00 11 01 40 1b 9b e5 38 cc d6 cb 36 64 4a 84 bb 2c 3e 6f 73 90 9e 37 cf e9
+    0080: 88 19 8a dc 1e 1d c5 b8 b7 5b ff a7 89 39 53 ec de 76 82 74 c4 ac 6a e1 75 b3 0f 21 7b 8d 15 ab
+    00a0: e6 14 f2 d4 54 4b 0b 66 cb 07 fe 01 7e e0 a0 a6 db 51 33 6a 58 fc 56 de 97 93 fe 1e df 95 ec 61
+    00c0: 81 72 c7 b0 54 a0 91 eb 46 ae 31 98 fb 5e 9d 73 3e 08 e1 64 94 62 1e 83 ee 99 6e c9 49 e1 50 c8
+    00e0: ca 0b e6 49 a9 22 d2 75 e1 2b cb 0c 64
+543 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0xfd, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 fd f8 f4 3a b0 25 b8 0f d7 36 f1 bc 22 d3 98 97 3b c9 d4 b2 06 82 c1 3a 36 30 89 33 56
+    0020: 47 87 91 e6 00 aa bb cc dd ee ff 00 fd
+544 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000087, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 87 00 00 fd 01 83 00 84 80 00 fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0020: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0040: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0060: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+    0080: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 5f b7 1b bc 77 97 3f 50 72 ea 00 45 f2 ca bf 62 cf
+    00a0: a3 0e 81 3d b3 c8 88 0a 32 b6 c9 23 66 91 e1 00 00 aa bb cc dd ee ff 00 fd 01 26 8d b3 b1 e2 bd
+    00c0: 42 1e fd 4b 7f 17 c6 2a 8e cd 3a 79 e6 08 12 a5 7d a5 56 82 00 fd 9c 41 19 a0 83 fe 63 0f 18 30
+    00e0: 61 10 78 2b 43 63 1f b4 04 53 72 99 bd 3e b8 4d 6e 00 a2 02 42 e5 e7 47 b3 ac 6b 00 96 c5 e6 41
+    0100: 58 0b 28 b0 45 9e 7c 04 8c 1b 1f 64 dc 89 04 d7 84 39 4c d7 e2 c3 07 a6 e6 a6 18 d6 fe 96 55 18
+    0120: 4a 13 1f 54 7d 52 7d d3 da 56 b1 1d ee 66 cb 37 01 ac 2a af d9 3a 1f 73 0d d4 9d 77 6b
+545 (1789391815) MCTP(5) REQ->RSP SPDM(14, 0xe0) SPDM_GET_MEASUREMENTS (Attr=0x01(GenSig), MeasOp=0xfe, SlotID=0x00) 
+  SPDM Message:
+    0000: 14 e0 01 fe b3 02 14 ea ef 05 37 16 b0 f5 a7 f2 e7 37 97 37 7c 0a c0 ca 96 c0 d6 81 14 56 04 bc
+    0020: ef 00 b3 dd 00 aa bb cc dd ee ff 00 fe
+546 (1789391815) MCTP(5) RSP->REQ SPDM(14, 0x60) SPDM_MEASUREMENTS (NumOfBlocks=0x01, MeasRecordLen=0x00000017, ContentChange=0x20(NoChange), SlotID=0x00) 
+  SPDM Message:
+    0000: 14 60 00 20 01 17 00 00 fe 01 13 00 85 10 00 3f 00 00 00 04 00 00 00 1f 00 00 00 11 00 00 00 18
+    0020: 00 16 88 c1 eb 59 ce ff 1c cc 48 cc b8 35 b8 a5 44 0e 10 72 a3 aa 13 dc 71 2a 85 5a 12 2e 5c 00
+    0040: 00 aa bb cc dd ee ff 00 fe 01 e3 66 71 75 00 ce 54 3a 8a fa 81 07 73 33 bd e3 21 45 75 58 7f 23
+    0060: 06 07 e5 5d 4d 77 b9 34 57 17 bb 56 b6 81 8d f3 85 96 56 9b 77 9d 1a 6b 44 71 eb 04 c7 1b c0 93
+    0080: 02 a4 05 f6 8b fb 12 1e 98 ac cc 01 5c cc 46 38 56 d6 10 d4 33 ff 74 ce 47 bf 41 7d 60 aa ce 91
+    00a0: 99 70 57 6b 60 b4 f1 35 0e b1 40 5e c6 f2 5f 33 4c 66 1b 28 4e 14 e0 b4 1f 37 bd 35 a9 cc 2d 81
+    00c0: 63 64 30 27 df 5b 00 b5 ee 94 d7 06 99
