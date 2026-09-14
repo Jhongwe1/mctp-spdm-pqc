@@ -153,12 +153,13 @@ fi
 
 step "python syntax (analysis tools)"
 if python3 -m py_compile harness/fields.py bench/pcapstat.py \
+                         bench/exp04_fragmentation.py \
                          harness/check_claims.py \
                          harness/lib/check_negotiated.py \
                          harness/lib/ci_tools_check.py \
                          device/gen_measurements.py rats/cose.py \
                          rats/appraise.py rats/rats_selftest.py; then
-    good "fields.py, pcapstat.py, gen_measurements.py and rats/ compile"
+    good "fields.py, pcapstat.py, exp04_fragmentation.py, gen_measurements.py and rats/ compile"
 else
     bad "an analysis tool has a syntax error"
 fi
@@ -462,6 +463,77 @@ elif [ -n "$badge" ] && [ "$scope" -gt "$badge" ]; then
     bad "scope statement (line $scope) comes after the badge (line $badge)"
 else
     good "scope at line $scope, badge at line ${badge:-none}"
+fi
+
+step "the fragmentation arithmetic, and the two formulas it is usually confused with"
+# ★ Two layers split a large SPDM message and they cost different things: a
+# chunk is a whole request/response round trip, an MCTP packet is a continuation
+# of one message. A tool that adds them together adds an RTT to a byte.
+#
+# The selftest does not check cases the right and wrong formulas agree on. It
+# checks the ones that separate them: 177 bytes at MTU 64 is 3 packets, and the
+# subtract-the-transport-header version everybody writes says 4.
+if out="$(python3 bench/exp04_fragmentation.py --selftest 2>&1)"; then
+    printf '%s\n' "$out" | sed -n '$p' | sed 's/^/  /'
+    good "the fragmentation formulas reject the versions they are confused with"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "bench/exp04_fragmentation.py --selftest failed"
+fi
+
+step "the chunk round-trip model reproduces the sweep it was built from"
+# ★ This is what makes the chunk numbers a MODEL rather than an extrapolation,
+# and therefore what makes them publishable without a "computed" label while the
+# MCTP numbers beside them carry one.
+#
+# The sweep varied DataTransferSize over a 32x range on one build and counted
+# what happened; this replays all twelve captures through the formula and
+# requires the same answer. A model that agreed at one point would be a
+# coincidence, which is why the check is the whole sweep and not one arm.
+sweep="$(ls -d bench/data/w8-dts-sweep-* 2>/dev/null | sort | tail -1)"
+if [ -z "$sweep" ]; then
+    bad "no bench/data/w8-dts-sweep-* run: the chunk model has nothing to be validated against, and an unvalidated model must not be published as a measurement"
+elif out="$(python3 bench/exp04_fragmentation.py --validate "$sweep" 2>&1)"; then
+    printf '%s\n' "$out" | sed -n '$p' | sed 's/^/  /'
+    good "the chunk model reproduces every measured round-trip count in ${sweep##*/}"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "the chunk model disagrees with the sweep it claims to describe"
+fi
+
+step "a flavor that is defined by a patch has that patch in this checkout"
+# harness/lib/common.sh's flavor_patch() names a patch a flavor cannot be built
+# without. third_party/<flavor>.pin records its SHA-256 at build time. If the
+# two disagree, a capture attributing itself to that flavor is attributing
+# itself to a build nobody can reconstruct — ADR 0009.
+#
+# Checked here rather than at build time because the failure it catches is a
+# patch edited AFTER a build: the pin still names the old digest and the tree
+# still compiles.
+patch_problems=0
+for pin in third_party/spdm-emu-*.pin; do
+    want_patch="$(sed -n 's/^flavor-patch=//p' "$pin" | head -1)"
+    [ -n "$want_patch" ] || continue
+    want_sha="$(sed -n 's/^flavor-patch-sha256=//p' "$pin" | head -1)"
+    if [ ! -f "$want_patch" ]; then
+        printf '  %s names %s, which is not in this checkout\n' "${pin##*/}" "$want_patch"
+        patch_problems=$((patch_problems + 1))
+        continue
+    fi
+    got_sha="$(sha256sum "$want_patch" | cut -d' ' -f1)"
+    if [ "$got_sha" != "$want_sha" ]; then
+        printf '  %s: %s has changed since the build\n' "${pin##*/}" "$want_patch"
+        printf '      pin says %s\n' "${want_sha:0:16}…"
+        printf '      file is %s\n' "${got_sha:0:16}…"
+        patch_problems=$((patch_problems + 1))
+    else
+        printf '  %s pins %s at %s…\n' "${pin##*/}" "$want_patch" "${got_sha:0:16}"
+    fi
+done
+if [ "$patch_problems" -eq 0 ]; then
+    good "every flavor patch a pin names is present and unchanged"
+else
+    bad "a pin and the patch it names have drifted apart"
 fi
 
 step "every document quoting a specification quotes the pinned one"
