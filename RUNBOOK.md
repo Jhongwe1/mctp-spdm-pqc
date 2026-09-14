@@ -911,8 +911,10 @@ python3 -c "import hashlib;print(hashlib.sha512(bytes([1])*72).hexdigest()[:32])
 這對範例程式來說完全合理,但它讓兩件事做不到:
 
 1. **沒有一個 byte 可以翻。** 篡改測試要有輸入,寫死在函式裡的常數不是輸入。
-2. **降版政策只有一個輸入值。** W07 那條 `evidence_svn >= reference_svn`
+2. **降版政策只有一個輸入值。** `evidence_svn >= reference_svn` 這條規則
    如果永遠只被餵 `7`,那條規則等於從來沒被測過 —— 不管你怎麼寫它都會過。
+   這三個值(5 / 7 / 9)就是 2026-09-14 那次改判準能被**量**出來的原因:
+   同樣四份 capture 跑新舊兩個政策,只有一格會動(§11.6)。
 
 ### 改了什麼(全部就這三行)
 
@@ -1340,7 +1342,8 @@ python3 rats/appraise.py matrix --check
 
 ```
 arm            record             appraisal   blocked by
-svn5           985df8524b6d0e08…  FAIL        SPDM_SVN_CHECK  [svn_mismatch: 16]
+svn5           985df8524b6d0e08…  FAIL        SPDM_SVN_CHECK  [svn_rollback: 16]
+svn9           cda33be106e759c3…  PASS
 t0_clean       f2a14684e8fae9ff…  PASS
 t1_meas        21ae49f9b66835f6…  FAIL        SPDM_HASH_CHECK  [digest_mismatch: 1]
 t2b_sig        f2a14684e8fae9ff…  PASS
@@ -1401,6 +1404,106 @@ python3 rats/cose.py verify -i rats/ref/clean.corim --key rats/keys/ref-signer.p
    `0xfe` device mode,都是 raw bit stream)。所以每一次判定都會印一行
    coverage:`6 of 8 blocks appraisable`。**「這台裝置通過了」跟
    「這台裝置在看得到的部分通過了」是兩句話**,那個數字就是差別。
+
+### 11.6 ★ 改判準沒有價值,能證明它有作用才有(W07 做的事)
+
+§11.5 那條流水線裡的政策,有一條規則從一開始就是**照抄 DMTF 範例**的:
+版本號比「完全相等」。
+
+```rego
+default SPDM_SVN_CHECK = false
+SPDM_SVN_CHECK { ev_svn == ref_svn }      # ← DMTF 範例,原文
+```
+
+#### 先講那個數字是什麼
+
+裝置回的 `MEASUREMENTS` 裡有八個量測區塊。其中 index `0x10` 那一塊不是雜湊,
+是**安全版本號**(SVN,Secure Version Number):8 個位元組、小端序,在我們的
+capture 裡是 `07 00 00 00 00 00 00 00`,也就是 7。
+
+```bash
+python3 harness/fields.py bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt \
+  --list-keys | grep '0x10'
+#   ...blocks.0x10.value_type_name = SECURE_VERSION_NUMBER
+#   ...blocks.0x10.value_hex       = 0700000000000000
+#   ...blocks.0x10.value_uint64    = 7
+```
+
+它跟其他區塊一起被裝置簽名,所以「**這台裝置說它是第 7 版**」是可信的。
+但「第 7 版**可不可以接受**」SPDM 不問也答不了——那正是要有參考值的理由。
+
+#### `==` 為什麼是錯的規則(兩個**方向相反**的理由)
+
+1. **韌體會升版。** 參考值一發布,任何裝了下一版的機器都會 fail。
+   一條「正常運作狀態就是整批紅」的規則,最後會被關掉。
+2. ★ **它看不出回滾是回滾。** 版本 5 對上參考值 7 → 拒絕。版本 9 對上同一份
+   參考值 → **也拒絕,同一條規則、同一個類別、同一個 index,輸出逐字相同。**
+   降到一個有已知漏洞的舊版,跟例行升級,是版本規則唯一存在的理由要分開的
+   兩件事,而它對兩者說了同一句話。
+
+#### 改成什麼(★【判】這是設計選擇,不是規格規定)
+
+逐 index、單向:`ev_svn[idx] >= ref_svn[idx]`。
+**放寬的只有「比較方向」,沒有放寬「必須被指名」**——三件事仍然擋:
+
+| 類別 | 擋什麼 | 為什麼還是要 fail |
+|---|---|---|
+| `svn_rollback` | 證據低於參考值 | 那就是攻擊 |
+| `svn_missing_from_evidence` | 參考值指名了 index,證據沒有版本號 | ★ 如果「沒回答」可以通過,**攻擊回滾規則最便宜的方法就是不要回答** |
+| `svn_not_in_reference` | 證據多報一個沒人背書的版本 | 參考值是「好長什麼樣」的完整陳述 |
+
+#### ★★ 怎麼證明「這個改動有作用,而且只有那一個作用」
+
+把舊的那份**凍結**成 `rats/policy-v0-equality.rego`,然後**同樣四份 capture、
+同一份參考值,跑新舊兩個政策**:
+
+```bash
+bash rats/test_svn_policy.sh
+```
+
+```
+case    arm         svn  == (frozen)                       >= (live)
+S-eq    t0_clean      7  PASS                              PASS
+S-up    svn9          9  FAIL SVN_CHECK svn_mismatch[16]   PASS                *
+S-down  svn5          5  FAIL SVN_CHECK svn_mismatch[16]   FAIL SVN_CHECK svn_rollback[16]
+S-hash  t1_meas       7  FAIL HASH_CHECK digest_mismatch[1]  FAIL HASH_CHECK digest_mismatch[1]
+
+  * the verdict moved between the two policies
+```
+
+**八格,只有一格動。** 這張表要這樣讀:
+
+- **看 frozen 那一欄的 S-up 跟 S-down:那是同一行字。** 這就是「分不出升版與
+  降版」的證據本身,不是我在描述它。
+- **S-up 動了**(fail → pass):合法升級不再被誤擋。這是改動的全部理由。
+- **S-down 沒動**(還是 fail):降版防護還在,而且現在它的類別叫
+  `svn_rollback`,**判定說得出它看到的是哪個方向**。
+- ★ **S-hash 沒動**(還是 fail,`digest_mismatch`):版本號是對的、量測值被改了
+  一個 byte。**這一格就是「我放寬了規則,有沒有把安全性放掉」這個問題的答案。**
+  兩條規則是 AND 的,我動的只有版本那一條。
+
+> 🔴 **最容易犯的錯:四個案例各自產一份參考值。** 那樣證據跟參考值出自同一堆
+> 位元組,**四個全 pass,而且你不會發現**。這四個共用 `rats/ref/clean.corim`
+> 一份,是從乾淨那次 capture 產的。
+
+#### ★ 誠實的那一段:放寬的代價
+
+`>=` 只擋得住「**低於參考值**」的回滾。一台已經在跑第 9 版的機器被刷回第 7 版,
+`7 >= 7` → **判 pass,而它確確實實被回滾了。**
+
+要擋那個,只有兩條路,這個專案兩條都沒有:
+
+- **參考值要隨著每次發布往前走** —— 那是**發布流程**的責任,不是政策檔的;
+- **verifier 要有狀態**(記住每台裝置看過的最大版本號)—— 這裡每次判定都是
+  一次性的推導,沒有地方放那個記號。
+
+這兩句寫在 `docs/rats-pipeline.md` §5 結果的**旁邊**,不是結尾。
+
+#### 為什麼 CI 要跑這張表(而不是只跑十條臂的矩陣)
+
+十條臂的矩陣只跑**一個**政策,所以「結果跟檔案說的一樣」在一個**什麼都沒改**的
+改動之後仍然成立。這張表跑兩個,並且斷言**恰好一格會動**——多動一格代表你
+連別的東西一起放寬了,一格都沒動代表你根本沒改到東西。
 
 ### `LOG.md` 是這個 repo 裡最難重建的檔案
 
@@ -1528,7 +1631,8 @@ R=$(ls -d bench/data/*-tamper-* | tail -1)
 python3 rats/appraise.py appraise "$R/t0_clean.decode.txt"   # 應 PASS,exit 0
 python3 rats/appraise.py appraise "$R/t1_meas.decode.txt"    # 應 FAIL,exit 1
 python3 rats/appraise.py matrix --check             # 十條臂,比對 out/expected.json
-python3 rats/appraise.py selftest                   # 十一個破壞,八個機制全要被打到
+python3 rats/appraise.py selftest                   # 每一種破壞法,八個機制全要被打到
+bash rats/test_svn_policy.sh                        # ★ 四案例 × 新舊兩政策,只有一格可以動
 #   exit 0 通過 · 1 判它失敗 · 2 判不出來。1 跟 2 一定要分開看
 
 # 中間步驟(想看某一段長什麼樣的時候)

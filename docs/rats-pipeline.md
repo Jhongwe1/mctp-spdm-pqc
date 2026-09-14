@@ -173,7 +173,7 @@ half is what the **appraisal** says about the same captures.
 | `t3_cert` | a certificate | device disk | never sent, `8001000a` | *no evidence* | |
 | `t3b_foreign` | *whose* certificate | device disk | completed | **PASS** | |
 | `svn5` | secure version number → 5 | device | completed | **FAIL** | `SPDM_SVN_CHECK`, index 16 |
-| `svn9` | secure version number → 9 | device | completed | **FAIL** | `SPDM_SVN_CHECK`, index 16 |
+| **`svn9`** | **secure version number → 9** | **device** | **completed** | **PASS** | |
 
 Produced by `python3 rats/appraise.py matrix`; every verdict is committed in
 [`rats/out/`](../rats/out) and re-derived by CI.
@@ -232,15 +232,17 @@ appraisal is a natural extension and is not done: this policy appraises
 measurements, and saying so is better than a policy that half-appraises
 identity.
 
-### Rows `svn5` and `svn9` are both wrong on purpose
+### Rows `svn5` and `svn9` are the same device, two directions
 
-Both fail, with the same check and the same message. A rollback to 5 and an
-upgrade to 9 are the same answer, which is exactly what a rollback rule exists
-to distinguish. The policy compares the secure version number for **equality**,
-which is what DMTF's sample does, and week 7 changes it to
-`evidence >= reference` with four cases — the fourth of which has to prove that
-loosening the version rule did not loosen the integrity rule. This table is the
-before.
+`svn5` is a **rollback** — the device reports a version below the one the
+reference value names — and it is refused, naming `svn_rollback` and index 16.
+`svn9` is an **upgrade**, and it passes.
+
+Until 2026-09-14 both rows read FAIL, refused by the same check with the same
+category and the same index: their output was byte-identical. That is what it
+means for a verifier to be unable to tell a routine update from an attack, and
+§5 is where the rule was changed, what the change cost, and the four cases that
+had to show it moved exactly one verdict.
 
 ---
 
@@ -349,6 +351,207 @@ And the verdict distinguishes three answers, not two:
 1 and 2 are kept apart deliberately. "The device is bad" and "I could not tell"
 are different answers, and a pipeline that conflates them reports a broken
 verifier as a failed device. The tool this replaced exits 0 for all three.
+
+### The secure version number: from equality to monotonic
+
+Everything above is about the digest half of the policy. The version half
+needed a different kind of change, and it is the one place where this policy
+**deliberately does something other than what the sample does** — not because
+the sample has a defect, but because the rule it implements is the wrong rule.
+That makes it a judgement, and it is marked as one.
+
+**What the sample asks.** Verbatim, from
+`spdm_emu/spdm_device_verifier_tool/SpdmSamplePolicy.rego` at the commit in
+[`third_party/spdm-emu-pqc.pin`](../third_party/spdm-emu-pqc.pin):
+
+```rego
+ev_svn[svn] {
+	evidence := evidence_arr[_]
+    svn := evidence.evidence.svn
+}
+
+default SPDM_SVN_CHECK = false
+SPDM_SVN_CHECK {
+    ev_svn == ref_svn
+}
+```
+
+A set of numbers from the device, a set of numbers from the reference value,
+compared for equality.
+
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt -->
+**What the number is.** DSP0274 carries it as a measurement block — index
+`0x10` in these captures, with a measurement value type of
+<!--claim layout.measurement_record.blocks.0x10.value_type=135-->`0x87`: the
+raw-bit-stream bit `0x80` set over DMTF type `0x07`, *secure version number*.
+Its value is <!--claim layout.measurement_record.blocks.0x10.value_bytes=8-->8
+bytes, little-endian, and on the wire it reads
+<!--claim layout.measurement_record.blocks.0x10.value_hex=0700000000000000-->`07 00 00 00 00 00 00 00`
+— <!--claim layout.measurement_record.blocks.0x10.value_uint64=7-->7.
+
+It is signed along with every other block, so the device's claim *"I am running
+version 7"* is authentic. Whether version 7 is **acceptable** is a question
+SPDM does not ask and cannot answer, and that is the whole reason there is a
+reference value at all.
+
+The type byte is worth the space it takes, because it was read off the wire
+rather than out of the specification's table of contents: a reader who assumes
+the type is `0x07` has the right DMTF number and the wrong field, and a parser
+written from that assumption walks past the only block a rollback rule can
+use.
+
+**Why equality is the wrong rule, in two opposite directions at once:**
+
+1. **Firmware is upgraded.** The moment a vendor publishes a reference value,
+   every machine that takes the *next* update fails — not because anything is
+   wrong with it, but because it moved. A rule whose normal operating condition
+   is a fleet-wide red is a rule that will be switched off.
+
+2. **★ It cannot see a rollback as a rollback.** Version 5 against a reference
+   of 7 is refused. Version 9 against the same reference is *also* refused,
+   **by the same check, with the same category, naming the same index**. Table
+   3 above used to carry both rows, and their outputs were byte-identical. A
+   downgrade to a version with a known vulnerability and a routine update are
+   the two things a version rule exists to tell apart, and this one produced
+   the same sentence for both.
+
+**What this policy asks instead.** Per index, and one-sided:
+
+```rego
+svn_rollback contains idx if {
+	some idx, floor in ref_svn
+	ev_svn[idx] < floor
+}
+```
+
+Three things were **not** loosened, and each is a separate named category so
+that a refusal can say which one fired — `docs/roadmap.md` standing rule 16:
+
+| category | what it catches | why it must still fail |
+|---|---|---|
+| `svn_rollback` | evidence below the reference | the attack |
+| `svn_missing_from_evidence` | the reference names an index, the evidence carries no version for it | ★ if silence satisfied a one-sided comparison, **the cheapest way to defeat a rollback rule would be to stop answering it** |
+| `svn_not_in_reference` | a version claim for an index nobody vouched for | the reference value is the complete statement of what good looks like |
+
+### The four cases, and the eight cells they occupy
+
+Changing an appraisal rule is worth nothing on its own. What is worth something
+is being able to show *which* verdicts the change moved and — harder, and the
+part a reviewer will actually ask about — which it did not.
+
+So the four cases are run **twice**: once under
+[`rats/policy.rego`](../rats/policy.rego) and once under
+[`rats/policy-v0-equality.rego`](../rats/policy-v0-equality.rego), a frozen
+copy of the file as it stood before the change. Same four captures, same signed
+reference value, same evidence path, same engine. Eight cells, and exactly one
+of them is allowed to differ.
+
+`bash rats/test_svn_policy.sh`, output as committed:
+
+```
+case    arm         svn  == (frozen)                       >= (live)
+------------------------------------------------------------------------------
+S-eq    t0_clean      7  PASS                              PASS
+S-up    svn9          9  FAIL SVN_CHECK svn_mismatch[16]   PASS                *
+S-down  svn5          5  FAIL SVN_CHECK svn_mismatch[16]   FAIL SVN_CHECK svn_rollback[16]
+S-hash  t1_meas       7  FAIL HASH_CHECK digest_mismatch[1]  FAIL HASH_CHECK digest_mismatch[1]
+
+  * the verdict moved between the two policies
+  reference value: rats/ref/clean.corim  (one, shared by all four)
+  captures:        bench/data/w5-tamper-20260910T092621Z
+```
+
+The three device states are what the captures actually carry, not what the
+fixtures asked for:
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/svn9.decode.txt -->
+<!--claim layout.measurement_record.blocks.0x10.value_uint64=9-->`svn9` put 9
+on the wire,
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/svn5.decode.txt -->
+<!--claim layout.measurement_record.blocks.0x10.value_uint64=5-->`svn5` put 5,
+and
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/t1_meas.decode.txt -->
+<!--claim layout.measurement_record.blocks.0x10.value_uint64=7-->`t1_meas` put
+7 — a correct version number beside an altered measurement, which is the
+combination S-hash needs.
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt -->
+
+| case | proves |
+|---|---|
+| **S-eq** | the control. The device is exactly what the reference describes; anything but a pass in either column means the comparison is broken rather than strict |
+| **S-up** | ★ **the cell that moves.** A legitimately upgraded device is refused by equality and accepted by the new rule. This is the entire practical case for the change |
+| **S-down** | ★ **rollback protection survived it.** Read the frozen column for S-up and S-down: *they are the same line.* That is what it means for a policy to be unable to tell an update from an attack, and it is now output rather than a sentence about output |
+| **S-hash** | ★ **the integrity rule was not loosened.** The version is correct and one byte of measurement index 1 is not. Both columns refuse it, by `digest_mismatch`, and neither column's version check fires at all |
+
+**S-hash is the row the table would be dishonest without.** Relaxing a rule
+invites exactly one question — *did you relax security?* — and the answer has
+to be a cell in a table rather than an assurance in a paragraph. The two rules
+are AND-ed: a version number higher than the reference and invented by an
+attacker still has to present firmware digests that match the reference value.
+
+Three properties of the script are not decoration:
+
+- **All four cases share one reference value**, minted from the clean capture.
+  Minting one per case is the mistake that produces four passing cases out of a
+  policy that does nothing, because the evidence and the reference would then
+  be derived from the same bytes.
+- **The evidence comes off the wire**, not out of the fixture the responder
+  read — the
+  <!--claim layout.measurement_record.record_bytes=528-->528-byte measurement
+  record sliced out of each `MEASUREMENTS` response. Appraising the fixture
+  would compare a document against itself.
+- **The detail categories are compared exactly, not as a superset.** A case
+  refused by the right check *and* by one nobody expected is a case whose input
+  broke more than it meant to (standing rule 13). And the verdict is read from
+  the JSON, after which the **exit code is required to agree with it** — which
+  is the upstream defect this project found on 2026-09-12, in a verifier that
+  printed a failure and exited 0.
+
+`harness/verify_repo.sh` and the `rats` CI job both run it. The ten-arm matrix
+they already ran cannot cover this: it evaluates one policy, so a change that
+did nothing at all would satisfy it forever.
+
+### What loosening it cost
+
+Two things, and the first is sharper than the objection people raise.
+
+**★ `>=` stops a rollback *below the reference value*, and nothing else.** A
+device running version 9, pushed back to version 7, satisfies this rule exactly
+— the reference says 7, and `7 >= 7`. That is a real rollback and this policy
+reports **PASS**. Nothing in the four cases above catches it, because nothing
+in a stateless comparison can: the verifier is not told what the device used to
+be.
+
+Closing it needs one of two things this project does not have:
+
+- a **reference value that moves forward** with every firmware the vendor
+  publishes, which makes rollback protection a property of the release process
+  rather than of a policy file; or
+- a **verifier with state** — a high-water mark per device, refusing anything
+  below the highest version it has ever seen from that device. Everything here
+  is a one-shot derivation, run from a capture, with nowhere to keep such a
+  mark.
+
+**And the smaller one:** a version number *higher* than the reference is
+accepted on the version rule alone, including one an attacker chose. That is
+not a hole, because the digest rule is AND-ed with it and an invented firmware
+does not hash to the reference value — but it is only not a hole *as long as
+the reference names the indices that matter*, which is why
+`svn_not_in_reference` fails closed rather than being ignored.
+
+Both are carried in §9 below and in
+[`docs/threat-scope.md`](threat-scope.md), and this paragraph is where they
+belong first — standing rule 5: a limitation stated beside the result is read,
+and one stated in a closing section is not.
+
+> One boundary worth recording, because it was **measured rather than
+> reasoned about**: the secure version number is a 64-bit value, and JSON is
+> where 64-bit integers lose their last digits — an IEEE-754 double carries 53
+> bits of mantissa, so 2<sup>64</sup>−1 and 2<sup>64</sup>−2 are the same
+> double. If any layer between the wire and the comparison rounded, a rollback
+> at the top of the range would appraise as PASS. It does not:
+> `rats/rats_selftest.py` runs both directions at 2<sup>64</sup>−1 and a CBOR
+> round trip at the same value, and all three hold. That is one command's worth
+> of evidence in place of a paragraph of confidence.
 
 ---
 
@@ -472,7 +675,7 @@ a skip.
 
 | | |
 |---|---|
-| the rollback rule | `evidence >= reference`, with four cases including one that proves the integrity half did not loosen. **Week 7** |
+| a rollback **above** the reference value | the rule is `evidence >= reference`, so a device on version 9 pushed back to 7 satisfies it exactly. Closing it needs a reference value that moves with each published firmware, or a verifier that remembers the highest version it has seen. §5 |
 | a reference value with independent provenance | see §1. The publisher and the device are the same person here |
 | the trust anchor in the appraisal | `t3b_foreign` passes, and an identity check is what would refuse it |
 | `MEASUREMENT_MANIFEST` and `DEVICE_MODE` | no evidence encoding exists; §4 |

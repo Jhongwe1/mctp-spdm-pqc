@@ -31,13 +31,16 @@ That means:
 
 - **there is no byte to flip.** A tamper test needs an input, and a constant
   compiled into a function is not one;
-- **a rollback policy has one input.** Gate 3's rule will be
-  `evidence_svn >= reference_svn`, and a rule fed a single value has never been
-  tested, whichever way round it is written. As of 2026-09-12 the policy
-  compares for **equality** — which is what DMTF's sample does — so `svn5` and
-  `svn9` are refused with the same check and the same message, and a rollback
-  is indistinguishable from an upgrade. That is the "before" week 7 changes,
-  and the three values on the wire are what makes changing it testable.
+- **a rollback policy has one input.** A rule fed a single value has never
+  been tested, whichever way round it is written. Since 2026-09-14
+  `rats/policy.rego` compares per index and one-sided —
+  `evidence_svn >= reference_svn` — and the three values this directory puts on
+  the wire, 5, 7 and 9, are what let that change be *measured* rather than
+  asserted: the same four captures are appraised under the new rule and under
+  a frozen copy of the equality rule it replaced, and exactly one verdict
+  moves. `bash rats/test_svn_policy.sh`, and
+  [`docs/rats-pipeline.md`](../docs/rats-pipeline.md) §5 for what the
+  loosening cost.
 
 So this directory supplies the values and **nothing else**.
 
