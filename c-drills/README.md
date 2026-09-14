@@ -26,8 +26,12 @@ value:
 Step 3 is the measurement. See SCORECARD.md for why that particular number is
 the one worth tracking.
 
-As of 2026-09-12 there are **seven** drills with a contract, tests and a stub,
-and **zero** in `DONE.txt`. That ratio is printed by
+As of 2026-09-14 there are **eight** drills with a contract, tests and a stub,
+and **zero** in `DONE.txt`. There is also a **timed paper** —
+[`mock/round1.md`](mock/round1.md), two unseen problems in forty-five minutes,
+set but not yet sat. The drills are practice with a known shape; the timed paper
+is the thing they are practice for, and its numbers go in the second table of
+[SCORECARD.md](SCORECARD.md). That ratio is printed by
 `harness/verify_repo.sh` on every run — as a report, not as a failure, because
 whether to spend an evening with paper is not a decision a script gets to
 make. What it does fail on is a drill listed as finished whose compile-error

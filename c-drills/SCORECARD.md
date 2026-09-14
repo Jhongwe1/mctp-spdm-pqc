@@ -68,8 +68,27 @@ second time, the only variable left is whether it was actually learned.
 
 | Round | When | Drills | Total compile errors | Notes |
 |---|---|---|---:|---|
-| 1st pass | W01–W07 | D1–D8, one per week | | |
+| 1st pass | W01–W08 | D1–D8, one per week | | |
 | full rewrite | W10 | all eight, paper only | | |
-| timed round 1 | W08 | two problems, 45 min | | |
+| timed round 1 | W08 | [`mock/round1.md`](mock/round1.md) — two unseen problems, 45 min | | **paper set 2026-09-14, not yet sat** |
 | timed round 2 | W11 | two problems, 45 min | | |
 | timed round 3 | W13 | two problems, 45 min | | |
+
+### Timed round 1, per problem
+
+The round is recorded per problem and not just as a total, because "went over
+time" has two opposite causes and only the per-problem minutes tell them apart:
+thinking too long calls for more paper dry-runs, writing too slowly calls for
+rote repetition. `mock/round1.md` §"After the clock stops" is the sheet to fill
+in; this is where the numbers land.
+
+| | minutes | inside the box? | compile errors | warnings | first sanitizer | categories |
+|---|--:|:--:|--:|--:|---|---|
+| P1 · reassemble a numbered sequence | | | | | | |
+| P2 · `packet_count` | | | | | | |
+
+★ **The third question on the sheet is the one to answer even if the numbers are
+bad.** P2 at `SIZE_MAX` is the same overflow class as `d2_offset_length`, which
+is the same class as a real libspdm advisory. If it did not transfer from the
+drill to the timed problem, that is a more useful finding than a low error
+count, and it belongs in the Notes column above in words.
