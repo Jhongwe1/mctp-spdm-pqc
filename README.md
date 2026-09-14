@@ -56,9 +56,11 @@ category 3 *and* at category 5, and lattice against hash-based signatures with
 the KEM held fixed. **The gap widens with the level: 8.99× at category 3 and
 10.91× at category 5.** One A/B could not have said that.
 
-**The negotiation is free, and it is free byte for byte.** Six extra arms did
+**The negotiation is free, and it is free to the byte.** Six extra arms did
 nothing but Version-Capabilities-Algorithms, and all six captures are 182 bytes —
-identical whether the thing being agreed is ECDSA P-384 or SLH-DSA-SHA2-128s.
+the same whether the thing being agreed is ECDSA P-384 or SLH-DSA-SHA2-128s. Not
+the same *bytes*: the algorithm fields carry different bits in fields of the same
+width, which is the point stated exactly.
 `ALGORITHMS` selects a *bit*. So none of the cost in Table 2 is paid to agree on
 an algorithm; all of it is paid afterwards, and 86% of it is the certificate
 chain. Then the same 152-byte subtotal was found inside every full capture, which
@@ -127,6 +129,48 @@ handshake.
 
 That closes Gate 4. Seventeen upstream candidates now carry evidence, four of
 them from this week, and the newest is a patch rather than a complaint.
+
+### ★ The independent variable, in full
+
+The proof that these comparisons are single-variable is not the flag list in
+`harness/run_pair.sh` — it is what is left when two arms' recorded command lines
+are compared flag by flag. Printed at the end of every run, and here verbatim
+from [`bench/data/w8-pqc-matrix-20260914T131557Z`](bench/data/w8-pqc-matrix-20260914T131557Z):
+
+```
+A0-all vs P2-all   (classical vs post-quantum, matched NIST category 3)
+  18 flags identical. The difference, in full:
+    --asym           ECDSA_P384           -> NONE
+    --dhe            SECP_384_R1          -> NONE
+    --kem            NONE                 -> ML_KEM_768
+    --pqc_asym       NONE                 -> ML_DSA_65
+    --pqc_first      <absent>             -> TRUE
+
+A1-all vs P3-all   (the same question, matched NIST category 5)
+  18 flags identical. The difference, in full:
+    --asym           ECDSA_P521           -> NONE
+    --dhe            SECP_521_R1          -> NONE
+    --kem            NONE                 -> ML_KEM_1024
+    --pqc_asym       NONE                 -> ML_DSA_87
+    --pqc_first      <absent>             -> TRUE
+
+P1-all vs S1-all   (lattice vs hash-based signatures, KEM held fixed)
+  22 flags identical. The difference, in full:
+    --pqc_asym       ML_DSA_44            -> SLH_DSA_SHA2_128S
+```
+
+**The third one is the point.** Twenty-two flags identical and exactly one
+different: the signature algorithm. Whatever the certificate chain does between
+those two arms — 12,266 bytes against 24,782 — it does because the signature
+family changed and for no other reason available.
+
+The first two cannot be one line, because a classical arm and a post-quantum one
+must turn each other's algorithm groups off; `NONE` in four places is what "off"
+is spelled as. Those four moves are the comparison. Nothing else moved, and the
+count is how you check that rather than taking the flag list on trust.
+
+These are **command lines recorded before each run**, not reconstructed after
+it, and each arm's copy sits in the run directory beside its capture.
 
 ### What week 7 established
 
@@ -812,8 +856,10 @@ because `DataTransferSize` is a compile-time constant with no flag, and it is a
 separate flavour rather than a rebuild of `pqc` so that every number already
 published still reproduces from `third_party/spdm-emu-pqc.pin`. Its sweep
 includes the unpatched build's own value as a **control**, and that arm
-reproduces `pqc`'s capture byte for byte — which is the only thing that makes the
-other five comparable to it. [ADR 0009](docs/decisions/0009-a-third-build-flavor.md).
+reproduces every count of `pqc`'s capture — bytes, packets, chunk round trips,
+and the per-message-type table — which is the only thing that makes the other
+five comparable to it. Not the file digest: nonces are random, so counts are the
+deterministic quantity here and content is not. [ADR 0009](docs/decisions/0009-a-third-build-flavor.md).
 
 ★ **What a pin records was wrong until 2026-09-14, in a way that mattered.**
 libspdm statically links its own OpenSSL from a submodule — **3.5.5** — and the

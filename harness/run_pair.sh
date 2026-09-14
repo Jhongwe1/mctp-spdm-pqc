@@ -416,13 +416,47 @@ done
 #
 # One pair per comparison the matrix was designed around. Everything a reader
 # has to take on trust about "single variable" is in these three diffs.
+#
+# ★ Compared FLAG BY FLAG and not line by line. `diff` on these files reports
+# that the whole `responder:` line changed, because it did — it is one line of
+# four hundred characters — so the output was six enormous lines that a reader
+# cannot extract anything from, which is worse than no diff at all: it looks
+# like evidence and carries none. Splitting into --flag/value pairs prints the
+# count that is identical and the short list that is not, and for P1 vs S1 that
+# list is one entry long.
 for pair in A0:P2 A1:P3 P1:S1; do
     a="${PROV_RUN_DIR}/${pair%%:*}-all.cmdline.txt"
     b="${PROV_RUN_DIR}/${pair##*:}-all.cmdline.txt"
     if [ -f "$a" ] && [ -f "$b" ]; then
         printf '\n'
-        hdr "${pair%%:*} vs ${pair##*:}  (--meas_op ALL)  — everything that differs"
-        diff "$a" "$b" | grep -E '^[<>]' | sed 's/^/  /'
+        hdr "${pair%%:*} vs ${pair##*:}  (--meas_op ALL)  — flag by flag"
+        python3 - "$a" "$b" <<'PYDIFF'
+import sys
+
+def flags(path):
+    for line in open(path, encoding="utf-8").read().split("\n"):
+        if line.startswith("responder:"):
+            argv = line.split(None, 2)[2].split()
+            out, i = {}, 0
+            while i < len(argv):
+                if argv[i].startswith("--"):
+                    if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                        out[argv[i]] = argv[i + 1]; i += 2
+                    else:
+                        out[argv[i]] = ""; i += 1
+                else:
+                    i += 1
+            return out
+    return {}
+
+a, b = flags(sys.argv[1]), flags(sys.argv[2])
+same = sum(1 for k in a if k in b and a[k] == b[k])
+print(f"  {same} flags identical. The difference, in full:")
+for k in sorted(set(a) | set(b)):
+    va, vb = a.get(k, "<absent>"), b.get(k, "<absent>")
+    if va != vb:
+        print(f"    {k:<16} {va:<20} -> {vb}")
+PYDIFF
     fi
 done
 

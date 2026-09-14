@@ -79,9 +79,10 @@ chunks; the number in the table is what they add up to, not what one chunk
 carried. Round trips are request/response pairs, counted from the request-coded
 message types.
 
-Nine of those cells are bound to their captures so a machine re-derives them on
-every build — `harness/fields.py --check`, reading `spdm_dump`'s decode, which is
-a different route from the `bench/pcapstat.py` one the table was built with:
+Fourteen values in and around that table are bound to their captures so a machine
+re-derives them on every build — `harness/fields.py --check`, reading
+`spdm_dump`'s decode, which is a different route from the `bench/pcapstat.py` one
+the table itself was built with:
 
 <!-- capture: bench/data/w8-pqc-matrix-20260914T131557Z/A0-all.decode.txt -->
 The classical chain is <!--claim certificate.responder_slot0_bytes=1655-->1,655
@@ -237,8 +238,15 @@ three reasons.
 
 Six extra arms ran `--exe_conn VCA`: Version, Capabilities, Algorithms, stop.
 
-**All six are 182 captured bytes, six packets, byte-for-byte identical.** 152
-SPDM bytes plus 6 × 5 bytes of MCTP framing.
+**All six are 182 captured bytes in six packets** — 152 SPDM bytes plus 6 × 5
+bytes of MCTP framing.
+
+The six capture *files* are not identical, and the reason is worth a sentence:
+they are all 302 bytes on disk with six different digests, because
+`NEGOTIATE_ALGORITHMS` and `ALGORITHMS` carry different algorithm *bits* in
+fields of the same width. That is the finding stated exactly — **same size,
+different selection** — and it is stronger than identical files would have been,
+because identical files would only have meant the arms did the same thing.
 
 That is the cleanest statement this table can make about where post-quantum cost
 lives: **not one byte of it is paid to agree on the algorithm.** `ALGORITHMS` is
@@ -431,10 +439,16 @@ cost — which is why the same 3% of bytes is worth having a figure about.
 
 Two things make the other five rows comparable to the fourth:
 
-- **The 4,608 row reproduces the unpatched build's capture exactly** — 6,559 and
-  58,966 bytes, 12 chunk round trips, the same numbers as `pqc` in Table 2. The
-  patch is therefore inert except where it is aimed, and that is a measurement
-  rather than a claim about a diff.
+- **The 4,608 row reproduces every count of the unpatched build's capture** —
+  6,559 and 58,966 captured bytes, 58,736 SPDM bytes, 46 packets, 12 chunk round
+  trips, and the per-message-type byte table entry for entry. The patch is
+  therefore inert except where it is aimed, and that is a measurement rather
+  than a claim about a diff.
+  ⚠️ The capture *files* are not identical and cannot be: `CHALLENGE` and
+  `GET_MEASUREMENTS` each carry a fresh 32-byte nonce. **Byte counts here are
+  deterministic and byte content is not**, which is why `bench/claims.json`
+  asserts counts at a tolerance of zero and nothing in this repository claims a
+  reproducible capture digest.
 - **The advertised value is read back off the wire in every arm** and the run
   fails if it is not what was asked for. §3 is why.
 

@@ -837,8 +837,11 @@ working route is to register a smaller receive buffer, which is where libspdm
 derives the value from in the first place.
 
 **Verified inert where it is not aimed:** the patched build told to use the
-unpatched build's value produces a byte-identical capture — 58,966 bytes, 46
-packets, 12 chunk round trips. `bench/claims.json` asserts it as
+unpatched build's value reproduces every count of that build's capture — 58,966
+captured bytes, 58,736 SPDM bytes, 46 packets, 12 chunk round trips, and the
+per-message-type byte table entry for entry. (Not the file digest: `CHALLENGE`
+carries a fresh nonce, so byte counts are deterministic here and byte content is
+not.) `bench/claims.json` asserts it as
 `dts_patch_is_inert_at_the_default_value`, and
 [ADR 0009](../decisions/0009-a-third-build-flavor.md) is why that assertion
 rather than a small diff is what makes the sweep admissible.

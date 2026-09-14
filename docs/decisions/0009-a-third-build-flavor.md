@@ -90,14 +90,21 @@ compile-time ceiling above.
 ### 4. ★ The sweep contains its own control, and the control is what makes the flavor admissible
 
 The sweep's six points include **4,608 — the value the unpatched `pqc` build
-computes**. That arm must reproduce `pqc`'s capture, and it does: 46 packets,
-58,966 captured bytes, 12 chunk round trips, identical to Table 2's P2 row.
+computes**. That arm must reproduce `pqc`'s capture, and it does on every count: 46 packets,
+58,966 captured bytes, 58,736 SPDM bytes, 12 chunk round trips, and the
+per-message-type byte table entry for entry — identical to Table 2's P2 row.
+
+⚠️ **On every count, and not in every byte.** `CHALLENGE` and `GET_MEASUREMENTS`
+each carry a fresh 32-byte nonce, so no two runs of the same arm produce the same
+file. Byte counts are the deterministic quantity here; byte content is not, which
+is why `bench/claims.json` asserts counts at a tolerance of zero and why nothing
+in this repository claims a reproducible capture digest.
 
 That is the decision's whole justification. A second build is only comparable to
 the first if something says so, and a diff does not: a patch can be small,
-correct-looking and still change a fourth number. **What says so is a capture
-from the new build being byte-identical to one from the old.** Without that row
-the other five would be measurements of an unknown binary.
+correct-looking and still change a fourth number. **What says so is a capture from the new build matching one from the old on
+every quantity this project measures.** Without that row the other five would be
+measurements of an unknown binary.
 
 The independent variable is also read back off the wire in every arm — the
 `DTS=` clause in `harness/lib/check_negotiated.py` requires both ends'
