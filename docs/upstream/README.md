@@ -34,6 +34,7 @@ needs a date attached to it.
 | Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
 | Fifth candidate found while writing a proxy | **done** | 2026-09-10 | `spdm-emu`: `command.h` documents the socket payload as starting at the SPDM header when a transport byte precedes it — see below |
 | Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
+| Thirteenth found while pinning an A/B's control variables | **done** | 2026-09-14 | `spdm-emu`: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back, and then makes the handshake impossible — the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported, and `--mut_auth NO` does not clear that capability bit. Six packets and a bare status code. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
 | **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | 2026-09-12 | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
@@ -614,6 +615,94 @@ The remaining one came from asking whether the policy that runs at the end
 actually checks what it appears to check — and it does not, which is in
 [`../rats-pipeline.md`](../rats-pipeline.md) §5 and is a finding about design
 rather than a defect to report.
+
+## A thirteenth, from a flag combination the parser accepts — 2026-09-14
+
+Turning mutual authentication off is the first thing anyone measuring a
+one-variable SPDM A/B has to do: left on, both arms carry a requester
+certificate chain the experiment never asked for, and in this project's
+2026-08-28 baseline that chain is 4,460 bytes — 22% of the capture.
+
+The obvious way to do it, and the one this project's own week plan specified:
+
+```bash
+--basic_mut_auth NO --mut_auth NO --req_asym NONE --req_pqc_asym NONE
+```
+
+Every one of those four is a value the argument parser accepts. `NONE` is in
+`m_asym_value_string_table` and in `m_pqc_asym_value_string_table`, both
+emulators echo the parsed values back (`req_asym - 0x0000`,
+`req_pqc_asym - 0x00000000`), and then the handshake dies after six packets:
+
+```
+ERROR: libspdm_init_connection - 0x8001000a
+```
+
+The capture says what the status code does not. The responder answers
+`NEGOTIATE_ALGORITHMS` with `ERROR(ErrCode=0x01, InvalidRequest)`, and the
+request that provoked it is missing both requester-signature AlgStructure
+tables — because `libspdm_req_negotiate_algorithms.c` emits each one only when
+the corresponding local algorithm is non-zero.
+
+`libspdm/library/spdm_responder_lib/libspdm_rsp_algorithms.c` is where it is
+refused:
+
+```c
+if (libspdm_is_capabilities_flag_supported(..., MUT_AUTH_CAP, MUT_AUTH_CAP) ||
+    libspdm_is_capabilities_flag_supported(..., EP_INFO_CAP_SIG, 0)) {
+    algo_size     = libspdm_get_req_asym_signature_size(req_base_asym_alg);
+    pqc_algo_size = libspdm_get_req_pqc_asym_signature_size(req_pqc_asym_alg);
+    if (((algo_size == 0) && (pqc_algo_size == 0)) ||
+        ((algo_size != 0) && (pqc_algo_size != 0))) {
+        return libspdm_generate_error_response(
+            spdm_context, SPDM_ERROR_CODE_INVALID_REQUEST, 0, ...);
+    }
+}
+```
+
+**Exactly one requester signature algorithm, never zero and never both** —
+whenever `MUT_AUTH_CAP` is mutually supported, or the requester merely
+advertises `EP_INFO_CAP_SIG`.
+
+The trap is that `--mut_auth` and `--basic_mut_auth` are **flow policy**. They
+decide whether the encapsulated exchange runs. They do not clear `MUT_AUTH_CAP`
+or `EP_INFO_CAP_SIG` out of `m_use_requester_capability_flags` in `key.c`, and
+both bits are set there by default — which this project's captures confirm
+rather than assume: `harness/fields.py` lists both in the requester's
+advertised flags in every arm.
+
+So a user who reads "mutual authentication off" as "the requester needs no
+signature algorithm" has read the flags correctly and reached a configuration
+that cannot complete, and the only diagnostic names a libspdm status code.
+
+### What could be reported
+
+Three shapes, in increasing order of how much they change:
+
+1. **A parse-time refusal.** `spdm_emu.c` already validates values against
+   tables; refusing `--req_asym NONE` together with `--req_pqc_asym NONE` with
+   a sentence naming `MUT_AUTH_CAP` costs a few lines and turns a six-packet
+   mystery into a message.
+2. **A note in the readme**, beside the flags. Cheapest, and the least likely
+   to be read at the moment it is needed.
+3. **Clear the capability bits when both algorithm sets are empty**, so that
+   asking for no requester signature produces a connection with no mutual
+   authentication rather than an error. This is the one that makes the flags
+   mean what they look like — and it is also the one that changes behaviour
+   other people may be relying on, which is why it is third rather than first.
+
+Evidence is committed: `bench/data/w7-pqc-ab-20260914T073732Z` holds four arms
+that work, and the bisection that isolated the pair is in `LOG.md` for
+2026-09-14. What this project does instead is pin the requester's own signature
+algorithm to one classical value in every arm, which costs one 4-byte
+`AlgStructure` entry that is byte-identical across the whole matrix —
+[`../pqc-cost.md`](../pqc-cost.md) §6.
+
+**Not yet reported.** It goes in the queue behind
+[`0001-corim-verify.md`](0001-corim-verify.md), which is prepared and waiting on
+a keystroke that is the author's; sending a second finding to a project before
+the first one has been sent is a way of having zero conversations rather than
+two.
 
 ## Three identity traps, all of which are silent until they are not
 
