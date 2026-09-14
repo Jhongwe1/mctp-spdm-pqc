@@ -1596,6 +1596,8 @@ bash harness/healthcheck.sh stable
 # ── 收證據(★ 七臂,有出處)────────────────────────────
 bash harness/capture.sh                       # 預設 --name w2-baseline
 bash harness/capture.sh --name w4-baseline    # 每週的基線換個名字
+bash harness/run_pair.sh                      # ★ PQC A/B 四臂,協商結果對不上就整個 run 失敗
+bash harness/run_pair.sh --only A0-all        # 只跑一臂(除錯用)
 
 # ── 改上游 · 篡改(★ W04~W05,見 §8.8 與 docs/tamper.md)──
 bash harness/apply_device_patch.sh pqc --build      # 裝 patch 並重建
@@ -1659,6 +1661,10 @@ python3 harness/pcapcount.py <file>.pcap --list         # 每個封包一行
 python3 bench/pcapstat.py <file>.pcap                   # 每種訊息幾個 byte
 python3 bench/pcapstat.py <file>.pcap --list            # 每個封包一行,含訊息名
 python3 bench/pcapstat.py <file>.pcap --check           # ★ 要跟 fields.py 一致
+python3 bench/pcapstat.py --selftest                   # ★ 餵它錯的答案,要求它拒絕
+python3 harness/check_claims.py                        # ★ 每一個跨 capture 的比值重算一次
+python3 harness/check_claims.py --show                 # 每個推導算出來是多少(含還沒宣告的)
+python3 harness/check_claims.py --selftest             # 把值漂 1%,要求它變紅
 #   它也會印憑證鏈:幾趟來回、每一趟幾個 byte、重建出來的總長對不對得上
 #   磁碟上那個 DER(4 + 48 + 1845 = 1897)
 
