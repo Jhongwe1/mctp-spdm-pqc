@@ -15,7 +15,7 @@
 |---|---|
 | 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
 | 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
-| **現在做到哪?** | ★★ **W07 收工(2026-09-14)**。**G1／G2 完成**(逐欄位文件、164 個數字由 CI 重算、三層鏈、**Table 1** 十條受控臂)。★★ **G3 完成**:那個「改裝置上的量測值、握手照樣完成、一個錯誤碼都沒有」的篡改被判 FAIL,而且版本規則從「完全相等」改成「不低於參考值」——**改判準本身沒有價值,所以舊政策被凍結起來,同樣四份 capture 跑新舊兩個政策,八格裡只有一格動**(§11.6)。🟡 **G4 起跑**:ML-DSA-65 對 ECDSA-P384,憑證鏈 **10.18×**、一個簽章 **+3,213 bytes**,而且**同一組 A/B 量兩種流程會得到 8.99× 與 6.01×**(`docs/pqc-cost.md`)|
+| **現在做到哪?** | ★★ **W08 收工(2026-09-14)**。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
 | ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
 | ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
 | ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**當時 128/128 通過(W03 之後是 164/164),而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
@@ -31,7 +31,7 @@
 | GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
 | 今天要做什麼? | **① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它現在是唯一一件急的。** **八**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`、`d8`。**實作永遠是你的**,`verify_repo.sh` 會把「八比零」印出來。D8 多要一句:寫下**為什麼回傳值是「想複製幾個」而不是「複製了幾個」** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ W08:另外四組演算法 ＋ **Figure 2**,以及讓 `pcapstat.py` 能把經過 chunking 的憑證鏈重組回來 |
 | 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠八題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第九個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
-| ⚠️ W07~W08 已知的障礙 | **系統 OpenSSL 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空** —— W03 的古典鏈不需要它(secp384r1 就夠),但要簽 **PQC 憑證**那條現在就是紅的。這跟 libspdm 無關(它自己編 OpenSSL submodule):**一個專案裡兩個 OpenSSL,只有一個被釘住** |
+| ⚠️ W08 之後仍然存在的障礙 | **一個專案裡兩個 OpenSSL。** libspdm 自己編 submodule 那份(**3.5.5**,PQC 就是它做的);系統的 `openssl` 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空,所以**要簽自己的 PQC 憑證那條是紅的**。★ 2026-09-14 補上的不是這件事——這一行從 W07 就在這裡了——補上的是**機制**:在那之前 `manifest.json` 只記系統那個 3.0.13,每一份 pin 只寫 `crypto=openssl`。**知道一件事,跟有東西把它記下來,是兩件事。** 現在 `crypto-openssl-vendored` 與 `crypto-openssl-version` 在三份 pin 裡,而且是用 `--pin-only` 補的,沒有重新編譯 |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
 | ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我 —— 但這一條在 09-12 變了一半。** 那個真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)**現在存在了**,它是三個 job 裡唯一一個會因為安全性質失效而變紅的。**還沒被保護的是**:沒有 `upstream` job(要 G6);`rats` job 斷言的是「這十條臂的判定必須是這些答案」,不是「這個政策抓得到所有壞東西」;而 `t3b_foreign` 那條——對的量測、錯的憑證來源——兩層都判 PASS,因為身分不在這個政策的職責裡。**沒裝 `opa` 的機器跑 `verify_repo.sh` 會直接紅**,不會靜靜跳過(2026-09-13 拿掉 PATH 實測過)。09-14 之後多了兩件被保護的事:**版本規則的四案例表**(八格只有一格可以動)、以及 **`bench/claims.json` 裡每一個跨 capture 的比值**(容差 0%,拿掉一個位元組就紅)<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
 
@@ -43,7 +43,7 @@
 | G1 | 完整握手、逐欄位 | ✅ **完成** — 7 個訊息對逐欄位標註,**164** 個數字由 CI 驗證,其中 **4 個訊息對的位移是從線上重建出來的**。剩下三個為什麼比較難(而不只是還沒做),寫在文件 §10 |
 | G2 | 憑證鏈與三點篡改 | ✅ **完成** — 自己簽的三層鏈在線上量到 1897 bytes,**而且現在有三個互不相干的工具各算一次**(憑證檔 / 解碼 / capture)。**Table 1** 五列、十條受控臂,`docs/tamper.md`。篡改點 ② 需要一支 proxy,做出來之後變成兩列 —— 因為「錯誤訊息一樣、根因相反」那一對其實住在裡面 |
 | G3 | RATS 驗證流水線 | ✅ **完成** —— 參考值、COSE 簽章背書、政策、判定,十條臂全跑過一遍(**Table 3**,`docs/rats-pipeline.md`)。**那個沒有任何一層擋得住的篡改被擋下來了,而且指得出是哪一條規則、哪一個 index。** 版本規則也收尾了:改成逐 index 的「不低於參考值」,舊的那份被**凍結**成 `rats/policy-v0-equality.rego`,四份 capture 跑兩個政策、**八格只有一格動**,CI 斷言這件事(§11.6)。放寬的代價寫在結果旁邊:`>=` 只擋得住低於參考值的回滾 |
-| G4 | 後量子成本 | 🟡 **進行中**(W07 起跑,W08 主體)—— 六組裡的兩組,安全等級對齊(NIST level 3):憑證鏈 1,655 → 16,853 bytes(**10.18×**)、一個簽章 **+3,213 bytes**、`CHUNK_RESPONSE` 0 → 12。**十八個控制變因是從 `key.c` 讀出來的,不是從 `--help`**,而且每一臂都把協商結果讀回來比對,對不上就整個 run 失敗。`docs/pqc-cost.md` |
+| G4 | 後量子成本 | ✅ **完成**(W07 起跑,W08 收)—— **六組全部**,排成三組對齊的比較:古典 vs 後量子在 **NIST level 3 與 level 5 各一組**(8.99× 與 **10.91×**,缺口隨等級變大),以及格基 vs hash-based 在同一個 KEM 下比。**十八個控制變因是從 `key.c` 讀出來的,不是從 `--help`**,每一臂把十二組協商結果加四個推導事實讀回來比對,對不上就整個 run 失敗。**Figure 2／Figure 3**、`docs/pqc-cost.md`、`docs/fragmentation.md` |
 | G5 | 真實傳輸 | ⬜ 未開始(W09) |
 | G6 | 一致性與負面測試 | ⬜ 未開始(W10~W11) |
 | G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。十三個候選有證據,送出去的是零 |
@@ -1533,6 +1533,104 @@ S-hash  t1_meas       7  FAIL HASH_CHECK digest_mismatch[1]  FAIL HASH_CHECK dig
 改動之後仍然成立。這張表跑兩個,並且斷言**恰好一格會動**——多動一格代表你
 連別的東西一起放寬了,一格都沒動代表你根本沒改到東西。
 
+### 11.7 ★ 量一個「沒有旗標可以下」的參數(W08 做的事)
+
+前面幾週量的都是「換一個演算法,看位元組差多少」。這一節是另一種問題:
+**想量的東西不是旗標,是編譯期常數。**
+
+#### 為什麼非量它不可
+
+`DataTransferSize` 是一端告訴對方「我一次最多收得下幾個位元組」。訊息超過它,
+SPDM 就會 **chunk**:
+
+```
+GET_CERTIFICATE  ──▶  ERROR(0x0F, LargeResponse)      ← 「這個回應塞不進去」
+CHUNK_GET(0)     ──▶  CHUNK_RESPONSE(0)               ← 一次完整的來回
+CHUNK_GET(1)     ──▶  CHUNK_RESPONSE(1)               ← 又一次
+...
+```
+
+**每一塊都是一次完整的請求／回應,也就是一個匯流排 RTT。** 在 SMBus 100 kHz
+上,RTT 是比頻寬更貴的那一半。所以這個參數不是「調大一點比較快」那種調校,
+它決定來回次數。
+
+而 `spdm-emu` 沒有這個旗標。它是:
+
+```c
+/* spdm_emu/spdm_emu_common/spdm_emu.h */
+#define LIBSPDM_DATA_TRANSFER_SIZE (LIBSPDM_RECEIVER_BUFFER_SIZE - (標頭 + 尾))
+```
+
+要掃六個值,就要重建六次 build,每次十幾分鐘,而且六個 build 之間的差異
+無法跟「參數造成的差異」分開。
+
+#### 做法:一個 patch,一個新 flavor,一次重建
+
+```bash
+# 1) 建第三個 flavor。--seed-from 會複製 pqc 的原始碼樹,不用再下載幾 GB
+bash harness/build_spdm_emu.sh pqc-dts --seed-from pqc
+
+# 2) 掃描。十二臂,一個 build,約兩分鐘
+bash harness/run_pair.sh --set dts --flavor pqc-dts --name w8-dts-sweep
+
+# 3) 模型要對得上量測,對不上就不准發表
+python3 bench/exp04_fragmentation.py --validate bench/data/w8-dts-sweep-*
+```
+
+`transport/data-transfer-size.patch` 加的是 `--data_transfer_size <bytes>`,
+而且**只能往小的調**——告訴對方你收得下比你真的收得下更多,是對方會照做的謊。
+
+#### 🔴 三件這一節真正要學的事
+
+**① 「第二個 build 跟第一個可比」這句話要有東西撐。**
+patch 看起來再小、再對,都可能改到第四個數字。所以掃描的六個點裡,
+**故意放一個是沒 patch 的 build 自己算出來的值(4608)**:
+
+```
+P2-dts4608   46 packets   58,966 bytes   12 chunk 來回
+P2-all       46 packets   58,966 bytes   12 chunk 來回     ← 沒 patch 的 pqc build
+```
+
+一模一樣。**這個「對照點」才是那個 patch 可以用的理由,diff 不是。**
+
+**② 旗標是請求,不是事實——連傳輸參數也一樣。**
+第一版 patch 用 `libspdm_set_data()` 設 DataTransferSize。它回
+`LIBSPDM_STATUS_INVALID_STATE_LOCAL`(0x80010002),因為那個欄位在 buffer
+註冊完之後就不准改了。**十二臂全部跑完、全部 exit 0、全部宣告的演算法都對,
+而 DataTransferSize 全部是編譯期的值。**
+
+抓到它的是 `check_negotiated.py` 新加的 `DTS=` 判斷:它從 pcap 的
+`CAPABILITIES` 把兩邊宣告的值讀回來,跟這一臂要求的比。
+那次失敗的 run 我留著沒刪(`bench/data/w8-dts-sweep-20260914T132232Z`)——
+標準規則 11 要求「每個檢查都要被看到擋下過東西」,那個目錄就是證據。
+
+**③ 模型跟外插是兩件事。** 掃描只有 1024 到 32768 六個點。
+`bench/exp04_fragmentation.py` 的公式
+
+```
+chunks(L, DTS) = 0                                     若 L <= DTS
+               = 1 + ceil( (L - (DTS-16)) / (DTS-12) ) 否則
+```
+
+被要求重現全部十二個 capture 的實測值,**十二個全中**。過了這一關,
+它才可以用來講 42 或 256(真實 SMBus 裝置會宣告的值)——而那時候要說清楚
+「這是模型的延伸,不是量測」。
+**MCTP 的分段數則相反:沒有任何一個 capture 走過真的 MCTP,所以一律標
+`[computed]`。** 見 `docs/fragmentation.md`。
+
+#### 這一節產出的數字(拿去面試講的就是這三個)
+
+| | 值 |
+|---|---|
+| 32 倍的 DataTransferSize 範圍內,位元組變化 | **3.1%** |
+| 同一個範圍內,chunk 來回次數 | **59 → 0** |
+| 把 responder 的 `CHUNK_CAP` 拿掉之後 | 少 3 次來回、少 9 個位元組 |
+
+最後一列是反直覺的那個:**關掉 chunking 反而變便宜。** 因為 libspdm 在沒有
+chunking 可用的時候,會改用 `GET_CERTIFICATE` 的 `Offset`/`Length` 分段取,
+而那條路省掉了三次「問了被拒絕」的來回。這是 libspdm **requester 策略**的性質,
+不是 DSP0274 的性質——這句限定要講出來。
+
 ### `LOG.md` 是這個 repo 裡最難重建的檔案
 
 不是 README。README 可以從結果反推出來,`LOG.md` 不行——
@@ -1624,8 +1722,21 @@ bash harness/healthcheck.sh stable
 # ── 收證據(★ 七臂,有出處)────────────────────────────
 bash harness/capture.sh                       # 預設 --name w2-baseline
 bash harness/capture.sh --name w4-baseline    # 每週的基線換個名字
-bash harness/run_pair.sh                      # ★ PQC A/B 四臂,協商結果對不上就整個 run 失敗
+bash harness/run_pair.sh                      # ★ PQC 矩陣二十臂,協商結果對不上就整個 run 失敗
+bash harness/run_pair.sh --list              # 先看這次會跑哪些臂(不跑)
+bash harness/run_pair.sh --set ab            # 只跑原本的 A0/P2 四臂
 bash harness/run_pair.sh --only A0-all        # 只跑一臂(除錯用)
+
+# ── ★ DataTransferSize 掃描(W08,見 §11.7)─────────────
+bash harness/build_spdm_emu.sh pqc-dts --seed-from pqc   # 第三個 flavor,一次
+bash harness/run_pair.sh --set dts --flavor pqc-dts --name w8-dts-sweep
+python3 bench/exp04_fragmentation.py --validate bench/data/w8-dts-sweep-*
+python3 bench/exp04_fragmentation.py bench/data/w8-pqc-matrix-*/P2-all.pcap --mtu 64 128 256
+
+# ── 把 pin 補正確,但不要重新編譯 ────────────────────────
+bash harness/build_spdm_emu.sh pqc --pin-only  # ★ 只重寫 BUILD_PIN.txt
+#   2026-09-14 用它把「libspdm 自己那份 OpenSSL 3.5.5」補進所有 pin。
+#   重建會換掉已發表數字背後的執行檔,所以不能用重建來修 provenance。
 
 # ── 改上游 · 篡改(★ W04~W05,見 §8.8 與 docs/tamper.md)──
 bash harness/apply_device_patch.sh pqc --build      # 裝 patch 並重建
