@@ -3655,3 +3655,264 @@ replaces with a mechanism wherever it can.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
 
+
+## 2026-09-14 · Day 10 · a flag that was accepted and ignored, twice, in two different programs
+
+Gate 4 closed. Six algorithm groups, a DataTransferSize sweep on a build made to
+have one, two figures, a chunk reassembler, and four upstream candidates. The
+entry below is about one shape that turned up three times in one day, because
+that is the part worth keeping.
+
+### The parameter with no flag, and the flag that did nothing
+
+**現象** `DataTransferSize` decides whether a message crosses the wire once or as
+a chunking exchange, and a chunk costs a whole request/response round trip. It is
+the parameter a BMC integrator tunes. `spdm-emu` has no flag for it: it is
+`LIBSPDM_RECEIVER_BUFFER_SIZE` minus transport overhead, in a header.
+
+So I patched one in, built a third flavour, and swept six values from 1,024 to
+32,768. Twelve arms. Every one exited 0. Every one negotiated exactly the
+algorithms it declared. **And every one advertised 32,768.**
+
+**假設** Three, in the order I could test them.
+
+1. **The flag never reached the parser.** Cheapest to check and the most common
+   cause of "my flag did nothing" — a typo, or a parse arm that never fires.
+2. **The flag reached the parser and the value was overwritten afterwards** by
+   something later in initialisation.
+3. **The flag reached the right place and the library refused it**, silently,
+   because I ignored a return value.
+
+**先驗哪個、為什麼** I checked ① first, and not because it was most likely. It was
+because it is the only one of the three that is answered by a file I already had:
+the requester's own log, already written, already committed. `grep` on it costs
+nothing and eliminates a whole branch. It was there:
+`data_transfer_size - 0x00000400`. So the parse fired and ① was gone in about
+four seconds.
+
+That left ② and ③, which are both "somewhere inside libspdm", and here I made the
+mistake worth writing down: **I tried to answer them by reading.** I read
+`libspdm_register_device_buffer_func`, then `libspdm_register_transport_layer_func`,
+then `libspdm_check_context`, then every assignment to
+`local_context.capability.data_transfer_size` in the library, then
+`need_session_info_for_data`, then the capabilities message builder — to establish
+that nothing overwrote my value. Which was *true*, and which is why reading could
+never have found the answer: **③ is not visible in any of the code that runs. It
+is visible only in the value I threw away.**
+
+The thing that answered it in one incremental rebuild was four lines:
+
+```c
+libspdm_return_t dts_status = libspdm_set_data(...);
+printf("data_transfer_size applied - 0x%08x status 0x%08x\n",
+       m_use_data_transfer_size, (unsigned int)dts_status);
+```
+
+`status 0x80010002` — `LIBSPDM_STATUS_INVALID_STATE_LOCAL`. The field cannot be
+set once the buffers are registered. Twenty minutes of reading, replaced by one
+print of a return value I had discarded on the line I wrote it.
+
+**根因** Two, and only one of them is in the patch.
+
+The patch's own bug is that `libspdm_set_data` is the wrong mechanism for this
+field, and the right one is to register a smaller receive buffer — which is where
+libspdm derives the value from in the first place, so the documented route was
+always the simpler one. Rewritten that way it worked first try, and the wire
+agreed: `DataTransSize=0x00000400` on both sides.
+
+The reason it *cost* twenty minutes is that **I ignored a `libspdm_return_t`.**
+Every call in that library returns one. I wrote the call, did not assign the
+result, and then went looking for an explanation in the places where an
+explanation could not be.
+
+**教訓** Three, and the third is the one I want to still believe in December.
+
+**① A check earns its place by rejecting something, and this one did on its first
+run.** I had added a `DTS=` clause to `check_negotiated.py` that hour, for a
+reason that felt like box-ticking: DataTransferSize is not an algorithm, so the
+existing negotiation check did not look at it, and it seemed wrong to read eleven
+independent variables back off the wire and take the twelfth on trust. That clause
+is the only thing standing between this repository and a published
+"DataTransferSize sweep" in which the parameter never moved — twelve captures,
+each honestly labelled with the value it was *asked* for, showing a beautiful
+flat line. Exit codes would not have caught it. Byte totals would not: they *did*
+differ between arms, because the arms differ in other ways. **What caught it was
+reading the independent variable back out of the message that carries it.** I have
+now written that rule into a harness three times — 2026-08-17 for algorithms,
+2026-09-14 for this — and both times it found something, and both times I had
+thought of it as diligence rather than as a load-bearing part of the experiment.
+The rejected run is kept at `bench/data/w8-dts-sweep-20260914T132232Z` because
+standing rule 11 asks for evidence that a check rejects, and a directory of twelve
+refused captures is better evidence than an argument.
+
+**② "Read the source before writing the flag" is not the whole rule. The other
+half is: read the source to find out WHERE to look, then measure.** Week 1's
+lesson was the opposite mistake — I read `--help` instead of the source and it
+cost a day. The correction overshot. Today I read the source *instead of*
+measuring, on a question the source structurally could not answer, because the
+failing branch was a return value nobody stored. Reading tells you which
+mechanisms exist. It does not tell you which one returned an error. The cheap
+instrument beats the careful argument, and an incremental rebuild here is ninety
+seconds.
+
+**③ ★ The same shape appeared three times today, in three different programs, and
+the third time was mine.** A flag that is accepted, confirmed, and then has no
+effect:
+
+- **`--cap` on `spdm_requester_emu`.** Parsed, validated against the requester's
+  own capability table, echoed back as `cap - 0x8882f7c6`, stored in
+  `m_use_capability_flags` — and only `spdm_responder_spdm.c:174` ever reads that
+  variable. The requester ignores it, and tells you it accepted it.
+- **Every invalid argument in `spdm-emu`** ends `print_usage(); exit(0)`. A typo
+  in a flag produces a process that exited *successfully* without speaking SPDM.
+  I have now seen this exact shape in DMTF's `CoRimTool.py verify` too, which on
+  2026-09-12 reported failure on stdout and exited 0.
+- **My own patch**, above. Accepted, echoed, refused, and silent about the
+  refusal.
+
+The common structure is that an acknowledgement was produced by a *different*
+piece of code from the one that would have acted on it. `cap - 0x...` is printed
+by the parser and consumed by nobody. `exit(0)` is written by the error path. My
+`printf` reported the value I *asked* for and not the value that took effect. **So
+the design rule is: never let a program confirm a request; let it report the
+state.** `harness/run_pair.sh` does not print the flags it passed — it prints what
+came back off the wire, and refuses the run when the two disagree. That is the
+same rule, and it is why today's mistake cost twenty minutes instead of appearing
+in a table.
+
+### Two provenance holes, one of which was already written down
+
+**現象** While auditing what the sweep's second build meant, I checked what a
+`manifest.json` actually attests to. Two things it does not.
+
+`libspdm` statically links **its own OpenSSL**, from a submodule: 3.5.5. The
+system `openssl` is 3.0.13. ML-DSA, ML-KEM and SLH-DSA arrived in OpenSSL 3.5.
+Every manifest recorded `openssl_cli: OpenSSL 3.0.13`, every pin said
+`crypto=openssl`, and **the library that computed every post-quantum signature
+this project has published appeared nowhere.** A reader taking the recorded
+version for the backend would conclude the captures are impossible.
+
+And separately: `harness/apply_device_patch.sh` has been leaving
+`DEVICE_PATCH.txt` beside `BUILD_PIN.txt` since 2026-09-01, and nothing folded it
+into a manifest. Every capture since then came from a binary that is the pinned
+commit *plus a patch*, and said so nowhere. (Those captures are still valid — the
+patch is inert unless `SPDM_MEASUREMENTS_FILE` is set, and the A/B clears it per
+arm — but "still valid" is a thing the reader has to be able to check.)
+
+**假設** Not needed. The interesting question was not what was wrong.
+
+**先驗哪個、為什麼** The question worth asking was **why five weeks of end-of-day
+audits did not catch it**, and the answer was in `RUNBOOK.md`. Its obstacles
+table has said, since week 7:
+
+> **一個專案裡兩個 OpenSSL,只有一個被釘住**
+> *(two OpenSSLs in one project, only one of them pinned)*
+
+**I knew. I wrote it down. In prose.** And then every audit for five weeks read
+that line, understood it, and moved on, because the audits check that documents
+agree with the repository and that document was *correct*.
+
+**根因** A defect recorded as prose is not a defect that gets fixed. Standing rule
+9 exists for exactly this and I had aimed it at the wrong half of the problem: it
+requires a published *number* to be re-derivable by a machine, so that facts which
+are only stated cannot rot. What it does not require is that a stated *gap* become
+a check. So the gap stayed stated, correctly, for five weeks.
+
+**教訓** ★ **The end-of-day audit asks "does what I wrote still match what is
+true". It should also ask "is anything I wrote a description of something broken
+that nobody is fixing".** Those find different defects. The first is about drift;
+the second is about a note that is doing the job of a mechanism. `RUNBOOK.md`'s
+obstacles table is full of the second kind by construction — that is what it is
+*for* — so the useful discipline is to re-read that table weekly and ask, of every
+row, whether it is a constraint (fine, leave it) or a debt (then it needs a
+mechanism or a date). The OpenSSL row was a debt wearing a constraint's clothes.
+It is now `crypto-openssl-vendored` and `crypto-openssl-version` in three pins,
+and the row has been rewritten to say what is still genuinely blocked (signing my
+own PQC certificates) rather than what has been fixed.
+
+Two smaller things from the same audit, both worth a line:
+
+- **`--pin-only`.** Backfilling those fields by rebuilding would have replaced the
+  binaries behind every published capture in order to fix their provenance, which
+  is a worse trade than leaving it wrong. So `build_spdm_emu.sh` gained a mode
+  that rewrites a pin from the tree as it stands, carries `built-at` forward, and
+  compiles nothing. It then failed silently on the one flavour with no pin yet:
+  `sed` on a missing file exits 2, and `set -o pipefail` with `set -e` killed the
+  script mid-assignment with nothing printed. The only flavour the option existed
+  to serve was the only one it could not serve.
+- **`GROUPS` is a bash special variable.** `GROUPS=(...)` is silently ignored and
+  `${GROUPS[@]}` returns the current user's group IDs, so the first run of the new
+  matrix generated arms called `1000-all`, `27-all` and `20-all`. `set -u` cannot
+  catch it — the variable *is* set. Renamed to `ALGO_GROUPS`.
+
+### What the six groups bought that two could not
+
+Short, because the document says it properly. Three things came out of having six
+arms instead of two, and none of them was visible at two.
+
+**The gap is a function of the security level.** 8.99× at NIST category 3 and
+**10.91×** at category 5, same flow. One matched pair gives a number; two give a
+trend, and a trend is falsifiable in a way a number is not.
+
+**Every signature length falls out of a message-size difference and lands on its
+FIPS constant exactly.** `CHALLENGE_AUTH` is 142 bytes of content fixed by the
+negotiated hash plus one signature. Subtract 142 from the six arms: 96, 132,
+2,420, 3,309, 4,627, 7,856. ECDSA P-384 and P-521, ML-DSA 44/65/87,
+SLH-DSA-SHA2-128s — **not one of those numbers is an input anywhere in this
+pipeline.** This is the best thing measured this week and it was not planned. It
+does two jobs at once: it says the instrument is calibrated, and it *proves* the
+142 is constant across the arms rather than assuming it, because if the fixed part
+moved the residuals would not land on published constants.
+
+**The negotiation is free, byte for byte.** Six VCA-only arms, all 182 captured
+bytes, identical whether the thing being agreed is ECDSA P-384 or
+SLH-DSA-SHA2-128s. `ALGORITHMS` selects a bit. Then the same 152-byte SPDM
+subtotal turned up inside every full capture, which makes two routes to one number
+where I had expected to need the standalone arm to *produce* it. It produces
+nothing; it corroborates.
+
+And one expectation the plan had backwards. `plan/W08` said `CHUNK` is absent from
+the emulator's default capabilities and must be added to observe chunking. It is
+present on both sides — `key.c`, plainly. So I inverted the experiment and removed
+it from the responder, expecting the post-quantum handshake to fail at certificate
+retrieval. **It got cheaper: three fewer round trips and nine fewer bytes**,
+because libspdm then windows `GET_CERTIFICATE` to `DataTransferSize` instead of
+asking for the whole chain, being refused three times, and chunking. A capability
+that is optional in the specification, on by default in the implementation, and
+at this chain size a net cost. The finding is about libspdm's requester policy and
+the document says so.
+
+### Bookkeeping
+
+**`TODO(me)`** — `docs/pqc-cost.md` was restructured today and its section numbers
+moved. `LOG.md`'s 2026-09-14 Day 9 entry points at "§4" of the document as it
+stood that morning. I am deliberately not editing that: a dated entry describes
+what was true on its date, and rewriting history to keep a cross-reference tidy
+costs more than the reference is worth. Every *current* pointer was re-checked
+with `grep -rn 'pqc-cost.md.*§'`.
+
+**`TODO(me)`** — SLH-DSA does not complete a handshake on this build. Certificate
+retrieval and X.509 verification both work; both signed operations fail; the
+`CHALLENGE_AUTH` arrives at exactly 142 + 7,856 bytes so the responder signed
+correctly and at the right length. What is left is verification, and the status is
+unrecoverable because `TARGET=Release` compiles libspdm's debug output out. **A
+`Debug` build is the next step and it is a whole rebuild, so it is not today's.**
+Filed as upstream candidate 16 with the bisection as evidence.
+
+**`TODO(me)`** — MCTP packetisation is still computed, not measured. No
+`CONFIG_MCTP` in this kernel and no QEMU installed. The chunk model is validated
+against twelve captures over a 32× range; the MCTP arithmetic is validated against
+nothing, and is labelled `[computed]` at every appearance. Gate 5's problem.
+
+**`TODO(me)`** — `c-drills`. Eight drills waiting, **zero** finished, tenth
+working day. `c-drills/mock/round1.md` now exists: two problems, forty-five
+minutes, the rules, and a review sheet. The paper is mine to set and the answers
+are not mine to write — the number that track exists to produce is how many
+compile errors a paper version has when it is first typed in, and an
+implementation written by anything but him sets that number to nothing.
+
+**`TODO(me)`** — `docs/upstream/` lists **seventeen** candidates and **zero**
+submissions. Four arrived today. The prepared one is three days older than it was.
+Seventeen findings and no conversations is starting to be its own finding.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
