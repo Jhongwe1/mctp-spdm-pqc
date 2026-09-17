@@ -48,6 +48,13 @@ c-drills/d[0-9]*
 !c-drills/d[0-9]*.h
 !c-drills/d[0-9]*.md
 
+# transport/: the two Gate 5 programs are built from source by `make`, the same
+# way the drills are, and for the same reason — a committed binary is a claim
+# about a compiler nobody can check.
+transport/mctp_bridge
+transport/doe_probe
+transport/*.san
+
 # Python
 __pycache__/
 *.py[cod]
