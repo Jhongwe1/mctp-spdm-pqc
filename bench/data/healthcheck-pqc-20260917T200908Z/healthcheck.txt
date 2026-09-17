@@ -1,21 +1,8 @@
-# Environment baseline
-
-Verbatim output of `harness/healthcheck.sh`. This file is generated;
-do not hand-edit it. Regenerate with:
-
-```bash
-bash harness/healthcheck.sh pqc --write-baseline
-```
-
-Run: `healthcheck-pqc-20260917T201050Z` · captured 2026-09-17T20:11:43Z
-Full artifacts and SHA-256 manifest: `bench/data/healthcheck-pqc-20260917T201050Z/`
-
-```text
 SPDM attestation lab — environment baseline
 flavor : pqc
 binary : /home/key/spdm-lab/work/spdm-emu-pqc/build/bin
-run    : healthcheck-pqc-20260917T201050Z
-date   : 2026-09-17T20:10:52Z
+run    : healthcheck-pqc-20260917T200908Z
+date   : 2026-09-17T20:09:10Z
 
 === 0. version pins (the caption source for every table in this repo) ===
 flavor=pqc
@@ -121,13 +108,13 @@ applied_at=2026-09-01T05:43:56Z
   [PASS] minimal handshake completed (DIGEST, CERT, CHALLENGE, MEASUREMENTS)
 
 === 5. capture file produced, and how many packets are in it ===
-  file       : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260917T201050Z/minimal.pcap (29437 bytes)
+  file       : /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/healthcheck-pqc-20260917T200908Z/minimal.pcap (29437 bytes)
   format     : classic pcap v2.4, little-endian, microsecond timestamps
   linktype   : 291 (MCTP)
   snaplen    : 65536
   packets    : 554
   bytes      : 20549 captured / 20549 on the wire
-  duration   : 24.0 s
+  duration   : 25.0 s
   [PASS] pcap written and parsed by harness/pcapcount.py
 
 === 6. spdm_dump (offline capture decoding — the only way to read a negotiation) ===
@@ -148,17 +135,12 @@ applied_at=2026-09-01T05:43:56Z
   ^ this is the one that computed every signature above
   [INFO] system OpenSSL has no ML-DSA (needs >= 3.5), so this project cannot sign a PQC chain of its OWN — the measurements above used libspdm's vendored copy and are unaffected
 
-=== 9. QEMU with an SPDM-capable device (Gate 5, PCIe DOE route) ===
-  built  : QEMU emulator version 9.2.0 (v9.2.0)
-    spdm_port=<uint16>     -  (default: 0)
-  distro : QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
-  [PASS] the built QEMU exposes nvme spdm_port; the DOE route can run
+=== 9. QEMU with an SPDM-capable device (W09 transport work) ===
+  [INFO] QEMU present but no spdm_port — W09 falls back
 
-=== 10. kernel MCTP support (Gate 5, AF_MCTP route) ===
-  host  : 6.6.87.2-microsoft-standard-WSL2 — # CONFIG_MCTP is not set
-  guest : 6.12.110 — CONFIG_MCTP=y
-  guest : sha256 0e63ce343f0e9ff90ff037422f7eda668308d2d06bb695b1ac29689ffd5e5eec
-  [PASS] the host has no AF_MCTP and is not meant to; the guest kernel that does is built and pinned (ADR 0010)
+=== 10. kernel MCTP support (W09 AF_MCTP path) ===
+  # CONFIG_MCTP is not set
+  [INFO] no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
 
 === 11. what the captures actually contain  ★ verified, not requested ===
 
@@ -209,11 +191,10 @@ applied_at=2026-09-01T05:43:56Z
   PASS #6   spdm_dump available: /home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump
   PASS #7   post-quantum handshake completed with no errors
   INFO #8   system OpenSSL has no ML-DSA (needs >= 3.5), so this project cannot sign a PQC chain of its OWN — the measurements above used libspdm's vendored copy and are unaffected
-  PASS #9   the built QEMU exposes nvme spdm_port; the DOE route can run
-  PASS #10  the host has no AF_MCTP and is not meant to; the guest kernel that does is built and pinned (ADR 0010)
+  INFO #9   QEMU present but no spdm_port — W09 falls back
+  INFO #10  no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected
   PASS #11  negotiated algorithms and certificate sizes read back from the captures
 
-  PASS=10  FAIL=0  INFO=2
+  PASS=8  FAIL=0  INFO=4
 
   GATE 0 (minimal handshake): PASS — the project can proceed.
-```

@@ -305,24 +305,62 @@ else
     verdict INFO 8 "system OpenSSL has no ML-DSA (needs >= 3.5), so this project cannot sign a PQC chain of its OWN — the measurements above used libspdm's vendored copy and are unaffected"
 fi
 
-section "9. QEMU with an SPDM-capable device (W09 transport work)"
-if command -v qemu-system-x86_64 >/dev/null 2>&1; then
-    qemu-system-x86_64 -device nvme,help 2>&1 | grep -i spdm | sed 's/^/  /' \
-        && verdict PASS 9 "QEMU exposes an spdm_port property" \
-        || verdict INFO 9 "QEMU present but no spdm_port — W09 falls back"
+section "9. QEMU with an SPDM-capable device (Gate 5, PCIe DOE route)"
+#
+# ★ Two QEMUs, on purpose, and this section reports both.
+#
+# The distribution's is what the MCTP route uses: that experiment needs nothing
+# newer than virtio-9p, and a result that runs on a packaged QEMU is easier for
+# somebody else to reproduce. The DOE route needs the nvme `spdm_port`
+# property, which arrived after 8.2.2, so harness/build_qemu_doe.sh builds 9.2.
+#
+# Until 2026-09-18 this section reported "QEMU present but no spdm_port — W09
+# falls back", which was true of the distribution build and false about the
+# project. A check that names the wrong subject is a check that will mislead
+# the person who trusts it.
+W9_QEMU="${LAB_DIR}/w9/qemu/build/qemu-system-x86_64"
+W9_QEMU_PROPS="$( [ -x "$W9_QEMU" ] && "$W9_QEMU" -device nvme,help 2>&1 || true)"
+if [ -x "$W9_QEMU" ] && grep -qi spdm_port <<<"$W9_QEMU_PROPS"; then
+    "$W9_QEMU" --version | head -1 | sed 's/^/  built  : /'
+    "$W9_QEMU" -device nvme,help 2>&1 | grep -i spdm | sed 's/^/  /'
+    command -v qemu-system-x86_64 >/dev/null 2>&1 \
+        && qemu-system-x86_64 --version | head -1 | sed 's/^/  distro : /'
+    verdict PASS 9 "the built QEMU exposes nvme spdm_port; the DOE route can run"
+elif command -v qemu-system-x86_64 >/dev/null 2>&1; then
+    qemu-system-x86_64 --version | head -1 | sed 's/^/  distro : /'
+    printf '  built  : absent — run: bash harness/build_qemu_doe.sh\n'
+    verdict INFO 9 "only the distribution QEMU is present, and it has no nvme spdm_port; the MCTP route is unaffected, the DOE route needs the built one"
 else
-    verdict INFO 9 "no QEMU installed — W09 transport path degrades, main line unaffected"
+    verdict INFO 9 "no QEMU at all — both Gate 5 routes need one; the main line is unaffected"
 fi
 
-section "10. kernel MCTP support (W09 AF_MCTP path)"
+section "10. kernel MCTP support (Gate 5, AF_MCTP route)"
+#
+# ★ This host is EXPECTED not to have it, and that is not a degradation.
+#
+# ADR 0010: the MCTP subsystem lives in a guest so that the host kernel every
+# earlier capture was taken under is not replaced. So the question this section
+# answers is not "can this kernel do MCTP" — it cannot, and will not — but
+# "does the guest that can still exist".
 KCONFIG="$( { zcat /proc/config.gz 2>/dev/null \
               || cat "/boot/config-$(uname -r)" 2>/dev/null; } || true)"
 if grep -qE '^CONFIG_MCTP=[ym]' <<<"$KCONFIG"; then
-    verdict PASS 10 "CONFIG_MCTP enabled in this kernel"
+    verdict PASS 10 "CONFIG_MCTP is enabled in the HOST kernel, which ADR 0010 did not assume"
 else
-    ( zcat /proc/config.gz 2>/dev/null || cat "/boot/config-$(uname -r)" 2>/dev/null ) \
-        | grep -E 'CONFIG_MCTP' | sed 's/^/  /' || echo "  (no kernel config readable)"
-    verdict INFO 10 "no AF_MCTP in this kernel — W09 transport path degrades, main line unaffected"
+    printf '  host  : %s — %s\n' "$(uname -r)" \
+        "$(grep -E 'CONFIG_MCTP' <<<"$KCONFIG" | head -1 || echo 'no kernel config readable')"
+    GK_PIN="${REPO_ROOT}/third_party/linux.pin"
+    GK_VER="$(sed -n 's/^version=//p' "$GK_PIN" 2>/dev/null)"
+    GK_IMG="${LAB_DIR}/w9/linux-${GK_VER}/arch/x86/boot/bzImage"
+    if [ -n "$GK_VER" ] && [ -f "$GK_IMG" ]; then
+        GK_CFG="${LAB_DIR}/w9/linux-${GK_VER}/.config"
+        printf '  guest : %s — %s\n' "$GK_VER" \
+            "$(grep -E '^CONFIG_MCTP=' "$GK_CFG" 2>/dev/null || echo 'config not readable')"
+        printf '  guest : sha256 %s\n' "$(sed -n 's/^bzimage_sha256=//p' "$GK_PIN")"
+        verdict PASS 10 "the host has no AF_MCTP and is not meant to; the guest kernel that does is built and pinned (ADR 0010)"
+    else
+        verdict INFO 10 "no AF_MCTP in this kernel and no guest kernel built — run: bash harness/build_guest_kernel.sh"
+    fi
 fi
 
 section "11. what the captures actually contain  ★ verified, not requested"

@@ -470,9 +470,15 @@ step "the fragmentation arithmetic, and the two formulas it is usually confused 
 # chunk is a whole request/response round trip, an MCTP packet is a continuation
 # of one message. A tool that adds them together adds an RTT to a byte.
 #
-# The selftest does not check cases the right and wrong formulas agree on. It
-# checks the ones that separate them: 177 bytes at MTU 64 is 3 packets, and the
-# subtract-the-transport-header version everybody writes says 4.
+# The selftest checks the cases that SEPARATE the right formula from the
+# subtract-the-transport-header version everybody writes, and it computes the
+# rival rather than describing it.
+#
+# 🔴 That sentence used to end "...: 177 bytes at MTU 64 is 3 packets, and the
+# subtract-the-header version says 4." It says 3 — 59 x 3 = 177 — so 177 is one
+# of the 300 lengths in 1..399 where the two AGREE, and the case named here as
+# the separating one separated nothing. It survived three weeks because the
+# rival was a sentence and never a function. Standing rule 18.
 if out="$(python3 bench/exp04_fragmentation.py --selftest 2>&1)"; then
     printf '%s\n' "$out" | sed -n '$p' | sed 's/^/  /'
     good "the fragmentation formulas reject the versions they are confused with"
@@ -499,6 +505,97 @@ elif out="$(python3 bench/exp04_fragmentation.py --validate "$sweep" 2>&1)"; the
 else
     printf '%s\n' "$out" | sed 's/^/  /'
     bad "the chunk model disagrees with the sweep it claims to describe"
+fi
+
+step "the MCTP packet model reproduces the link it was measured on"
+# ★ The Gate 5 counterpart of the step above, and the thing that lets
+# docs/fragmentation.md stop saying [computed] at one transmission unit.
+#
+# The captures this replays were taken off an AF_PACKET socket on a real
+# mctp-serial interface inside a guest. --observed regroups the packets into
+# messages out of their own SOM/EOM/tag fields, compares each message's packet
+# count against the model, AND reports how many of them are lengths at which
+# the plausible wrong formula would have answered differently. The last part is
+# the one that makes the rest mean something: a capture whose every length is
+# one the two formulas agree about would print a column of ticks and
+# discriminate nothing.
+afm="$(ls -d bench/data/w9-afmctp-2* 2>/dev/null | sort | tail -1)"
+if [ -z "$afm" ]; then
+    bad "no bench/data/w9-afmctp-* run: the MCTP packet counts have nothing to be validated against"
+else
+    mctp_fail=0
+    for lp in "$afm"/*.link.pcap; do
+        [ -e "$lp" ] || continue
+        if out="$(python3 bench/exp04_fragmentation.py --observed "$lp" 2>&1)"; then
+            printf '%s\n' "$out" | grep -E '^  ★' | sed 's/^/  /'
+        else
+            printf '%s\n' "$out" | tail -5 | sed 's/^/  /'
+            mctp_fail=1
+        fi
+    done
+    if [ "$mctp_fail" -eq 0 ]; then
+        good "the packet model reproduces every observed MCTP message in ${afm##*/}"
+    else
+        bad "an observed MCTP capture disagrees with the model, or lost packets"
+    fi
+fi
+
+step "the controlled flags are the ones the published captures were taken with"
+# ★ harness/lib/arms.sh was extracted out of harness/run_pair.sh on 2026-09-18
+# so that harness/run_afmctp.sh could run the SAME arms across a real MCTP
+# link. Two copies of that list would have made "the same experiment over a
+# different transport" a claim about two flag lists that nobody compares.
+#
+# One copy is not enough on its own either: the file could drift from what the
+# published captures were actually taken with, and every comparison against
+# them would quietly stop being like-for-like. So the live array is compared
+# against the controlled_flags string recorded in the manifests of the runs
+# that are in this repository. That is what makes the extraction checkable
+# rather than merely careful.
+# shellcheck source=lib/arms.sh
+if ! . harness/lib/arms.sh 2>/dev/null; then
+    bad "harness/lib/arms.sh could not be sourced"
+else
+    live="${COMMON[*]}"
+    arms_checked=0
+    arms_fail=0
+    for m in bench/data/w7-pqc-ab-*/manifest.json \
+             bench/data/w8-pqc-matrix-*/manifest.json \
+             bench/data/w9-afmctp-2*/manifest.json; do
+        [ -f "$m" ] || continue
+        rec="$(python3 -c '
+import json, sys
+print(json.load(open(sys.argv[1]))["run"].get("controlled_flags", ""))' "$m")"
+        [ -n "$rec" ] || continue
+        arms_checked=$((arms_checked + 1))
+        if [ "$rec" != "$live" ]; then
+            arms_fail=1
+            printf '  %s\n' "$(basename "$(dirname "$m")")"
+            printf '    recorded: %s\n' "$rec"
+            printf '    live    : %s\n' "$live"
+        fi
+    done
+    if [ "$arms_checked" -eq 0 ]; then
+        bad "no manifest records controlled_flags, so the arm list is unattributed"
+    elif [ "$arms_fail" -eq 0 ]; then
+        good "the controlled set matches all ${arms_checked} manifests that record it"
+    else
+        bad "harness/lib/arms.sh has drifted from the captures it produced"
+    fi
+fi
+
+step "the transport programs compile, twice, one of the ways with sanitizers"
+# Neither program can be RUN here: mctp_bridge needs CONFIG_MCTP, which this
+# kernel does not have, and doe_probe needs a device with a DOE capability,
+# which this machine does not have. Both run in the guest. What CI can do
+# without a virtual machine is exactly this, and transport/Makefile says so in
+# the file rather than leaving the gap unexplained.
+if out="$(make -s -C transport clean >/dev/null 2>&1; make -s -C transport 2>&1 && make -s -C transport check 2>&1)"; then
+    printf '%s\n' "$out" | sed 's/^/  /'
+    good "transport/ builds clean under -Werror and under two sanitizers"
+else
+    printf '%s\n' "$out" | tail -12 | sed 's/^/  /'
+    bad "transport/ did not build"
 fi
 
 step "a flavor that is defined by a patch has that patch in this checkout"
@@ -745,6 +842,13 @@ fails=0
 total=0
 shopt -s nullglob
 for pcap in bench/data/*/*.pcap; do
+    # ★ Skip the Gate 5 link captures. Every other capture in bench/data/ has
+    # one record per SPDM MESSAGE; a *.link.pcap has one record per MCTP
+    # PACKET, so a 16,853-byte certificate chain is 264 records and none of
+    # them is a message. Reading one here would not be a false alarm, it would
+    # be a category error — and on 2026-09-18 it was, until this line.
+    # bench/exp04_fragmentation.py --observed is what owns these files.
+    case "$pcap" in *.link.pcap) continue ;; esac
     total=$((total + 1))
     if ! out="$(python3 bench/pcapstat.py "$pcap" --check 2>&1)"; then
         printf '%s\n' "$out" | grep -E '^\s+FAIL' | sed 's/^/  /'
@@ -1371,6 +1475,10 @@ if on_disk is None:
 
 checked, chunked, problems = [], [], []
 for pcap in sorted(pathlib.Path("bench/data").glob("*/*.pcap")):
+    # See the note in the pcapstat --check loop above: a *.link.pcap holds MCTP
+    # packets, not SPDM messages, and the chain walk below assumes messages.
+    if pcap.name.endswith(".link.pcap"):
+        continue
     name = f"{pcap.parent.name}/{pcap.name}"
     stats = tool("bench/pcapstat.py", str(pcap), "--json")["summary"]
     cert = stats["certificates"]
