@@ -3916,3 +3916,302 @@ submissions. Four arrived today. The prepared one is three days older than it wa
 Seventeen findings and no conversations is starting to be its own finding.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+---
+
+## 2026-09-18 · Day 11 · the case chosen to discriminate, which discriminated nothing
+
+Gate 5 closed, both routes. A handshake over a real Linux MCTP link with real
+endpoint IDs, real routing, kernel-allocated tags and real packetisation; and an
+SPDM message across a real PCIe DOE mailbox. `docs/fragmentation.md` no longer
+opens §5 with *"No packet count here has been observed."*
+
+Three things happened today that are worth keeping, and the order matters: the
+first is about a blocker that was never a blocker, the second is about a claim
+that had been published for three weeks and was arithmetically false, and the
+third is about two runs of one experiment that disagreed for two different
+reasons, neither of them the thing being measured.
+
+The second is the one to read.
+
+---
+
+### 1. Eight weeks of "the kernel does not have it" was a sentence, not a constraint
+
+**現象** Since 2026-08-11 every MCTP packet count in this repository has carried
+a `[computed]` label, because:
+
+```console
+$ zcat /proc/config.gz | grep CONFIG_MCTP
+# CONFIG_MCTP is not set
+```
+
+That is accurate and it was treated as the end of the matter. `docs/roadmap.md`
+scheduled Gate 5 for week nine and the week-nine plan's own stop-loss said that
+if the kernel had no `CONFIG_MCTP`, "the cost of changing kernels is too high —
+skip it and record it in `env-baseline.md`."
+
+**假設** Three ways to get a kernel that has it.
+
+1. **Rebuild the host kernel.** Microsoft publishes the WSL2 source, twenty
+   minutes, one line in `.wslconfig`, reversible.
+2. **Extract a distribution kernel and boot it in QEMU.** Ubuntu's own 6.8 has
+   `CONFIG_MCTP=y` and `CONFIG_MCTP_SERIAL=m` — I checked the `.config` in the
+   headers package rather than assuming.
+3. **Build a guest kernel with everything compiled in, and give the guest the
+   host's filesystem as its root over virtio-9p.**
+
+**先驗哪個、為什麼** Not the cheapest. The one whose failure mode I could live
+with.
+
+★ (1) is the shortest path by a wide margin and I rejected it before trying it,
+for a reason that is the whole argument of this repository: **`host_kernel` is
+recorded in twenty-five `manifest.json` files in `bench/data/`.** Replacing the
+host kernel makes every one of those lines name a kernel that no longer exists
+on the machine. ADR 0001 keeps two spdm-emu builds rather than one for exactly
+this reason and ADR 0009 adds a third rather than rebuild `pqc` with different
+buffers. **A kernel is a build.** The rule does not stop applying because the
+artifact is bigger.
+
+(2) needs modules, modules need an initramfs, and an initramfs is a dependency
+chase with a boot failure at the end of each wrong guess. (3) removes that
+entire class: 9p, virtio and MCTP all `=y`, no modules, no initramfs.
+
+**根因** The blocker was never "this machine cannot run MCTP". It was **"this
+machine's kernel cannot"**, and those are different sentences that happen to be
+true at the same time. The subsystem did not have to be on the host. It had to
+be somewhere the same binaries could run — and a guest whose root filesystem is
+the host's own is somewhere the same binaries can run, from the same paths,
+against the same certificates. `spdm_requester_emu`, built in week one,
+unchanged.
+
+Boot to payload: 5.6 seconds. Kernel build: thirteen minutes, once.
+
+**教訓** **A constraint stated about one machine is not a constraint about the
+work.** I spent eight weeks labelling numbers `[computed]` and writing careful
+sentences about why they were not measured, and every one of those sentences was
+true. None of them was the question. The question was "where can this run", and
+I never asked it because the answer to "can this run here" was so clearly no.
+
+The generalisation, which is the part I want to keep: when a capability is
+missing, the useful move is not to look for a way to add it *here*. It is to ask
+what the smallest thing is that must be true, and then to notice that "here" was
+never in the requirement. The requirement was that the binaries, the
+certificates and the analysis be the same. A virtual machine sharing the host's
+filesystem satisfies that more exactly than a rebuilt host kernel would have,
+because a rebuilt host kernel changes the thing all the previous evidence was
+recorded against.
+
+ADR 0010 is the decision. It says "a kernel is a build" in those words, because
+that is the sentence that took eight weeks.
+
+---
+
+### 2. ★ The case chosen to separate two formulas, which separated nothing
+
+This is the one worth the entry.
+
+**現象** With a real link available, the first thing to do was not to run the
+handshake. It was to calibrate: send messages of chosen lengths, count packets,
+and check the formula `docs/fragmentation.md` has been publishing since
+2026-08-28.
+
+That document names the case that does the separating:
+
+> `bench/exp04_fragmentation.py --selftest` contains the case that separates the
+> two formulas rather than one they agree on: a 177-byte message at MTU 64 is
+> **3** packets (`ceil(178/64)`), and the subtract-the-header version says 4
+> (`ceil(177/59)`).
+
+I put 177 in the calibration set because of that sentence, ran it, got 3
+packets — and then, writing the table, computed `ceil(177/59)` to fill in the
+"wrong formula" column.
+
+**`59 × 3 = 177`.** It is 3. The two formulas agree at 177.
+
+**假設** Three, and I could test all of them in under a minute, which is itself
+the point.
+
+1. **I have the wrong rival formula.** Maybe the subtract-the-header version is
+   `ceil((L+1)/(MTU-4))` or `ceil(L/(MTU-4))`, and one of those gives 4 at 177.
+2. **The selftest is checking something else and the prose is a bad summary.**
+3. **The claim is simply false and nothing ever evaluated it.**
+
+**先驗哪個、為什麼** (1), because it is the only one that would leave the
+document correct, and because being wrong about which formula is the rival is a
+more interesting error than being wrong about arithmetic. Two lines of Python:
+`ceil(178/60) = 3`, `ceil(177/60) = 3`. No variant gives 4.
+
+Then (2), by reading the selftest, which took ten seconds:
+
+```python
+if mctp_packets(177, 64) != 3:
+    bad(...)
+```
+
+**根因** (3), and the mechanism is specific enough to be worth naming.
+
+**The rival formula was never written down as code.** It existed in a comment
+and in a paragraph of prose, and the assertion underneath it checked only that
+*the right formula gave the right answer* — which it would have done just as
+happily at 64, or at 128, or at any of the 300 lengths in 1..399 where the two
+candidates agree. The test could not have failed for the reason it claimed to
+exist. It was a check about one hypothesis, captioned as a comparison of two.
+
+And the caption was load-bearing. The whole paragraph exists to make a
+methodological point — *do not test where the hypotheses agree* — and it
+illustrates that point with a case where they agree.
+
+**教訓** This repository already has a rule for the shape next door. Standing
+rule 11: *a check is worth what it rejects, and something has to prove it
+rejects.* Rule 15: *a drill whose failure mode cannot occur teaches a
+superstition.* Both are about checks. Neither covers this, because what failed
+here was not a check — it was a **claim about two things, that only ever touched
+one of them**.
+
+★ So rule 18, added today: **a claim that two things differ has to evaluate both
+of them.** Not describe the second one. Evaluate it, in code, in the same
+process, and assert the difference.
+
+The fix is not a corrected number. `mctp_packets_subtract_header()` is now a
+function beside the real one; the selftest computes the separating lengths
+(`[60, 61, 62, 63]` are the smallest) rather than naming one; 177 is pinned as a
+case that must reproduce and must **not** discriminate, so the error cannot come
+back quietly; and `--observed` now prints the rival's answer beside the model's
+for every message in a capture and says how many of them actually separate the
+two. The calibration run reports **7 of 12**. The post-quantum handshake reports
+**14 of 46**. A capture that separated nothing would now say so in one line.
+
+That last part is the bit I would not have thought of before today. It is not
+enough for the *test suite* to discriminate. The **evidence** has to carry its
+own discriminating power on its face, because the next person to read the table
+is going to read the table and not the selftest.
+
+What it cost: about twenty minutes, all of it after the measurement was already
+correct. What it would have cost in an interview, asked "how do you know that
+formula is right", is the whole answer.
+
+---
+
+### 3. Two runs of one experiment, two different numbers, neither of them the link
+
+**現象** The first full run reported 953 MCTP packets for the post-quantum arm
+and the model reproduced every message. I changed the calibration lengths and
+re-ran. **920 packets**, and eighty-six complaints of the form:
+
+```
+packet 48: continuation for (8, 9, 0, True) with no SOM before it
+```
+
+A start-of-message packet missing is what a *lossy link* looks like from the far
+end. I had built the link out of a pty pair, which has no flow control worth the
+name, so that reading was available and comfortable.
+
+**假設**
+
+1. **The link dropped packets.** The pty buffer overflowed under a burst of
+   nine hundred.
+2. **The bridge lost them.** A `sendto` that returned short and was not checked.
+3. **The capture lost them.** The measurement, not the thing measured.
+
+**先驗哪個、為什麼** (3) first, and not because it was most likely — I thought
+(1) was. Because it was the only one that would invalidate *the instrument*
+rather than produce a finding about the link, and an instrument that is wrong
+makes every other hypothesis untestable. Also it was the cheapest: the interface
+counters were already in the sidecar.
+
+`tx_dropped 0`, `rx_errors 0`, at both ends. The link had lost nothing. The
+`AF_PACKET` socket had: a Python loop doing one `select` and one `recvfrom` per
+packet cannot keep up with a burst of nine hundred, and the socket discards what
+it cannot buffer. **33 packets, silently.**
+
+Fixed — bigger buffer, drain to `EAGAIN` rather than one packet per `select`,
+and `PACKET_STATISTICS` read at the end so a non-zero drop count fails the
+capture — and re-ran.
+
+**237 packets** where 368 were sent, and now *every* packet was an orphan
+continuation. The first record in the file had `SOM` clear.
+
+**根因** Two faults, found in the order they could be told apart, and the second
+was hiding behind the first.
+
+The second one: the capture started two thirds of the way through. The guest
+runs `python3` out of a root filesystem exported over 9p, so the interpreter's
+own start-up — every import, stat and read — crosses that. The generator was
+started after `sleep 0.7`. **A sleep is not a synchronisation primitive**, and
+the failure mode is not an error, it is a plausible number.
+
+**教訓** Both faults produced *plausible output*. Not a crash, not a non-zero
+exit — a packet count, in the right format, that a reader would have believed.
+The first symptom of the second fault was a page of complaints about the link,
+which is a diagnosis of the wrong subsystem produced confidently by a correct
+analysis reading a broken input.
+
+★ Rule 17, added today: **an instrument reports its own losses, or its output is
+not a measurement.** The capture now reads the kernel's own drop counter and
+refuses itself on a non-zero value; it creates a readiness file after `bind()`
+and the traffic generator blocks on that file instead of on a duration; and
+`--observed` compares the capture's packet count against the interface counters
+for the same window.
+
+★ And rule 13 earns its keep here, which is the detail I want on the record:
+**the two faults are caught by different checks, and neither check can see the
+other's fault.** The interface-counter comparison cannot detect a late start —
+the counters are read when the capture starts, so a late start makes them agree
+perfectly. The reassembly check cannot detect a uniform loss that happens to
+take whole messages. Two failures, two mechanisms, and a suite with only one of
+them would have reported twice the coverage it had.
+
+This is the third time this project has found that a green result came from a
+tool answering a slightly different question than the one asked. 2026-08-11 was
+`$?` from three programs. 2026-09-14 was a flag parsed and never read. Today was
+an instrument that could not report its own loss. **The shape is constant: the
+thing that reports success is not the thing that was supposed to succeed.**
+
+---
+
+### What the day produced
+
+| | |
+|---|---|
+| Gate 5, route ③ | both arms over a real MCTP link. **A0 115 packets, P2 953**, model reproduces every one, `tx_dropped` 0 |
+| Gate 5, route ② | `lspci -vvv` sees a DOE capability; DOE Discovery enumerates three protocols; one `GET_VERSION` returns `VERSION` advertising 1.0–1.4 |
+| ★ the control | the same two handshakes at the message layer are byte-identical to week eight's socket-line captures — 22/6,559 and 46/58,966, same per-message length sequence. **The transport changed nothing about the protocol** |
+| ★ the transport result | **packet ratio 8.29× where the byte ratio is 9.11×**, because a transmission unit is charged whole. On a bus where per-packet cost dominates, 8.29 is the number to quote, and no socket capture can say so |
+| new claims in `bench/claims.json` | five, including both controls, re-derived at tolerance 0 |
+| new standing rules | 17 and 18 |
+| new ADR | 0010 — a kernel is a build |
+| retired sentence | *"No packet count here has been observed."* |
+
+**A number that got smaller.** `docs/fragmentation.md` used to say the MCTP
+column was `COMPUTED`. It now says `MEASURED since 2026-09-18` — at one
+transmission unit. 128 and 256 are still computed and still labelled, because
+`mctp-serial` fixes its MTU at 68 in the driver and no other value is reachable
+on that binding. That is stated where the table is, not in a closing section.
+
+---
+
+**`TODO(me)`** — `c-drills`. Eight drills, **zero** finished, eleventh working
+day, `SCORECARD.md` still eight empty rows, `mock/round1.md` set on 2026-09-14
+and still not sat. This is now the largest gap in the repository by a wide
+margin and its shape has not changed since Day 10: the project track is
+producing work for a track that has never started. The implementations are not
+mine to write — the number that track exists to produce is how many compile
+errors a paper version has when it is first typed in, and an implementation
+written by anything else sets that number to nothing.
+
+**`TODO(me)`** — Two upstream changes are now prepared and not sent. The
+`openbmc/spdm` README is written against the review that killed the 2025 attempt
+and passes OpenBMC's own prettier and markdownlint; the DMTF `CoRimTool.py` fix
+has been ready since 2026-09-12. **Eighteen findings and zero conversations.**
+The number of findings is no longer the interesting quantity.
+
+**`TODO(me)`** — SLH-DSA still does not complete a handshake on this build, and
+the status is still unrecoverable under `TARGET=Release`. Unchanged from Day 10.
+
+**`TODO(me)`** — The DOE route sends one message. A full handshake over DOE
+needs either an in-kernel CMA-SPDM requester — which arrives in a later Linux
+than 6.12 — or a userspace SPDM state machine, which is libspdm's job and not
+`doe_probe`'s. Named rather than left as an absence.
+
+**`TODO(me)`** — What I am least sure about right now: _______________
