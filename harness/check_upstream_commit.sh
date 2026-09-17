@@ -52,11 +52,41 @@
 #     The maintainers use it on their own merges — `Assisted-by: Claude
 #     Code:claude-sonnet-5` on #519.
 #
-# Only the DMTF profile is implemented. OpenBMC's — Gerrit, a Change-Id from the
-# commit-msg hook, and a CLA whose state this script cannot see — arrives in
-# week 9, when there is a real commit to check it against. Writing it now
-# against no commit would be a check whose failure mode has never fired, which
+# ── the OpenBMC profile, added 2026-09-18 ──────────────────────────────────
+#
+# Written when there was a real commit to check it against, which is why it was
+# not written in week one: a check whose failure mode has never fired is what
 # `docs/roadmap.md` standing rule 15 is about.
+#
+#   openbmc/docs CONTRIBUTING.md
+#   sha256 e27c7768eedaeded3823727087a6e8e6c7034bfb91c5a60deb7305c108480301
+#   read 2026-09-18 from https://github.com/openbmc/docs, master
+#
+# What it says that DMTF's does not, and the reverse:
+#
+#   * **Gerrit, not a pull request.** `git push … HEAD:refs/for/main` — and for
+#     `openbmc/spdm` it is `main`, not `master`: `git ls-remote --heads`
+#     returns exactly one head and it is `refs/heads/main`. That is worth
+#     checking rather than assuming, because most OpenBMC repositories are on
+#     `master` and this project's own `docs/upstream/README.md` recorded the
+#     rehearsal command with `master` in it.
+#   * **A `Change-Id` trailer**, written by the commit-msg hook Gerrit serves.
+#     Without it the push is rejected outright. There is no equivalent at DMTF.
+#   * **A CLA**, an Individual Contributor Licence Agreement to
+#     manager@lfprojects.org, separate from the DCO and covering every OpenBMC
+#     repository. This script cannot see its state; it says so rather than
+#     passing silently.
+#   * **50/72, a Signed-off-by with a full real name, and a statement of how it
+#     was tested.** Same shape as DMTF's, and the CONTRIBUTING.md is explicit
+#     that "xXthorXx" and a bare given name are not acceptable.
+#   * ★ **No AI policy at all.** The word does not appear in the file. So
+#     `Assisted-by:` is neither required nor forbidden, and `Co-authored-by`
+#     naming an AI is not a rule violation here the way it is at DMTF. This
+#     script therefore REPORTS the disclosure rather than requiring it, and the
+#     decision to disclose anyway is the author's — recorded in
+#     `docs/upstream/0002-openbmc-readme.md`. A check that invented a rule the
+#     project does not have would be worse than no check: it would teach the
+#     wrong rule set for the next repository.
 #
 # Exit code 0 = ready to send.
 
@@ -155,6 +185,135 @@ check_commit() {   # check_commit <repo-dir>
     fi
 }
 
+check_commit_openbmc() {   # check_commit_openbmc <repo-dir>
+    local dir="$1" msg author sob subj long n
+    msg="$(git -C "$dir" log -1 --format='%B')"
+    author="$(git -C "$dir" log -1 --format='%an <%ae>')"
+    sob="$(printf '%s\n' "$msg" | grep -i '^signed-off-by:')"
+    subj="$(git -C "$dir" log -1 --format='%s')"
+
+    printf '  commit  %s\n  author  %s\n\n' \
+        "$(git -C "$dir" log -1 --format='%h %s')" "$author"
+
+    # -- the DCO, which is the half both projects share -----------------------
+    n="$(printf '%s\n' "$msg" | grep -ci '^signed-off-by:')"
+    if [ "$n" = 1 ]; then ok "exactly one Signed-off-by"
+    else no "$n Signed-off-by line(s); DCO wants exactly one"; fi
+
+    if [ "$sob" = "Signed-off-by: $author" ]; then
+        ok "Signed-off-by matches the commit author exactly"
+    else
+        no "Signed-off-by is '$sob' and the author is '$author'"
+    fi
+
+    # CONTRIBUTING.md: "the full name you commonly use, often a given name and
+    # a family name or surname. (ok: Sam Samuelsson, Robert A. Heinlein; not
+    # ok: xXthorXx, Sam, RAH)". Two words is the weakest testable form of that.
+    if printf '%s\n' "$sob" | sed 's/^[Ss]igned-off-by: *//; s/ *<.*//' \
+         | grep -qE '^[^ ]+( [^ ]+)+$'; then
+        ok "sign-off carries a name with at least two parts"
+    else
+        no "sign-off name looks like a handle or a single word; CONTRIBUTING.md asks for the full name you commonly use"
+    fi
+
+    case "$sob" in
+        *"<"*"@"*"."*">"*) ok "sign-off carries a reachable-looking address" ;;
+        *) no "sign-off has no email address" ;;
+    esac
+
+    # An AI cannot make the DCO certification, whatever a project's AI policy
+    # says, because the certification is about who has the right to submit the
+    # code. This is the one rule carried over from the DMTF profile on
+    # reasoning rather than on text.
+    local ai_re='(^|[^[:alnum:]])(claude|ai|assistant|bot|anthropic|copilot|gpt|gemini|llm)([^[:alnum:]]|$)'
+    if grep -qiE "$ai_re" <<<"$sob"; then
+        no "an AI is named in Signed-off-by; the DCO is a certification only a person can make"
+    else
+        ok "no AI named in Signed-off-by"
+    fi
+
+    # -- Gerrit -------------------------------------------------------------
+    #
+    # ★ Count, do not merely detect. On 2026-09-18 an amend that appended a
+    # trailer AFTER the Change-Id made the commit-msg hook add a second one:
+    # the hook looks for a Change-Id in the message's last paragraph, and there
+    # was not one there any more. Two Change-Ids is a push Gerrit refuses, and
+    # the first version of this check said "Change-Id present" and passed the
+    # commit. A check that answers "is there at least one" cannot see the
+    # failure that actually happens.
+    n="$(grep -cE '^Change-Id: I[0-9a-f]{40}$' <<<"$msg")"
+    if [ "$n" = 1 ]; then
+        ok "exactly one Change-Id: $(grep -E '^Change-Id:' <<<"$msg" | head -1)"
+    elif [ "$n" = 0 ]; then
+        if grep -q '^Change-Id:' <<<"$msg"; then
+            no "a Change-Id line is present but malformed; it is I followed by 40 hex digits"
+        else
+            no "no Change-Id — install the commit-msg hook Gerrit serves and amend; the push is rejected without it"
+        fi
+    else
+        no "$n Change-Id lines. Gerrit refuses that. An amend that appends a trailer after the Change-Id makes the hook add a second one; put the Change-Id last."
+    fi
+
+    # The hook writes it last for a reason, and keeping it there is what stops
+    # the failure above from recurring on the next amend.
+    if [ "$(grep -vE '^\s*$' <<<"$msg" | tail -1)" = "$(grep -E '^Change-Id:' <<<"$msg" | tail -1)" ]; then
+        ok "Change-Id is the last trailer, so the next amend will not add another"
+    else
+        no "Change-Id is not the last line; an amend will append a second one"
+    fi
+
+    # -- the shape reviewers read first --------------------------------------
+    if [ "${#subj}" -le 50 ]; then ok "subject ${#subj} chars"
+    else no "subject ${#subj} chars, over 50"; fi
+
+    case "$subj" in
+        *": "*) ok "subject names a component before the colon" ;;
+        *) no "subject has no 'component: ' prefix; CONTRIBUTING.md asks for one" ;;
+    esac
+
+    long="$(git -C "$dir" log -1 --format='%b' | awk 'length > 72 {c++} END {print c+0}')"
+    if [ "$long" = 0 ]; then ok "no body line over 72 chars"
+    else no "$long body line(s) over 72 chars"; fi
+
+    if grep -q '^Tested:' <<<"$msg"; then
+        ok "Tested: present — and it is yours to have actually run"
+    else
+        no "no Tested: line"
+    fi
+
+    # -- disclosure, reported and not required -------------------------------
+    #
+    # ★ OpenBMC has no AI policy. Requiring a trailer the project does not ask
+    # for would encode this author's preference as that project's rule, and the
+    # whole reason this script exists is that the rules of a project you have
+    # not contributed to are not the ones you already know.
+    if grep -q '^Assisted-by: ' <<<"$msg"; then
+        skip "Assisted-by present — not required by OpenBMC, disclosed anyway: $(grep '^Assisted-by:' <<<"$msg" | head -1)"
+    else
+        skip "no Assisted-by — not required by OpenBMC. If an AI assisted, disclosing is a choice and this script does not make it for you"
+    fi
+
+    if grep -qi '^co-authored-by' <<<"$msg"; then
+        skip "Co-authored-by present — permitted here, unlike DMTF. Check it names a person"
+    fi
+
+    # -- the thing this script cannot see ------------------------------------
+    skip "the Individual CLA to manager@lfprojects.org is NOT checkable from here; Gerrit rejects the push if it is missing, and docs/upstream/README.md records the date it was sent"
+
+    if [ "$(git -C "$dir" status --porcelain | wc -l)" = 0 ]; then
+        ok "working tree clean"
+    else
+        no "uncommitted changes in the tree"
+    fi
+
+    # -- the branch, because most OpenBMC repositories are not on this one ----
+    local head
+    head="$(git -C "$dir" ls-remote --heads origin 2>/dev/null | awk '{print $2}' | sed 's|refs/heads/||' | tr '\n' ' ')"
+    if [ -n "$head" ]; then
+        printf '  \033[33m--\033[0m    remote heads: %s — push to refs/for/<one of these>\n' "$head"
+    fi
+}
+
 check_rules_unmoved() {   # check_rules_unmoved <repo-dir>
     local f="$1/CONTRIBUTING.md" got
     if [ ! -f "$f" ]; then
@@ -238,6 +397,88 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>"
         fails=$((fails + 1))
     fi
 
+    # ── the OpenBMC profile, against inputs it must refuse ────────────────
+    #
+    # Standing rule 11 again, and rule 13: the cases below break DIFFERENT
+    # rules, and a suite where all of them came back "no Change-Id" would
+    # report four times the coverage it has.
+    git -C "$t" config user.name "Jane Developer"
+    git -C "$t" config user.email "jane@example.com"
+    local good_obmc
+    good_obmc="component: a subject under fifty characters
+
+A body line that stays inside seventy-two characters, saying why.
+
+Tested: nothing, this is a fixture
+
+Signed-off-by: Jane Developer <jane@example.com>
+Change-Id: I0123456789abcdef0123456789abcdef01234567"
+
+    run_case_obmc() {   # run_case_obmc <name> <expected-fails> <message>
+        cases=$((cases + 1))
+        git -C "$t" commit -q --allow-empty -m "$3" 2>/dev/null
+        FAILED=0
+        got="$(check_commit_openbmc "$t" 2>&1 | grep -c 'FAIL')"
+        if [ "$got" = "$2" ]; then
+            printf '    ok   %-42s %s failure(s)\n' "$1" "$got"
+        else
+            printf '    FAIL %-42s expected %s failure(s), got %s\n' "$1" "$2" "$got"
+            fails=$((fails + 1))
+        fi
+    }
+
+    run_case_obmc "openbmc: a compliant commit" 0 "$good_obmc"
+
+    # Two failures and not one: with the Change-Id gone there is also no
+    # Change-Id in last position. Rule 13 — distinct breaks, distinct checks,
+    # and the count is what says so.
+    run_case_obmc "openbmc: no Change-Id" 2 \
+        "${good_obmc%$'\n'Change-Id*}"
+
+    run_case_obmc "openbmc: a malformed Change-Id" 1 \
+        "${good_obmc/I0123456789abcdef0123456789abcdef01234567/Ideadbeef}"
+
+    # ★ The case the first version of this profile PASSED. Two Change-Ids is
+    # what an amend produces when a trailer is appended after the first one,
+    # and Gerrit refuses it. "Is there at least one" could not see it.
+    run_case_obmc "openbmc: two Change-Id lines" 1 \
+        "$good_obmc
+Change-Id: Ifedcba9876543210fedcba9876543210fedcba98"
+
+    # And the shape that causes it, caught one amend earlier.
+    run_case_obmc "openbmc: a trailer after the Change-Id" 1 \
+        "$good_obmc
+Assisted-by: Claude Code:claude-opus-5"
+
+    run_case_obmc "openbmc: no component prefix" 1 \
+        "${good_obmc/component: a subject under fifty characters/a subject with no component prefix}"
+
+    # ★ The one that is NOT a failure here and IS one at DMTF. If this starts
+    # failing, either OpenBMC grew an AI policy or the two profiles have been
+    # confused with each other.
+    #
+    # Note where the trailer goes: BEFORE the Change-Id. The first version of
+    # this fixture put it after, and the duplicate check above caught its own
+    # test data on the first run — which is the most convincing thing a new
+    # check can do.
+    run_case_obmc "openbmc: Assisted-by is allowed, not required" 0 \
+        "${good_obmc/Change-Id: I0123456789abcdef0123456789abcdef01234567/Assisted-by: Claude Code:claude-opus-5
+Change-Id: I0123456789abcdef0123456789abcdef01234567}"
+
+    # A single-word sign-off name: CONTRIBUTING.md rejects "Sam" and "RAH".
+    cases=$((cases + 1))
+    git -C "$t" config user.name "Jane"
+    git -C "$t" commit -q --allow-empty -m \
+        "${good_obmc/Signed-off-by: Jane Developer <jane@example.com>/Signed-off-by: Jane <jane@example.com>}"
+    FAILED=0
+    got="$(check_commit_openbmc "$t" 2>&1 | grep -c 'FAIL')"
+    if [ "$got" = 1 ]; then
+        printf '    ok   %-42s %s failure(s)\n' "openbmc: a one-word sign-off name" "$got"
+    else
+        printf '    FAIL %-42s expected 1 failure, got %s\n' "openbmc: a one-word sign-off name" "$got"
+        fails=$((fails + 1))
+    fi
+
     rm -rf "$t"
     printf '\n  %s case(s), %s failed\n' "$cases" "$fails"
     return "$fails"
@@ -245,25 +486,61 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>"
 
 # ------------------------------------------------------------------ main ----
 
-case "${1:-}" in
-    --self-test)
-        hdr "harness/check_upstream_commit.sh — the checks, against inputs they must refuse"
-        self_test
-        exit $?
-        ;;
-    -h|--help|"")
-        sed -n '2,70p' "$0"
-        exit 0
-        ;;
-esac
+PROFILE=dmtf
 
-DIR="$1"
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --self-test)
+            hdr "harness/check_upstream_commit.sh — the checks, against inputs they must refuse"
+            self_test
+            exit $?
+            ;;
+        --profile)
+            PROFILE="${2:?--profile needs dmtf or openbmc}"
+            shift 2
+            ;;
+        -h|--help)
+            sed -n '2,90p' "$0"
+            exit 0
+            ;;
+        *)
+            DIR="$1"
+            shift
+            ;;
+    esac
+done
+
+[ -n "${DIR:-}" ] || { sed -n '2,90p' "$0"; exit 0; }
 [ -d "$DIR/.git" ] || die "$DIR is not a git repository"
 
 hdr "the commit about to be sent to $(git -C "$DIR" remote get-url origin 2>/dev/null)"
-check_rules_unmoved "$DIR"
-printf '\n'
-check_commit "$DIR"
+printf '  profile %s\n\n' "$PROFILE"
+
+# ★ Which profile is not a detail. The two projects disagree about the one
+# trailer this repository's own commits carry: DMTF requires `Assisted-by:` and
+# forbids naming an AI in `Co-authored-by`; OpenBMC has no AI policy at all and
+# requires a `Change-Id` that DMTF has never heard of. Running the wrong profile
+# would pass a commit that the target rejects, which is the failure this whole
+# script exists to prevent.
+case "$PROFILE" in
+    dmtf)
+        check_rules_unmoved "$DIR"
+        printf '\n'
+        check_commit "$DIR"
+        ;;
+    openbmc)
+        # OpenBMC's CONTRIBUTING.md lives in openbmc/docs, not in the target
+        # repository, so there is nothing local to digest. The digest of the
+        # copy these rules were read from is in the header; re-read it if the
+        # rules look surprising.
+        skip "OpenBMC's CONTRIBUTING.md is in openbmc/docs, not here; rules read 2026-09-18, sha256 e27c7768…"
+        printf '\n'
+        check_commit_openbmc "$DIR"
+        ;;
+    *)
+        die "unknown profile '$PROFILE' (expected: dmtf | openbmc)"
+        ;;
+esac
 
 printf '\n'
 if [ "$FAILED" -eq 0 ]; then
@@ -273,7 +550,11 @@ if [ "$FAILED" -eq 0 ]; then
     printf '    * whether somebody has already reported this — search on the day\n'
     printf '    * whether the diff is right. Read it: git -C %s show HEAD\n' "$DIR"
     printf '    * whether every Tested: line was actually run by you\n'
-    printf '  Those three are the checklist in docs/upstream/0001-corim-verify.md\n'
+    if [ "$PROFILE" = openbmc ]; then
+        printf '    * whether the CLA has been accepted. Gerrit answers that\n'
+        printf '      on the push, and it is the one failure that is loud\n'
+    fi
+    printf '  Those are the checklist in docs/upstream/0001-corim-verify.md\n'
     printf '  section 6, and none of them is mechanisable.\n'
 else
     printf '  fix the FAIL lines above before sending\n'
