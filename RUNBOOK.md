@@ -15,7 +15,7 @@
 |---|---|
 | 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
 | 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
-| **現在做到哪?** | ★★ **W08 收工(2026-09-14)**。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
+| **現在做到哪?** | ★★★ **W09 收工(2026-09-18)。Gate 5 關掉了** ——**兩條真實傳輸都跑通**:古典與後量子兩臂的握手整條走 **真的 Linux MCTP 網路**(真 EID、真路由表、kernel 配的 tag、64 bytes 的真分段),**953 個後量子封包對 115 個古典封包,是數出來的不是除出來的**;另一條是**真的 PCIe DOE 信箱**,一則 `GET_VERSION` 穿過 config space 拿到 `VERSION`。宿主的 kernel 一個位元組都沒動(`ADR 0010`)。★ 順便發現一件這個 repo publish 了三週的事是錯的:177 bytes 那個「判別案例」其實判別不了任何東西,因為 `59 × 3 = 177`(§11.8)。以下是 W08 收工(2026-09-14)的內容。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
 | ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
 | ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
 | ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**當時 128/128 通過(W03 之後是 164/164),而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
@@ -29,7 +29,7 @@
 | Claude Code 從哪開? | **`C:\Users\Key20\Desktop\mctp-spdm-pqc`** |
 | 程式碼在哪? | repo 就在上面那個路徑;**上游原始碼與 build tree 在 WSL 的 `~/spdm-lab/`(ext4),絕不放 `/mnt/c`** |
 | GitHub | <https://github.com/Jhongwe1/mctp-spdm-pqc> |
-| 今天要做什麼? | **① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它現在是唯一一件急的。** **八**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`、`d8`。**實作永遠是你的**,`verify_repo.sh` 會把「八比零」印出來。D8 多要一句:寫下**為什麼回傳值是「想複製幾個」而不是「複製了幾個」** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ **W09:真實傳輸(Gate 5)。先跑那兩個前置檢查** —— `qemu-system-x86_64 -device nvme,help | grep -i spdm` 與 `zcat /proc/config.gz | grep CONFIG_MCTP`。**兩個現在都是紅的**(沒裝 qemu、kernel 沒有 CONFIG_MCTP),所以 Gate 5 要嘛裝東西、要嘛照實降級,而在那之前 MCTP 分段數一律標 `[computed]`(`docs/fragmentation.md`)|
+| 今天要做什麼? | **① 按送出,而且現在有兩個。** `openbmc/spdm` 的 README (Gerrit,`docs/upstream/0002-openbmc-readme.md`)與 DMTF 的 CoRimTool 修正(GitHub,`docs/upstream/0001-corim-verify.md`)。兩份都備到只差一個指令,**送之前都要再查一次那個缺口還在不在**。**② `c-drills`,它現在是唯一一件急的,而且比上週更急。** 舊版的 ① 是:**① 按送出。** 第一個 upstream patch 已經備好、驗過、還沒送:`docs/upstream/0001-corim-verify.md` §7 有指令。送之前再搜一次有沒有人提過 **② `c-drills`,而且它現在是唯一一件急的。** **八**題有合約有測試、**零**題完成:`d3`、`d1`、`d5`、`d6`、`d4`、`d2`、`d7`、`d8`。**實作永遠是你的**,`verify_repo.sh` 會把「八比零」印出來。D8 多要一句:寫下**為什麼回傳值是「想複製幾個」而不是「複製了幾個」** ③ `LOG.md` 最後那幾行 `TODO(me)`,尤其是「我現在最不確定的是 ___」 ④ **W09:真實傳輸(Gate 5)。先跑那兩個前置檢查** —— `qemu-system-x86_64 -device nvme,help | grep -i spdm` 與 `zcat /proc/config.gz | grep CONFIG_MCTP`。**兩個現在都是紅的**(沒裝 qemu、kernel 沒有 CONFIG_MCTP),所以 Gate 5 要嘛裝東西、要嘛照實降級,而在那之前 MCTP 分段數一律標 `[computed]`(`docs/fragmentation.md`)|
 | 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠八題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第九個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
 | ⚠️ W08 之後仍然存在的障礙 | **一個專案裡兩個 OpenSSL。** libspdm 自己編 submodule 那份(**3.5.5**,PQC 就是它做的);系統的 `openssl` 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空,所以**要簽自己的 PQC 憑證那條是紅的**。★ 2026-09-14 補上的不是這件事——這一行從 W07 就在這裡了——補上的是**機制**:在那之前 `manifest.json` 只記系統那個 3.0.13,每一份 pin 只寫 `crypto=openssl`。**知道一件事,跟有東西把它記下來,是兩件事。** 現在 `crypto-openssl-vendored` 與 `crypto-openssl-version` 在三份 pin 裡,而且是用 `--pin-only` 補的,沒有重新編譯 |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
@@ -44,9 +44,9 @@
 | G2 | 憑證鏈與三點篡改 | ✅ **完成** — 自己簽的三層鏈在線上量到 1897 bytes,**而且現在有三個互不相干的工具各算一次**(憑證檔 / 解碼 / capture)。**Table 1** 五列、十條受控臂,`docs/tamper.md`。篡改點 ② 需要一支 proxy,做出來之後變成兩列 —— 因為「錯誤訊息一樣、根因相反」那一對其實住在裡面 |
 | G3 | RATS 驗證流水線 | ✅ **完成** —— 參考值、COSE 簽章背書、政策、判定,十條臂全跑過一遍(**Table 3**,`docs/rats-pipeline.md`)。**那個沒有任何一層擋得住的篡改被擋下來了,而且指得出是哪一條規則、哪一個 index。** 版本規則也收尾了:改成逐 index 的「不低於參考值」,舊的那份被**凍結**成 `rats/policy-v0-equality.rego`,四份 capture 跑兩個政策、**八格只有一格動**,CI 斷言這件事(§11.6)。放寬的代價寫在結果旁邊:`>=` 只擋得住低於參考值的回滾 |
 | G4 | 後量子成本 | ✅ **完成**(W07 起跑,W08 收)—— **六組全部**,排成三組對齊的比較:古典 vs 後量子在 **NIST level 3 與 level 5 各一組**(8.99× 與 **10.91×**,缺口隨等級變大),以及格基 vs hash-based 在同一個 KEM 下比。**十八個控制變因是從 `key.c` 讀出來的,不是從 `--help`**,每一臂把十二組協商結果加四個推導事實讀回來比對,對不上就整個 run 失敗。**Figure 2／Figure 3**、`docs/pqc-cost.md`、`docs/fragmentation.md` |
-| G5 | 真實傳輸 | ⬜ 未開始(W09) |
+| G5 | 真實傳輸 | ✅ **完成**(W09)—— **兩條路都成**。① **真的 MCTP 網路**:guest kernel 自己編、開 `CONFIG_MCTP`,guest 的 root 就是宿主的檔案系統(9p 唯讀),所以 W01 編的 `spdm_*_emu` 原封不動就能跑。兩臂握手整條走 mctp-serial,**A0 115 個封包、P2 953 個,全部數出來,模型每一則都對得上**。**對照組是決定性的**:同一個握手在訊息層的 capture 跟 W08 socket 那條**逐則長度完全一樣** —— 換傳輸沒有改變協定。② **真的 PCIe DOE 信箱**:QEMU 的 NVMe 開 `spdm_port`,guest 裡 `lspci -vvv` 看得到 Data Object Exchange capability,`transport/doe_probe` 從 userspace 打信箱、列出三個 DOE 協定、送一則 `GET_VERSION` 拿回 `VERSION`(1.0~1.4)。★ **封包比 8.29× 小於位元組比 9.11×**,因為一個傳輸單位是整個算的 —— 這件事在 socket 那條上永遠量不到(§11.8)|
 | G6 | 一致性與負面測試 | ⬜ 未開始(W10~W11) |
-| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。十三個候選有證據,送出去的是零 |
+| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**現在有兩個 patch 備好、都還沒送出**。第二個是 `openbmc/spdm` 的第一份 README:那個 repo 到現在還沒有 README,但 2025-05 有人送過一版(change 80422),被 owner 以「寫了程式碼做不到的假設功能」打回、CI 紅兩次、掛一年後被 bot 自動 abandon。**那份 review 就是規格**:只寫 merged tree 真的有的東西、引用 reviewer 要的 Redfish design、補 reviewer 要的 Code organization 章節,而且送出前先用 OpenBMC 自己的 prettier 與 markdownlint 跑過。第一個 patch 是**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。十三個候選有證據,送出去的是零 |
 | G8 | 交付與敘事 | ⬜ 未開始(W12~W14) |
 
 ---
@@ -1652,6 +1652,132 @@ chunking 可用的時候,會改用 `GET_CERTIFICATE` 的 `Offset`/`Length` 分�
 
 ---
 
+### 11.8 ★ 把「算出來的數字」換成「數出來的數字」(W09 做的事)
+
+這一節是 Gate 5,也是這個 repo 到目前為止**唯一一次把已經 publish 的數字
+從推算升級成實測**。
+
+#### 問題長什麼樣
+
+`docs/fragmentation.md` 第五節第一句話原本是:
+
+> **No packet count here has been observed.**
+
+意思是:這個 repo 講了八週的「後量子憑證鏈會被切成幾個 MCTP 封包」,全部是
+**拿量到的訊息長度去除**算出來的,不是數出來的。每一個都老實標了
+`[computed]`,但那不是答案,那是誠實。
+
+為什麼一直沒量?因為這台機器的 kernel 沒有 `CONFIG_MCTP`:
+
+```bash
+zcat /proc/config.gz | grep CONFIG_MCTP
+# CONFIG_MCTP is not set
+```
+
+`socket(AF_MCTP, SOCK_DGRAM, 0)` 直接回 `errno 97`。
+
+#### ★ 這一步的關鍵想法
+
+**那個子系統不必在宿主上,它只要在「同一批 binary 跑得起來的地方」就好。**
+
+所以:自己編一顆有 `CONFIG_MCTP=y` 的 kernel,**開一台 VM,而那台 VM 的
+root 檔案系統就是宿主的檔案系統**(用 virtio-9p 掛成唯讀)。W01 編好的
+`spdm_requester_emu` 原封不動、同一個路徑、同一組憑證,在 guest 裡直接跑。
+
+**為什麼不是直接重編宿主的 kernel?**(這題面試會問)
+
+因為 `bench/data/` 底下**二十五個** run 目錄的 `manifest.json` 每一份都記了
+`host_kernel`。把宿主 kernel 換掉,那二十五行就全部指向一顆這台機器上已經不
+存在的 kernel —— 而這個 repo 的核心主張就是「每個數字都指得回它產生時的條件」。
+理由寫在 [`docs/decisions/0010-a-kernel-the-host-does-not-have.md`](docs/decisions/0010-a-kernel-the-host-does-not-have.md)。
+
+#### 怎麼跑
+
+```bash
+# ① 編 guest kernel(第一次約 13 分鐘,之後會跳過)
+bash harness/build_guest_kernel.sh
+
+# ② 編 MCTP 的 userspace 工具(CodeConstruct 的 mctp,OpenBMC 也是用這支)
+bash harness/build_mctp_tools.sh
+
+# ③ ★ 真握手跑在真 MCTP 網路上(古典 + 後量子兩臂)
+bash harness/run_afmctp.sh --arms A0,P2 --name w9-afmctp
+
+# ④ 真的 PCIe DOE 信箱(需要自己編的 QEMU ≥ 9.1)
+bash harness/build_qemu_doe.sh
+bash harness/run_doe.sh --name w9-doe
+```
+
+#### 成功長什麼樣
+
+```
+  ★ the model reproduces every observed packet count: 46 SPDM messages,
+    58736 SPDM bytes, 953 packets at MTU 64
+  ★ 14 of 46 messages (*) are lengths at which the subtract-the-header
+    formula would have given a different answer, and it is wrong at every one
+  ok   Gate 5: a handshake completed over a transport that is not a TCP socket
+```
+
+DOE 那條:
+
+```
+  ★ VERSION: SPDMVersion 0x10, code 0x04, 5 entries
+     versions advertised: 1.0 1.1 1.2 1.3 1.4
+```
+
+#### ★★ 對照組是這一節最重要的部分
+
+一個握手**被錄了兩次**,由兩支沒有共用任何程式碼的工具:
+
+| 檔案 | 誰寫的 | 一筆是什麼 |
+|---|---|---|
+| `A0.pcap` | `spdm_requester_emu --pcap` | 一則 SPDM **訊息** |
+| `A0.link.pcap` | `harness/mctp_capture.py`(AF_PACKET) | 一個 MCTP **封包** |
+
+第一份跟 W08 socket 那條的 capture **逐則長度完全一樣**(A0 22 筆 6559 bytes、
+P2 46 筆 58966 bytes)。所以**換傳輸沒有改變協定**,兩層之間差的就是分段,
+而那正是要量的東西。第二份跟第一份用已知的 framing 對得起來:
+`6449 + 5 × 22 = 6559`,腳本每次跑都會斷言這條等式。
+
+#### ★ 這一週打自己臉的地方(面試講這段)
+
+做校準的時候順手把「錯誤公式」也算了一次,結果發現:
+
+> `docs/fragmentation.md` 跟 `exp04_fragmentation.py` 的註解都寫著
+> 「177 bytes 就是那個判別案例,錯的公式會算出 4」。
+> **`59 × 3 = 177`,所以錯的公式算出來也是 3。**
+
+那個被選來「分辨兩個公式」的案例,**分辨不了任何東西**,而且 1..399 裡有 300
+個長度兩個公式都同意。為什麼三週沒被抓到?因為**對手公式只寫在註解裡,從來
+沒有被執行過** —— 自我測試只斷言「對的公式給對的答案」,而那件事在任何一個
+證明不了什麼的長度上都會成立。
+
+修法不是改一個數字,是改機制:對手公式現在是一個**函式**,「兩者不同」變成
+**算出來的斷言**,而且 `--observed` 現在會報告一份 capture 裡**有幾則訊息真的
+能分辨兩個公式**(校準那份是 12 則裡 7 則)。這是 `docs/roadmap.md` 新增的
+**第 18 條常規**。
+
+#### ⚠️ 兩個「跑起來像成功、數字卻是錯的」的坑
+
+| 症狀 | 根因 | 修法 |
+|---|---|---|
+| 同一個實驗跑兩次,一次 953 個封包、一次 920 | **抓封包的 socket 自己丟了 33 個**(AF_PACKET 預設 buffer 撐不住一次爆量)。第一個看到的症狀是 86 行「continuation with no SOM」,那是在**診斷網路**,但故障在**儀器** | 讀 `PACKET_STATISTICS` 的丟包計數,非零就讓這次 capture 失敗;buffer 開大 |
+| capture 的第一個封包 `SOM=False` | **capture 比流量晚啟動**。`sleep 0.7` 被拿來當同步用,但 Python 的啟動要穿過 9p | capture 綁好 socket 之後寫一個 ready 檔,產生流量的那一端**等那個檔**,不睡覺 |
+
+**兩個坑用的是不同的檢查抓到的**,這件事本身是重點(`docs/roadmap.md` 第 13 條):
+「capture 數量 vs 介面計數器」看不出晚啟動,「重組檢查」看不出均勻丟包。
+
+#### ⚠️ 還有一個坑,查不到會浪費一天
+
+`mctp link serial` 要在**初始的 network namespace** 裡跑,不能在目標 namespace
+裡跑。`drivers/net/mctp/mctp-serial.c` 的 `mctp_serial_open()` 裡
+`alloc_netdev()` 跟 `register_netdev()` 之間**沒有 `dev_net_set()`**,所以介面
+永遠註冊在 `init_net`。第一版腳本「照直覺」在 namespace 裡跑,結果是:**沒有
+任何一個指令報錯,也沒有任何一個介面出現**。正確做法是先在初始 namespace 建
+好,再用 `ip link set <dev> netns <ns>` 搬過去。
+
+---
+
 ## 12. 把一切從零重建(驗證可重現性)
 
 **這一節是這份 runbook 的驗收條件。** 每隔一段時間跑一次,確認它沒有腐爛。
@@ -1736,6 +1862,15 @@ bash harness/run_pair.sh                      # ★ PQC 矩陣二十臂,協商�
 bash harness/run_pair.sh --list              # 先看這次會跑哪些臂(不跑)
 bash harness/run_pair.sh --set ab            # 只跑原本的 A0/P2 四臂
 bash harness/run_pair.sh --only A0-all        # 只跑一臂(除錯用)
+
+# ── ★ 真實傳輸(W09,見 §11.8)───────────────────────────
+bash harness/build_guest_kernel.sh            # 有 CONFIG_MCTP 的 guest kernel
+bash harness/build_mctp_tools.sh              # CodeConstruct 的 mctp CLI
+bash harness/run_afmctp.sh --arms A0,P2       # ★ 握手跑在真的 MCTP 網路上
+bash harness/run_afmctp.sh --arms A0 --name smoke --timeout 600   # 只跑一臂
+bash harness/build_qemu_doe.sh                # QEMU 9.2(發行版的 8.2.2 沒有 spdm_port)
+bash harness/run_doe.sh                       # ★ 一則 SPDM 穿過真的 PCIe DOE 信箱
+python3 bench/exp04_fragmentation.py --observed bench/data/w9-afmctp-*/P2.link.pcap
 
 # ── ★ DataTransferSize 掃描(W08,見 §11.7)─────────────
 bash harness/build_spdm_emu.sh pqc-dts --seed-from pqc   # 第三個 flavor,一次

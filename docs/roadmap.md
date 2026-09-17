@@ -17,7 +17,7 @@ table and the two are kept in step.
 | **G2** | 3–5 | certificate chain and three tamper points | three-layer self-signed chain accepted by the responder; three tamper points; **Table 1** with captures | **complete** — the chain, a tamper harness running ten controlled arms against a prior baseline, and **Table 1** with all three points measured (`docs/tamper.md`). Point 2 became two arms — the signed content changed in flight, and the signature changed in flight — because they are the pair that fails identically for opposite reasons, which is what the week's plan expected of points 1 and 2 and what point 1 turned out not to do |
 | **G3** | 5–7 | RATS verification pipeline | reference values → policy → verdict; clean passes, tampered fails; four version-rollback cases | **complete** — the pipeline exists and is asserted by CI: a capture's measurement record, compared against a COSE-signed reference value under `rats/policy.rego`, over all ten tamper arms (**Table 3**, `docs/rats-pipeline.md`). The arm nothing in SPDM refused is judged FAIL and names the index; the arm where only the *signature* was altered is judged PASS, which separates a damaged link from a damaged device where one status code could not. The fourth clause is closed too: the secure version number is compared per index and one-sided, and four captures — an upgrade, a rollback, an exact match and a correct version beside an altered measurement — are appraised under the new rule **and** under a frozen copy of the equality rule it replaced. Exactly one verdict moves, `rats/test_svn_policy.sh` asserts that it is the only one, and `rats/rats_selftest.py` asserts that the two policies differ in code only inside one marked region. What `>=` still cannot see — a rollback that stays above the reference value — is beside the result in `docs/rats-pipeline.md` §5 |
 | **G4** | 7–8 | post-quantum cost | **Table 2** and **Figure 2**: bytes and round trips, classical vs post-quantum, algorithm confirmed from the negotiated result rather than the requested one | **complete** — six algorithm groups arranged as three matched comparisons (classical against post-quantum at NIST categories 3 **and** 5, and lattice against hash-based at a fixed KEM), eighteen control variables pinned, twelve negotiated groups plus four derived facts read back off the wire and asserted per arm. Every ratio is published twice, once per measurement flow, and the gap widens with the security level: 8.99x at category 3 and 10.91x at category 5. Three findings the plan did not ask for: the Version-Capabilities-Algorithms exchange is the same 182 bytes in all six groups — same field widths, different algorithm bits — so nothing post-quantum costs anything to *negotiate*; every signature length in the table falls out of a message-size difference and matches its FIPS constant exactly, which is what says the measurement is calibrated; and `DataTransferSize` — swept over a 32x range on a third build flavour made to have a runtime flag for it — moves the byte total 3.1% while moving round trips from 59 to zero. **Figure 3** is that. The sweep contains its own control: the patched build told to use the unpatched value reproduces every count of its capture — bytes, packets, chunk round trips and the per-message-type table — while the files themselves differ in their nonces, which is the distinction between a deterministic count and reproducible content |
-| **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | not started |
+| **G5** | 9 | real transports | handshake over a transport that is not a TCP socket | **complete** — both arms of the post-quantum comparison run over a real Linux MCTP link (**Table 4**, `docs/transports.md` and `docs/fragmentation.md`): real endpoint IDs, a real route table, kernel-allocated tags, and packetisation at DSP0236's 64-byte baseline. **953 post-quantum packets against 115 classical, counted off the wire, and the model reproduces every one.** The packet ratio is 8.29x where the byte ratio is 9.11x, because a transmission unit is charged whole — a distinction no capture over a TCP socket can make. The control is that the same handshakes, recorded at the message layer, are byte-identical to week eight's socket-line captures, so the transport changed nothing about the protocol. Along the way the calibration found that the case this project had been publishing as *the* discriminating length, 177 bytes, discriminates nothing: `59 x 3 = 177`. Second route: an SPDM `GET_VERSION` across a real PCIe DOE mailbox on a QEMU NVMe device, driven from guest userspace because Linux 6.12 has no CMA-SPDM requester. Neither needed the host kernel to change — [ADR 0010](decisions/0010-a-kernel-the-host-does-not-have.md) |
 | **G6** | 10–11 | conformance and negative testing | upstream responder validator run with a root cause for every failure; negative tests reproducing three 2026 advisory *classes* | not started |
 | **G7** | 1–12 | upstream contribution | a change submitted to an upstream project, with reviewer correspondence | **in progress** — environment prepared; **seventeen candidates with evidence** — `openbmc/spdm` prerequisites, `DMTF/spdm-emu` help text that disagrees with its own defaults, and two found on 2026-09-01 while explaining a tamper capture: a discarded slot-0 certificate read result, and a requester that never inspects `LIBSPDM_STATUS_VERIF_NO_AUTHORITY`. A fifth arrived on 2026-09-10 while writing the tamper proxy: `spdm_emu_common/command.h` documents the socket payload as "SPDM message, starting from SPDM_HEADER" when the MCTP transport puts a message-type byte in front of it, so a reader who trusts the comment is one byte out on every field. Seven more came from running DMTF's own published example on 2026-09-12, and a thirteenth on 2026-09-14 while pinning an A/B's control variables: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back and then makes the handshake impossible, because the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported and `--mut_auth NO` does not clear that capability bit. Separately, DMTF's SPDM 1.5 hybrid-PQC review was read during its window and feedback drafted; **not sent**, and filed as evidence of timing rather than of contribution. Four more arrived on 2026-09-14 while building a transport sweep: `--cap` is parsed by the requester and never read, every invalid argument exits **0**, no signed operation completes with SLH-DSA on a build that ships its sample certificates, and `DataTransferSize` has no runtime flag — for which a 55-line patch with a control now exists. Seventeen in total. |
 | **G8** | 12–14 | delivery and write-up | README, limitations, threat scope, demo, one-page summary | not started |
@@ -64,6 +64,7 @@ Those three are not on the list.
 | 12 | `docs/threat-scope.md` — what is and is not defended against | G8 | written |
 | 13 | `docs/limitations.md` | G8 | written |
 | 14 | eight C drills with a compile-error trend | all | separate track |
+| 15 | **Table 4** — MCTP packets per handshake, observed on a real link, against the model | G5 | measured — `docs/fragmentation.md` §3a; the calibration beside it reports how many of its lengths actually separate the model from the plausible wrong one |
 
 Deliverable 10 is the one the rest depends on for credibility. A table can be
 anything. A CI job that turns red when a tampered measurement is *not* rejected
@@ -147,7 +148,31 @@ it does.
     report *which* check rejected something returns a stable code beside the
     prose — `ms_status_t` in `device/`, `why_kind` in `fields.py` — and the
     tests compare codes.
-17. **A fix is correct in the state it leaves behind, not in isolation.**
+17. **An instrument reports its own losses, or its output is not a
+    measurement.** Two runs of the same experiment on 2026-09-18 returned
+    different packet counts, and neither difference was in the thing being
+    measured: an `AF_PACKET` socket silently discarded 33 packets under a
+    burst, and a capture began two thirds of the way through because a `sleep`
+    was standing in for a synchronisation. Both produced a plausible number
+    rather than an error, and the first visible symptom of the second was a
+    page of complaints about the *link*. So every capture here now reads the
+    kernel's own drop counter and fails on a non-zero value, announces
+    readiness rather than being slept at, and is cross-checked against the
+    interface counters for the same window. Rule 13 applies to the pair: the
+    counter comparison cannot see a late start and the reassembly check cannot
+    see a uniform loss, so both are needed and neither is redundant.
+18. **A claim that two things differ has to evaluate both of them.** For three
+    weeks `docs/fragmentation.md` and a self-test comment asserted that 177
+    bytes was the length separating the right MCTP packet formula from the
+    plausible wrong one, because the wrong one "says 4". It says 3: `59 x 3 =
+    177`. The self-test never computed the rival — it checked only that the
+    right formula gave the right answer, which it would have done at any length
+    — so a case chosen to discriminate, and named in print as *the* case that
+    discriminates, discriminated nothing. Rival hypotheses are now written as
+    code and evaluated, the separation is asserted rather than described, and
+    `--observed` reports how many messages in a capture actually separate the
+    two so that a run which discriminates nothing says so.
+19. **A fix is correct in the state it leaves behind, not in isolation.**
     On 2026-09-12 a one-line change to an upstream verifier was written,
     committed, signed off and one keystroke from being sent. It was right: the
     tool passed a public key where a private scalar goes, so it refused every

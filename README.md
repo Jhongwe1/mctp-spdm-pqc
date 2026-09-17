@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 8 of a 14-week programme. The table below is the truth about what
+This is week 9 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -37,13 +37,112 @@ exists today, not what is planned. Planned work is in
 | G2 | certificate chain, three tamper points | **complete** — **Table 1**, five rows over ten controlled arms, every point measured ([`docs/tamper.md`](docs/tamper.md)). Point 2 needed a proxy and became two arms, which is where the pair that fails identically for opposite reasons turned out to live |
 | G3 | RATS verification pipeline | **complete** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is judged FAIL, and the `rats` job turns red if it stops being. The version rule is now `evidence >= reference`, and the four cases that prove the change moved **exactly one** verdict — and did not loosen the integrity rule — run in CI |
 | G4 | post-quantum cost quantification | **complete** — **Table 2** and **Figures 2 and 3**: six algorithm groups over three matched comparisons, a DataTransferSize sweep on a build made to have one, and every signature length in the table re-derived from a message-size difference and landing on its FIPS constant exactly ([`docs/pqc-cost.md`](docs/pqc-cost.md)). The negotiation costs 152 bytes in all six groups; the certificate chain is 86% of the post-quantum arm; and DataTransferSize turns out to be a latency parameter, not a bandwidth one — 3.1% of bytes against 59 round trips over a 32x range |
-| G5 | real transports (QEMU / AF_MCTP) | not started |
+| G5 | real transports (QEMU / AF_MCTP) | **complete** — **Table 4**: both arms of the post-quantum comparison run across a real Linux MCTP link, in a guest whose kernel has the subsystem this host lacks, and every packet is counted off the wire instead of divided. The model reproduces all 953 of them, at seven message lengths where the plausible wrong formula would have said something else. Separately, one SPDM `GET_VERSION` crosses a real PCIe DOE mailbox on a QEMU NVMe device and comes back answered ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | **in progress** — agreements and account done. The first change is **prepared and not sent**: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Seventeen** candidates now carry evidence and none has been sent — the newest is a 55-line patch making `DataTransferSize` settable, with a capture proving it inert where it is not aimed |
+| G7 | upstream contribution | **in progress** — agreements and account done. Two changes are now **prepared and not sent**: a first README for `openbmc/spdm`, written against the review that killed the last attempt and run through OpenBMC's own prettier and markdownlint before it leaves; and the earlier one, where `CoRimTool.py verify` does not verify: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Seventeen** candidates now carry evidence and none has been sent — the newest is a 55-line patch making `DataTransferSize` settable, with a capture proving it inert where it is not aimed |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 9 established
+
+**Gate 5 is closed, and the sentence it existed to delete is deleted.**
+`docs/fragmentation.md` opened §5 with *"No packet count here has been
+observed."* Every MCTP packet count this project had published was arithmetic
+on a measured message length, honestly labelled `[computed]`, because the
+development host has no `CONFIG_MCTP` and `socket(AF_MCTP, SOCK_DGRAM, 0)`
+returns `EAFNOSUPPORT`.
+
+★ **That was never a reason to stop, and treating it as one for eight weeks was
+the mistake.** The subsystem did not have to be on the host; it had to be
+somewhere the same binaries could run. A guest kernel built with
+`CONFIG_MCTP=y`, whose root filesystem is the host's own over virtio-9p, runs
+the `spdm_requester_emu` from week one unchanged, from the same path, against
+the same certificates. The host kernel is untouched, which matters because
+`host_kernel` is recorded in all twenty-five earlier run directories
+([ADR 0010](docs/decisions/0010-a-kernel-the-host-does-not-have.md)).
+
+**Both arms of the post-quantum comparison then crossed a real MCTP link** —
+real endpoint IDs, a real route table, kernel-allocated tags, and packetisation
+at DSP0236's baseline 64-byte transmission unit. **Table 4:**
+
+| | A0 classical | P2 post-quantum | ratio |
+| --- | ---: | ---: | ---: |
+| SPDM messages | 22 | 46 | 2.09x |
+| SPDM bytes | 6,449 | 58,736 | 9.11x |
+| **MCTP packets, observed** | **115** | **953** | **8.29x** |
+| framing as a share of the wire | 7.0% | 6.2% | |
+
+★ **The packet ratio is smaller than the byte ratio, and that is the transport
+result.** A transmission unit is charged whole, so the classical arm's many
+short messages waste more of each packet than the post-quantum arm's few long
+ones. On a bus where the per-packet cost dominates — SMBus at 100 kHz — the
+ratio a reader should quote is 8.29 and not 9.11, and no capture taken over a
+TCP socket can say which.
+
+**The control is what makes that legitimate.** Each arm was recorded twice, by
+two programs sharing no code: the emulator's own message-level pcap and an
+`AF_PACKET` capture of the link. The message-level captures match week eight's
+socket-line ones *exactly* — same record count, same bytes, same per-message
+length sequence — so **the transport changed nothing about the protocol**, and
+the two layers reconcile through the five bytes of framing known to sit between
+them, asserted on every run rather than left to a reader.
+
+★ **And a claim this project had been publishing for three weeks turned out to
+be arithmetically false.** `docs/fragmentation.md` said 177 bytes was the case
+separating the right packet formula from the plausible wrong one, because the
+wrong one "says 4". `59 x 3 = 177` exactly, so it says 3, and 177 is one of the
+300 lengths in 1..399 where the two *agree*. Nothing caught it because the rival
+formula was named in a sentence and never evaluated — the self-test only ever
+checked that the right formula gave the right answer, which it would have done
+at a length that proved nothing. The rival is now a function, the separation is
+computed, and the calibration run reports how many of its messages actually
+discriminate: **seven of twelve, and the wrong formula is wrong at every one.**
+
+**The second half of Gate 5 is a real PCIe DOE mailbox.** A QEMU-emulated NVMe
+controller with `spdm_port` set gives the guest a Data Object Exchange
+capability that `lspci -vvv` enumerates out of config space. Linux 6.12 has no
+in-kernel CMA-SPDM requester, so `transport/doe_probe` drives the mailbox from
+userspace — DWORD writes, `GO`, a poll of `DATA OBJECT READY`, a read mailbox
+that must be popped — enumerates all three DOE protocols, and sends one
+`GET_VERSION`. It comes back `VERSION` advertising 1.0 through 1.4, through
+config space rather than through a socket.
+
+Three faults had to be turned into checks before any of this was believable, and
+all three produced a *plausible number* rather than an error.
+
+- **A capture that began two thirds of the way through.** A `sleep 0.7` was
+  standing in for a synchronisation, and the interpreter's own start-up crosses
+  9p. The first record of the capture had `SOM` clear. The capture now creates a
+  readiness file and the traffic generator blocks on it.
+- **An `AF_PACKET` socket that dropped 33 packets under a burst.** The same run
+  repeated gave 920 packets where the first gave 953, and the first visible
+  symptom was 86 orphaned continuations — a diagnosis of the *link*, for a fault
+  in the *instrument*. The socket's own `PACKET_STATISTICS` drop counter is now
+  read, and a non-zero value fails the capture.
+- **An MCTP interface that appeared in the wrong network namespace.**
+  `mctp_serial_open()` calls `alloc_netdev()` and `register_netdev()` with no
+  `dev_net_set()` between them, so the netdev lands in `init_net` whichever
+  namespace attaches the line discipline. No command failed and no interface
+  existed.
+
+Standing rule 13 applies to the first two: they are caught by *different*
+checks, because comparing the capture against the interface counters cannot see
+a late start, and the reassembly check cannot see a uniform loss.
+
+**Upstream, the second change is prepared.** `openbmc/spdm` still has no README
+— but one was attempted in May 2025 by one of the repository's own reviewers,
+rejected by the maintainer for *"hypotheticals that do not match the code"*,
+failed CI twice, and was auto-abandoned a year later for inactivity. That review
+is the specification: describe only what the merged tree does, cite the Redfish
+design document one reviewer asked for, add the code-organization section
+another asked for, and pass the markdown linters that turned it red. It is also
+where a second finding came from: the tree **does** build with GCC 14.2 though
+not with the distribution's 13.3, and `meson test` then fails one suite of three
+on any machine that is not a BMC, because `test_policy_manager` asks D-Bus for a
+well-known name it is not allowed to own. All three pass on a bus that permits
+it, and the README says so in one line.
 
 ### What week 8 established
 
