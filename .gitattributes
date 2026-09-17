@@ -52,5 +52,18 @@ Dockerfile  text eol=lf
 *.cert      text eol=lf
 *.certchain binary
 
+# ★ A run directory's artifacts are hashed into its manifest.json at the moment
+# they are produced, so whatever git stores has to be what was hashed.
+#
+# Most of them are already LF. The guest console log is not: it is the serial
+# output of a virtual machine, and a Linux console emits CR LF, so the bytes
+# that were hashed contain 0x0d. `* text=auto eol=lf` would normalise them away
+# on the next checkout, and a clean clone would then fail verify_repo.sh's
+# manifest check on a file nobody edited.
+#
+# Marked -text rather than binary so the file still diffs and greps as text:
+# what is being prevented is normalisation, not readability.
+bench/data/**/console.log   -text
+
 # Keep generated evidence out of diff noise but still reviewable.
 docs/env-baseline.md    linguist-generated=true
