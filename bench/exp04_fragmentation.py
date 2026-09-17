@@ -77,7 +77,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "harness"))
 import pcapstat  # noqa: E402  — same directory, and it owns the capture parser
+import pcapcount  # noqa: E402  — harness/, and it owns the pcap file format
 
 # DSP0236's baseline transmission unit, and two larger values a binding may
 # negotiate. 64 is the only one that is guaranteed routable.
@@ -102,6 +104,21 @@ def mctp_packets(msg_bytes: int, mtu: int) -> int:
     if mtu <= 0:
         raise ValueError("MTU must be positive")
     return math.ceil((msg_bytes + MCTP_TYPE_BYTES) / mtu)
+
+
+def mctp_packets_subtract_header(msg_bytes: int, mtu: int) -> int:
+    """The wrong formula, written down so it can be evaluated.
+
+    `ceil(L / (MTU - 4 - 1))`: the version that reasons the four-byte transport
+    header and the message-type byte eat into the transmission unit. It exists
+    here for one reason — a claim that two formulas disagree at some length is
+    itself a claim, and until 2026-09-18 this file asserted one in a comment
+    that was false. See selftest().
+    """
+    usable = mtu - MCTP_HEADER_BYTES_PER_PACKET - MCTP_TYPE_BYTES
+    if usable <= 0:
+        raise ValueError(f"MTU {mtu} leaves no room under the wrong formula")
+    return math.ceil(msg_bytes / usable)
 
 
 def chunk_roundtrips(msg_bytes: int, dts: int) -> int:
@@ -277,13 +294,42 @@ def selftest() -> int:
 
     print("the 4-byte transport header is NOT taken out of the MTU")
     checks += 1
-    # The common wrong version is ceil(L / (MTU - 4 - 1)). At L=177, MTU=64 it
-    # says 4 (177/59) and the right answer is 3 (178/64). One case separates
-    # them; this is that case.
+    # ── 2026-09-18: this check used to be wrong about its own point ────────
+    #
+    # It read: "The common wrong version is ceil(L / (MTU - 4 - 1)). At L=177,
+    # MTU=64 it says 4 (177/59) and the right answer is 3 (178/64). One case
+    # separates them; this is that case."
+    #
+    # 59 x 3 = 177 exactly, so ceil(177/59) is 3, and 177 is one of the 300
+    # lengths in 1..399 at which the two formulas AGREE. The case chosen to
+    # separate them separated nothing. Nothing caught it because the rival was
+    # named in a comment and never evaluated — the assertion only ever checked
+    # that the right formula gave the right answer, which it would have done
+    # just as happily at a length that proved nothing.
+    #
+    # So the rival is now a function, the separation is computed, and the
+    # length that does not separate is pinned as not separating. That is
+    # standing rule 11 applied to a claim rather than to a check: something has
+    # to demonstrate the difference, or the difference is a belief.
     if mctp_packets(177, 64) != 3:
-        bad(f"mctp_packets(177, 64) = {mctp_packets(177, 64)}, want 3. Getting "
-            f"4 here means 59 usable bytes was assumed, which is the "
-            f"subtract-the-header mistake")
+        bad(f"mctp_packets(177, 64) = {mctp_packets(177, 64)}, want 3")
+    if mctp_packets_subtract_header(177, 64) != 3:
+        bad("ceil(177/59) is 3; if this fires the rival formula was changed")
+    if mctp_packets(177, 64) != mctp_packets_subtract_header(177, 64):
+        bad("177 is being treated as a separating case again; it is not")
+
+    # Lengths that do separate them, computed rather than asserted.
+    separators = [n for n in range(1, 400)
+                  if mctp_packets(n, 64) != mctp_packets_subtract_header(n, 64)]
+    if separators[:4] != [60, 61, 62, 63]:
+        bad(f"the smallest separating lengths are {separators[:4]}, expected "
+            f"60..63")
+    for n, want_right, want_wrong in ((63, 1, 2), (127, 2, 3), (16853, 264, 286)):
+        got_r = mctp_packets(n, 64)
+        got_w = mctp_packets_subtract_header(n, 64)
+        if got_r != want_right or got_w != want_wrong:
+            bad(f"at L={n}: right {got_r} (want {want_right}), "
+                f"wrong {got_w} (want {want_wrong})")
 
     print("a message that fits in DataTransferSize is not chunked")
     checks += 1
@@ -333,9 +379,391 @@ def selftest() -> int:
     except ValueError:
         pass
 
+    # ── the reassembler, and the three ways a link breaks it ───────────────
+    #
+    # Standing rule 11: a check is worth what it rejects, and something has to
+    # prove it rejects. group_mctp_messages() turns a packet capture into the
+    # message lengths the whole observed comparison rests on, so each of its
+    # three complaints is fired here deliberately. Two of these are live
+    # failure modes on a pty pair, not hypotheticals — nothing between the two
+    # ends of that link provides flow control.
+    #
+    # Rule 13 as well: the three are refused through *different* branches, and
+    # a suite where all three came back "never reached EOM" would report three
+    # times the coverage it has.
+
+    def pkt(som, eom, seq, payload_len, tag=0, src=8, dest=9, first=0x05):
+        body = bytes([first]) + bytes(payload_len - 1) if payload_len else b""
+        flags = (0x80 if som else 0) | (0x40 if eom else 0) | ((seq & 3) << 4) | tag
+        return parse_mctp_packet(bytes([1, dest, src, flags]) + body)
+
+    print("the reassembler agrees with the model on a clean three-packet message")
+    checks += 1
+    msgs, probs = group_mctp_messages(
+        [pkt(True, False, 0, 64), pkt(False, False, 1, 64), pkt(False, True, 2, 50)]
+    )
+    if probs:
+        bad(f"a clean message produced complaints: {probs}")
+    elif len(msgs) != 1 or msgs[0]["packets"] != 3:
+        bad(f"clean message: {len(msgs)} messages, {msgs and msgs[0]['packets']} packets")
+    else:
+        # 64 + 64 + 50 payload bytes, minus the one type byte, is 177 - the
+        # length the two candidate formulas disagree about.
+        length = msgs[0]["payload_bytes"] - MCTP_TYPE_BYTES
+        if length != 177 or mctp_packets(length, 64) != 3:
+            bad(f"reassembled {length} bytes, model {mctp_packets(length, 64)}, want 177 and 3")
+
+    print("the reassembler refuses a message that never reaches EOM")
+    checks += 1
+    _m, probs = group_mctp_messages([pkt(True, False, 0, 64), pkt(False, False, 1, 64)])
+    if not any("never reached EOM" in x for x in probs):
+        bad(f"a message with no EOM was not reported: {probs}")
+
+    print("the reassembler refuses a gap in the packet sequence")
+    checks += 1
+    _m, probs = group_mctp_messages(
+        [pkt(True, False, 0, 64), pkt(False, True, 2, 20)]  # seq 1 is missing
+    )
+    if not any("sequence" in x for x in probs):
+        bad(f"a dropped packet was not reported: {probs}")
+
+    print("the reassembler refuses a continuation with no start")
+    checks += 1
+    _m, probs = group_mctp_messages([pkt(False, True, 1, 20)])
+    if not any("no SOM" in x for x in probs):
+        bad(f"an orphan continuation was not reported: {probs}")
+
+    print("a packet too short to hold a header is refused, not indexed")
+    checks += 1
+    try:
+        parse_mctp_packet(b"\x01\x09\x08")
+        bad("a three-byte packet did not raise")
+    except ValueError:
+        pass
+
     print()
     print(f"{checks} checks, {fails} failed")
     return 1 if fails else 0
+
+
+# ── observed: the same arithmetic, against a capture of a real MCTP link ────
+#
+# Everything above this point is computed. This is not.
+#
+# harness/run_afmctp.sh boots a guest whose kernel has CONFIG_MCTP, builds an
+# mctp-serial link out of a pty pair, and captures the link itself with
+# harness/mctp_capture.py. Each record in that capture is one MCTP *packet*:
+# a four-byte transport header and up to `mtu - 4` bytes of payload.
+#
+# The header layout is DSP0236's and is what net/mctp writes:
+#
+#     byte 0   ver                     always 1 out of mctp_local_output
+#     byte 1   dest                    endpoint ID
+#     byte 2   src                     endpoint ID
+#     byte 3   flags_seq_tag           SOM<<7 | EOM<<6 | seq<<4 | TO<<3 | tag
+#
+# Grouping those back into messages is what turns a packet count into a
+# comparison: the model predicts packets per MESSAGE, so the messages have to
+# be recovered before the prediction means anything.
+
+MCTP_HDR_LEN = 4
+MCTP_FLAG_SOM = 0x80
+MCTP_FLAG_EOM = 0x40
+MCTP_FLAG_TO = 0x08
+MCTP_SEQ_SHIFT = 4
+MCTP_SEQ_MASK = 0x03
+MCTP_TAG_MASK = 0x07
+
+
+def parse_mctp_packet(raw: bytes) -> dict:
+    """One captured packet, as its header describes itself."""
+    if len(raw) < MCTP_HDR_LEN:
+        raise ValueError(f"packet of {len(raw)} bytes cannot hold an MCTP header")
+    ver, dest, src, flags = raw[0], raw[1], raw[2], raw[3]
+    return {
+        "ver": ver,
+        "dest": dest,
+        "src": src,
+        "som": bool(flags & MCTP_FLAG_SOM),
+        "eom": bool(flags & MCTP_FLAG_EOM),
+        "seq": (flags >> MCTP_SEQ_SHIFT) & MCTP_SEQ_MASK,
+        "to": bool(flags & MCTP_FLAG_TO),
+        "tag": flags & MCTP_TAG_MASK,
+        "payload": raw[MCTP_HDR_LEN:],
+    }
+
+
+def group_mctp_messages(packets: list) -> tuple:
+    """Reassemble packets into messages. Returns (messages, problems).
+
+    A message is the run of packets sharing (src, dest, tag, TO) that begins
+    with SOM and ends with EOM, with the sequence number advancing by one
+    modulo four across it. Every one of those three conditions is checked and
+    reported rather than assumed, because each has a failure that would
+    otherwise be invisible in the total:
+
+      * a lost SOM makes a message look shorter than it was,
+      * a lost EOM merges two messages into one,
+      * a sequence gap means a packet was dropped, and the count this whole
+        analysis rests on would be an undercount reported as a measurement.
+
+    A pty pair has no flow control worth the name, so these are live failure
+    modes on this link, not theoretical ones.
+    """
+    open_msgs = {}
+    messages = []
+    problems = []
+
+    for idx, pkt in enumerate(packets):
+        key = (pkt["src"], pkt["dest"], pkt["tag"], pkt["to"])
+        cur = open_msgs.get(key)
+
+        if pkt["som"]:
+            if cur is not None:
+                problems.append(
+                    f"packet {idx}: SOM for {key} while a message was still open "
+                    f"({cur['packets']} packets in, no EOM seen)"
+                )
+            cur = {
+                "first_index": idx,
+                "src": pkt["src"],
+                "dest": pkt["dest"],
+                "tag": pkt["tag"],
+                "to": pkt["to"],
+                "ver": pkt["ver"],
+                "packets": 0,
+                "payload_bytes": 0,
+                "payload_sizes": [],
+                "msg_type": pkt["payload"][0] if pkt["payload"] else None,
+                "next_seq": pkt["seq"],
+                "complete": False,
+            }
+            open_msgs[key] = cur
+        elif cur is None:
+            problems.append(
+                f"packet {idx}: continuation for {key} with no SOM before it"
+            )
+            continue
+        else:
+            if pkt["seq"] != cur["next_seq"]:
+                problems.append(
+                    f"packet {idx}: sequence {pkt['seq']}, expected "
+                    f"{cur['next_seq']} - a packet was lost or reordered"
+                )
+
+        cur["packets"] += 1
+        cur["payload_bytes"] += len(pkt["payload"])
+        cur["payload_sizes"].append(len(pkt["payload"]))
+        cur["next_seq"] = (pkt["seq"] + 1) & MCTP_SEQ_MASK
+
+        if pkt["eom"]:
+            cur["complete"] = True
+            cur["last_index"] = idx
+            messages.append(cur)
+            del open_msgs[key]
+
+    for key, cur in open_msgs.items():
+        problems.append(
+            f"message {key} beginning at packet {cur['first_index']} never "
+            f"reached EOM ({cur['packets']} packets)"
+        )
+        messages.append(cur)
+
+    return messages, problems
+
+
+def observed(pcap: Path, mtu_payload: int | None = None) -> dict:
+    """Read a real MCTP link capture and hold the model to it."""
+    summary, records = pcapcount.read_pcap(pcap)
+    raw = pcap.read_bytes()
+
+    if summary["linktype"] != 291:
+        raise ValueError(
+            f"{pcap} has link type {summary['linktype']}, not 291 (MCTP)"
+        )
+
+    # ★ The transmission unit is READ, not assumed. harness/mctp_capture.py
+    # writes the interface's MTU into a sidecar at capture time; the kernel
+    # took it from drivers/net/mctp/mctp-serial.c, which fixes it at 68 - "base
+    # mtu (64) + mctp header". Subtracting the header here is the one step that
+    # turns an interface MTU into the payload the model divides by, and doing
+    # it from the sidecar rather than from a constant is what makes this a
+    # measurement of whatever link it was pointed at.
+    meta_path = Path(str(pcap) + ".meta.json")
+    iface_mtu = None
+    ifstats = None
+    capture_drops = None
+    if meta_path.exists():
+        meta = json.loads(meta_path.read_text())
+        iface_mtu = meta.get("mtu")
+        ifstats = meta.get("ifstats_delta")
+        capture_drops = meta.get("socket_tp_drops")
+    if mtu_payload is None:
+        if iface_mtu is None:
+            raise ValueError(
+                f"no {meta_path.name} beside the capture, so the link's MTU is "
+                f"unknown; pass --mtu to state it"
+            )
+        mtu_payload = iface_mtu - MCTP_HEADER_BYTES_PER_PACKET
+
+    packets = []
+    for rec in records:
+        off = rec["file_offset"]
+        packets.append(parse_mctp_packet(raw[off : off + rec["captured_bytes"]]))
+
+    messages, problems = group_mctp_messages(packets)
+
+    # ★ Before any of the packets are interpreted: did the capture get all of
+    # them? The interface counters and the capture are two independent counts
+    # of the same events, and if they disagree the analysis below is arithmetic
+    # on a subset. On 2026-09-18 a repeat of the same run captured 920 packets
+    # where the interface had moved 953, and the first visible symptom was
+    # eighty-six orphaned continuations — a diagnosis of the link, for a fault
+    # in the instrument.
+    if capture_drops:
+        problems.insert(
+            0,
+            f"the capture socket dropped {capture_drops} packets; every count "
+            f"below is an undercount",
+        )
+    if ifstats:
+        moved = (ifstats.get("tx_packets") or 0) + (ifstats.get("rx_packets") or 0)
+        if moved and moved != len(packets):
+            problems.insert(
+                0,
+                f"the interface counters moved by {moved} while the capture "
+                f"holds {len(packets)} packets",
+            )
+
+    rows = []
+    disagreements = 0
+    for m in messages:
+        # The message-type byte is the first byte of the first packet and is
+        # not part of the SPDM message, which is exactly the +1 in the model.
+        spdm_bytes = m["payload_bytes"] - MCTP_TYPE_BYTES
+        predicted = mctp_packets(spdm_bytes, mtu_payload)
+        # What the subtract-the-header formula would have said. A capture whose
+        # every message length happens to be one the two formulas agree about
+        # confirms the arithmetic and discriminates nothing, and a reader
+        # cannot tell those two cases apart from a column of ticks.
+        rival = mctp_packets_subtract_header(spdm_bytes, mtu_payload)
+        agrees = predicted == m["packets"] and m["complete"]
+        if not agrees:
+            disagreements += 1
+        # Every packet but the last should be full. A short one in the middle
+        # would mean the sender is not filling the unit, and the model would be
+        # right about the arithmetic and wrong about the link.
+        interior = m["payload_sizes"][:-1]
+        short_interior = [s for s in interior if s != mtu_payload]
+        rows.append(
+            {
+                "type": m["msg_type"],
+                "src": m["src"],
+                "dest": m["dest"],
+                "tag": m["tag"],
+                "to": m["to"],
+                "msg_bytes": spdm_bytes,
+                "packets_observed": m["packets"],
+                "packets_model": predicted,
+                "packets_rival": rival,
+                "separates": rival != predicted,
+                "complete": m["complete"],
+                "agrees": agrees,
+                "short_interior_packets": short_interior,
+            }
+        )
+
+    spdm_rows = [r for r in rows if r["type"] == 0x05]
+    separating = [r for r in spdm_rows if r["separates"]]
+    return {
+        "separating_messages": len(separating),
+        "file": str(pcap),
+        "linktype": summary["linktype"],
+        "packets_in_capture": len(packets),
+        "iface_mtu": iface_mtu,
+        "mtu_payload": mtu_payload,
+        "ifstats_delta": ifstats,
+        "messages": len(messages),
+        "spdm_messages": len(spdm_rows),
+        "spdm_packets": sum(r["packets_observed"] for r in spdm_rows),
+        "spdm_bytes": sum(r["msg_bytes"] for r in spdm_rows),
+        "rows": rows,
+        "problems": problems,
+        "disagreements": disagreements,
+    }
+
+
+def print_observed(o: dict) -> None:
+    print(f"{Path(o['file']).name}")
+    print(
+        f"  observed   link type {o['linktype']}, {o['packets_in_capture']} MCTP "
+        f"packets, {o['messages']} messages reassembled"
+    )
+    print(
+        f"  observed   interface MTU {o['iface_mtu']}, "
+        f"so {o['mtu_payload']} payload bytes per packet   [read from the link]"
+    )
+    if o["ifstats_delta"]:
+        d = o["ifstats_delta"]
+        print(
+            f"  observed   the interface counted tx={d.get('tx_packets')} "
+            f"rx={d.get('rx_packets')} over the same window, "
+            f"tx_dropped={d.get('tx_dropped')} rx_errors={d.get('rx_errors')}"
+        )
+    print()
+    print(
+        "    type  src>dst tag  msg_bytes  packets  model  rival  verdict"
+    )
+    for r in o["rows"]:
+        t = "SPDM" if r["type"] == 0x05 else (
+            "ctrl" if r["type"] == 0x7E else f"0x{r['type']:02x}"
+            if r["type"] is not None else "----")
+        mark = "ok" if r["agrees"] else "DISAGREES"
+        if not r["complete"]:
+            mark = "INCOMPLETE"
+        extra = ""
+        if r["short_interior_packets"]:
+            extra = f"  short interior packets: {r['short_interior_packets']}"
+        print(
+            f"    {t:<5} {r['src']:>3}>{r['dest']:<3} {r['tag']:>3}  "
+            f"{r['msg_bytes']:>9}  {r['packets_observed']:>7}  "
+            f"{r['packets_model']:>5}  {r['packets_rival']:>5}"
+            f"{'*' if r['separates'] else ' '} {mark}{extra}"
+        )
+    print()
+    if o["problems"]:
+        print("  problems on the link:")
+        for p in o["problems"]:
+            print(f"    {p}")
+        print()
+    if o["disagreements"] == 0 and not o["problems"]:
+        print(
+            f"  ★ the model reproduces every observed packet count: "
+            f"{o['spdm_messages']} SPDM messages, {o['spdm_bytes']} SPDM bytes, "
+            f"{o['spdm_packets']} packets at MTU {o['mtu_payload']}"
+        )
+        # The rival column is what makes the tick marks mean something. A
+        # capture where nothing separates confirms the arithmetic and
+        # discriminates nothing, and that is worth saying out loud.
+        if o["separating_messages"]:
+            print(
+                f"  ★ {o['separating_messages']} of {o['spdm_messages']} "
+                f"messages (*) are lengths at which the subtract-the-header "
+                f"formula would have given a different answer, and it is wrong "
+                f"at every one of them"
+            )
+        else:
+            print(
+                "  ! no message here is a length at which the two candidate "
+                "formulas disagree, so this capture confirms the arithmetic "
+                "and discriminates nothing"
+            )
+    else:
+        print(
+            f"  {o['disagreements']} message(s) the model did not reproduce, "
+            f"{len(o['problems'])} link problem(s)"
+        )
+    print()
 
 
 def main() -> int:
@@ -348,12 +776,30 @@ def main() -> int:
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--validate", type=Path, metavar="RUNDIR",
                     help="require the chunk model to reproduce a measured sweep")
+    ap.add_argument("--observed", type=Path, metavar="LINKPCAP",
+                    help="a capture of a REAL MCTP link; require the packet "
+                         "model to reproduce every message in it")
     args = ap.parse_args()
 
     if args.selftest:
         return selftest()
     if args.validate:
         return validate(args.validate)
+    if args.observed:
+        if not args.observed.exists():
+            print(f"no such capture: {args.observed}", file=sys.stderr)
+            return 2
+        mtu = args.mtu[0] if args.mtu != list(DEFAULT_MTUS) else None
+        try:
+            o = observed(args.observed, mtu)
+        except ValueError as exc:
+            print(f"exp04: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(o, indent=2))
+        else:
+            print_observed(o)
+        return 0 if (o["disagreements"] == 0 and not o["problems"]) else 1
     if not args.pcap:
         ap.error("give at least one capture, or --selftest, or --validate")
 

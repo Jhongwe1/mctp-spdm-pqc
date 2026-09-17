@@ -72,6 +72,15 @@ def tool_output(tool: str, capture: str) -> dict:
         argv = [sys.executable, str(REPO / "harness" / "fields.py"),
                 str(target), "--json"]
         pick = lambda d: d                     # noqa: E731
+    elif tool == "mctp_link":
+        # The Gate 5 link captures: one record per MCTP PACKET, taken off an
+        # AF_PACKET socket in the guest. A different file from the same
+        # handshake as `pcapstat` reads, at a different layer, which is the
+        # whole point of the pair.
+        target = REPO / f"{capture}.link.pcap"
+        argv = [sys.executable, str(REPO / "bench" / "exp04_fragmentation.py"),
+                "--observed", str(target), "--json"]
+        pick = lambda d: d                     # noqa: E731
     else:
         raise Unreachable(f"no tool called {tool!r}")
 
