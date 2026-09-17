@@ -1,0 +1,56 @@
+
+======== kernel
+Linux 6.12.110 x86_64
+
+======== the device the guest enumerated
+00:00.0 Host bridge [0600]: Intel Corporation 82G33/G31/P35/P31 Express DRAM Controller [8086:29c0]
+00:01.0 Unclassified device [0002]: Red Hat, Inc. Virtio filesystem [1af4:1009]
+00:02.0 Unclassified device [0002]: Red Hat, Inc. Virtio filesystem [1af4:1009]
+00:03.0 Non-Volatile memory controller [0108]: Red Hat, Inc. QEMU NVM Express Controller [1b36:0010] (rev 02)
+00:1f.0 ISA bridge [0601]: Intel Corporation 82801IB (ICH9) LPC Interface Controller [8086:2918] (rev 02)
+00:1f.2 SATA controller [0106]: Intel Corporation 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA Controller [AHCI mode] [8086:2922] (rev 02)
+00:1f.3 SMBus [0c05]: Intel Corporation 82801I (ICH9 Family) SMBus Controller [8086:2930] (rev 02)
+NVMe at 0000:00:03.0
+
+======== lspci -vvv, in full
+Data Object Exchange capability present:
+	Capabilities: [100 v1] Data Object Exchange
+		DOECap: IntSup+
+			Interrupt Message Number 000
+		DOECtl: IntEn-
+		DOESta: Busy- IntSta- Error- ObjectReady-
+	Kernel driver in use: nvme
+
+
+======== extended capability walk and the two DOE protocols
+device 0000:00:03.0
+  vendor:device 1b36:0010
+  ext cap 0x002e v1 at 0x100
+  DOE capability at config offset 0x100
+  DOE Capabilities 0x00000001, Status 0x00000000
+
+DOE Discovery (vendor 0x0001, type 0x00)
+  exchange: 3 DWORDs out, 3 in, 0.6 ms, 0 status polls
+  index 0   vendor 0x0001  protocol 0x00  (Discovery)
+  exchange: 3 DWORDs out, 3 in, 0.6 ms, 0 status polls
+  index 1   vendor 0x0001  protocol 0x01  (CMA-SPDM)
+  exchange: 3 DWORDs out, 3 in, 0.6 ms, 0 status polls
+  index 2   vendor 0x0001  protocol 0x02  (Secured CMA-SPDM)
+  3 protocol(s)
+
+
+======== one SPDM message across the mailbox
+device 0000:00:03.0
+  vendor:device 1b36:0010
+  ext cap 0x002e v1 at 0x100
+  DOE capability at config offset 0x100
+  DOE Capabilities 0x00000001, Status 0x00000000
+
+CMA-SPDM (vendor 0x0001, type 0x01): GET_VERSION
+  request payload (4 bytes)
+    0000  10 84 00 00 
+  exchange: 3 DWORDs out, 6 in, 5.4 ms, 0 status polls
+  response payload (16 bytes)
+    0000  10 04 00 00 00 05 00 10 00 11 00 12 00 13 00 14 
+  ★ VERSION: SPDMVersion 0x10, code 0x04, 0 entries
+     versions advertised:

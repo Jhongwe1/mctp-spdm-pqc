@@ -1,0 +1,14 @@
+device 0000:00:03.0
+  vendor:device 1b36:0010
+  ext cap 0x002e v1 at 0x100
+  DOE capability at config offset 0x100
+  DOE Capabilities 0x00000001, Status 0x00000000
+
+CMA-SPDM (vendor 0x0001, type 0x01): GET_VERSION
+  request payload (4 bytes)
+    0000  10 84 00 00 
+  exchange: 3 DWORDs out, 6 in, 5.4 ms, 0 status polls
+  response payload (16 bytes)
+    0000  10 04 00 00 00 05 00 10 00 11 00 12 00 13 00 14 
+  ★ VERSION: SPDMVersion 0x10, code 0x04, 0 entries
+     versions advertised:

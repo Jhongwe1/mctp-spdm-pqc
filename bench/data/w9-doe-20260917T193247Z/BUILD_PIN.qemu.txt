@@ -1,0 +1,17 @@
+# third_party/qemu.pin — the QEMU that has an SPDM-capable NVMe device.
+#
+# Written by harness/build_qemu_doe.sh. Do not edit by hand.
+#
+# The distribution's 8.2.2 has no nvme spdm_port. This one does, and it is the
+# only QEMU any DOE result in this repository was produced with. The MCTP runs
+# in harness/run_afmctp.sh use the distribution build instead, on purpose: that
+# experiment needs no feature newer than virtio-9p, and a result that needs
+# only a packaged QEMU is easier for someone else to reproduce.
+repo=https://gitlab.com/qemu-project/qemu.git
+ref=v9.2.0
+commit=ae35f033b874c627d81d51070187fbf55f0bf1a7
+version=QEMU emulator version 9.2.0 (v9.2.0)
+binary_sha256=f942d7f34bb32d859646e3d466655b57e20ae64df028a0f5a4b87240a2107cb4
+targets=x86_64-softmmu
+built_at=2026-09-17T19:30:52Z
+cc=13.3.0

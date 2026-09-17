@@ -1,0 +1,153 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w9-doe-20260917T193104Z",
+    "name": "w9-doe",
+    "flavor": "pqc",
+    "started_at": "2026-09-17T19:31:04Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "856041eee464e41a3edab28420ba0751b257a4e1",
+    "repo_dirty": "true",
+    "device_patch_applied": "yes",
+    "crypto_backend": "openssl (vendored by libspdm, statically linked)",
+    "crypto_openssl_version": "3.5.5",
+    "crypto_openssl_commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "transport": "PCI_DOE, QEMU-emulated NVMe DOE mailbox",
+    "guest_kernel_version": "6.12.110",
+    "qemu": "QEMU emulator version 9.2.0 (v9.2.0)",
+    "doe_probe_sha256": "c8e62915fa52783c8b56fc729348d25d32651bce76362e0a15decb6fff20a3cf",
+    "qemu_exit": "0",
+    "guest_status": "0",
+    "verdict": "pass",
+    "finished_at": "2026-09-17T19:31:18Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "spdm_emu_ref": "4.0.0-rc",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_pinned_by": "spdm-emu submodule pointer",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "crypto_openssl_vendored": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "crypto_openssl_version": "3.5.5",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cflags": "",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z",
+    "guest_kernel_version": "6.12.110",
+    "guest_kernel_source_url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.110.tar.xz",
+    "guest_kernel_source_sha256": "8cee19e1839bb6ff4d5254d761933ae6ab670492d5ed030e09a80538320d5c4c",
+    "guest_kernel_config_sha256": "a2f05ca74b37c7e818e76a6c54f707c16fc5d8a6554d3e6a9e264eeb008e7869",
+    "guest_kernel_bzimage_sha256": "0e63ce343f0e9ff90ff037422f7eda668308d2d06bb695b1ac29689ffd5e5eec",
+    "guest_kernel_bzimage_bytes": "13734912",
+    "guest_kernel_config_base": "defconfig + kvm_guest.config + harness/build_guest_kernel.sh fragment",
+    "guest_kernel_built_at": "2026-09-17T19:11:19Z",
+    "guest_kernel_built_on": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64",
+    "guest_kernel_cc": "13.3.0",
+    "qemu_repo": "https://gitlab.com/qemu-project/qemu.git",
+    "qemu_ref": "v9.2.0",
+    "qemu_commit": "ae35f033b874c627d81d51070187fbf55f0bf1a7",
+    "qemu_version": "QEMU emulator version 9.2.0 (v9.2.0)",
+    "qemu_binary_sha256": "f942d7f34bb32d859646e3d466655b57e20ae64df028a0f5a4b87240a2107cb4",
+    "qemu_targets": "x86_64-softmmu",
+    "qemu_built_at": "2026-09-17T19:30:52Z",
+    "qemu_cc": "13.3.0"
+  },
+  "commands": [
+    "/home/key/spdm-lab/work/spdm-emu-pqc/build/bin/spdm_responder_emu --trans PCI_DOE",
+    "/home/key/spdm-lab/w9/qemu/build/qemu-system-x86_64 -M q35 -enable-kvm -cpu host -smp 2 -m 2048 -nodefaults -kernel /home/key/spdm-lab/w9/linux-6.12.110/arch/x86/boot/bzImage -append root=/dev/root\\ rootfstype=9p\\ rootflags=trans=virtio\\,version=9p2000.L\\,cache=loose\\,msize=262144\\ ro\\ console=ttyS0\\ panic=5\\ init=/home/key/spdm-lab/w9/doe/init.sh -drive file=/home/key/spdm-lab/w9/doe/nvme.raw\\,if=none\\,id=nvm\\,format=raw -device nvme\\,drive=nvm\\,serial=deadbeef\\,spdm_port=2323 -display none -monitor none -no-reboot"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.linux.txt",
+      "bytes": 966,
+      "sha256": "3ad6ab4a8b9c67d792cbbe2d20e7373f1c1581b7d969833aa99805823dbba100"
+    },
+    {
+      "path": "BUILD_PIN.qemu.txt",
+      "bytes": 809,
+      "sha256": "732d1a7f8d53da4e2bf978ac8a36da681696c34c3af999fd77bcd53fb8ccc478"
+    },
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 573,
+      "sha256": "adbb98c93c57d87b75e10cfd28f717efde375ef6f2e1ab74a8ae8f355c16bd84"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "bdf.txt",
+      "bytes": 13,
+      "sha256": "8e17d9c87676467e615f9abf311d228a13d6a9caf6e4b428c8aef5f3f501b19d"
+    },
+    {
+      "path": "console.log",
+      "bytes": 29735,
+      "sha256": "c9ee670c7b787d15a299a598f6125ff6bff5ff85a7f01e583d30293918e70d35"
+    },
+    {
+      "path": "doe-discovery.txt",
+      "bytes": 556,
+      "sha256": "2d6b0cd4ce43a277fac85bc0497f027e588a83514a5dfc328e1914ffddbceb0e"
+    },
+    {
+      "path": "doe-spdm.txt",
+      "bytes": 489,
+      "sha256": "183f71853a00f05366e0c0a8d1c517c56942b60d0c8fad337ed55d3f3d2def45"
+    },
+    {
+      "path": "guest.log",
+      "bytes": 2219,
+      "sha256": "6b9e3cbf082a90a692b27586244f516367eaca53e24f4c40249d65b27d539528"
+    },
+    {
+      "path": "guest_cmd.sh",
+      "bytes": 1400,
+      "sha256": "d03114f3662e423b4d2b7c31715b52fb20f119f6e1816f48c9bdbb76dd77c166"
+    },
+    {
+      "path": "lspci-vvv.txt",
+      "bytes": 1800,
+      "sha256": "bbd9cbb63a88dc26d22d28576e6dcc23ebbef1522ee8c6917eb786d99a173461"
+    },
+    {
+      "path": "lspci.txt",
+      "bytes": 709,
+      "sha256": "08cb7c9ff98d65abdcdba09b79968a022b25f361f8cdedc56da220d5fd508515"
+    },
+    {
+      "path": "responder.log",
+      "bytes": 89,
+      "sha256": "dfdcbed63782be0d8c10f6744471dbe81cac8c02c639586ce19972da467cb280"
+    }
+  ],
+  "artifact_count": 13,
+  "artifact_bytes": 39970
+}
