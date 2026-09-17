@@ -29,6 +29,7 @@ needs a date attached to it.
 | Submission pipeline rehearsed end to end | **done** | 2026-08-05 | a `%private,wip` change, three patchsets, abandoned once verified |
 | git identity matches Gerrit in every environment | **done** | 2026-08-11 | legal name in both the WSL and the Windows git config |
 | Community channel joined, reading only | **`TODO`** | | |
+| OpenBMC's requirements read, from `openbmc/docs` `CONTRIBUTING.md` | **done** | 2026-09-18 | **no AI policy exists**: the word does not appear in the file, sha256 `e27c7768…`. Gerrit, a `Change-Id` from the commit-msg hook, a full real name in the sign-off, 50/72, and a CLA that is separate from the DCO. Encoded as `harness/check_upstream_commit.sh --profile openbmc`, with six cases it must refuse |
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
 | Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
@@ -39,7 +40,8 @@ needs a date attached to it.
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
 | **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | 2026-09-12 | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
-| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 |
+| **This project's** second change prepared, linted, not sent | **`TODO(me)`** | 2026-09-18 | a first `README.md` for `openbmc/spdm`, written against the review that killed the 2025 attempt. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md). Commit `d3c84a1`, Change-Id `Ib0191ead…`, prettier and markdownlint clean against OpenBMC's own configs |
+| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 → prepared W09, two of them |
 | Reviewer response received | not started | | |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
@@ -188,6 +190,58 @@ pip install meson ninja inflection mako pyyaml jsonschema
 meson setup build             # succeeds: 808 targets
 meson compile -C build        # fails on GCC 13.3 — see blockers 4 and 5
 ```
+
+## The first build attempt, revisited — 2026-09-18
+
+Blockers 1 to 3 are unchanged and are now written down in the README this
+project is proposing. Blockers 4 and 5 turned out to be one blocker and a
+compiler version.
+
+**GCC 14.2 compiles the tree.** 863 targets, clean, at the same commit
+`72e3ea9`. So the internal compiler error is GCC 13's and the
+`std::formatter<std::thread::id>` failure is libstdc++ 13's, and neither is a
+property of this repository beyond its choice of C++23.
+
+The ICE was re-verified rather than taken from the August note, because a claim
+about a compiler is a claim about a specific build and the tree had not moved:
+
+```text
+../requester/utils/mapper.cpp:46:5: internal compiler error:
+    in build_special_member_call, at cp/call.cc:11096
+```
+
+★ **And a sixth blocker that the August attempt never reached**, because the
+build stopped before the tests could run. With GCC 14 they do run, and one of
+three fails on any machine that is not a BMC:
+
+```text
+C++ exception with description "sd_bus_request_name:
+org.freedesktop.DBus.Error.AccessDenied: Permission denied" thrown in SetUp().
+```
+
+`test_policy_manager` requests a well-known name on the system bus, and a stock
+D-Bus policy does not permit `xyz.openbmc_project.*` to be owned by an ordinary
+user. It is an undocumented prerequisite rather than a defect, and one line
+fixes it:
+
+```sh
+dbus-run-session -- sh -c \
+  'DBUS_SYSTEM_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS meson test -C build'
+```
+
+3 of 3 OK. Both findings are in the README, because a newcomer hits both and
+neither is written down anywhere in the tree. That is the whole argument for
+the change.
+
+**What was read before writing it, and what it changed.** The obvious framing —
+"there is no README, so write one" — is how change
+[80422](https://gerrit.openbmc.org/c/openbmc/spdm/+/80422) died in May 2025: a
+maintainer rejected it for *"hypotheticals that do not match the code"*, CI
+voted `Verified-1` twice, and a bot abandoned it a year later. Reading that
+change turned a guess into a specification, and it is quoted in full in
+[`0002-openbmc-readme.md`](0002-openbmc-readme.md) §0.
+
+---
 
 ## A second candidate, on a different repository — 2026-08-17
 
