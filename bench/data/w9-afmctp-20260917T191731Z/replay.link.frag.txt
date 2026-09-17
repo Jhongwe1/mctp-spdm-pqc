@@ -1,0 +1,29 @@
+replay.link.pcap
+  observed   link type 291, 374 MCTP packets, 20 messages reassembled
+  observed   interface MTU 68, so 64 payload bytes per packet   [read from the link]
+  observed   the interface counted tx=364 rx=10 over the same window, tx_dropped=0 rx_errors=0
+
+    type  src>dst tag  msg_bytes  packets  model  verdict
+    SPDM    8>9     0          1        1      1  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0         63        1      1  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0         64        2      2  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0         65        2      2  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0        127        2      2  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0        128        3      3  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0        177        3      3  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0       1024       17     17  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0       4352       69     69  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0      16853      264    264  ok
+    SPDM    9>8     0          8        1      1  ok
+
+  ★ the model reproduces every observed packet count: 20 SPDM messages, 22934 SPDM bytes, 374 packets at MTU 64
+

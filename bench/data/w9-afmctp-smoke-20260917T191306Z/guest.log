@@ -1,0 +1,12 @@
+
+======== kernel
+Linux 6.12.110 x86_64
+
+======== does this kernel have MCTP
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 down
+
+======== socat pty pair
+ptys: /dev/pts/0 and /dev/pts/1
+
+======== attach the line discipline in each namespace
+FAIL: no mctpserial interface appeared in namespace A

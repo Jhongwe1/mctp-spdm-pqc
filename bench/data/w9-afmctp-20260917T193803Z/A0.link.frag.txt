@@ -1,0 +1,36 @@
+A0.link.pcap
+  observed   link type 291, 119 MCTP packets, 26 messages reassembled
+  observed   interface MTU 68, so 64 payload bytes per packet   [read from the link]
+  observed   the interface counted tx=13 rx=106 over the same window, tx_dropped=0 rx_errors=0
+
+    type  src>dst tag  msg_bytes  packets  model  rival  verdict
+    ctrl    8>9     0         18        1      1      1  ok
+    ctrl    9>8     0         18        1      1      1  ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0          8        1      1      1  ok
+    SPDM    8>9     0         20        1      1      1  ok
+    SPDM    9>8     0         20        1      1      1  ok
+    SPDM    8>9     0         48        1      1      1  ok
+    SPDM    9>8     0         52        1      1      1  ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0        100        2      2      2  ok
+    SPDM    8>9     0         16        1      1      1  ok
+    SPDM    9>8     0       1671       27     27     29* ok
+    SPDM    8>9     0         16        1      1      1  ok
+    SPDM    9>8     0       1674       27     27     29* ok
+    SPDM    8>9     0         44        1      1      1  ok
+    SPDM    9>8     0        238        4      4      5* ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0        100        2      2      2  ok
+    SPDM    8>9     0         16        1      1      1  ok
+    SPDM    9>8     0       1671       27     27     29* ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0        100        2      2      2  ok
+    SPDM    8>9     0         45        1      1      1  ok
+    SPDM    9>8     0        594       10     10     11* ok
+    ctrl    8>9     0          4        1      1      1  ok
+    ctrl    9>8     0          4        1      1      1  ok
+
+  ★ the model reproduces every observed packet count: 22 SPDM messages, 6449 SPDM bytes, 115 packets at MTU 64
+  ★ 5 of 22 messages (*) are lengths at which the subtract-the-header formula would have given a different answer, and it is wrong at every one of them
+

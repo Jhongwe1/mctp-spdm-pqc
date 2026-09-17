@@ -1,0 +1,3 @@
+2026/09/18 03:11:49 socat[82] N PTY is /dev/pts/0
+2026/09/18 03:11:49 socat[82] N PTY is /dev/pts/1
+2026/09/18 03:11:49 socat[82] N starting data transfer loop with FDs [5,5] and [7,7]

@@ -1,0 +1,15 @@
+### namespace A
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 up
+dev mctpserial0 index 4 address none net 1 mtu 68 up
+eid 8 net 1 dev mctpserial0
+eid min 9 max 9 net 1 dev mctpserial0 mtu 0
+eid min 8 max 8 net 1 dev mctpserial0 mtu 0
+### namespace B
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 up
+dev mctpserial1 index 3 address none net 1 mtu 68 up
+eid 9 net 1 dev mctpserial1
+eid min 8 max 8 net 1 dev mctpserial1 mtu 0
+eid min 9 max 9 net 1 dev mctpserial1 mtu 0
+### sysfs mtu
+A mctpserial0 mtu 68
+B mctpserial1 mtu 68

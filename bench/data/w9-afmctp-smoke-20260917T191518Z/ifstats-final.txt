@@ -1,0 +1,6 @@
+A tx_packets 377
+A rx_packets 116
+B tx_packets 116
+B rx_packets 377
+A rx_errors  0
+A tx_dropped 0

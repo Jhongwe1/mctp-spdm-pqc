@@ -1,0 +1,63 @@
+
+======== kernel
+Linux 6.12.110 x86_64
+
+======== does this kernel have MCTP
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 down
+
+======== socat pty pair
+ptys: /dev/pts/0 and /dev/pts/1
+
+======== attach the line discipline (init namespace: see the comment)
+created in init namespace: mctpserial0 mctpserial1
+A: mctpserial0    B: mctpserial1
+
+======== the link, as the kernel reports it
+### namespace A
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 up
+dev mctpserial0 index 4 address none net 1 mtu 68 up
+eid 8 net 1 dev mctpserial0
+eid min 9 max 9 net 1 dev mctpserial0 mtu 0
+eid min 8 max 8 net 1 dev mctpserial0 mtu 0
+### namespace B
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 up
+dev mctpserial1 index 3 address none net 1 mtu 68 up
+eid 9 net 1 dev mctpserial1
+eid min 8 max 8 net 1 dev mctpserial1 mtu 0
+eid min 9 max 9 net 1 dev mctpserial1 mtu 0
+### sysfs mtu
+A mctpserial0 mtu 68
+B mctpserial1 mtu 68
+
+======== calibration replay
+# length  acked  predicted_packets
+       1      1                  1
+      60     60                  1
+      63     63                  1
+      64     64                  2
+      65     65                  2
+     119    119                  2
+     127    127                  2
+     128    128                  3
+     177    177                  3
+    1024   1024                 17
+    4352   4352                 69
+   16853  16853                264
+
+======== arm A0  (--meas_op ALL --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE)
+requester exited 0
+requester bridge: 11 SPDM exchanges, 2 control exchanges
+responder bridge: 11 SPDM exchanges, 2 control exchanges
+
+======== arm P2  (--meas_op ALL --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE)
+requester exited 0
+requester bridge: 23 SPDM exchanges, 2 control exchanges
+responder bridge: 23 SPDM exchanges, 2 control exchanges
+
+======== interface counters at the end
+A tx_packets 405
+A rx_packets 1050
+B tx_packets 1050
+B rx_packets 405
+A rx_errors  0
+A tx_dropped 0

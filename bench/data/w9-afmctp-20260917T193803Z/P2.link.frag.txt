@@ -1,0 +1,93 @@
+P2.link.pcap
+  observed   link type 291, 920 MCTP packets, 36 messages reassembled
+  observed   interface MTU 68, so 64 payload bytes per packet   [read from the link]
+  observed   the interface counted tx=18 rx=902 over the same window, tx_dropped=0 rx_errors=0
+
+    type  src>dst tag  msg_bytes  packets  model  rival  verdict
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       3865       61     61     66* ok
+    SPDM    8>9     0         16        1      1      1  ok
+    SPDM    9>8     0          5        1      1      1  ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       3868       61     61     66* ok
+    SPDM    8>9     0         44        1      1      1  ok
+    SPDM    9>8     0       3451       54     54     59* ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0        100        2      2      2  ok
+    SPDM    8>9     0         16        1      1      1  ok
+    SPDM    9>8     0          5        1      1      1  ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       4352       69     69     74* ok
+    SPDM    8>9     0          8        1      1      1  ok
+    SPDM    9>8     0       3865       61     61     66* ok
+    SPDM    8>9     0          4        1      1      1  ok
+    SPDM    9>8     0        100        2      2      2  ok
+    SPDM    8>9     0         45        1      1      1  ok
+    SPDM    9>8     0       3807       60     60     65* ok
+    ctrl    8>9     0          4        1      1      1  ok
+    ctrl    9>8     0          4        1      1      1  ok
+
+  problems on the link:
+    packet 0: continuation for (9, 8, 0, False) with no SOM before it
+    packet 1: continuation for (9, 8, 0, False) with no SOM before it
+    packet 2: continuation for (9, 8, 0, False) with no SOM before it
+    packet 3: continuation for (9, 8, 0, False) with no SOM before it
+    packet 4: continuation for (9, 8, 0, False) with no SOM before it
+    packet 5: continuation for (9, 8, 0, False) with no SOM before it
+    packet 6: continuation for (9, 8, 0, False) with no SOM before it
+    packet 7: continuation for (9, 8, 0, False) with no SOM before it
+    packet 8: continuation for (9, 8, 0, False) with no SOM before it
+    packet 9: continuation for (9, 8, 0, False) with no SOM before it
+    packet 10: continuation for (9, 8, 0, False) with no SOM before it
+    packet 11: continuation for (9, 8, 0, False) with no SOM before it
+    packet 12: continuation for (9, 8, 0, False) with no SOM before it
+    packet 13: continuation for (9, 8, 0, False) with no SOM before it
+    packet 14: continuation for (9, 8, 0, False) with no SOM before it
+    packet 15: continuation for (9, 8, 0, False) with no SOM before it
+    packet 16: continuation for (9, 8, 0, False) with no SOM before it
+    packet 17: continuation for (9, 8, 0, False) with no SOM before it
+    packet 18: continuation for (9, 8, 0, False) with no SOM before it
+    packet 19: continuation for (9, 8, 0, False) with no SOM before it
+    packet 20: continuation for (9, 8, 0, False) with no SOM before it
+    packet 21: continuation for (9, 8, 0, False) with no SOM before it
+    packet 22: continuation for (9, 8, 0, False) with no SOM before it
+    packet 23: continuation for (9, 8, 0, False) with no SOM before it
+    packet 24: continuation for (9, 8, 0, False) with no SOM before it
+    packet 25: continuation for (9, 8, 0, False) with no SOM before it
+    packet 26: continuation for (9, 8, 0, False) with no SOM before it
+    packet 27: continuation for (9, 8, 0, False) with no SOM before it
+    packet 28: continuation for (9, 8, 0, False) with no SOM before it
+    packet 29: continuation for (9, 8, 0, False) with no SOM before it
+    packet 30: continuation for (9, 8, 0, False) with no SOM before it
+    packet 31: continuation for (9, 8, 0, False) with no SOM before it
+    packet 32: continuation for (9, 8, 0, False) with no SOM before it
+    packet 33: continuation for (9, 8, 0, False) with no SOM before it
+    packet 34: continuation for (9, 8, 0, False) with no SOM before it
+    packet 35: continuation for (9, 8, 0, False) with no SOM before it
+    packet 36: continuation for (9, 8, 0, False) with no SOM before it
+    packet 37: continuation for (9, 8, 0, False) with no SOM before it
+    packet 38: continuation for (9, 8, 0, False) with no SOM before it
+    packet 39: continuation for (9, 8, 0, False) with no SOM before it
+    packet 40: continuation for (9, 8, 0, False) with no SOM before it
+    packet 41: continuation for (9, 8, 0, False) with no SOM before it
+    packet 42: continuation for (9, 8, 0, False) with no SOM before it
+    packet 43: continuation for (9, 8, 0, False) with no SOM before it
+    packet 44: continuation for (9, 8, 0, False) with no SOM before it
+    packet 45: continuation for (9, 8, 0, False) with no SOM before it
+
+  0 message(s) the model did not reproduce, 46 link problem(s)
+

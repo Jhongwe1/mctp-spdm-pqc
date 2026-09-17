@@ -1,0 +1,4 @@
+mctp_capture: 237 packets from mctpserial0 (mtu 68) -> /run/out/replay.link.pcap
+mctp_capture: interface counters moved tx=236 rx=1 tx_dropped=0 rx_errors=0
+mctp_capture: first packet header ver=1 dest=9 src=8
+mctp_capture: no drops (237 seen by the socket, interface counters moved 237)

@@ -1,0 +1,98 @@
+replay.link.pcap
+  observed   link type 291, 87 MCTP packets, 1 messages reassembled
+  observed   interface MTU 68, so 64 payload bytes per packet   [read from the link]
+  observed   the interface counted tx=87 rx=1 over the same window, tx_dropped=0 rx_errors=0
+
+    type  src>dst tag  msg_bytes  packets  model  rival  verdict
+    SPDM    9>8     0          8        1      1      1  ok
+
+  problems on the link:
+    packet 0: continuation for (8, 9, 0, True) with no SOM before it
+    packet 1: continuation for (8, 9, 0, True) with no SOM before it
+    packet 2: continuation for (8, 9, 0, True) with no SOM before it
+    packet 3: continuation for (8, 9, 0, True) with no SOM before it
+    packet 4: continuation for (8, 9, 0, True) with no SOM before it
+    packet 5: continuation for (8, 9, 0, True) with no SOM before it
+    packet 6: continuation for (8, 9, 0, True) with no SOM before it
+    packet 7: continuation for (8, 9, 0, True) with no SOM before it
+    packet 8: continuation for (8, 9, 0, True) with no SOM before it
+    packet 9: continuation for (8, 9, 0, True) with no SOM before it
+    packet 10: continuation for (8, 9, 0, True) with no SOM before it
+    packet 11: continuation for (8, 9, 0, True) with no SOM before it
+    packet 12: continuation for (8, 9, 0, True) with no SOM before it
+    packet 13: continuation for (8, 9, 0, True) with no SOM before it
+    packet 14: continuation for (8, 9, 0, True) with no SOM before it
+    packet 15: continuation for (8, 9, 0, True) with no SOM before it
+    packet 16: continuation for (8, 9, 0, True) with no SOM before it
+    packet 17: continuation for (8, 9, 0, True) with no SOM before it
+    packet 18: continuation for (8, 9, 0, True) with no SOM before it
+    packet 19: continuation for (8, 9, 0, True) with no SOM before it
+    packet 20: continuation for (8, 9, 0, True) with no SOM before it
+    packet 21: continuation for (8, 9, 0, True) with no SOM before it
+    packet 22: continuation for (8, 9, 0, True) with no SOM before it
+    packet 23: continuation for (8, 9, 0, True) with no SOM before it
+    packet 24: continuation for (8, 9, 0, True) with no SOM before it
+    packet 25: continuation for (8, 9, 0, True) with no SOM before it
+    packet 26: continuation for (8, 9, 0, True) with no SOM before it
+    packet 27: continuation for (8, 9, 0, True) with no SOM before it
+    packet 28: continuation for (8, 9, 0, True) with no SOM before it
+    packet 29: continuation for (8, 9, 0, True) with no SOM before it
+    packet 30: continuation for (8, 9, 0, True) with no SOM before it
+    packet 31: continuation for (8, 9, 0, True) with no SOM before it
+    packet 32: continuation for (8, 9, 0, True) with no SOM before it
+    packet 33: continuation for (8, 9, 0, True) with no SOM before it
+    packet 34: continuation for (8, 9, 0, True) with no SOM before it
+    packet 35: continuation for (8, 9, 0, True) with no SOM before it
+    packet 36: continuation for (8, 9, 0, True) with no SOM before it
+    packet 37: continuation for (8, 9, 0, True) with no SOM before it
+    packet 38: continuation for (8, 9, 0, True) with no SOM before it
+    packet 39: continuation for (8, 9, 0, True) with no SOM before it
+    packet 40: continuation for (8, 9, 0, True) with no SOM before it
+    packet 41: continuation for (8, 9, 0, True) with no SOM before it
+    packet 42: continuation for (8, 9, 0, True) with no SOM before it
+    packet 43: continuation for (8, 9, 0, True) with no SOM before it
+    packet 44: continuation for (8, 9, 0, True) with no SOM before it
+    packet 45: continuation for (8, 9, 0, True) with no SOM before it
+    packet 46: continuation for (8, 9, 0, True) with no SOM before it
+    packet 47: continuation for (8, 9, 0, True) with no SOM before it
+    packet 48: continuation for (8, 9, 0, True) with no SOM before it
+    packet 49: continuation for (8, 9, 0, True) with no SOM before it
+    packet 50: continuation for (8, 9, 0, True) with no SOM before it
+    packet 51: continuation for (8, 9, 0, True) with no SOM before it
+    packet 52: continuation for (8, 9, 0, True) with no SOM before it
+    packet 53: continuation for (8, 9, 0, True) with no SOM before it
+    packet 54: continuation for (8, 9, 0, True) with no SOM before it
+    packet 55: continuation for (8, 9, 0, True) with no SOM before it
+    packet 56: continuation for (8, 9, 0, True) with no SOM before it
+    packet 57: continuation for (8, 9, 0, True) with no SOM before it
+    packet 58: continuation for (8, 9, 0, True) with no SOM before it
+    packet 59: continuation for (8, 9, 0, True) with no SOM before it
+    packet 60: continuation for (8, 9, 0, True) with no SOM before it
+    packet 61: continuation for (8, 9, 0, True) with no SOM before it
+    packet 62: continuation for (8, 9, 0, True) with no SOM before it
+    packet 63: continuation for (8, 9, 0, True) with no SOM before it
+    packet 64: continuation for (8, 9, 0, True) with no SOM before it
+    packet 65: continuation for (8, 9, 0, True) with no SOM before it
+    packet 66: continuation for (8, 9, 0, True) with no SOM before it
+    packet 67: continuation for (8, 9, 0, True) with no SOM before it
+    packet 68: continuation for (8, 9, 0, True) with no SOM before it
+    packet 69: continuation for (8, 9, 0, True) with no SOM before it
+    packet 70: continuation for (8, 9, 0, True) with no SOM before it
+    packet 71: continuation for (8, 9, 0, True) with no SOM before it
+    packet 72: continuation for (8, 9, 0, True) with no SOM before it
+    packet 73: continuation for (8, 9, 0, True) with no SOM before it
+    packet 74: continuation for (8, 9, 0, True) with no SOM before it
+    packet 75: continuation for (8, 9, 0, True) with no SOM before it
+    packet 76: continuation for (8, 9, 0, True) with no SOM before it
+    packet 77: continuation for (8, 9, 0, True) with no SOM before it
+    packet 78: continuation for (8, 9, 0, True) with no SOM before it
+    packet 79: continuation for (8, 9, 0, True) with no SOM before it
+    packet 80: continuation for (8, 9, 0, True) with no SOM before it
+    packet 81: continuation for (8, 9, 0, True) with no SOM before it
+    packet 82: continuation for (8, 9, 0, True) with no SOM before it
+    packet 83: continuation for (8, 9, 0, True) with no SOM before it
+    packet 84: continuation for (8, 9, 0, True) with no SOM before it
+    packet 85: continuation for (8, 9, 0, True) with no SOM before it
+
+  0 message(s) the model did not reproduce, 86 link problem(s)
+

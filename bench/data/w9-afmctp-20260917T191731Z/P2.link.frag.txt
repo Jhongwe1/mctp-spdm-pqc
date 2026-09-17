@@ -1,0 +1,59 @@
+P2.link.pcap
+  observed   link type 291, 957 MCTP packets, 50 messages reassembled
+  observed   interface MTU 68, so 64 payload bytes per packet   [read from the link]
+  observed   the interface counted tx=25 rx=932 over the same window, tx_dropped=0 rx_errors=0
+
+    type  src>dst tag  msg_bytes  packets  model  verdict
+    ctrl    8>9     0         18        1      1  ok
+    ctrl    9>8     0         18        1      1  ok
+    SPDM    8>9     0          4        1      1  ok
+    SPDM    9>8     0          8        1      1  ok
+    SPDM    8>9     0         20        1      1  ok
+    SPDM    9>8     0         20        1      1  ok
+    SPDM    8>9     0         48        1      1  ok
+    SPDM    9>8     0         52        1      1  ok
+    SPDM    8>9     0          4        1      1  ok
+    SPDM    9>8     0        100        2      2  ok
+    SPDM    8>9     0         16        1      1  ok
+    SPDM    9>8     0          5        1      1  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       3865       61     61  ok
+    SPDM    8>9     0         16        1      1  ok
+    SPDM    9>8     0          5        1      1  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       3868       61     61  ok
+    SPDM    8>9     0         44        1      1  ok
+    SPDM    9>8     0       3451       54     54  ok
+    SPDM    8>9     0          4        1      1  ok
+    SPDM    9>8     0        100        2      2  ok
+    SPDM    8>9     0         16        1      1  ok
+    SPDM    9>8     0          5        1      1  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       4352       69     69  ok
+    SPDM    8>9     0          8        1      1  ok
+    SPDM    9>8     0       3865       61     61  ok
+    SPDM    8>9     0          4        1      1  ok
+    SPDM    9>8     0        100        2      2  ok
+    SPDM    8>9     0         45        1      1  ok
+    SPDM    9>8     0       3807       60     60  ok
+    ctrl    8>9     0          4        1      1  ok
+    ctrl    9>8     0          4        1      1  ok
+
+  ★ the model reproduces every observed packet count: 46 SPDM messages, 58736 SPDM bytes, 953 packets at MTU 64
+

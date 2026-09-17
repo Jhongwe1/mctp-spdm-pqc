@@ -1,0 +1,2 @@
+arm	req_exit	spdm_msgs	spdm_bytes	link_packets	verdict	negotiated
+A0	-	0	0	0	no-capture	

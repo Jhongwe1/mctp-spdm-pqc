@@ -1,0 +1,18 @@
+# third_party/linux.pin — the guest kernel, and why there is one.
+#
+# Written by harness/build_guest_kernel.sh. Do not edit by hand: this file and
+# the tree it describes are the same fact, and a hand-edit makes them two.
+#
+# The host kernel has no CONFIG_MCTP (docs/env-baseline.md). Rather than
+# replace the kernel every published capture was taken under, the MCTP
+# subsystem lives in a guest, and this is that guest's kernel.
+version=6.12.110
+source_url=https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.110.tar.xz
+source_sha256=8cee19e1839bb6ff4d5254d761933ae6ab670492d5ed030e09a80538320d5c4c
+config_sha256=a2f05ca74b37c7e818e76a6c54f707c16fc5d8a6554d3e6a9e264eeb008e7869
+bzimage_sha256=0e63ce343f0e9ff90ff037422f7eda668308d2d06bb695b1ac29689ffd5e5eec
+bzimage_bytes=13734912
+config_base=defconfig + kvm_guest.config + harness/build_guest_kernel.sh fragment
+built_at=2026-09-17T19:11:19Z
+built_on=Linux 6.6.87.2-microsoft-standard-WSL2 x86_64
+cc=13.3.0

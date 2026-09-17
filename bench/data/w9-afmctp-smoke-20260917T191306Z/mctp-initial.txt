@@ -1,0 +1,1 @@
+dev lo index 1 address 00:00:00:00:00:00 net 1 mtu 65536 down

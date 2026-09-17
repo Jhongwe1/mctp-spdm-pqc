@@ -1,0 +1,151 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w9-afmctp-smoke-20260917T191142Z",
+    "name": "w9-afmctp-smoke",
+    "flavor": "pqc",
+    "started_at": "2026-09-17T19:11:42Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "856041eee464e41a3edab28420ba0751b257a4e1",
+    "repo_dirty": "true",
+    "device_patch_applied": "yes",
+    "crypto_backend": "openssl (vendored by libspdm, statically linked)",
+    "crypto_openssl_version": "3.5.5",
+    "crypto_openssl_commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "controlled_flags": "--ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE",
+    "transport": "AF_MCTP over mctp-serial, two network namespaces",
+    "guest_kernel_version": "6.12.110",
+    "guest_accel": "tcg",
+    "calibration_lengths": "1,63,64,65,127,128,177,1024,4352,16853",
+    "bridge_sha256": "1550c166591cdcd1ea52d4d8627152c599c238a2d23af28bc9c028034dfd84d8",
+    "qemu": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+    "qemu_exit": "0",
+    "guest_status": "3",
+    "verdict": "fail",
+    "finished_at": "2026-09-17T19:12:01Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "spdm_emu_ref": "4.0.0-rc",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_pinned_by": "spdm-emu submodule pointer",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "crypto_openssl_vendored": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "crypto_openssl_version": "3.5.5",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cflags": "",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z",
+    "spdm_dump_tool": "spdm-dump",
+    "spdm_dump_spdm_dump": "9d91f21e21ad56f842affa30361b2807ea9c8e22",
+    "spdm_dump_spdm_dump_short": "9d91f21",
+    "spdm_dump_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "spdm_dump_libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "spdm_dump_built_at": "2026-08-11T05:46:07Z",
+    "guest_kernel_version": "6.12.110",
+    "guest_kernel_source_url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.110.tar.xz",
+    "guest_kernel_source_sha256": "8cee19e1839bb6ff4d5254d761933ae6ab670492d5ed030e09a80538320d5c4c",
+    "guest_kernel_config_sha256": "a2f05ca74b37c7e818e76a6c54f707c16fc5d8a6554d3e6a9e264eeb008e7869",
+    "guest_kernel_bzimage_sha256": "0e63ce343f0e9ff90ff037422f7eda668308d2d06bb695b1ac29689ffd5e5eec",
+    "guest_kernel_bzimage_bytes": "13734912",
+    "guest_kernel_config_base": "defconfig + kvm_guest.config + harness/build_guest_kernel.sh fragment",
+    "guest_kernel_built_at": "2026-09-17T19:11:19Z",
+    "guest_kernel_built_on": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64",
+    "guest_kernel_cc": "13.3.0",
+    "mctp_tools_repo": "https://github.com/CodeConstruct/mctp.git",
+    "mctp_tools_ref": "v2.6",
+    "mctp_tools_commit": "31ac0e86b0e23d32abf34d191653a87a47f3c9a7",
+    "mctp_tools_describe": "v2.6",
+    "mctp_tools_mctp_sha256": "b5f6276fcbaa83ef5e7378d28ae94fd9043c18940355afc5cb6661e7c9113ca5",
+    "mctp_tools_built_at": "2026-09-17T19:10:12Z",
+    "mctp_tools_cc": "13.3.0",
+    "mctp_tools_meson": "1.3.2"
+  },
+  "commands": [
+    "qemu-system-x86_64 -smp 2 -m 2048 -nodefaults -kernel /home/key/spdm-lab/w9/linux-6.12.110/arch/x86/boot/bzImage -append root=/dev/root\\ rootfstype=9p\\ rootflags=trans=virtio\\,version=9p2000.L\\,cache=loose\\,msize=262144\\ ro\\ console=ttyS0\\ panic=5\\ init=/home/key/spdm-lab/w9/run/init.sh -fsdev local\\,id=fsroot\\,path=/\\,security_model=none\\,readonly=on -device virtio-9p-pci\\,fsdev=fsroot\\,mount_tag=/dev/root -fsdev local\\,id=fsout\\,path=/home/key/spdm-lab/w9/run\\,security_model=none -device virtio-9p-pci\\,fsdev=fsout\\,mount_tag=w9out -display none -monitor none -no-reboot -serial file:/home/key/spdm-lab/w9/run/console.log"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.linux.txt",
+      "bytes": 966,
+      "sha256": "3ad6ab4a8b9c67d792cbbe2d20e7373f1c1581b7d969833aa99805823dbba100"
+    },
+    {
+      "path": "BUILD_PIN.mctp-tools.txt",
+      "bytes": 589,
+      "sha256": "6fc2012ecdfdc96c12484b4a9460c07a0415339011a192c61a13537290f20ce9"
+    },
+    {
+      "path": "BUILD_PIN.spdm-dump.txt",
+      "bytes": 227,
+      "sha256": "215d83f718731633df540ab58a5938a159d12b23519c0fb7855c6e7d978e3bfa"
+    },
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 573,
+      "sha256": "adbb98c93c57d87b75e10cfd28f717efde375ef6f2e1ab74a8ae8f355c16bd84"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "arms.tsv",
+      "bytes": 89,
+      "sha256": "4f9ba17f6786495a6c5d24b497795b9084a2771f3fef6653a4e8f50b3ac16c1d"
+    },
+    {
+      "path": "console.log",
+      "bytes": 26022,
+      "sha256": "1b074d906c598f12ae70d803d9a593daf22383c11e49ce5cfddc6ab460a36673"
+    },
+    {
+      "path": "guest.log",
+      "bytes": 4584,
+      "sha256": "967ca67e2f46e990958ed69b5b00e43a9f528c857fdb8236b812f342fa57c47e"
+    },
+    {
+      "path": "guest_cmd.sh",
+      "bytes": 8322,
+      "sha256": "094d16aa6a0d9e690ab4423ebd8ffb7d703f79fe37e33838a728543023fa8156"
+    },
+    {
+      "path": "mctp-initial.txt",
+      "bytes": 62,
+      "sha256": "59439e75c79f48c414a2e975e1bff39c70f9d0f1d6f055c36ef14e477e9bf256"
+    },
+    {
+      "path": "socat.log",
+      "bytes": 185,
+      "sha256": "f7048a9b8995eef814f5d102c456a3e61f2361c21ae5ff9bd0e005ddc79cef35"
+    }
+  ],
+  "artifact_count": 11,
+  "artifact_bytes": 42231
+}

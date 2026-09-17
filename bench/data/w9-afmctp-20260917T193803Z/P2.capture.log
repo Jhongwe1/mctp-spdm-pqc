@@ -1,0 +1,3 @@
+mctp_capture: 920 packets from mctpserial0 (mtu 68) -> /run/out/P2.link.pcap
+mctp_capture: interface counters moved tx=18 rx=902 tx_dropped=0 rx_errors=0
+mctp_capture: first packet header ver=1 dest=8 src=9

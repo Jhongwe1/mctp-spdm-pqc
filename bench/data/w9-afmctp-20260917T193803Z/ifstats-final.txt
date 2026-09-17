@@ -1,0 +1,6 @@
+A tx_packets 405
+A rx_packets 1050
+B tx_packets 1050
+B rx_packets 405
+A rx_errors  0
+A tx_dropped 0
