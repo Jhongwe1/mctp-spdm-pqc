@@ -1,0 +1,17 @@
+  suite              spdm_responder_conformance_test
+  libspdm            4.0.0
+  assertions         1140
+    PASS             1077
+    FAIL             8
+    NOT_TESTED       55   (counted by neither half of the suite's own footer)
+  cases skipped      3   2.7, 3.8, 5.6
+  groups that ran and recorded no pass or fail   9, 12, 13, 16
+  failures:
+    6.2.7      response signature
+    6.3.7      response signature
+    6.12.7     response signature
+    6.13.7     response signature
+    8.1.4      response mut_auth_requested - 0x02
+    8.2.4      response mut_auth_requested - 0x02
+    8.7.4      response mut_auth_requested - 0x02
+    8.8.4      response mut_auth_requested - 0x02

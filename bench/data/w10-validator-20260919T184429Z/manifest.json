@@ -1,0 +1,254 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w10-validator-20260919T184429Z",
+    "name": "w10-validator",
+    "flavor": "pqc",
+    "started_at": "2026-09-19T18:44:29Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "3c5574b240c98d758e5d5046e0c960a43f441dad",
+    "repo_dirty": "true",
+    "device_patch_applied": "yes",
+    "crypto_backend": "openssl (vendored by libspdm, statically linked)",
+    "crypto_openssl_version": "3.5.5",
+    "crypto_openssl_commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "validator_submodule": "c27bb1c7a5c2b289a316d0d5685ea899adc71899",
+    "caps_no_mut_auth_flag": "CACHE,CERT,CHAL,MEAS_SIG,MEL,MEAS_FRESH,ENCRYPT,MAC,KEY_EX,PSK_WITH_CONTEXT,ENCAP,HBEAT,KEY_UPD,HANDSHAKE_IN_CLEAR,CHUNK,SET_CERT,CSR,MULTI_KEY_NEG,GET_KEY_PAIR_INFO,SET_KEY_PAIR_INFO,EP_INFO_SIG,LARGE_RESP",
+    "client": "spdm_device_validator_sample",
+    "client_exit_status_is_meaningless": "main() returns 0 unconditionally; the verdict is test.log",
+    "version_pinned": "no",
+    "version_pinned_why": "the suite selects a version per case; pinning --ver would make most cases unreachable",
+    "caps-default_client_status": "0",
+    "caps-no-mut-auth_client_status": "0",
+    "proxy-inert_client_status": "0",
+    "proxy-inert_proxy_status": "0",
+    "proxy-flip-sig_client_status": "0",
+    "proxy-flip-sig_proxy_status": "0",
+    "assert_caps_delta_is_one_bit": "0",
+    "assert_caps_effect_on_assertions": "0",
+    "assert_calibration_flip_signature": "0",
+    "assertions_all_held": "yes",
+    "finished_at": "2026-09-19T18:48:36Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "spdm_emu_ref": "4.0.0-rc",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_pinned_by": "spdm-emu submodule pointer",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "crypto_openssl_vendored": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "crypto_openssl_version": "3.5.5",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cflags": "",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z"
+  },
+  "commands": [
+    "./spdm_responder_emu",
+    "./spdm_device_validator_sample --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-default.pcap",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --parse /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-default.test.log --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-default.assertions.json --label caps-default",
+    "./spdm_responder_emu --cap CACHE\\,CERT\\,CHAL\\,MEAS_SIG\\,MEL\\,MEAS_FRESH\\,ENCRYPT\\,MAC\\,KEY_EX\\,PSK_WITH_CONTEXT\\,ENCAP\\,HBEAT\\,KEY_UPD\\,HANDSHAKE_IN_CLEAR\\,CHUNK\\,SET_CERT\\,CSR\\,MULTI_KEY_NEG\\,GET_KEY_PAIR_INFO\\,SET_KEY_PAIR_INFO\\,EP_INFO_SIG\\,LARGE_RESP",
+    "./spdm_device_validator_sample --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth.pcap",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --parse /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth.test.log --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth.assertions.json --label caps-no-mut-auth",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/tamper_proxy.py --listen 2324 --forward 2323 --once --report /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-inert.proxy.json --passthrough",
+    "./spdm_responder_emu",
+    "./spdm_device_validator_sample --port 2324 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-inert.pcap",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --parse /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-inert.test.log --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-inert.assertions.json --label proxy-inert",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/tamper_proxy.py --listen 2324 --forward 2323 --once --report /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-flip-sig.proxy.json --flip-signature -1",
+    "./spdm_responder_emu",
+    "./spdm_device_validator_sample --port 2324 --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-flip-sig.pcap",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --parse /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-flip-sig.test.log --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-flip-sig.assertions.json --label proxy-flip-sig",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --caps-delta /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-default.pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth.pcap --expect-only MUT_AUTH_CAP",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --compare /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-default.assertions.json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth.assertions.json --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/compare-mut-auth.json",
+    "python3 /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/validator_report.py --compare /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-inert.assertions.json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/proxy-flip-sig.assertions.json --json /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-validator-20260919T184429Z/compare-flip-sig.json --require-regressed-message response\\ signature"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 573,
+      "sha256": "adbb98c93c57d87b75e10cfd28f717efde375ef6f2e1ab74a8ae8f355c16bd84"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "caps-default.assertions.json",
+      "bytes": 283904,
+      "sha256": "777f6dbda780addeab31a84a609d2e62635ab6e5dc2dd39a3423759cb75787ec"
+    },
+    {
+      "path": "caps-default.pcap",
+      "bytes": 295093,
+      "sha256": "7212552542668db219673f7c5d30af6b0826a7558b8028b8280244a1677f8338"
+    },
+    {
+      "path": "caps-default.req.log",
+      "bytes": 95,
+      "sha256": "a141affd76e16a4c91613518c8a2c8fdd97d1e4b35da0358db597d7664f1b0a0"
+    },
+    {
+      "path": "caps-default.rsp.log",
+      "bytes": 30,
+      "sha256": "ecef200c982ad383fda90d12c666db1b1ed239c9738f97a88da0efb915de1a3c"
+    },
+    {
+      "path": "caps-default.summary.txt",
+      "bytes": 683,
+      "sha256": "8e18850c468751ddf29780e25edd95e96ab3136528e425c49006a59d10b95379"
+    },
+    {
+      "path": "caps-default.test.log",
+      "bytes": 116111,
+      "sha256": "4023a712c12fe0e93ffd5d431b380b3685ecb29fab77ab696a2d2188a3c80549"
+    },
+    {
+      "path": "caps-no-mut-auth.assertions.json",
+      "bytes": 430891,
+      "sha256": "46067686047ed06865b1167a4a9d293f76eb56e4425850652c0e2218e5d39abb"
+    },
+    {
+      "path": "caps-no-mut-auth.pcap",
+      "bytes": 368765,
+      "sha256": "1aeae62286a22e9617ef72e3ed97eb4dc2b1cb7e6b3ce779590876faaf748acb"
+    },
+    {
+      "path": "caps-no-mut-auth.req.log",
+      "bytes": 95,
+      "sha256": "a141affd76e16a4c91613518c8a2c8fdd97d1e4b35da0358db597d7664f1b0a0"
+    },
+    {
+      "path": "caps-no-mut-auth.rsp.log",
+      "bytes": 47,
+      "sha256": "a312e313903061ba7d6892554660e816640931d424a64c29dbfff882996a9e51"
+    },
+    {
+      "path": "caps-no-mut-auth.summary.txt",
+      "bytes": 522,
+      "sha256": "b739bfb45cc724ea20efaaf0b61be412b11bfc64c87026a645dc1e87379167c5"
+    },
+    {
+      "path": "caps-no-mut-auth.test.log",
+      "bytes": 159541,
+      "sha256": "37fb6bc8135343e55c2dc8009048c3f5385b3cfc3ac77843ff76b25dd1f9b2a9"
+    },
+    {
+      "path": "compare-flip-sig.json",
+      "bytes": 10677,
+      "sha256": "fcb2b946f2536a51d4120d44c63e382965710dc6ac1887fd9f09473c59d2b01a"
+    },
+    {
+      "path": "compare-mut-auth.json",
+      "bytes": 57585,
+      "sha256": "b50ef8308129bb25127d00b82d406c440c5dded2034f073f4dba3ccc91fc9947"
+    },
+    {
+      "path": "proxy-flip-sig.assertions.json",
+      "bytes": 253885,
+      "sha256": "5cf1838d8688b9cd3a5c96c89c94d178c13a17fe2bc9e42d1644045196cdced9"
+    },
+    {
+      "path": "proxy-flip-sig.pcap",
+      "bytes": 290664,
+      "sha256": "3daf2bede1972dfe19e3b8b462ef784d6e9ee6259b72038e69cb0a69a8b9cd84"
+    },
+    {
+      "path": "proxy-flip-sig.proxy.json",
+      "bytes": 2830,
+      "sha256": "80dcb38b834e2c5dca92c8ab573c2da6f77834c23bac60f413c095fdb93676a1"
+    },
+    {
+      "path": "proxy-flip-sig.proxy.log",
+      "bytes": 18038,
+      "sha256": "13d48f99011c8ed81aaf13b0c349323df71c33d6e1d3e145d6ef4d3109af294e"
+    },
+    {
+      "path": "proxy-flip-sig.req.log",
+      "bytes": 107,
+      "sha256": "b7bd90f706921c4445a1434fbd65932b428d068ff54b1a21b1d4689c3f8f6d66"
+    },
+    {
+      "path": "proxy-flip-sig.rsp.log",
+      "bytes": 30,
+      "sha256": "ecef200c982ad383fda90d12c666db1b1ed239c9738f97a88da0efb915de1a3c"
+    },
+    {
+      "path": "proxy-flip-sig.summary.txt",
+      "bytes": 716,
+      "sha256": "e213e7b365563f6f7bb48e4a888d43ce2f1b5420a2a6fd90589d280d39ef65a1"
+    },
+    {
+      "path": "proxy-flip-sig.test.log",
+      "bytes": 107180,
+      "sha256": "3cc8b9e4e7212fc060b4e00dca36cabf6b1b6ba361a54a88a175f527f88e9bd3"
+    },
+    {
+      "path": "proxy-inert.assertions.json",
+      "bytes": 283903,
+      "sha256": "2b4ddedc97d9cc1157fb5162d3d743c6a92bead279dc9a2e53b8b49bd51e2f10"
+    },
+    {
+      "path": "proxy-inert.pcap",
+      "bytes": 295093,
+      "sha256": "024506f3be6dad171284318db441871844516ecd79cd681adf0b3d4140feeec7"
+    },
+    {
+      "path": "proxy-inert.proxy.json",
+      "bytes": 1995,
+      "sha256": "2b52224cd0e47f6b227ea140a844dab673f0ff66cf966781f13c53a50c4ec957"
+    },
+    {
+      "path": "proxy-inert.proxy.log",
+      "bytes": 21138,
+      "sha256": "06fa58742077faa72e2c5f70459ed0234356955fee561f0b6a3fb0f0444b922a"
+    },
+    {
+      "path": "proxy-inert.req.log",
+      "bytes": 107,
+      "sha256": "b7bd90f706921c4445a1434fbd65932b428d068ff54b1a21b1d4689c3f8f6d66"
+    },
+    {
+      "path": "proxy-inert.rsp.log",
+      "bytes": 30,
+      "sha256": "ecef200c982ad383fda90d12c666db1b1ed239c9738f97a88da0efb915de1a3c"
+    },
+    {
+      "path": "proxy-inert.summary.txt",
+      "bytes": 683,
+      "sha256": "8e18850c468751ddf29780e25edd95e96ab3136528e425c49006a59d10b95379"
+    },
+    {
+      "path": "proxy-inert.test.log",
+      "bytes": 116111,
+      "sha256": "9557eebb652236fbab6b9bb080ae012f7ceefb75efd17005c29e2bebf75b34d2"
+    }
+  ],
+  "artifact_count": 32,
+  "artifact_bytes": 3117734
+}

@@ -1,0 +1,52 @@
+{
+  "listen": 2324,
+  "forward": 2323,
+  "mode": "passthrough",
+  "frames": {
+    "requester_to_responder": 787,
+    "responder_to_requester": 787
+  },
+  "negotiated": {
+    "spdm_version": "1.2",
+    "base_asym_sel": "0x00000080",
+    "base_asym_name": "ECDSA_ECC_NIST_P384",
+    "signature_bytes": 96,
+    "pqc_asym_sel": "0x00000000"
+  },
+  "measurements": {
+    "spdm_bytes": 161,
+    "number_of_blocks": 1,
+    "record_bytes": 23,
+    "record_offset": 8,
+    "record_sha256": "d364d7b8ef63819ad806bc90bfb78a272d42a4a0db954d9cf0b0e6c9ba31cd95",
+    "nonce_offset": 31,
+    "opaque_length_offset": 63,
+    "opaque_length": 0,
+    "opaque_offset": 65,
+    "requester_context_offset": null,
+    "requester_context_bytes": 0,
+    "signature_offset": 65,
+    "signature_bytes": 96,
+    "closed": true,
+    "blocks": [
+      {
+        "index": 254,
+        "measurement_specification": 1,
+        "measurement_bytes": 19,
+        "block_offset": 0,
+        "measurement_offset": 4,
+        "value_type": 133,
+        "value_bytes": 16,
+        "value_offset": 7
+      }
+    ]
+  },
+  "tamper": {
+    "applied": false
+  },
+  "refusals": [
+    "the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)",
+    "the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)",
+    "the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)"
+  ]
+}

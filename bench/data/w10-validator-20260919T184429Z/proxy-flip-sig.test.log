@@ -1,0 +1,1751 @@
+LIBSPDM_MAJOR_VERSION : 0x04
+LIBSPDM_MINOR_VERSION : 0x00
+LIBSPDM_PATCH_VERSION : 0x00
+LIBSPDM_ALPHA : 0xFF
+test_suite_config (spdm_responder_validator default config)
+test_suite (spdm_responder_conformance_test)
+test group 1 (spdm_test_group_version) - start
+  test case 1.1 (spdm_test_case_version_success) - setup enter
+  test case 1.1 (spdm_test_case_version_success) - setup exit (1)
+  test case 1.1 (spdm_test_case_version_success) - start
+    test assertion 1.1.1 - PASS response size - 16
+    test assertion 1.1.2 - PASS response code - 0x04
+    test assertion 1.1.3 - PASS response version - 0x10
+    test assertion 1.1.4 - PASS response version_number_entry_count - 0x05
+    test assertion 1.1.5 - PASS response version_number_entry - 0x1000
+    test assertion 1.1.5 - PASS response version_number_entry - 0x1100
+    test assertion 1.1.5 - PASS response version_number_entry - 0x1200
+    test assertion 1.1.5 - PASS response version_number_entry - 0x1300
+    test assertion 1.1.5 - PASS response version_number_entry - 0x1400
+  test case 1.1 (spdm_test_case_version_success) - stop
+  test case 1.1 (spdm_test_case_version_success) - teardown enter
+  test case 1.1 (spdm_test_case_version_success) - teardown exit
+test group 1 (spdm_test_group_version) - stop
+test group 2 (spdm_test_group_capabilities) - start
+  test case 2.1 (spdm_test_case_capabilities_success_10) - setup enter
+  test case 2.1 (spdm_test_case_capabilities_success_10) - setup exit (1)
+  test case 2.1 (spdm_test_case_capabilities_success_10) - start
+    test assertion 2.1.1 - PASS response size - 12
+    test assertion 2.1.2 - PASS response code - 0x61
+    test assertion 2.1.3 - PASS response version - 0x10
+    test assertion 2.1.4 - PASS response flags - 0x00000037
+  test case 2.1 (spdm_test_case_capabilities_success_10) - stop
+  test case 2.1 (spdm_test_case_capabilities_success_10) - teardown enter
+  test case 2.1 (spdm_test_case_capabilities_success_10) - teardown exit
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - setup enter
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - setup exit (1)
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - start
+    test msg: test mismatched_version - 0x0f
+    test assertion 2.2.1 - PASS response size - 4
+    test assertion 2.2.2 - PASS response code - 0x7f
+    test assertion 2.2.3 - PASS response version - 0x10
+    test assertion 2.2.4 - PASS response param1 - 0x41
+    test assertion 2.2.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 2.2.1 - PASS response size - 4
+    test assertion 2.2.2 - PASS response code - 0x7f
+    test assertion 2.2.3 - PASS response version - 0x10
+    test assertion 2.2.4 - PASS response param1 - 0x41
+    test assertion 2.2.5 - PASS response param2 - 0x00
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - stop
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - teardown enter
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - teardown exit
+  test case 2.3 (spdm_test_case_capabilities_success_11) - setup enter
+  test case 2.3 (spdm_test_case_capabilities_success_11) - setup exit (1)
+  test case 2.3 (spdm_test_case_capabilities_success_11) - start
+    test assertion 2.3.1 - PASS response size - 12
+    test assertion 2.3.2 - PASS response code - 0x61
+    test assertion 2.3.3 - PASS response version - 0x11
+    test assertion 2.3.4 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.5 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.6 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.7 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.8 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.9 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.10 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.11 - PASS response flags - 0x0000fbf7
+    test assertion 2.3.13 - PASS response flags - 0x0000fbf7
+  test case 2.3 (spdm_test_case_capabilities_success_11) - stop
+  test case 2.3 (spdm_test_case_capabilities_success_11) - teardown enter
+  test case 2.3 (spdm_test_case_capabilities_success_11) - teardown exit
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - setup enter
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - setup exit (1)
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - start
+    test msg: test v11 flags - 0x00007706
+    test assertion 2.4.1 - PASS response size - 4
+    test assertion 2.4.2 - PASS response code - 0x7f
+    test assertion 2.4.3 - PASS response version - 0x12
+    test assertion 2.4.4 - PASS response param1 - 0x01
+    test assertion 2.4.5 - PASS response param2 - 0x00
+    test msg: test v11 flags - 0x000071c6
+    test assertion 2.4.1 - PASS response size - 4
+    test assertion 2.4.2 - PASS response code - 0x7f
+    test assertion 2.4.3 - PASS response version - 0x12
+    test assertion 2.4.4 - PASS response param1 - 0x01
+    test assertion 2.4.5 - PASS response param2 - 0x00
+    test msg: test v11 flags - 0x000067c6
+    test msg: test v12 transfer_size - 0x00000029
+    test assertion 2.4.1 - PASS response size - 4
+    test assertion 2.4.2 - PASS response code - 0x7f
+    test assertion 2.4.3 - PASS response version - 0x12
+    test assertion 2.4.4 - PASS response param1 - 0x01
+    test assertion 2.4.5 - PASS response param2 - 0x00
+    test msg: test v12 transfer_size - 0x00028001
+    test assertion 2.4.1 - PASS response size - 4
+    test assertion 2.4.2 - PASS response code - 0x7f
+    test assertion 2.4.3 - PASS response version - 0x12
+    test assertion 2.4.4 - PASS response param1 - 0x01
+    test assertion 2.4.5 - PASS response param2 - 0x00
+    test msg: test v12 transfer_size - 0x00007706
+    test assertion 2.4.1 - PASS response size - 4
+    test assertion 2.4.2 - PASS response code - 0x7f
+    test assertion 2.4.3 - PASS response version - 0x12
+    test assertion 2.4.4 - PASS response param1 - 0x01
+    test assertion 2.4.5 - PASS response param2 - 0x00
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - stop
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - teardown enter
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - teardown exit
+  test case 2.5 (spdm_test_case_capabilities_success_12) - setup enter
+  test case 2.5 (spdm_test_case_capabilities_success_12) - setup exit (1)
+  test case 2.5 (spdm_test_case_capabilities_success_12) - start
+    test assertion 2.5.1 - PASS response size - 20
+    test assertion 2.5.2 - PASS response code - 0x61
+    test assertion 2.5.3 - PASS response version - 0x12
+    test assertion 2.5.4 - PASS response flags - 0x001afbf7
+    test assertion 2.5.5 - PASS response flags - 0x001afbf7
+    test assertion 2.5.6 - PASS response flags - 0x001afbf7
+    test assertion 2.5.7 - PASS response flags - 0x001afbf7
+    test assertion 2.5.8 - PASS response flags - 0x001afbf7
+    test assertion 2.5.9 - PASS response flags - 0x001afbf7
+    test assertion 2.5.10 - PASS response flags - 0x001afbf7
+    test assertion 2.5.11 - PASS response flags - 0x001afbf7
+    test assertion 2.5.13 - PASS response data_transfer_size - 0x00001200
+    test assertion 2.5.14 - PASS response max_spdm_msg_size - 0x00028000, data_transfer_size - 0x00001200
+    test assertion 2.5.15 - PASS response flags - 0x001afbf7
+  test case 2.5 (spdm_test_case_capabilities_success_12) - stop
+  test case 2.5 (spdm_test_case_capabilities_success_12) - teardown enter
+  test case 2.5 (spdm_test_case_capabilities_success_12) - teardown exit
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - setup enter
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - setup exit (1)
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - start
+    test msg: test param2 - 1
+    test assertion 2.6.1 - PASS response size - 4
+    test assertion 2.6.2 - PASS response code - 0x7f
+    test assertion 2.6.3 - PASS response version - 0x13
+    test assertion 2.6.4 - PASS response param1 - 0x04
+    test assertion 2.6.5 - PASS response param2 - 0x00
+    test msg: test ct_exponent - 1, flags - 0x000053c6
+    test assertion 2.6.1 - PASS response size - 4
+    test assertion 2.6.2 - PASS response code - 0x7f
+    test assertion 2.6.3 - PASS response version - 0x13
+    test assertion 2.6.4 - PASS response param1 - 0x04
+    test assertion 2.6.5 - PASS response param2 - 0x00
+    test msg: test data_transfer_size - 0x00001201, max_spdm_msg_size - 0x00001201
+    test assertion 2.6.1 - PASS response size - 4
+    test assertion 2.6.2 - PASS response code - 0x7f
+    test assertion 2.6.3 - PASS response version - 0x13
+    test assertion 2.6.4 - PASS response param1 - 0x04
+    test assertion 2.6.5 - PASS response param2 - 0x00
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - stop
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - teardown enter
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - teardown exit
+  test case 2.7 (spdm_test_case_capabilities_success_13) - skipped
+test group 2 (spdm_test_group_capabilities) - stop
+test group 3 (spdm_test_group_algorithms) - start
+  test case 3.1 (spdm_test_case_algorithms_success_10) - setup enter
+  test case 3.1 (spdm_test_case_algorithms_success_10) - setup exit (1)
+  test case 3.1 (spdm_test_case_algorithms_success_10) - start
+    test assertion 3.1.1 - PASS response size - 36
+    test assertion 3.1.2 - PASS response code - 0x63
+    test assertion 3.1.3 - PASS response version - 0x10
+    test assertion 3.1.4 - PASS response length - 0x0024
+    test assertion 3.1.5 - PASS response ext_asym_sel_count - 0x00
+    test assertion 3.1.6 - PASS response ext_hash_sel_count - 0x00
+    test assertion 3.1.7 - PASS response measurement_specification_sel - 0x01
+    test assertion 3.1.8 - PASS response measurement_hash_algo - 0x00000008
+    test assertion 3.1.9 - PASS response base_asym_sel - 0x00000080
+    test assertion 3.1.10 - PASS response base_hash_sel - 0x00000002
+  test case 3.1 (spdm_test_case_algorithms_success_10) - stop
+  test case 3.1 (spdm_test_case_algorithms_success_10) - teardown enter
+  test case 3.1 (spdm_test_case_algorithms_success_10) - teardown exit
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - setup enter
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - setup exit (1)
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - start
+    test msg: test mismatched_version - 0x13
+    test assertion 3.2.1 - PASS response size - 4
+    test assertion 3.2.2 - PASS response code - 0x7f
+    test assertion 3.2.3 - PASS response version - 0x14
+    test assertion 3.2.4 - PASS response param1 - 0x41
+    test assertion 3.2.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 3.2.1 - PASS response size - 4
+    test assertion 3.2.2 - PASS response code - 0x7f
+    test assertion 3.2.3 - PASS response version - 0x14
+    test assertion 3.2.4 - PASS response param1 - 0x41
+    test assertion 3.2.5 - PASS response param2 - 0x00
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - stop
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - teardown enter
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - teardown exit
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - setup enter
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - setup exit (1)
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - start
+    test msg: test length - 0x00b1
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+    test msg: test ext_asym_count - 0x15
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+    test msg: test ext_hash_count - 0x15
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+    test msg: test alg_count - 0x10
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+    test msg: test alg_count - 0x30
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+    test msg: test multiple alg_count - 0x2f
+    test assertion 3.4.1 - PASS response size - 4
+    test assertion 3.4.2 - PASS response code - 0x7f
+    test assertion 3.4.3 - PASS response version - 0x14
+    test assertion 3.4.4 - PASS response param1 - 0x01
+    test assertion 3.4.5 - PASS response param2 - 0x00
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - stop
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - teardown enter
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - teardown exit
+  test case 3.5 (spdm_test_case_algorithms_success_11) - setup enter
+  test case 3.5 (spdm_test_case_algorithms_success_11) - setup exit (1)
+  test case 3.5 (spdm_test_case_algorithms_success_11) - start
+    test assertion 3.5.1 - PASS response size - 52
+    test assertion 3.5.2 - PASS response code - 0x63
+    test assertion 3.5.3 - PASS response version - 0x11
+    test assertion 3.5.4 - PASS response length - 0x0034
+    test assertion 3.5.5 - PASS response ext_asym_sel_count - 0x00
+    test assertion 3.5.6 - PASS response ext_hash_sel_count - 0x00
+    test assertion 3.5.7 - PASS response measurement_specification_sel - 0x01
+    test assertion 3.5.8 - PASS response measurement_hash_algo - 0x00000008
+    test assertion 3.5.9 - PASS response base_asym_sel - 0x00000080
+    test assertion 3.5.10 - PASS response base_hash_sel - 0x00000002
+    test assertion 3.5.11 - PASS response param1 - 0x04
+    test assertion 3.5.12 - PASS response alg_count - 0x20
+    test assertion 3.5.12 - PASS response alg_count - 0x20
+    test assertion 3.5.12 - PASS response alg_count - 0x20
+    test assertion 3.5.12 - PASS response alg_count - 0x20
+    test assertion 3.5.13 - PASS response dhe_named_group - 0x0010
+    test assertion 3.5.14 - PASS response aead_cipher_suite - 0x0002
+    test assertion 3.5.15 - PASS response req_base_asym_alg - 0x0008
+    test assertion 3.5.16 - PASS response key_schedule - 0x0001
+  test case 3.5 (spdm_test_case_algorithms_success_11) - stop
+  test case 3.5 (spdm_test_case_algorithms_success_11) - teardown enter
+  test case 3.5 (spdm_test_case_algorithms_success_11) - teardown exit
+  test case 3.6 (spdm_test_case_algorithms_success_12) - setup enter
+  test case 3.6 (spdm_test_case_algorithms_success_12) - setup exit (1)
+  test case 3.6 (spdm_test_case_algorithms_success_12) - start
+    test assertion 3.6.1 - PASS response size - 52
+    test assertion 3.6.2 - PASS response code - 0x63
+    test assertion 3.6.3 - PASS response version - 0x12
+    test assertion 3.6.4 - PASS response length - 0x0034
+    test assertion 3.6.5 - PASS response ext_asym_sel_count - 0x00
+    test assertion 3.6.6 - PASS response ext_hash_sel_count - 0x00
+    test assertion 3.6.7 - PASS response measurement_specification_sel - 0x01
+    test assertion 3.6.8 - PASS response measurement_hash_algo - 0x00000008
+    test assertion 3.6.9 - PASS response base_asym_sel - 0x00000080
+    test assertion 3.6.10 - PASS response base_hash_sel - 0x00000002
+    test assertion 3.6.11 - PASS response param1 - 0x04
+    test assertion 3.6.12 - PASS response alg_count - 0x20
+    test assertion 3.6.12 - PASS response alg_count - 0x20
+    test assertion 3.6.12 - PASS response alg_count - 0x20
+    test assertion 3.6.12 - PASS response alg_count - 0x20
+    test assertion 3.6.13 - PASS response dhe_named_group - 0x0010
+    test assertion 3.6.14 - PASS response aead_cipher_suite - 0x0002
+    test assertion 3.6.15 - PASS response req_base_asym_alg - 0x0008
+    test assertion 3.6.16 - PASS response key_schedule - 0x0001
+    test assertion 3.6.17 - PASS response other_params_selection - 0x02
+  test case 3.6 (spdm_test_case_algorithms_success_12) - stop
+  test case 3.6 (spdm_test_case_algorithms_success_12) - teardown enter
+  test case 3.6 (spdm_test_case_algorithms_success_12) - teardown exit
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - setup enter
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - setup exit (1)
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - start
+    test msg: test param2 - 1
+    test assertion 3.7.1 - PASS response size - 4
+    test assertion 3.7.2 - PASS response code - 0x7f
+    test assertion 3.7.3 - PASS response version - 0x14
+    test assertion 3.7.4 - PASS response param1 - 0x04
+    test assertion 3.7.5 - PASS response param2 - 0x00
+    test msg: test base_asym_algo - 0x00000080, base_hash_algo - 0x00000002
+    test assertion 3.7.1 - PASS response size - 4
+    test assertion 3.7.2 - PASS response code - 0x7f
+    test assertion 3.7.3 - PASS response version - 0x14
+    test assertion 3.7.4 - PASS response param1 - 0x04
+    test assertion 3.7.5 - PASS response param2 - 0x00
+    test msg: test dhe_named_group - 0x0010, aead_cipher_suite - 0x0002, req_base_asym_alg - 0x0008
+    test assertion 3.7.1 - PASS response size - 4
+    test assertion 3.7.2 - PASS response code - 0x7f
+    test assertion 3.7.3 - PASS response version - 0x14
+    test assertion 3.7.4 - PASS response param1 - 0x04
+    test assertion 3.7.5 - PASS response param2 - 0x00
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - stop
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - teardown enter
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - teardown exit
+  test case 3.8 (spdm_test_case_algorithms_success_13) - skipped
+test group 3 (spdm_test_group_algorithms) - stop
+test group 4 (spdm_test_group_digests) - start
+  test case 4.1 (spdm_test_case_digests_success_10) - setup enter
+  test case 4.1 (spdm_test_case_digests_success_10) - setup exit (1)
+  test case 4.1 (spdm_test_case_digests_success_10) - start
+    test assertion 4.1.1 - PASS response size - 100
+    test assertion 4.1.2 - PASS response code - 0x01
+    test assertion 4.1.3 - PASS response version - 0x14
+    test assertion 4.1.4 - PASS response param2 - 0x03
+    test assertion 4.1.5 - PASS response spdm_response_size - 0x00000064
+  test case 4.1 (spdm_test_case_digests_success_10) - stop
+  test case 4.1 (spdm_test_case_digests_success_10) - teardown enter
+  test case 4.1 (spdm_test_case_digests_success_10) - teardown exit
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - setup enter
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - setup exit (1)
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - start
+    test msg: test mismatched_version - 0x13
+    test assertion 4.2.1 - PASS response size - 4
+    test assertion 4.2.2 - PASS response code - 0x7f
+    test assertion 4.2.3 - PASS response version - 0x14
+    test assertion 4.2.4 - PASS response param1 - 0x41
+    test assertion 4.2.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 4.2.1 - PASS response size - 4
+    test assertion 4.2.2 - PASS response code - 0x7f
+    test assertion 4.2.3 - PASS response version - 0x14
+    test assertion 4.2.4 - PASS response param1 - 0x41
+    test assertion 4.2.5 - PASS response param2 - 0x00
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - stop
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - teardown enter
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - teardown exit
+test group 4 (spdm_test_group_digests) - stop
+test group 5 (spdm_test_group_certificate) - start
+  test case 5.1 (spdm_test_case_certificate_success) - setup enter
+  test case 5.1 (spdm_test_case_certificate_success) - setup exit (1)
+  test case 5.1 (spdm_test_case_certificate_success) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test offset - 0x0000
+    test assertion 5.1.1 - PASS response size - 1032
+    test assertion 5.1.2 - PASS response code - 0x02
+    test assertion 5.1.3 - PASS response version - 0x14
+    test assertion 5.1.4 - PASS response portion_length - 0x0400
+    test msg: test offset - 0x0400
+    test assertion 5.1.1 - PASS response size - 639
+    test assertion 5.1.2 - PASS response code - 0x02
+    test assertion 5.1.3 - PASS response version - 0x14
+    test assertion 5.1.4 - PASS response portion_length - 0x0277
+    test assertion 5.1.5 - PASS response cert chain buffer size - 0x677, cert_chain.length - 0x0677
+    test assertion 5.1.6 - PASS response cert chain hash
+    test assertion 5.1.7 - PASS response cert_info - 0x0
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test offset - 0x0000
+    test assertion 5.1.1 - PASS response size - 1032
+    test assertion 5.1.2 - PASS response code - 0x02
+    test assertion 5.1.3 - PASS response version - 0x14
+    test assertion 5.1.4 - PASS response portion_length - 0x0400
+    test msg: test offset - 0x0400
+    test assertion 5.1.1 - PASS response size - 642
+    test assertion 5.1.2 - PASS response code - 0x02
+    test assertion 5.1.3 - PASS response version - 0x14
+    test assertion 5.1.4 - PASS response portion_length - 0x027a
+    test assertion 5.1.5 - PASS response cert chain buffer size - 0x67a, cert_chain.length - 0x067a
+    test assertion 5.1.6 - PASS response cert chain hash
+    test assertion 5.1.7 - PASS response cert_info - 0x0
+  test case 5.1 (spdm_test_case_certificate_success) - stop
+  test case 5.1 (spdm_test_case_certificate_success) - teardown enter
+  test case 5.1 (spdm_test_case_certificate_success) - teardown exit
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - setup enter
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - setup exit (1)
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - start
+    test msg: test mismatched_version - 0x13
+    test assertion 5.2.1 - PASS response size - 4
+    test assertion 5.2.2 - PASS response code - 0x7f
+    test assertion 5.2.3 - PASS response version - 0x14
+    test assertion 5.2.4 - PASS response param1 - 0x41
+    test assertion 5.2.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 5.2.1 - PASS response size - 4
+    test assertion 5.2.2 - PASS response code - 0x7f
+    test assertion 5.2.3 - PASS response version - 0x14
+    test assertion 5.2.4 - PASS response param1 - 0x41
+    test assertion 5.2.5 - PASS response param2 - 0x00
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - stop
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - teardown enter
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - teardown exit
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - setup enter
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - setup exit (1)
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - start
+    test msg: test invalid slot - 0x02
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x03
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x04
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x05
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x06
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x07
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x08
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x09
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0a
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0b
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0c
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0d
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0e
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0f
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+    test msg: test invalid offset - 0xffff
+    test assertion 5.4.1 - PASS response size - 4
+    test assertion 5.4.2 - PASS response code - 0x7f
+    test assertion 5.4.3 - PASS response version - 0x14
+    test assertion 5.4.4 - PASS response param1 - 0x01
+    test assertion 5.4.5 - PASS response param2 - 0x00
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - stop
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - teardown enter
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - teardown exit
+  test case 5.6 (spdm_test_case_certificate_size_req) - skipped
+test group 5 (spdm_test_group_certificate) - stop
+test group 6 (spdm_test_group_challenge_auth) - start
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - setup enter
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - setup exit (1)
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.1.1 - PASS response size - 182
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x00
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.1.1 - PASS response size - 230
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x00
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.1.1 - PASS response size - 230
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x00
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.1.1 - PASS response size - 182
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x01
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.1.1 - PASS response size - 230
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x01
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.1.1 - PASS response size - 230
+    test assertion 6.1.2 - PASS response code - 0x03
+    test assertion 6.1.3 - PASS response version - 0x11
+    test assertion 6.1.4 - PASS response param1 - 0x01
+    test assertion 6.1.5 - PASS response param2 - 0x03
+    test assertion 6.1.6 - PASS response cert chain hash
+    test assertion 6.1.7 - PASS response signature
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - stop
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - teardown enter
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - teardown exit
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - setup enter
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - setup exit (1)
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.2.1 - PASS response size - 182
+    test assertion 6.2.2 - PASS response code - 0x03
+    test assertion 6.2.3 - PASS response version - 0x11
+    test assertion 6.2.4 - PASS response param1 - 0x00
+    test assertion 6.2.5 - PASS response param2 - 0x03
+    test assertion 6.2.6 - PASS response cert chain hash
+    test assertion 6.2.7 - FAIL response signature
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - stop
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - teardown enter
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - teardown exit
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - setup enter
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - setup exit (1)
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.3.1 - PASS response size - 182
+    test assertion 6.3.2 - PASS response code - 0x03
+    test assertion 6.3.3 - PASS response version - 0x11
+    test assertion 6.3.4 - PASS response param1 - 0x00
+    test assertion 6.3.5 - PASS response param2 - 0x03
+    test assertion 6.3.6 - PASS response cert chain hash
+    test assertion 6.3.7 - FAIL response signature
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - stop
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - teardown enter
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - teardown exit
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - setup enter
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - setup exit (1)
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - start
+    test msg: test mismatched_version - 0x12
+    test assertion 6.4.1 - PASS response size - 4
+    test assertion 6.4.2 - PASS response code - 0x7f
+    test assertion 6.4.3 - PASS response version - 0x13
+    test assertion 6.4.4 - PASS response param1 - 0x41
+    test assertion 6.4.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x14
+    test assertion 6.4.1 - PASS response size - 4
+    test assertion 6.4.2 - PASS response code - 0x7f
+    test assertion 6.4.3 - PASS response version - 0x13
+    test assertion 6.4.4 - PASS response param1 - 0x41
+    test assertion 6.4.5 - PASS response param2 - 0x00
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - stop
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - teardown enter
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - teardown exit
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - setup enter
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - setup exit (1)
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - start
+    test msg: test invalid slot - 0x02
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x03
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x04
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x05
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x06
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x07
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x08
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x09
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0a
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0b
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0c
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0d
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0e
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0f
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid meas_hash_type - 0x02
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+    test msg: test invalid meas_hash_type - 0xfe
+    test assertion 6.6.1 - PASS response size - 4
+    test assertion 6.6.2 - PASS response code - 0x7f
+    test assertion 6.6.3 - PASS response version - 0x13
+    test assertion 6.6.4 - PASS response param1 - 0x01
+    test assertion 6.6.5 - PASS response param2 - 0x00
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - stop
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - teardown enter
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - teardown exit
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - setup enter
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - setup exit (1)
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.11.1 - PASS response size - 190
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x00
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.11.1 - PASS response size - 238
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x00
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.11.1 - PASS response size - 238
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x00
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.11.1 - PASS response size - 190
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x01
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.11.1 - PASS response size - 238
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x01
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.11.1 - PASS response size - 238
+    test assertion 6.11.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.11.2 - PASS response code - 0x03
+    test assertion 6.11.3 - PASS response version - 0x13
+    test assertion 6.11.4 - PASS response param1 - 0x01
+    test assertion 6.11.5 - PASS response param2 - 0x03
+    test assertion 6.11.6 - PASS response cert chain hash
+    test assertion 6.11.7 - PASS response signature
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - stop
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - teardown enter
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - teardown exit
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - setup enter
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - setup exit (1)
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.12.1 - PASS response size - 190
+    test assertion 6.12.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.12.2 - PASS response code - 0x03
+    test assertion 6.12.3 - PASS response version - 0x13
+    test assertion 6.12.4 - PASS response param1 - 0x00
+    test assertion 6.12.5 - PASS response param2 - 0x03
+    test assertion 6.12.6 - PASS response cert chain hash
+    test assertion 6.12.7 - FAIL response signature
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - stop
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - teardown enter
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - teardown exit
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - setup enter
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - setup exit (1)
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.13.1 - PASS response size - 190
+    test assertion 6.13.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.13.2 - PASS response code - 0x03
+    test assertion 6.13.3 - PASS response version - 0x13
+    test assertion 6.13.4 - PASS response param1 - 0x00
+    test assertion 6.13.5 - PASS response param2 - 0x03
+    test assertion 6.13.6 - PASS response cert chain hash
+    test assertion 6.13.7 - FAIL response signature
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - stop
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - teardown enter
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - teardown exit
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - setup enter
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - setup exit (1)
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.14.1 - PASS response size - 190
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x00
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.14.1 - PASS response size - 238
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x00
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.14.1 - PASS response size - 238
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x00
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.14.1 - PASS response size - 190
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x01
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+    test msg: test meas hash type - 0x01
+    test assertion 6.14.1 - PASS response size - 238
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x01
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+    test msg: test meas hash type - 0xff
+    test assertion 6.14.1 - PASS response size - 238
+    test assertion 6.14.8 - PASS requester_context - 7ffe5c7d25fd
+    test assertion 6.14.2 - PASS response code - 0x03
+    test assertion 6.14.3 - PASS response version - 0x13
+    test assertion 6.14.4 - PASS response param1 - 0x01
+    test assertion 6.14.5 - PASS response param2 - 0x03
+    test assertion 6.14.6 - PASS response cert chain hash
+    test assertion 6.14.7 - PASS response signature
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - stop
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - teardown enter
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - teardown exit
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - setup enter
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - setup exit (1)
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.15.0 - NOT_TESTED first challenge failure
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - stop
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - teardown enter
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - teardown exit
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - setup enter
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - setup exit (1)
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.16.0 - NOT_TESTED first challenge failure
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - stop
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - teardown enter
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - teardown exit
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - setup enter
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - setup exit (1)
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.17.0 - NOT_TESTED first challenge failure
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - stop
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - teardown enter
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - teardown exit
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - setup enter
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - setup exit (1)
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - start
+    test msg: test slot - 0x00 (hash index - 0x00)
+    test msg: test meas hash type - 0x00
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+    test msg: test slot - 0x01 (hash index - 0x01)
+    test msg: test meas hash type - 0x00
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0x01
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+    test msg: test meas hash type - 0xff
+    test assertion 6.18.0 - NOT_TESTED first challenge failure
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - stop
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - teardown enter
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - teardown exit
+test group 6 (spdm_test_group_challenge_auth) - stop
+test group 7 (spdm_test_group_measurements) - start
+  test case 7.1 (spdm_test_case_measurements_success_10) - setup enter
+  test case 7.1 (spdm_test_case_measurements_success_10) - setup exit (1)
+  test case 7.1 (spdm_test_case_measurements_success_10) - start
+    test msg: test number
+    test assertion 7.1.1 - PASS response size - 138
+    test assertion 7.1.2 - PASS response code - 0x60
+    test assertion 7.1.3 - PASS response version - 0x10
+    test assertion 7.1.4 - PASS response param1 - 0x08
+    test assertion 7.1.5 - PASS response number_of_blocks - 0x00
+    test assertion 7.1.6 - PASS response measurement_record_length - 0x000000
+    test assertion 7.1.7 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.1.7 - PASS response signature
+    test msg: test all
+    test assertion 7.1.8 - PASS response size - 666
+    test assertion 7.1.9 - PASS response code - 0x60
+    test assertion 7.1.10 - PASS response version - 0x10
+    test assertion 7.1.11 - PASS response number_of_blocks - 0x08, get - 0x08
+    test assertion 7.1.12 - PASS response measurement_record_length - 0x000210, get - 0x000210
+    test assertion 7.1.0 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.1.14 - PASS response signature
+    test msg: test one by one
+    test msg: test meas_index - 0x01, count - 0x01
+    test assertion 7.1.15 - PASS response size - 113
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0x02, count - 0x02
+    test assertion 7.1.15 - PASS response size - 113
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0x03, count - 0x03
+    test assertion 7.1.15 - PASS response size - 113
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0x04, count - 0x04
+    test assertion 7.1.15 - PASS response size - 113
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0x10, count - 0x05
+    test assertion 7.1.15 - PASS response size - 57
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x00000f, get - 0x00000f (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0x11, count - 0x06
+    test assertion 7.1.15 - PASS response size - 113
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0xfd, count - 0x07
+    test assertion 7.1.15 - PASS response size - 177
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000087, get - 0x000087 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test msg: test meas_index - 0xfe, count - 0x08
+    test assertion 7.1.15 - PASS response size - 161
+    test assertion 7.1.16 - PASS response code - 0x60
+    test assertion 7.1.17 - PASS response version - 0x10
+    test assertion 7.1.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.1.19 - PASS response measurement_record_length - 0x000017, get - 0x000017 (dup - 0)
+    test assertion 7.1.20 - PASS response measurement record
+    test assertion 7.1.21 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.1.21 - PASS response signature
+  test case 7.1 (spdm_test_case_measurements_success_10) - stop
+  test case 7.1 (spdm_test_case_measurements_success_10) - teardown enter
+  test case 7.1 (spdm_test_case_measurements_success_10) - teardown exit
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - setup enter
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - setup exit (1)
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - start
+    test msg: test mismatched_version - 0x13
+    test assertion 7.2.1 - PASS response size - 4
+    test assertion 7.2.2 - PASS response code - 0x7f
+    test assertion 7.2.3 - PASS response version - 0x14
+    test assertion 7.2.4 - PASS response param1 - 0x41
+    test assertion 7.2.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 7.2.1 - PASS response size - 4
+    test assertion 7.2.2 - PASS response code - 0x7f
+    test assertion 7.2.3 - PASS response version - 0x14
+    test assertion 7.2.4 - PASS response param1 - 0x41
+    test assertion 7.2.5 - PASS response param2 - 0x00
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - stop
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - teardown enter
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - teardown exit
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - setup enter
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - setup exit (1)
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - start
+    test msg: test invalid slot - 0x02
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x03
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x04
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x05
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x06
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x07
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x08
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x09
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0a
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0b
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0c
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0d
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0e
+    test assertion 7.4.1 - PASS response size - 4
+    test assertion 7.4.2 - PASS response code - 0x7f
+    test assertion 7.4.3 - PASS response version - 0x14
+    test assertion 7.4.4 - PASS response param1 - 0x01
+    test assertion 7.4.5 - PASS response param2 - 0x00
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - stop
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - teardown enter
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - teardown exit
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - setup enter
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - setup exit (1)
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - start
+    test msg: SPDM Measurement Block
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - stop
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - teardown enter
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - teardown exit
+  test case 7.6 (spdm_test_case_measurements_success_11) - setup enter
+  test case 7.6 (spdm_test_case_measurements_success_11) - setup exit (1)
+  test case 7.6 (spdm_test_case_measurements_success_11) - start
+    test msg: test slot - 0x00
+    test msg: test number
+    test assertion 7.6.1 - PASS response size - 138
+    test assertion 7.6.2 - PASS response code - 0x60
+    test assertion 7.6.3 - PASS response version - 0x11
+    test assertion 7.6.4 - PASS response param1 - 0x08
+    test assertion 7.6.5 - PASS response number_of_blocks - 0x00
+    test assertion 7.6.6 - PASS response measurement_record_length - 0x000000
+    test assertion 7.6.7 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.6.7 - FAIL response signature
+  test case 7.6 (spdm_test_case_measurements_success_11) - stop
+  test case 7.6 (spdm_test_case_measurements_success_11) - teardown enter
+  test case 7.6 (spdm_test_case_measurements_success_11) - teardown exit
+  test case 7.7 (spdm_test_case_measurements_success_11_session) - setup enter
+  test case 7.7 (spdm_test_case_measurements_success_11_session) - setup exit (0)
+    test assertion 7.7.0 - NOT_TESTED case_setup_func fail
+  test case 7.7 (spdm_test_case_measurements_success_11_session) - teardown enter
+  test case 7.7 (spdm_test_case_measurements_success_11_session) - teardown exit
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - setup enter
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - setup exit (1)
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - start
+    test assertion 7.8.0 - NOT_TESTED key_exchange failure
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - stop
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - teardown enter
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - teardown exit
+  test case 7.9 (spdm_test_case_measurements_success_12) - setup enter
+  test case 7.9 (spdm_test_case_measurements_success_12) - setup exit (1)
+  test case 7.9 (spdm_test_case_measurements_success_12) - start
+    test msg: test slot - 0x00
+    test msg: test number
+    test assertion 7.9.1 - PASS response size - 138
+    test assertion 7.9.2 - PASS response code - 0x60
+    test assertion 7.9.3 - PASS response version - 0x12
+    test assertion 7.9.4 - PASS response param1 - 0x08
+    test assertion 7.9.5 - PASS response number_of_blocks - 0x00
+    test assertion 7.9.6 - PASS response measurement_record_length - 0x000000
+    test assertion 7.9.7 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.9.7 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.7 - PASS response signature
+    test msg: test all
+    test assertion 7.9.8 - PASS response size - 666
+    test assertion 7.9.9 - PASS response code - 0x60
+    test assertion 7.9.10 - PASS response version - 0x12
+    test assertion 7.9.11 - PASS response number_of_blocks - 0x08, get - 0x08
+    test assertion 7.9.12 - PASS response measurement_record_length - 0x000210, get - 0x000210
+    test assertion 7.9.0 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.9.0 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.14 - PASS response signature
+    test msg: test one by one
+    test msg: test meas_index - 0x01, count - 0x01
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x02, count - 0x02
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x03, count - 0x03
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x04, count - 0x04
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x10, count - 0x05
+    test assertion 7.9.15 - PASS response size - 57
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x00000f, get - 0x00000f (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x11, count - 0x06
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0xfd, count - 0x07
+    test assertion 7.9.15 - PASS response size - 177
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000087, get - 0x000087 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0xfe, count - 0x08
+    test assertion 7.9.15 - PASS response size - 161
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000017, get - 0x000017 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test assertion 7.9.21 - PASS response param2 (slot_id) - 0x00
+    test assertion 7.9.21 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.21 - PASS response signature
+    test msg: test slot - 0x01
+    test msg: test number
+    test assertion 7.9.1 - PASS response size - 138
+    test assertion 7.9.2 - PASS response code - 0x60
+    test assertion 7.9.3 - PASS response version - 0x12
+    test assertion 7.9.4 - PASS response param1 - 0x08
+    test assertion 7.9.5 - PASS response number_of_blocks - 0x00
+    test assertion 7.9.6 - PASS response measurement_record_length - 0x000000
+    test assertion 7.9.7 - PASS response param2 (slot_id) - 0x01
+    test assertion 7.9.7 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.7 - PASS response signature
+    test msg: test all
+    test assertion 7.9.8 - PASS response size - 666
+    test assertion 7.9.9 - PASS response code - 0x60
+    test assertion 7.9.10 - PASS response version - 0x12
+    test assertion 7.9.11 - PASS response number_of_blocks - 0x08, get - 0x08
+    test assertion 7.9.12 - PASS response measurement_record_length - 0x000210, get - 0x000210
+    test assertion 7.9.0 - PASS response param2 (slot_id) - 0x01
+    test assertion 7.9.0 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.14 - PASS response signature
+    test msg: test one by one
+    test msg: test meas_index - 0x01, count - 0x01
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x02, count - 0x02
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x03, count - 0x03
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x04, count - 0x04
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x10, count - 0x05
+    test assertion 7.9.15 - PASS response size - 57
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x00000f, get - 0x00000f (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0x11, count - 0x06
+    test assertion 7.9.15 - PASS response size - 113
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000047, get - 0x000047 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0xfd, count - 0x07
+    test assertion 7.9.15 - PASS response size - 177
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000087, get - 0x000087 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test msg: test meas_index - 0xfe, count - 0x08
+    test assertion 7.9.15 - PASS response size - 161
+    test assertion 7.9.16 - PASS response code - 0x60
+    test assertion 7.9.17 - PASS response version - 0x12
+    test assertion 7.9.18 - PASS response number_of_blocks - 0x01
+    test assertion 7.9.19 - PASS response measurement_record_length - 0x000017, get - 0x000017 (dup - 0)
+    test assertion 7.9.20 - PASS response measurement record
+    test assertion 7.9.21 - PASS response param2 (slot_id) - 0x01
+    test assertion 7.9.21 - PASS response param2 (content changed) - 0x20
+    test assertion 7.9.21 - PASS response signature
+  test case 7.9 (spdm_test_case_measurements_success_12) - stop
+  test case 7.9 (spdm_test_case_measurements_success_12) - teardown enter
+  test case 7.9 (spdm_test_case_measurements_success_12) - teardown exit
+  test case 7.10 (spdm_test_case_measurements_success_12_session) - setup enter
+  test case 7.10 (spdm_test_case_measurements_success_12_session) - setup exit (0)
+    test assertion 7.10.0 - NOT_TESTED case_setup_func fail
+  test case 7.10 (spdm_test_case_measurements_success_12_session) - teardown enter
+  test case 7.10 (spdm_test_case_measurements_success_12_session) - teardown exit
+test group 7 (spdm_test_group_measurements) - stop
+test group 8 (spdm_test_group_key_exchange_rsp) - start
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - setup enter
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - setup exit (1)
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - start
+    test msg: test slot - 0x00
+    test msg: test meas hash type - 0x00
+    test assertion 8.1.1 - PASS response size - 306
+    test assertion 8.1.2 - PASS response code - 0x64
+    test assertion 8.1.3 - PASS response version - 0x11
+    test assertion 8.1.4 - FAIL response mut_auth_requested - 0x02
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - stop
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - teardown enter
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - teardown exit
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - setup enter
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - setup exit (1)
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - start
+    test msg: test slot - 0x00
+    test msg: test meas hash type - 0x00
+    test assertion 8.2.1 - PASS response size - 258
+    test assertion 8.2.2 - PASS response code - 0x64
+    test assertion 8.2.3 - PASS response version - 0x11
+    test assertion 8.2.4 - FAIL response mut_auth_requested - 0x02
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - stop
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - teardown enter
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - teardown exit
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - setup enter
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - setup exit (1)
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - start
+    test msg: test mismatched_version - 0x13
+    test assertion 8.3.1 - PASS response size - 4
+    test assertion 8.3.2 - PASS response code - 0x7f
+    test assertion 8.3.3 - PASS response version - 0x14
+    test assertion 8.3.4 - PASS response param1 - 0x41
+    test assertion 8.3.5 - PASS response param2 - 0x00
+    test msg: test mismatched_version - 0x15
+    test assertion 8.3.1 - PASS response size - 4
+    test assertion 8.3.2 - PASS response code - 0x7f
+    test assertion 8.3.3 - PASS response version - 0x14
+    test assertion 8.3.4 - PASS response param1 - 0x41
+    test assertion 8.3.5 - PASS response param2 - 0x00
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - stop
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - teardown enter
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - teardown exit
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - setup enter
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - setup exit (1)
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - start
+    test assertion 8.5.0 - NOT_TESTED start_session failure
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - stop
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - teardown enter
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - teardown exit
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - setup enter
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - setup exit (1)
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - start
+    test msg: test invalid slot - 0x02
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x03
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x04
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x05
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x06
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x07
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x08
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x09
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0a
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0b
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0c
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0d
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0e
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid slot - 0x0f
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid meas_hash_type - 0x02
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+    test msg: test invalid meas_hash_type - 0xfe
+    test assertion 8.6.1 - PASS response size - 4
+    test assertion 8.6.2 - PASS response code - 0x7f
+    test assertion 8.6.3 - PASS response version - 0x14
+    test assertion 8.6.4 - PASS response param1 - 0x01
+    test assertion 8.6.5 - PASS response param2 - 0x00
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - stop
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - teardown enter
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - teardown exit
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - setup enter
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - setup exit (1)
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - start
+    test msg: test slot - 0x00
+    test msg: test meas hash type - 0x00
+    test assertion 8.7.1 - PASS response size - 302
+    test assertion 8.7.2 - PASS response code - 0x64
+    test assertion 8.7.3 - PASS response version - 0x12
+    test assertion 8.7.4 - FAIL response mut_auth_requested - 0x02
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - stop
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - teardown enter
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - teardown exit
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - setup enter
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - setup exit (1)
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - start
+    test msg: test slot - 0x00
+    test msg: test meas hash type - 0x00
+    test assertion 8.8.1 - PASS response size - 254
+    test assertion 8.8.2 - PASS response code - 0x64
+    test assertion 8.8.3 - PASS response version - 0x12
+    test assertion 8.8.4 - FAIL response mut_auth_requested - 0x02
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - stop
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - teardown enter
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - teardown exit
+test group 8 (spdm_test_group_key_exchange_rsp) - stop
+test group 9 (spdm_test_group_finish_rsp) - start
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - setup enter
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - setup exit (1)
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - start
+    test msg: test slot - 0x00
+    test assertion 9.1.0 - NOT_TESTED key_exchange failure
+    test msg: test slot - 0x01
+    test assertion 9.1.0 - NOT_TESTED key_exchange failure
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - stop
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - teardown enter
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - teardown exit
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - setup enter
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - setup exit (1)
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - start
+    test msg: test slot - 0x00
+    test assertion 9.2.0 - NOT_TESTED key_exchange failure
+    test msg: test slot - 0x01
+    test assertion 9.2.0 - NOT_TESTED key_exchange failure
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - stop
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - teardown enter
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - teardown exit
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - setup enter
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - setup exit (1)
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - start
+    test assertion 9.3.0 - NOT_TESTED key_exchange failure
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - stop
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - teardown enter
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - teardown exit
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - setup enter
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - setup exit (1)
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - start
+    test assertion 9.5.0 - NOT_TESTED start_session failure
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - stop
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - teardown enter
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - teardown exit
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - setup enter
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - setup exit (1)
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - start
+    test assertion 9.6.0 - NOT_TESTED key_exchange failure
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - stop
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - teardown enter
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - teardown exit
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - setup enter
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - setup exit (1)
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - start
+    test assertion 9.7.0 - NOT_TESTED key_exchange failure
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - stop
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - teardown enter
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - teardown exit
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - setup enter
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - setup exit (1)
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - start
+    test assertion 9.8.0 - NOT_TESTED key_exchange failure
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - stop
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - teardown enter
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - teardown exit
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - setup enter
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - setup exit (1)
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - start
+    test msg: test slot - 0x00
+    test assertion 9.9.0 - NOT_TESTED key_exchange failure
+    test msg: test slot - 0x01
+    test assertion 9.9.0 - NOT_TESTED key_exchange failure
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - stop
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - teardown enter
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - teardown exit
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - setup enter
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - setup exit (1)
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - start
+    test msg: test slot - 0x00
+    test assertion 9.10.0 - NOT_TESTED key_exchange failure
+    test msg: test slot - 0x01
+    test assertion 9.10.0 - NOT_TESTED key_exchange failure
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - stop
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - teardown enter
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - teardown exit
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - setup enter
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - setup exit (1)
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - start
+    test assertion 9.11.0 - NOT_TESTED key_exchange failure
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - stop
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - teardown enter
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - teardown exit
+test group 9 (spdm_test_group_finish_rsp) - stop
+test group 12 (spdm_test_group_heartbeat_ack) - start
+  test case 12.1 (spdm_test_case_heartbeat_ack_success_11_dhe) - setup enter
+  test case 12.1 (spdm_test_case_heartbeat_ack_success_11_dhe) - setup exit (0)
+    test assertion 12.1.0 - NOT_TESTED case_setup_func fail
+  test case 12.1 (spdm_test_case_heartbeat_ack_success_11_dhe) - teardown enter
+  test case 12.1 (spdm_test_case_heartbeat_ack_success_11_dhe) - teardown exit
+  test case 12.2 (spdm_test_case_heartbeat_ack_version_mismatch) - setup enter
+  test case 12.2 (spdm_test_case_heartbeat_ack_version_mismatch) - setup exit (0)
+    test assertion 12.2.0 - NOT_TESTED case_setup_func fail
+  test case 12.2 (spdm_test_case_heartbeat_ack_version_mismatch) - teardown enter
+  test case 12.2 (spdm_test_case_heartbeat_ack_version_mismatch) - teardown exit
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - setup enter
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - setup exit (1)
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - start
+    test assertion 12.3.0 - NOT_TESTED key_exchange failure
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - stop
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - teardown enter
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - teardown exit
+  test case 12.4 (spdm_test_case_heartbeat_ack_session_required) - setup enter
+  test case 12.4 (spdm_test_case_heartbeat_ack_session_required) - setup exit (0)
+    test assertion 12.4.0 - NOT_TESTED case_setup_func fail
+  test case 12.4 (spdm_test_case_heartbeat_ack_session_required) - teardown enter
+  test case 12.4 (spdm_test_case_heartbeat_ack_session_required) - teardown exit
+test group 12 (spdm_test_group_heartbeat_ack) - stop
+test group 13 (spdm_test_group_key_update_ack) - start
+  test case 13.1 (spdm_test_case_key_update_ack_success_11_dhe) - setup enter
+  test case 13.1 (spdm_test_case_key_update_ack_success_11_dhe) - setup exit (0)
+    test assertion 13.1.0 - NOT_TESTED case_setup_func fail
+  test case 13.1 (spdm_test_case_key_update_ack_success_11_dhe) - teardown enter
+  test case 13.1 (spdm_test_case_key_update_ack_success_11_dhe) - teardown exit
+  test case 13.2 (spdm_test_case_key_update_ack_version_mismatch) - setup enter
+  test case 13.2 (spdm_test_case_key_update_ack_version_mismatch) - setup exit (0)
+    test assertion 13.2.0 - NOT_TESTED case_setup_func fail
+  test case 13.2 (spdm_test_case_key_update_ack_version_mismatch) - teardown enter
+  test case 13.2 (spdm_test_case_key_update_ack_version_mismatch) - teardown exit
+  test case 13.3 (spdm_test_case_key_update_ack_invalid_request) - setup enter
+  test case 13.3 (spdm_test_case_key_update_ack_invalid_request) - setup exit (0)
+    test assertion 13.3.0 - NOT_TESTED case_setup_func fail
+  test case 13.3 (spdm_test_case_key_update_ack_invalid_request) - teardown enter
+  test case 13.3 (spdm_test_case_key_update_ack_invalid_request) - teardown exit
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - setup enter
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - setup exit (1)
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - start
+    test assertion 13.4.0 - NOT_TESTED key_exchange failure
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - stop
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - teardown enter
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - teardown exit
+  test case 13.5 (spdm_test_case_key_update_ack_session_required) - setup enter
+  test case 13.5 (spdm_test_case_key_update_ack_session_required) - setup exit (0)
+    test assertion 13.5.0 - NOT_TESTED case_setup_func fail
+  test case 13.5 (spdm_test_case_key_update_ack_session_required) - teardown enter
+  test case 13.5 (spdm_test_case_key_update_ack_session_required) - teardown exit
+test group 13 (spdm_test_group_key_update_ack) - stop
+test group 16 (spdm_test_group_end_session_ack) - start
+  test case 16.1 (spdm_test_case_end_session_ack_success_11_dhe) - setup enter
+  test case 16.1 (spdm_test_case_end_session_ack_success_11_dhe) - setup exit (0)
+    test assertion 16.1.0 - NOT_TESTED case_setup_func fail
+  test case 16.1 (spdm_test_case_end_session_ack_success_11_dhe) - teardown enter
+  test case 16.1 (spdm_test_case_end_session_ack_success_11_dhe) - teardown exit
+  test case 16.2 (spdm_test_case_end_session_ack_version_mismatch) - setup enter
+  test case 16.2 (spdm_test_case_end_session_ack_version_mismatch) - setup exit (0)
+    test assertion 16.2.0 - NOT_TESTED case_setup_func fail
+  test case 16.2 (spdm_test_case_end_session_ack_version_mismatch) - teardown enter
+  test case 16.2 (spdm_test_case_end_session_ack_version_mismatch) - teardown exit
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - setup enter
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - setup exit (1)
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - start
+    test assertion 16.3.0 - NOT_TESTED key_exchange failure
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - stop
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - teardown enter
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - teardown exit
+  test case 16.4 (spdm_test_case_end_session_ack_session_required) - setup enter
+  test case 16.4 (spdm_test_case_end_session_ack_session_required) - setup exit (0)
+    test assertion 16.4.0 - NOT_TESTED case_setup_func fail
+  test case 16.4 (spdm_test_case_end_session_ack_session_required) - teardown enter
+  test case 16.4 (spdm_test_case_end_session_ack_session_required) - teardown exit
+test group 16 (spdm_test_group_end_session_ack) - stop
+
+test suite (spdm_responder_conformance_test) - pass: 954, fail: 9
+test group 1 (spdm_test_group_version) - pass: 9, fail: 0
+  test case 1.1 (spdm_test_case_version_success) - pass: 9, fail: 0
+test group 2 (spdm_test_group_capabilities) - pass: 80, fail: 0
+  test case 2.1 (spdm_test_case_capabilities_success_10) - pass: 4, fail: 0
+  test case 2.2 (spdm_test_case_capabilities_version_mismatch) - pass: 10, fail: 0
+  test case 2.3 (spdm_test_case_capabilities_success_11) - pass: 12, fail: 0
+  test case 2.4 (spdm_test_case_capabilities_invalid_request) - pass: 25, fail: 0
+  test case 2.5 (spdm_test_case_capabilities_success_12) - pass: 14, fail: 0
+  test case 2.6 (spdm_test_case_capabilities_unexpected_non_identical) - pass: 15, fail: 0
+  test case 2.7 (spdm_test_case_capabilities_success_13) - pass: 0, fail: 0
+test group 3 (spdm_test_group_algorithms) - pass: 104, fail: 0
+  test case 3.1 (spdm_test_case_algorithms_success_10) - pass: 10, fail: 0
+  test case 3.2 (spdm_test_case_algorithms_version_mismatch) - pass: 10, fail: 0
+  test case 3.4 (spdm_test_case_algorithms_invalid_request) - pass: 30, fail: 0
+  test case 3.5 (spdm_test_case_algorithms_success_11) - pass: 19, fail: 0
+  test case 3.6 (spdm_test_case_algorithms_success_12) - pass: 20, fail: 0
+  test case 3.7 (spdm_test_case_algorithms_unexpected_non_identical) - pass: 15, fail: 0
+  test case 3.8 (spdm_test_case_algorithms_success_13) - pass: 0, fail: 0
+test group 4 (spdm_test_group_digests) - pass: 15, fail: 0
+  test case 4.1 (spdm_test_case_digests_success_10) - pass: 5, fail: 0
+  test case 4.2 (spdm_test_case_digests_version_mismatch) - pass: 10, fail: 0
+test group 5 (spdm_test_group_certificate) - pass: 107, fail: 0
+  test case 5.1 (spdm_test_case_certificate_success) - pass: 22, fail: 0
+  test case 5.2 (spdm_test_case_certificate_version_mismatch) - pass: 10, fail: 0
+  test case 5.4 (spdm_test_case_certificate_invalid_request) - pass: 75, fail: 0
+  test case 5.6 (spdm_test_case_certificate_size_req) - pass: 0, fail: 0
+test group 6 (spdm_test_group_challenge_auth) - pass: 254, fail: 4
+  test case 6.1 (spdm_test_case_challenge_auth_success_10_a1b1c1) - pass: 42, fail: 0
+  test case 6.2 (spdm_test_case_challenge_auth_success_10_a1b2c1) - pass: 6, fail: 1
+  test case 6.3 (spdm_test_case_challenge_auth_success_10_a1b3c1) - pass: 6, fail: 1
+  test case 6.4 (spdm_test_case_challenge_auth_version_mismatch) - pass: 10, fail: 0
+  test case 6.6 (spdm_test_case_challenge_auth_invalid_request) - pass: 80, fail: 0
+  test case 6.11 (spdm_test_case_challenge_auth_success_12_a1b1c1) - pass: 48, fail: 0
+  test case 6.12 (spdm_test_case_challenge_auth_success_12_a1b2c1) - pass: 7, fail: 1
+  test case 6.13 (spdm_test_case_challenge_auth_success_12_a1b3c1) - pass: 7, fail: 1
+  test case 6.14 (spdm_test_case_challenge_auth_success_12_a1b4c1) - pass: 48, fail: 0
+  test case 6.15 (spdm_test_case_challenge_auth_success_12_a2b1c1) - pass: 0, fail: 0
+  test case 6.16 (spdm_test_case_challenge_auth_success_12_a2b2c1) - pass: 0, fail: 0
+  test case 6.17 (spdm_test_case_challenge_auth_success_12_a2b3c1) - pass: 0, fail: 0
+  test case 6.18 (spdm_test_case_challenge_auth_success_12_a2b4c1) - pass: 0, fail: 0
+test group 7 (spdm_test_group_measurements) - pass: 283, fail: 1
+  test case 7.1 (spdm_test_case_measurements_success_10) - pass: 65, fail: 0
+  test case 7.2 (spdm_test_case_measurements_version_mismatch) - pass: 10, fail: 0
+  test case 7.4 (spdm_test_case_measurements_invalid_request) - pass: 65, fail: 0
+  test case 7.5 (spdm_test_case_measurements_success_measurements_block) - pass: 0, fail: 0
+  test case 7.6 (spdm_test_case_measurements_success_11) - pass: 7, fail: 1
+  test case 7.7 (spdm_test_case_measurements_success_11_session) - pass: 0, fail: 0
+  test case 7.8 (spdm_test_case_measurements_unexpected_request_in_session) - pass: 0, fail: 0
+  test case 7.9 (spdm_test_case_measurements_success_12) - pass: 136, fail: 0
+  test case 7.10 (spdm_test_case_measurements_success_12_session) - pass: 0, fail: 0
+test group 8 (spdm_test_group_key_exchange_rsp) - pass: 102, fail: 4
+  test case 8.1 (spdm_test_case_key_exchange_rsp_success_11) - pass: 3, fail: 1
+  test case 8.2 (spdm_test_case_key_exchange_rsp_success_11_hs_clear) - pass: 3, fail: 1
+  test case 8.3 (spdm_test_case_key_exchange_rsp_version_mismatch) - pass: 10, fail: 0
+  test case 8.5 (spdm_test_case_key_exchange_rsp_unexpected_request_in_session) - pass: 0, fail: 0
+  test case 8.6 (spdm_test_case_key_exchange_rsp_invalid_request) - pass: 80, fail: 0
+  test case 8.7 (spdm_test_case_key_exchange_rsp_success_12) - pass: 3, fail: 1
+  test case 8.8 (spdm_test_case_key_exchange_rsp_success_12_hs_clear) - pass: 3, fail: 1
+test group 9 (spdm_test_group_finish_rsp) - pass: 0, fail: 0
+  test case 9.1 (spdm_test_case_finish_rsp_success_11) - pass: 0, fail: 0
+  test case 9.2 (spdm_test_case_finish_rsp_success_11_hs_clear) - pass: 0, fail: 0
+  test case 9.3 (spdm_test_case_finish_rsp_version_mismatch) - pass: 0, fail: 0
+  test case 9.5 (spdm_test_case_finish_rsp_unexpected_request_in_session) - pass: 0, fail: 0
+  test case 9.6 (spdm_test_case_finish_rsp_invalid_request) - pass: 0, fail: 0
+  test case 9.7 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data) - pass: 0, fail: 0
+  test case 9.8 (spdm_test_case_finish_rsp_decrypt_error_invalid_verify_data_hs_clear) - pass: 0, fail: 0
+  test case 9.9 (spdm_test_case_finish_rsp_success_12) - pass: 0, fail: 0
+  test case 9.10 (spdm_test_case_finish_rsp_success_12_hs_clear) - pass: 0, fail: 0
+  test case 9.11 (spdm_test_case_finish_rsp_session_required) - pass: 0, fail: 0
+test group 12 (spdm_test_group_heartbeat_ack) - pass: 0, fail: 0
+  test case 12.1 (spdm_test_case_heartbeat_ack_success_11_dhe) - pass: 0, fail: 0
+  test case 12.2 (spdm_test_case_heartbeat_ack_version_mismatch) - pass: 0, fail: 0
+  test case 12.3 (spdm_test_case_heartbeat_ack_unexpected_request) - pass: 0, fail: 0
+  test case 12.4 (spdm_test_case_heartbeat_ack_session_required) - pass: 0, fail: 0
+test group 13 (spdm_test_group_key_update_ack) - pass: 0, fail: 0
+  test case 13.1 (spdm_test_case_key_update_ack_success_11_dhe) - pass: 0, fail: 0
+  test case 13.2 (spdm_test_case_key_update_ack_version_mismatch) - pass: 0, fail: 0
+  test case 13.3 (spdm_test_case_key_update_ack_invalid_request) - pass: 0, fail: 0
+  test case 13.4 (spdm_test_case_key_update_ack_unexpected_request) - pass: 0, fail: 0
+  test case 13.5 (spdm_test_case_key_update_ack_session_required) - pass: 0, fail: 0
+test group 16 (spdm_test_group_end_session_ack) - pass: 0, fail: 0
+  test case 16.1 (spdm_test_case_end_session_ack_success_11_dhe) - pass: 0, fail: 0
+  test case 16.2 (spdm_test_case_end_session_ack_version_mismatch) - pass: 0, fail: 0
+  test case 16.3 (spdm_test_case_end_session_ack_unexpected_request) - pass: 0, fail: 0
+  test case 16.4 (spdm_test_case_end_session_ack_session_required) - pass: 0, fail: 0
+test result done

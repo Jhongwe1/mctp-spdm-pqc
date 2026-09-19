@@ -1,0 +1,14 @@
+  suite              spdm_responder_conformance_test
+  libspdm            4.0.0
+  assertions         1751
+    PASS             1721
+    FAIL             6
+    NOT_TESTED       24   (counted by neither half of the suite's own footer)
+  cases skipped      3   2.7, 3.8, 5.6
+  failures:
+    3.5.15     response req_base_asym_alg - 0x0008
+    3.6.15     response req_base_asym_alg - 0x0008
+    6.2.7      response signature
+    6.3.7      response signature
+    6.12.7     response signature
+    6.13.7     response signature

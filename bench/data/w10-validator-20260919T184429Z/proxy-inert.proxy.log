@@ -1,0 +1,236 @@
+[proxy] listening on 127.0.0.1:2324, forwarding to 127.0.0.1:2323, mode passthrough
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 36 B: signature requested, RequesterContext None B
+[proxy] REFUSED: the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)
+[proxy] GET_MEASUREMENTS 36 B: signature requested, RequesterContext None B
+[proxy] REFUSED: the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 57 B: 1 blocks, record 15 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 57  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 177 B: 1 blocks, record 135 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 177  CLOSED
+[proxy] GET_MEASUREMENTS 36 B: signature requested, RequesterContext None B
+[proxy] REFUSED: the RequesterContext span is unknown (GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8; GET_MEASUREMENTS is 36 bytes; with a signature requested that leaves -1 for RequesterContext, which is neither 0 nor 8)
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 138 B: 0 blocks, record 0 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 42  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 666 B: 8 blocks, record 528 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 570  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 57 B: 1 blocks, record 15 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 57  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 177 B: 1 blocks, record 135 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 177  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 161 B: 1 blocks, record 23 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 65  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 138 B: 0 blocks, record 0 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 42  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 666 B: 8 blocks, record 528 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 570  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 57 B: 1 blocks, record 15 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 57  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 177 B: 1 blocks, record 135 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 177  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 161 B: 1 blocks, record 23 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 65  CLOSED
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 138 B: 0 blocks, record 0 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 42  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 666 B: 8 blocks, record 528 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 570  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 57 B: 1 blocks, record 15 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 57  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 177 B: 1 blocks, record 135 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 177  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 161 B: 1 blocks, record 23 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 65  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 138 B: 0 blocks, record 0 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 42  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 666 B: 8 blocks, record 528 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 570  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 57 B: 1 blocks, record 15 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 57  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 113 B: 1 blocks, record 71 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 113  CLOSED
+[proxy] GET_MEASUREMENTS 4 B: signature not requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 177 B: 1 blocks, record 135 B at 8, opaque 0 B, RequesterContext 0 B, signature 0 B at 177  CLOSED
+[proxy] GET_MEASUREMENTS 37 B: signature requested, RequesterContext 0 B
+[proxy] MEASUREMENTS 161 B: 1 blocks, record 23 B at 8, opaque 0 B, RequesterContext 0 B, signature 96 B at 65  CLOSED
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B
+[proxy] ALGORITHMS: BaseAsymSel 0x00000080 ECDSA_ECC_NIST_P384 -> signature 96 B

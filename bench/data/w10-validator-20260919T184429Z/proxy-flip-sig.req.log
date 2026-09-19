@@ -1,0 +1,5 @@
+spdm_device_validator_sample version 0.1
+port - 2324
+connect success!
+context_size - 0x2f78
+Client stopped
