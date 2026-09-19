@@ -4215,3 +4215,279 @@ than 6.12 — or a userspace SPDM state machine, which is libspdm's job and not
 `doe_probe`'s. Named rather than left as an absence.
 
 **`TODO(me)`** — What I am least sure about right now: _______________
+
+## 2026-10-12 · Day 12 · the instrument said I was wrong, and the instrument was wrong
+
+Gate 6's upper half. DMTF's own conformance suite, run four ways against this
+project's responder; libspdm's own fuzz targets, seeded from this project's own
+captures and measured against the corpus upstream ships; and a coverage figure
+so that "no crashes" has a denominator.
+
+Two things are worth keeping and they point in opposite directions. The first is
+a claim I was able to make stronger than expected — the suite reports four
+failures and the device is not at fault, and that is **proved** rather than
+argued. The second is a claim I had to withdraw: the sentence this week was
+supposed to produce about fuzz seeds is false, and I have the numbers that say
+so.
+
+The second is the one to read.
+
+---
+
+### 1. Four FAILs, and how to tell whose fault they are
+
+**現象** `SPDM-Responder-Validator`, at the submodule commit `spdm-emu 4.0.0-rc`
+already pins, reports eight failing assertions against this responder. Four of
+them are in `CHALLENGE_AUTH` and all four carry the same message:
+
+```
+test assertion 6.2.7  - FAIL response signature
+test assertion 6.3.7  - FAIL response signature
+test assertion 6.12.7 - FAIL response signature
+test assertion 6.13.7 - FAIL response signature
+```
+
+A signature that does not verify is the worst thing a conformance report can
+say about a device. It is also the thing a device owner is least equipped to
+argue with.
+
+**假設** Three, and the third is the one nobody reaches for first.
+
+1. **The responder's signature is wrong.** Some transcript the responder
+   includes and the specification does not, or an off-by-one in a length.
+2. **The suite is testing something this configuration does not support**, and
+   the FAIL is a capability question wearing a cryptography costume — the same
+   shape as the other four failures, which are `MutAuthRequested` and are
+   plainly configuration.
+3. **The suite is wrong.** Not "the suite tests something optional", but: the
+   assertion is unsatisfiable for a reason that lives inside the suite.
+
+**先驗哪個、為什麼** None of them first. **The discriminating fact first**, and
+it was free.
+
+The case names encode which messages each case sends. Reading them out of the
+source rather than from the documentation:
+
+| case | mask | result |
+|---|---|---|
+| 6.1 `A1B1C1` | VCA + `GET_DIGESTS` + `GET_CERTIFICATE` | PASS |
+| 6.2 `A1B2C1` | VCA only | **FAIL** |
+| 6.3 `A1B3C1` | VCA + `GET_DIGESTS` | **FAIL** |
+| 6.14 `A1B4C1` | VCA + `GET_CERTIFICATE` | PASS |
+
+6.14 omits the digests and passes; 6.3 performs them and fails. **The
+certificate fetch is necessary and sufficient and the digests are irrelevant.**
+That single comparison removes hypothesis 1 almost entirely — a transcript
+defect would not be conditional on whether the *requester* fetched a
+certificate — and it points at a missing input rather than a wrong output.
+
+Reading the source then gives the mechanism in three lines: the case's setup
+fetches the chain at `:202`, the case body calls `libspdm_init_connection()` at
+`:363`, that sends `GET_VERSION`, `GET_VERSION` calls `libspdm_reset_context()`,
+and `libspdm_reset_context` frees `connection_info.peer_used_cert_chain[]`.
+
+**And there I stopped, because a mechanism read out of source is a story.**
+2026-09-12 is in this file because a story exactly that plausible — "the key is
+constructed wrongly, therefore the verifier accepts nothing" — was true and
+incomplete, and acting on it alone would have turned a verifier that accepts
+nothing into one that accepts anything. Standing rule 19 came out of that day.
+So the story does not get published; the arithmetic does.
+
+**根因** `harness/challenge_verify.py` rebuilds `M1M2 = A || B || C` from the
+capture and hands the verification to OpenSSL — this file owns structure,
+OpenSSL owns cryptography, which is `certs/check_chain.py`'s division and its
+words. ★ **It calibrates before it answers**: it verifies the nine connections
+that *did* fetch the certificate and that the suite passes, and only if all nine
+verify does it report on the two that did not.
+
+```
+calibration   9 of 9 verify
+disputed      2 of 2 verify
+  packet 284   M1M2  266 B (144 +   0 + 122)  -> True
+  packet 306   M1M2  370 B (144 + 104 + 122)  -> True
+```
+
+The middle term is the finding in one number: 1,775 bytes of certificate
+exchange in the transcripts that pass, **0** and **104** in the two that fail,
+and the signatures over those shorter transcripts are good.
+
+**So: the responder is correct, the specification is not involved, and the
+conformance suite reports a conforming device as non-conforming.** Upstream
+candidate ⑲.
+
+**教訓** Two, and the second is the general one.
+
+★ **A calibration step is what converts a tool's verdict into evidence.** The
+verification tool could have been written to answer only the disputed question.
+It would have produced the same `True` twice and been worth nothing, because a
+reader cannot distinguish "the signatures are good" from "the transcript model
+is wrong in a way that happens to verify". Checking it first against the case
+everyone agrees about is what makes the disagreement mean something — and the
+tool exits 1 without offering a verdict if the calibration fails, so the order
+is a mechanism rather than an intention.
+
+★★ **And the general one: when a measuring instrument disagrees with the thing
+being measured, the instrument is a hypothesis too.** I have spent eleven weeks
+building tools that check this project's claims. This is the first week one of
+those tools was pointed at somebody else's tool, and the answer was that the
+other one was wrong. The reflex when a respected reference implementation says
+your device fails is to look at your device; the reflex that produced this
+result was to ask what would have to be true for the suite to be right, notice
+that it needed a public key it did not have, and then go and check.
+
+---
+
+### 2. A sentence I had planned to say, and the measurement that withdrew it
+
+**現象** The plan for this week names the seed corpus as one of three things
+the fuzzing half is worth doing for:
+
+> *"My fuzz seeds are not random, they are messages extracted from my own real
+> handshake pcaps. AFL needs a structurally valid input to mutate from —
+> give it random bytes and it will spend millions of executions circling the
+> version field of `GET_VERSION`."*
+
+The first half is true and I built the exporter for it. The second half compares
+against something nobody does.
+
+**假設** Two readings of "better", and they are not the same claim.
+
+1. **Better than random bytes.** Trivially true, and worthless: no one seeds a
+   fuzzer with random bytes, so the comparison has no opponent.
+2. **Better than the corpus libspdm already ships.** `unit_test/fuzzing/seeds/`,
+   69 directories, 81 files, mostly one hand-written seed per target. This is
+   the real rival and it is the one standing rule 18 requires to be evaluated:
+   *a claim that two things differ has to evaluate both of them.*
+
+**先驗哪個、為什麼** The second, because the first cannot fail. `afl-showmap -C`
+executes an entire corpus and reports the union of the edges it reached —
+deterministic, so a single value rather than a distribution, and comparable
+across corpora by construction.
+
+**根因** The first run drew seeds from the two published handshakes, `A0-all`
+and `P2-all`. It lost.
+
+```
+  target                          upstream   mine   both   added
+  test_spdm_responder_algorithms       601    378    601      +0
+  test_spdm_responder_version          442    442    442      +0
+```
+
+378 against 601 on `algorithms`, and **zero** edges added to upstream's corpus.
+Ten of seventeen targets could not be seeded at all.
+
+The reason is not about fuzzing. **Two successful handshakes contain exactly one
+well-formed message per type and nothing else** — no version mismatch, no
+invalid parameter, no error path, because a handshake that took one would not
+have completed. And ten targets were empty because no capture in this repository
+contains a `KEY_EXCHANGE`: `harness/lib/arms.sh` pins `--exe_session NO_END`,
+which does not include `EXE_SESSION_KEY_EX`, and **no arm of this project's A/B
+has ever established a secure session.** That file has said so in its own
+comment since it was written in week eight. It took a fuzz corpus to make the
+consequence visible.
+
+Adding one capture — the conformance run, which sends malformed and
+version-mismatched requests *deliberately* — reversed it:
+
+```
+  test_spdm_responder_algorithms       601    685    711    +110
+  test_spdm_responder_capabilities     436    535    535     +99
+  test_spdm_responder_measurements    3630   3744   3744    +114
+```
+
+**Same tool, same method, different source run.** And even then, on three of
+thirteen comparable targets my corpus still reaches fewer edges than upstream's
+single hand-written seed, and on five the union exceeds both — the two corpora
+are **complementary rather than ordered**, which is a more useful finding than
+either of the two sentences I might have written.
+
+**教訓** ★ **A seed is not good because it is real. It is good because the run
+it came from went somewhere.** "Real" is a property of provenance and it feels
+like a quality argument; it is not one. The quality argument is about coverage
+of *behaviour*, and a capture of a run that succeeded is a capture of the happy
+path by definition.
+
+★★ And the methodological half: **the first run is committed, with its losing
+numbers.** `w10-fuzz-20260919T185226Z` produced a table where my corpus adds
+nothing, and deleting it and keeping only the run that won would have left a
+page asserting exactly what this week disproved. The pair is the finding.
+
+---
+
+### 3. Deviations from `plan/W10`, with reasons
+
+`CLAUDE.md` asks for the reason rather than the conclusion. The plan was
+written on 2026-08-16; seven of its statements did not survive contact.
+
+| plan said | actually | why it matters |
+|---|---|---|
+| the validator has **20 test groups** | the README documents 20; **12** have a source file. PSK, encapsulated, CSR, `SET_CERTIFICATE` and chunking have no implementation | saying "twenty groups" to anyone who has read the tree converts "has done this" into "has not read it" |
+| `libspdm` has **six fuzz targets** | six target *families*, **about sixty-nine** individual targets | an order of magnitude, in the direction that makes upstream look less thorough than it is |
+| my seeds beat random seeds | the rival is upstream's shipped corpus, and on three targets **it wins** | §2 |
+| `spdm-emu`'s disclaimer, quoted and marked "✅ quoted correctly" | the quote in the plan is a paraphrase. The actual text is *"This package is only the sample code to show the concept. It does not have a full validation such as robustness functional test and fuzzing test. It does not meet the production quality yet."* | a paraphrase in quotation marks is the thing standing rule 7 exists to prevent, and it was marked as checked |
+| Friday: check whether the `openbmc/spdm` change got a reply | it was never sent. `docs/upstream/README.md` rows 42–43 have said `TODO(me)` since September | nothing to check. What the day became instead is in §4 |
+| run `./bin/test_spdm_fips` | it **refuses to run**: `LIBSPDM_FIPS_MODE` is `0` in `spdm_lib_config.h:139` and the test says *"valid only when LIBSPDM_FIPS_MODE is open"* rather than passing vacuously | good test design, and it means the FIPS vectors are **not** exercised here. `docs/threat-scope.md` says so |
+| the `rats` CI job arrives in W11 | it has existed since 2026-09-12 | `CLAUDE.md` still carries the stale sentence; the file is the author's to change |
+| DoD: `LOG.md ≥ 46`, `commit ≥ 96` | 13 entries and 170 commits before today | different counting bases. Entries here are per *day*, not per event. Recorded rather than silently ignored |
+
+None of these changed the shape of the week. All seven are the same failure
+mode — a planning document written before the tree was read — and the response
+is the one this project already uses for version numbers: **the tree is the
+truth and the document gets corrected.**
+
+---
+
+### 4. Three bugs I wrote today, and what each one cost
+
+Worth recording because all three are in the harness rather than in the thing
+being measured, and all three had the same symptom: **no error.**
+
+**The proxy that never stopped.** `run_validator.sh` started
+`harness/tamper_proxy.py` without `--once`. Its `run()` loops on `accept()`
+forever, so the arm's handshake completed, its capture was written, and the
+script hung on `wait` with every artifact correct. Cost: one aborted run,
+removed because it had no manifest and therefore, by this repository's own rule
+3, no result. The fix is one flag and eight lines of comment saying why.
+
+**Sixty-nine fuzz targets counted as failing unit tests.** `run_coverage.sh`
+discovered its test binaries as `test_*` in `build_cov/bin`. A GCC build of
+libspdm also produces every fuzz target, uninstrumented, and a fuzz target run
+with no argument prints `file error` and exits 1. The first run reported "77
+unit tests, 6 failed" — and six failures would have gone into
+`docs/negative-tests.md` as if the library were broken. The exclusion is now
+taken from the directory names under `unit_test/fuzzing/` rather than from a
+pattern.
+
+**A `grep` that matched nothing.** Truncating the 24 MB of test chatter used a
+`grep | grep -v | tail` pipeline inside a command group, under `set -e` and
+`pipefail` from `lib/common.sh`. A test whose output format the pattern did not
+match returned 1 and took the whole script down *between two passing tests*.
+Symptom: a run directory with nine kilobytes in it and no manifest.
+
+★ **All three produced a plausible-looking intermediate state rather than a
+failure**, which is the property standing rule 17 was written about in September
+for captures. It is not specific to captures.
+
+---
+
+### 5. What went right, recorded so it can be repeated
+
+- **The control came first, again.** `proxy-inert` was run before
+  `proxy-flip-sig` and asserted to reproduce the baseline exactly. Without it,
+  the single regression in the tampered arm would be indistinguishable from a
+  proxy that cannot forward a 1.6 MB conformance run.
+- **The transcription was checked rather than trusted.** The `--cap` list minus
+  `MUT_AUTH` is transcribed from `key.c`, and the assertion is not that the
+  transcription is right — it is that the two captures' `Flags` words differ in
+  `MUT_AUTH_CAP` and nothing else, **in every negotiated version**. A missing
+  bit in the list fails that check by name.
+- **The advisory identifiers stayed out.** `plan/W11` names four. None has been
+  checked against a primary source from this machine, so `negative/negative.h`
+  says so and W11 fetches them. A wrong identifier attached to a real class is
+  worse than no identifier.
+- **The freshness check happened immediately before the offer.** Both prepared
+  upstream changes were re-checked today rather than assumed: `DMTF/spdm-emu` is
+  still at `ea77f25`, `openbmc/spdm` still has no README and is zero commits
+  further on, and the README's linters were re-run with configs fetched today.
+  A change verified in September and sent in October is a change verified
+  against a repository that no longer exists.
