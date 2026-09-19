@@ -1,0 +1,22 @@
+# Negative tests that are finished and whose assertions `make test` should run.
+#
+# One name per line, no .c extension. Blank lines and #-comments are ignored.
+#
+# Same mechanism as c-drills/DONE.txt and for the same reason: an unwritten
+# test still has to COMPILE, so a syntax error turns the badge red the day it
+# is committed, but it is not executed and it is not claimed. A suite that ran
+# three skeletons and printed three lines of "not implemented" would be a green
+# CI job asserting nothing, which is worse than a red one.
+#
+# Add a name here only when the test:
+#   1. asserts the five (or four) cases its header comment lists,
+#   2. asserts them by STATUS CODE and not by message text (rule 16),
+#   3. has been run against the deliberately wrong implementation its header
+#      names, and caught it (rule 11),
+#   4. is clean under -Werror, AddressSanitizer and UndefinedBehaviorSanitizer.
+#
+# Nothing qualifies yet. W10 wrote the specifications; W11 writes the tests.
+
+# test_offset_length
+# test_oversized_field
+# test_transcript_coverage
