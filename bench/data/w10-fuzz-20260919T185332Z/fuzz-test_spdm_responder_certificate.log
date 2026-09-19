@@ -1,0 +1,159 @@
+[1;92m[+] [0mEnabled environment variable AFL_SKIP_CPUFREQ with value 1[0m
+[1;92m[+] [0mEnabled environment variable AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES with value 1[0m
+[1;92m[+] [0mEnabled environment variable AFL_NO_AFFINITY with value 1[0m
+[0;36mafl-fuzz++4.09c[0m based on afl by Michal Zalewski and a large online community
+[1;92m[+] [0mAFL++ is maintained by Marc "van Hauser" Heuse, Dominik Maier, Andrea Fioraldi and Heiko "hexcoder" Eißfeldt[0m
+[1;92m[+] [0mAFL++ is open source, get it at https://github.com/AFLplusplus/AFLplusplus[0m
+[1;92m[+] [0mNOTE: AFL++ >= v3 has changed defaults and behaviours - see README.md[0m
+[1;92m[+] [0mNo -M/-S set, autoconfiguring for "-S default"[0m
+[1;94m[*] [0mGetting to work...[0m
+[1;92m[+] [0mUsing exponential power schedule (FAST)[0m
+[1;92m[+] [0mEnabled testcache with 50 MB[0m
+[1;92m[+] [0mGenerating fuzz data with a length of min=1 max=1048576[0m
+[1;94m[*] [0mChecking core_pattern...[0m
+
+[1;91m[-] [0mHmm, your system is configured to send core dump notifications to an
+    external utility. This will cause issues: there will be an extended delay
+    between stumbling upon a crash and having this information relayed to the
+    fuzzer via the standard waitpid() API.
+    If you're just testing, set 'AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1'.
+
+    To avoid having crashes misinterpreted as timeouts, please log in as root
+    and temporarily modify /proc/sys/kernel/core_pattern, like so:
+
+    echo core >/proc/sys/kernel/core_pattern
+[1;92m[+] [0mLooks like we're not running on a tty, so I'll be a bit less verbose.[0m
+[1;92m[+] [0mYou have 8 CPU cores and 2 runnable tasks (utilization: 25%).[0m
+[1;92m[+] [0mTry parallel jobs - see docs/fuzzing_in_depth.md#c-using-multiple-cores[0m
+[1;94m[*] [0mSetting up output directories...[0m
+[1;93m[!] [1;97mWARNING: [0mNot binding to a CPU core (AFL_NO_AFFINITY set).[0m
+[1;94m[*] [0mScanning '/mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-fuzz-20260919T185332Z/merged/test_spdm_responder_certificate'...[0m
+[1;92m[+] [0mLoaded a total of 32 seeds.[0m
+[1;94m[*] [0mCreating hard links for all input files...[0m
+[1;94m[*] [0mValidating target binary...[0m
+[1;94m[*] [0mSpinning up the fork server...[0m
+[1;92m[+] [0mAll right - fork server is up.[0m
+[1;94m[*] [0mNo auto-generated dictionary tokens to reuse.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000000,time:0,execs:0,orig:10148aac21f3.bin'...[0m
+[1;90m    len = 8, map size = 2997, exec speed = 141323 us, hash = d679ff9190028090
+[0m[1;94m[*] [0mAttempting dry run with 'id:000001,time:0,execs:0,orig:12e9d3473cce.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 119532 us, hash = 8b6deaf707554746
+[0m[1;94m[*] [0mAttempting dry run with 'id:000002,time:0,execs:0,orig:1f1656f69674.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 114325 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000003,time:0,execs:0,orig:25c7eba6c212.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 115105 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000004,time:0,execs:0,orig:266f1f7ea589.bin'...[0m
+[1;90m    len = 16, map size = 2859, exec speed = 124636 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000005,time:0,execs:0,orig:2a6536c4a742.bin'...[0m
+[1;90m    len = 16, map size = 2859, exec speed = 149571 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000006,time:0,execs:0,orig:31ff86950938.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 123952 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000007,time:0,execs:0,orig:37f9b121893c.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 125270 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000008,time:0,execs:0,orig:3ed416faa6f1.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 116513 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000009,time:0,execs:0,orig:417ea4f2bc12.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 111860 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000010,time:0,execs:0,orig:47270f071a54.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 115363 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000011,time:0,execs:0,orig:4f367a9ada0e.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 151810 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000012,time:0,execs:0,orig:529f5cb1d606.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 122033 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000013,time:0,execs:0,orig:55d0f526cfd5.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 116248 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000014,time:0,execs:0,orig:673f2ac45a93.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 117939 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000015,time:0,execs:0,orig:7678446c03a6.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 121503 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000016,time:0,execs:0,orig:7ff9b2d1f67a.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 123797 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000017,time:0,execs:0,orig:8207ebce95ab.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 118565 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000018,time:0,execs:0,orig:875e35b9a18e.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 121685 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000019,time:0,execs:0,orig:8b49a42f465f.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 116393 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000020,time:0,execs:0,orig:8b676ef087fa.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 94095 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000021,time:0,execs:0,orig:921324dcd364.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 94035 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000022,time:0,execs:0,orig:946ac171ae54.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 102785 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000023,time:0,execs:0,orig:9a706532a1f0.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 140130 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000024,time:0,execs:0,orig:a0eb46765cfd.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 109723 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000025,time:0,execs:0,orig:b1b8521314d8.bin'...[0m
+[1;90m    len = 8, map size = 2889, exec speed = 107827 us, hash = d32f86041729c64b
+[0m[1;94m[*] [0mAttempting dry run with 'id:000026,time:0,execs:0,orig:cda10d0e351d.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 112946 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000027,time:0,execs:0,orig:certificate.raw'...[0m
+[1;90m    len = 8, map size = 2997, exec speed = 126804 us, hash = 2c7221f0a5de4aad
+[0m[1;94m[*] [0mAttempting dry run with 'id:000028,time:0,execs:0,orig:e2ba367f9a0c.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 99259 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000029,time:0,execs:0,orig:e5c542f257d0.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 190717 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000030,time:0,execs:0,orig:ef4ef9451e9e.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 93370 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;94m[*] [0mAttempting dry run with 'id:000031,time:0,execs:0,orig:f5966e876199.bin'...[0m
+[1;90m    len = 8, map size = 2859, exec speed = 95117 us, hash = 8b6deaf707554746
+[0m[1;93m[!] [1;97mWARNING: [0mNo new instrumentation output, test case may be useless.[0m
+[1;92m[+] [0mAll test cases processed.[0m
+[1;93m[!] [1;97mWARNING: [0m[1;91mThe target binary is pretty slow! See docs/fuzzing_in_depth.md#i-improve-the-speed[0m
+[1;93m[!] [1;97mWARNING: [0m[1;91mSome test cases look useless. Consider using a smaller set.[0m
+[1;93m[!] [1;97mWARNING: [0mYou have lots of input files; try starting small.[0m
+[1;92m[+] [0mHere are some useful stats:
+
+[1;90m    Test case count : [0m3 favored, 0 variable, 28 ignored, 32 total
+[1;90m       Bitmap range : [0m2859 to 2997 bits (average: 2868.56 bits)
+[1;90m        Exec timing : [0m107k to 141k us (average: 119k us)
+[0m
+[1;94m[*] [0mNo -t option specified, so I'll use an exec timeout of 240 ms.[0m
+[1;92m[+] [0mAll set and ready to roll![0m
+[1;94m[*] [0mEntering queue cycle 1.[0m
+[1;94m[*] [0mFuzzing test case #27 (32 total, 0 crashes saved, state: started :-), mode=explore, perf_score=0, weight=0, favorite=1, was_fuzzed=0, exec_us=126804, hits=0, map=2997, ascii=0, run_time=0:00:00:00)...[0m
+[1;94m[*] [0mFuzzing test case #25 (32 total, 0 crashes saved, state: started :-), mode=explore, perf_score=100, weight=21, favorite=1, was_fuzzed=0, exec_us=107827, hits=0, map=2889, ascii=0, run_time=0:00:00:00)...[0m
+[1;94m[*] [0mFuzzing test case #37 (47 total, 0 crashes saved, state: started :-), mode=explore, perf_score=0, weight=0, favorite=1, was_fuzzed=0, exec_us=213995, hits=7, map=2885, ascii=0, run_time=0:00:03:54)...[0m
+[1;94m[*] [0mFuzzing test case #33 (47 total, 0 crashes saved, state: started :-), mode=explore, perf_score=100, weight=3, favorite=1, was_fuzzed=0, exec_us=155948, hits=39, map=2885, ascii=0, run_time=0:00:03:54)...[0m
+[1;94m[*] [0mFuzzing test case #38 (47 total, 0 crashes saved, state: started :-), mode=explore, perf_score=100, weight=5, favorite=1, was_fuzzed=0, exec_us=116478, hits=30, map=2895, ascii=0, run_time=0:00:04:17)...[0m
+[1;94m[*] [0mFuzzing test case #40 (48 total, 0 crashes saved, state: started :-), mode=explore, perf_score=100, weight=7, favorite=1, was_fuzzed=0, exec_us=115603, hits=6, map=2993, ascii=0, run_time=0:00:04:47)...[0m
+[1;94m[*] [0mFuzzing test case #45 (48 total, 0 crashes saved, state: in progress, mode=explore, perf_score=100, weight=10, favorite=1, was_fuzzed=0, exec_us=137060, hits=1, map=2999, ascii=0, run_time=0:00:05:15)...[0m
+[1;94m[*] [0mFuzzing test case #35 (49 total, 0 crashes saved, state: in progress, mode=explore, perf_score=100, weight=4, favorite=1, was_fuzzed=0, exec_us=118893, hits=79, map=2889, ascii=0, run_time=0:00:05:39)...[0m
+[1;94m[*] [0mFuzzing test case #41 (49 total, 0 crashes saved, state: in progress, mode=explore, perf_score=100, weight=20, favorite=1, was_fuzzed=0, exec_us=119432, hits=1, map=2997, ascii=0, run_time=0:00:06:05)...[0m
+[1;94m[*] [0mFuzzing test case #32 (49 total, 0 crashes saved, state: in progress, mode=explore, perf_score=100, weight=3, favorite=1, was_fuzzed=0, exec_us=122005, hits=124, map=2860, ascii=0, run_time=0:00:06:25)...[0m
+[1;94m[*] [0mFuzzing test case #35 (50 total, 0 crashes saved, state: in progress, mode=explore, perf_score=114, weight=2, favorite=1, was_fuzzed=1, exec_us=118893, hits=92, map=2889, ascii=0, run_time=0:00:06:51)...[0m
+[?25h[1;91m
+
++++ Testing aborted programmatically +++
+[0m[1;93m[!] [0mTime limit was reached
+[1;94m[*] [0mStatistics: 18 new corpus items found, 0.04% coverage achieved, 0 crashes saved, 0 timeouts saved, total runtime 0 days, 0 hrs, 7 min, 0 sec[0m
+[1;92m[+] [0mWe're done here. Have a nice day!
+[0m

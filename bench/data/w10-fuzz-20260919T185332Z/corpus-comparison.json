@@ -1,0 +1,17 @@
+{
+  "targets": [
+    {"target": "test_spdm_responder_version", "message": "SPDM_GET_VERSION", "seeds_upstream": 1, "seeds_mine": 1, "edges_upstream": 442, "edges_mine": 442, "edges_both": 442, "edges_added_by_mine": "0"}
+    ,    {"target": "test_spdm_responder_capabilities", "message": "SPDM_GET_CAPABILITIES", "seeds_upstream": 1, "seeds_mine": 24, "edges_upstream": 436, "edges_mine": 535, "edges_both": 535, "edges_added_by_mine": "99"}
+    ,    {"target": "test_spdm_responder_algorithms", "message": "SPDM_NEGOTIATE_ALGORITHMS", "seeds_upstream": 3, "seeds_mine": 20, "edges_upstream": 601, "edges_mine": 685, "edges_both": 711, "edges_added_by_mine": "110"}
+    ,    {"target": "test_spdm_responder_digests", "message": "SPDM_GET_DIGESTS", "seeds_upstream": 1, "seeds_mine": 6, "edges_upstream": 581, "edges_mine": 592, "edges_both": 592, "edges_added_by_mine": "11"}
+    ,    {"target": "test_spdm_responder_certificate", "message": "SPDM_GET_CERTIFICATE", "seeds_upstream": 1, "seeds_mine": 31, "edges_upstream": 2997, "edges_mine": 3012, "edges_both": 3012, "edges_added_by_mine": "15"}
+    ,    {"target": "test_spdm_responder_challenge_auth", "message": "SPDM_CHALLENGE", "seeds_upstream": 1, "seeds_mine": 82, "edges_upstream": 3612, "edges_mine": 3716, "edges_both": 3716, "edges_added_by_mine": "104"}
+    ,    {"target": "test_spdm_responder_measurements", "message": "SPDM_GET_MEASUREMENTS", "seeds_upstream": 2, "seeds_mine": 54, "edges_upstream": 3630, "edges_mine": 3744, "edges_both": 3744, "edges_added_by_mine": "114"}
+    ,    {"target": "test_spdm_responder_key_exchange", "message": "SPDM_KEY_EXCHANGE", "seeds_upstream": 1, "seeds_mine": 73, "edges_upstream": 4158, "edges_mine": 4210, "edges_both": 4213, "edges_added_by_mine": "55"}
+    ,    {"target": "test_spdm_responder_finish_rsp", "message": "SPDM_FINISH", "seeds_upstream": 1, "seeds_mine": 6, "edges_upstream": 3992, "edges_mine": 4016, "edges_both": 4016, "edges_added_by_mine": "24"}
+    ,    {"target": "test_spdm_responder_heartbeat_ack", "message": "SPDM_HEARTBEAT", "seeds_upstream": 1, "seeds_mine": 1, "edges_upstream": 2955, "edges_mine": 2898, "edges_both": 2959, "edges_added_by_mine": "4"}
+    ,    {"target": "test_spdm_responder_key_update", "message": "SPDM_KEY_UPDATE", "seeds_upstream": 1, "seeds_mine": 1, "edges_upstream": 665, "edges_mine": 640, "edges_both": 669, "edges_added_by_mine": "4"}
+    ,    {"target": "test_spdm_responder_end_session", "message": "SPDM_END_SESSION", "seeds_upstream": 1, "seeds_mine": 1, "edges_upstream": 2867, "edges_mine": 2867, "edges_both": 2867, "edges_added_by_mine": "0"}
+    ,    {"target": "test_spdm_responder_chunk_get", "message": "SPDM_CHUNK_GET", "seeds_upstream": 1, "seeds_mine": 12, "edges_upstream": 434, "edges_mine": 419, "edges_both": 443, "edges_added_by_mine": "9"}
+  ]
+}
