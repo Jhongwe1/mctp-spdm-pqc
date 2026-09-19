@@ -37,6 +37,9 @@
 #     HS_RESPONDER_ENV     NAME=VALUE strings, applied to the responder only
 #     HS_REQUESTER_EXTRA   arguments appended to the requester only
 #     HS_RESPONDER_EXTRA   arguments appended to the responder only
+#     HS_CLIENT            the program run at the responder; default
+#                          ./spdm_requester_emu, and week ten also runs
+#                          ./spdm_device_validator_sample through it
 #
 # Leaves <out_prefix>.rsp.log, <out_prefix>.req.log and <out_prefix>.pcap.
 #
@@ -107,6 +110,25 @@ HS_REQUESTER_EXTRA=()
 # ends must agree on — an algorithm, a version, a flow — must stay in the shared
 # list, because an arm where the two disagree about --asym is not an arm.
 HS_RESPONDER_EXTRA=()
+
+# The program run against the responder, relative to the binary directory.
+#
+# It defaults to the requester emulator, which is what every caller before
+# 2026-10-12 ran and what all of them still run. Week ten added a second
+# client: DMTF's own conformance suite, `spdm_device_validator_sample`, which
+# is a different program driving the same socket at the same responder.
+#
+# ★ It is a variable here rather than a second copy of this file because the
+# four failure modes listed at the top are properties of "start a responder and
+# point something at it", not of the requester. The validator hits three of
+# them unchanged — relative certificate paths, the listening race, and the
+# orphaned responder — and it makes the fourth worse rather than better:
+# spdm_device_validator_sample.c's main() ends in an unconditional `return 0`,
+# so its exit status is 0 whether every assertion passed, every assertion
+# failed, or it never spoke SPDM at all. Its verdict is in a file called
+# test.log, written to the CURRENT WORKING DIRECTORY, and this library's `cd
+# "$bin"` is what decides where that lands. Callers collect it from there.
+HS_CLIENT="${HS_CLIENT:-./spdm_requester_emu}"
 
 hs_cleanup() {
     if [ -n "$HS_RESPONDER_PID" ] && kill -0 "$HS_RESPONDER_PID" 2>/dev/null; then
@@ -188,9 +210,9 @@ hs_run() {
         return 91
     fi
 
-    hs_note_cmd "./spdm_requester_emu" "$@" "${HS_REQUESTER_EXTRA[@]}" \
+    hs_note_cmd "$HS_CLIENT" "$@" "${HS_REQUESTER_EXTRA[@]}" \
         --pcap "$pcap"
-    timeout "$HS_TIMEOUT" ./spdm_requester_emu "$@" "${HS_REQUESTER_EXTRA[@]}" \
+    timeout "$HS_TIMEOUT" "$HS_CLIENT" "$@" "${HS_REQUESTER_EXTRA[@]}" \
         --pcap "$pcap" >"$req_log" 2>&1
     rc=$?
 
