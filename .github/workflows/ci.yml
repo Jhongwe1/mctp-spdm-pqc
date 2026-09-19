@@ -28,7 +28,19 @@ name: CI
 #                      red when a tampered measurement stops being rejected
 #   now      drills    every C drill compiles under -Werror + both sanitizers;
 #                      the ones named in c-drills/DONE.txt are run
+#   now      negative  the three advisory-class tests compile under the same
+#                      flags; the ones named in negative/DONE.txt are run,
+#                      which is currently none of them and the job says so
 #   G6       upstream  build libspdm from the pinned commit, run its unit tests
+#
+# What W10 added to `verify` rather than to a job of its own: the conformance
+# work produced two analysis tools and three assertions, and all five belong
+# beside the other checks that run in seconds against committed evidence. In
+# particular `verify` now re-asserts, from the committed test.log files, that
+# one byte changed in flight still moves exactly the assertion that reads it --
+# and, from the committed capture, that the CHALLENGE_AUTH signatures DMTF's
+# suite reports as bad still verify. The second is the strongest claim in
+# docs/validator-report.md and the one most worth having a machine repeat.
 #
 # This comment used to enumerate what `verify` checks. It went stale twice in
 # two days — 2026-08-31 found it naming four checks where the job ran twelve,
@@ -173,4 +185,38 @@ jobs:
             echo
             echo "Unfinished drills still have to compile cleanly under \`-Werror\`;"
             echo "they are not executed and are not claimed as passing."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  negative:
+    name: negative tests (-Werror, ASan, UBSan)
+    runs-on: ubuntu-24.04
+    # Separate from `drills` on purpose. They share a Makefile shape and a set
+    # of flags, and they measure different things: c-drills measures the author
+    # and negative/ measures the repository. A job that went red would need to
+    # say which, and two jobs say it without anybody reading a log.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile every negative test
+        working-directory: negative
+        run: make
+
+      - name: Run the ones marked complete
+        working-directory: negative
+        run: make test
+
+      - name: Report progress
+        working-directory: negative
+        run: |
+          total=$(ls test_*.c 2>/dev/null | wc -l)
+          done_count=$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' DONE.txt | wc -l)
+          {
+            echo "### Negative tests: ${done_count} of ${total} complete"
+            echo
+            if [ "${done_count}" -eq 0 ]; then
+              echo "W10 wrote the specifications; W11 writes the assertions."
+              echo "All ${total} skeletons compile under \`-Werror\` with both"
+              echo "sanitizers, and **none of them is claimed as passing** —"
+              echo "\`DONE.txt\` is what \`make test\` runs and it is empty."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

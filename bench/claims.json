@@ -13,7 +13,7 @@
     "This file owns exactly that gap and nothing else.",
     "",
     "A value of null is not a placeholder. It means the quantity is named, the",
-    "derivation is written, and the answer is not known \u2014 normally because a",
+    "derivation is written, and the answer is not known — normally because a",
     "tool cannot reach it yet. The reason is in the claim.",
     "",
     "Every tolerance_pct is 0.0. These are bytes and round trips re-derived from",
@@ -23,8 +23,8 @@
     "fail. The day something timing-related is published, it will arrive with a",
     "median, a p95 and a stated number of runs instead of a tolerance.",
     "",
-    "\u2605 A term may be a `const` instead of a capture reading, and that is how a",
-    "measurement gets compared with a number from OUTSIDE this repository \u2014 a",
+    "★ A term may be a `const` instead of a capture reading, and that is how a",
+    "measurement gets compared with a number from OUTSIDE this repository — a",
     "signature length in FIPS 204, or a message's fixed part counted out of",
     "DSP0274's field layout. The two shapes are deliberately different so a",
     "reader can see which half of a comparison came off the wire."
@@ -35,7 +35,8 @@
     "dts_sweep": "bench/data/w8-dts-sweep-20260914T133120Z",
     "dts_sweep_rejected": "bench/data/w8-dts-sweep-20260914T132232Z",
     "tamper": "bench/data/w5-tamper-20260910T092621Z",
-    "afmctp": "bench/data/w9-afmctp-20260917T194210Z"
+    "afmctp": "bench/data/w9-afmctp-20260917T194210Z",
+    "validator": "bench/data/w10-validator-20260919T184429Z"
   },
   "claims": {
     "pqc_certchain_ratio_mldsa65_vs_ecdsa384": {
@@ -57,13 +58,13 @@
           "path": "certificates.slots.0.chain_bytes"
         }
       },
-      "note": "\u2605 read from the CAPTURE by both terms now. Until 2026-09-14 the numerator had to come through spdm_dump's decode, because the post-quantum chain arrives inside CHUNK_RESPONSE and pcapstat's chain walk read CERTIFICATE. pcapstat reassembles the chunk sequence as of that date, so this ratio no longer depends on a decoder whose own output is truncated"
+      "note": "★ read from the CAPTURE by both terms now. Until 2026-09-14 the numerator had to come through spdm_dump's decode, because the post-quantum chain arrives inside CHUNK_RESPONSE and pcapstat's chain walk read CERTIFICATE. pcapstat reassembles the chunk sequence as of that date, so this ratio no longer depends on a decoder whose own output is truncated"
     },
     "pqc_chain_reassembly_agrees_with_windowed_fetch": {
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 the SAME chain by two routes through the SAME tool: reassembled out of a chunk sequence in P2-all, and walked out of plain CERTIFICATE messages in P2-nochunk, where removing the responder's CHUNK_CAP made libspdm fetch it in DataTransferSize-sized windows instead. Zero is the assertion",
+      "meaning": "★ the SAME chain by two routes through the SAME tool: reassembled out of a chunk sequence in P2-all, and walked out of plain CERTIFICATE messages in P2-nochunk, where removing the responder's CHUNK_CAP made libspdm fetch it in DataTransferSize-sized windows instead. Zero is the assertion",
       "table": "docs/pqc-cost.md#8--the-chain-does-not-arrive-in-certificate-and-now-three-tools-agree-on-it-anyway",
       "derivation": {
         "kind": "delta",
@@ -103,7 +104,7 @@
       "value": 6.011291460832745,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "\u2605 the same ratio over the emulator's DEFAULT measurement flow, which walks every measurement index. It is a different number, and publishing either one without naming the flow is what makes a cost table unfalsifiable",
+      "meaning": "★ the same ratio over the emulator's DEFAULT measurement flow, which walks every measurement index. It is a different number, and publishing either one without naming the flow is what makes a cost table unfalsifiable",
       "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
       "derivation": {
         "kind": "ratio",
@@ -123,7 +124,7 @@
       "value": 10.908118486012068,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "\u2605\u2605 the SECOND matched comparison, at NIST category 5: ML-DSA-87+ML-KEM-1024 over ECDSA-P521+ECDHE-P521. 10.91x against 8.99x at category 3 is what two algorithm groups could not show \u2014 the gap is a function of the security level, not one number",
+      "meaning": "★★ the SECOND matched comparison, at NIST category 5: ML-DSA-87+ML-KEM-1024 over ECDSA-P521+ECDHE-P521. 10.91x against 8.99x at category 3 is what two algorithm groups could not show — the gap is a function of the security level, not one number",
       "table": "docs/pqc-cost.md#6--a-cost-ratio-is-a-property-of-a-workload-and-it-moves-with-the-security-level",
       "derivation": {
         "kind": "ratio",
@@ -163,7 +164,7 @@
       "value": 96,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 CHALLENGE_AUTH carries exactly one signature and 142 bytes of content fixed by the negotiated hash: 4 header + 48 chain hash + 32 nonce + 48 summary hash + 2 opaque length + 8 opaque data. Subtract it and what is left is the signature. 96 is ECDSA P-384's r||s, and NOTHING in this pipeline was told that",
+      "meaning": "★ CHALLENGE_AUTH carries exactly one signature and 142 bytes of content fixed by the negotiated hash: 4 header + 48 chain hash + 32 nonce + 48 summary hash + 2 opaque length + 8 opaque data. Subtract it and what is left is the signature. 96 is ECDSA P-384's r||s, and NOTHING in this pipeline was told that",
       "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
       "derivation": {
         "kind": "delta",
@@ -217,7 +218,7 @@
       "value": 3309,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 FIPS 204's ML-DSA-65 signature length, 3309, reproduced from a message-size difference. This is the strongest single number in Table 2: six residuals landing on six published constants is not something a miscalibrated tool does, and it is what says the 142 is constant across the arms rather than assumed to be",
+      "meaning": "★ FIPS 204's ML-DSA-65 signature length, 3309, reproduced from a message-size difference. This is the strongest single number in Table 2: six residuals landing on six published constants is not something a miscalibrated tool does, and it is what says the 142 is constant across the arms rather than assumed to be",
       "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
       "derivation": {
         "kind": "delta",
@@ -235,7 +236,7 @@
       "value": 4627,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "FIPS 204's ML-DSA-87 signature length. \u2605 Note where it comes from: at ML-DSA-87 the CHALLENGE_AUTH itself exceeds the 4,608-byte DataTransferSize, so there is no single CHALLENGE_AUTH message on the wire to measure. logical_by_type is the de-chunked view, and this arm is the reason it exists",
+      "meaning": "FIPS 204's ML-DSA-87 signature length. ★ Note where it comes from: at ML-DSA-87 the CHALLENGE_AUTH itself exceeds the 4,608-byte DataTransferSize, so there is no single CHALLENGE_AUTH message on the wire to measure. logical_by_type is the de-chunked view, and this arm is the reason it exists",
       "table": "docs/pqc-cost.md#4--the-signature-length-falls-out-of-the-byte-differences-and-it-is-exactly-right",
       "derivation": {
         "kind": "delta",
@@ -253,7 +254,7 @@
       "value": 7856,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 FIPS 205's SLH-DSA-SHA2-128s signature length, reassembled from the two chunks its CHALLENGE_AUTH arrived in. It matters because this arm's handshake does NOT complete: the responder signed correctly and at the right length, and the requester still exited 1, which is what narrows the failure to signature verification",
+      "meaning": "★ FIPS 205's SLH-DSA-SHA2-128s signature length, reassembled from the two chunks its CHALLENGE_AUTH arrived in. It matters because this arm's handshake does NOT complete: the responder signed correctly and at the right length, and the requester still exited 1, which is what narrows the failure to signature verification",
       "table": "docs/pqc-cost.md#12-slh-dsa-the-certificates-work-and-the-signatures-do-not",
       "derivation": {
         "kind": "delta",
@@ -271,7 +272,7 @@
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605\u2605 max minus min of the Version-Capabilities-Algorithms-only captures over all six algorithm groups. Zero means the negotiation is byte-identical whether it selects ECDSA P-384 or SLH-DSA \u2014 so not one byte of post-quantum cost is paid to AGREE on the algorithm. Written as a spread rather than five pairwise deltas so that a seventh group strengthens it for free",
+      "meaning": "★★ max minus min of the Version-Capabilities-Algorithms-only captures over all six algorithm groups. Zero means the negotiation is byte-identical whether it selects ECDSA P-384 or SLH-DSA — so not one byte of post-quantum cost is paid to AGREE on the algorithm. Written as a spread rather than five pairwise deltas so that a seventh group strengthens it for free",
       "table": "docs/pqc-cost.md#5--negotiation-is-free-and-it-is-free-to-four-significant-figures",
       "derivation": {
         "kind": "spread",
@@ -313,7 +314,7 @@
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 two routes to the negotiation's cost. A whole capture that does nothing but negotiate holds 152 SPDM bytes; the same six message types inside the FULL post-quantum capture add up to the same 152. So the subtotal is trustworthy without the standalone arm, and the standalone arm is what says so",
+      "meaning": "★ two routes to the negotiation's cost. A whole capture that does nothing but negotiate holds 152 SPDM bytes; the same six message types inside the FULL post-quantum capture add up to the same 152. So the subtotal is trustworthy without the standalone arm, and the standalone arm is what says so",
       "table": "docs/pqc-cost.md#5--negotiation-is-free-and-it-is-free-to-four-significant-figures",
       "derivation": {
         "kind": "delta",
@@ -346,7 +347,7 @@
       "value": 3,
       "tolerance_pct": 0.0,
       "unit": "GET_CERTIFICATE requests",
-      "meaning": "the same count in the classical arm. Equal, so at THIS DataTransferSize the post-quantum chain cost bytes and not certificate-layer round trips \u2014 it cost them at the chunking layer instead, which is a claim about the transport rather than about the algorithm",
+      "meaning": "the same count in the classical arm. Equal, so at THIS DataTransferSize the post-quantum chain cost bytes and not certificate-layer round trips — it cost them at the chunking layer instead, which is a claim about the transport rather than about the algorithm",
       "table": "docs/pqc-cost.md#2-table-2--the-measured-cost",
       "derivation": {
         "kind": "value",
@@ -361,7 +362,7 @@
       "value": 12,
       "tolerance_pct": 0.0,
       "unit": "CHUNK_GET requests",
-      "meaning": "\u2605 the round trips the chain actually cost, which are NOT GET_CERTIFICATE: the chain exceeds the negotiated DataTransferSize, so SPDM's chunking layer carries it and each chunk is a complete request/response exchange. The classical arm has none",
+      "meaning": "★ the round trips the chain actually cost, which are NOT GET_CERTIFICATE: the chain exceeds the negotiated DataTransferSize, so SPDM's chunking layer carries it and each chunk is a complete request/response exchange. The classical arm has none",
       "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
       "derivation": {
         "kind": "value",
@@ -376,7 +377,7 @@
       "value": 163840,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605\u2605 the platform-layer finding, read off the wire in the arm that negotiates ECDSA P-384. 163840 is 0x28000, and spdm_emu.h picks it ONLY because SLH-DSA is compiled in \u2014 ML-DSA-only would give 0x8000 and neither would give 0x1200. So the buffer requirement an endpoint advertises is set by the worst algorithm its firmware CAN do, not the one it negotiated, and it is announced before any algorithm is chosen. On a root of trust with 256 KB of SRAM that is a BOM decision made by a #define",
+      "meaning": "★★ the platform-layer finding, read off the wire in the arm that negotiates ECDSA P-384. 163840 is 0x28000, and spdm_emu.h picks it ONLY because SLH-DSA is compiled in — ML-DSA-only would give 0x8000 and neither would give 0x1200. So the buffer requirement an endpoint advertises is set by the worst algorithm its firmware CAN do, not the one it negotiated, and it is announced before any algorithm is chosen. On a root of trust with 256 KB of SRAM that is a BOM decision made by a #define",
       "table": "docs/pqc-cost.md#11--the-platform-layer-and-a-160-kb-buffer-nobody-negotiated",
       "derivation": {
         "kind": "value",
@@ -391,7 +392,7 @@
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605\u2605 the control that makes the DataTransferSize sweep admissible. The patched build (pqc-dts: larger buffers plus transport/data-transfer-size.patch) told to advertise 4608 \u2014 the value the UNPATCHED build computes \u2014 must reproduce the unpatched build's capture. Zero difference in captured bytes is that assertion. A diff cannot establish this; only a capture can. ADR 0009",
+      "meaning": "★★ the control that makes the DataTransferSize sweep admissible. The patched build (pqc-dts: larger buffers plus transport/data-transfer-size.patch) told to advertise 4608 — the value the UNPATCHED build computes — must reproduce the unpatched build's capture. Zero difference in captured bytes is that assertion. A diff cannot establish this; only a capture can. ADR 0009",
       "table": "docs/decisions/0009-a-third-build-flavor.md",
       "derivation": {
         "kind": "delta",
@@ -431,7 +432,7 @@
       "value": 1.0309837996551665,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "\u2605 captured bytes at the smallest DataTransferSize over the largest, across a 32x range of the parameter. 1.031 \u2014 a 3.1% spread \u2014 is the half of the finding that says DataTransferSize is NOT a bandwidth knob",
+      "meaning": "★ captured bytes at the smallest DataTransferSize over the largest, across a 32x range of the parameter. 1.031 — a 3.1% spread — is the half of the finding that says DataTransferSize is NOT a bandwidth knob",
       "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
       "derivation": {
         "kind": "ratio",
@@ -451,7 +452,7 @@
       "value": 59,
       "tolerance_pct": 0.0,
       "unit": "CHUNK_GET requests",
-      "meaning": "\u2605 and the other half. Same 32x range, same two captures as the claim above: round trips go from 59 to 0 while the bytes move 3.1%. Each one is a bus RTT",
+      "meaning": "★ and the other half. Same 32x range, same two captures as the claim above: round trips go from 59 to 0 while the bytes move 3.1%. Each one is a bus RTT",
       "table": "docs/pqc-cost.md#9--datatransfersize-is-a-latency-parameter-that-looks-like-a-bandwidth-parameter",
       "derivation": {
         "kind": "value",
@@ -466,7 +467,7 @@
       "value": -9,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 P2 with the responder's CHUNK_CAP removed, minus P2 with it. NEGATIVE: turning chunking off made the post-quantum handshake nine bytes smaller and three round trips shorter, because libspdm then windows GET_CERTIFICATE to DataTransferSize instead of asking for the whole chain, being refused with ERROR(LargeResponse) three times, and chunking. A statement about libspdm's requester policy, not about DSP0274",
+      "meaning": "★ P2 with the responder's CHUNK_CAP removed, minus P2 with it. NEGATIVE: turning chunking off made the post-quantum handshake nine bytes smaller and three round trips shorter, because libspdm then windows GET_CERTIFICATE to DataTransferSize instead of asking for the whole chain, being refused with ERROR(LargeResponse) three times, and chunking. A statement about libspdm's requester policy, not about DSP0274",
       "table": "docs/pqc-cost.md#10--turning-chunking-off-made-it-cheaper-which-is-the-opposite-of-what-was-expected",
       "derivation": {
         "kind": "delta",
@@ -507,7 +508,7 @@
       "claimed": false,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 the reason this project recommends ML-DSA-65 rather than repeating a default: 44\u219265 costs +15,629 captured bytes and 65\u219287 costs +20,576, so 65 is where the curve bends. Stated as a null because the quantity a machine should assert is a DIFFERENCE OF DIFFERENCES, and check_claims.py has no kind for that. The two increments are each derivable from the captures named here, and docs/pqc-cost.md \u00a713 shows the arithmetic; a `second_difference` kind is week 10's if a second such claim appears",
+      "meaning": "★ the reason this project recommends ML-DSA-65 rather than repeating a default: 44→65 costs +15,629 captured bytes and 65→87 costs +20,576, so 65 is where the curve bends. Stated as a null because the quantity a machine should assert is a DIFFERENCE OF DIFFERENCES, and check_claims.py has no kind for that. The two increments are each derivable from the captures named here, and docs/pqc-cost.md §13 shows the arithmetic; a `second_difference` kind is week 10's if a second such claim appears",
       "table": "docs/pqc-cost.md#13-which-level-to-ship-and-why-the-table-decides-it-rather-than-a-default",
       "derivation": {
         "kind": "delta",
@@ -539,7 +540,7 @@
       "value": 8.28695652173913,
       "tolerance_pct": 0.0,
       "unit": "ratio",
-      "meaning": "\u2605 MCTP PACKETS, counted off a real link, ML-DSA-65+ML-KEM-768 over ECDSA-P384+ECDHE-P384 at matched NIST category 3. The byte ratio for the same pair is 8.99; this is smaller because a transmission unit is charged whole and the classical arm has more short messages",
+      "meaning": "★ MCTP PACKETS, counted off a real link, ML-DSA-65+ML-KEM-768 over ECDSA-P384+ECDHE-P384 at matched NIST category 3. The byte ratio for the same pair is 8.99; this is smaller because a transmission unit is charged whole and the classical arm has more short messages",
       "table": "docs/fragmentation.md#3a-the-two-arms-over-the-link",
       "derivation": {
         "kind": "ratio",
@@ -560,7 +561,7 @@
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "bytes",
-      "meaning": "\u2605 THE CONTROL. The classical handshake carried across a real MCTP link, recorded at the SPDM message layer, against the same handshake carried over spdm-emu's TCP socket in week eight. Zero is the assertion: the transport changed nothing about the protocol, so any difference in the packet layer is the transport and not the handshake",
+      "meaning": "★ THE CONTROL. The classical handshake carried across a real MCTP link, recorded at the SPDM message layer, against the same handshake carried over spdm-emu's TCP socket in week eight. Zero is the assertion: the transport changed nothing about the protocol, so any difference in the packet layer is the transport and not the handshake",
       "table": "docs/fragmentation.md#3a-the-two-arms-over-the-link",
       "derivation": {
         "kind": "delta",
@@ -600,7 +601,7 @@
       "value": 0,
       "tolerance_pct": 0.0,
       "unit": "messages",
-      "meaning": "\u2605 the number of messages in the post-quantum link capture whose observed packet count the model did NOT reproduce. Zero over 46 messages and 953 packets. Written as a count of failures rather than of successes so that an empty capture cannot pass it",
+      "meaning": "★ the number of messages in the post-quantum link capture whose observed packet count the model did NOT reproduce. Zero over 46 messages and 953 packets. Written as a count of failures rather than of successes so that an empty capture cannot pass it",
       "table": "docs/fragmentation.md#3a-the-two-arms-over-the-link",
       "derivation": {
         "kind": "value",
@@ -615,7 +616,7 @@
       "value": 7,
       "tolerance_pct": 0.0,
       "unit": "messages",
-      "meaning": "\u2605 how many of the calibration replay's messages are lengths at which the subtract-the-header formula gives a DIFFERENT answer from the model. This is the claim that the calibration discriminates rather than merely agreeing: until 2026-09-18 this project named 177 bytes as the separating case, and 59 x 3 = 177, so it separated nothing",
+      "meaning": "★ how many of the calibration replay's messages are lengths at which the subtract-the-header formula gives a DIFFERENT answer from the model. This is the claim that the calibration discriminates rather than merely agreeing: until 2026-09-18 this project named 177 bytes as the separating case, and 59 x 3 = 177, so it separated nothing",
       "table": "docs/fragmentation.md#-and-on-2026-09-18-the-formula-stopped-being-arithmetic",
       "derivation": {
         "kind": "value",
@@ -623,6 +624,96 @@
           "tool": "mctp_link",
           "capture": "bench/data/w9-afmctp-20260917T194210Z/replay",
           "path": "separating_messages"
+        }
+      }
+    },
+    "validator_baseline_failures": {
+      "value": 8,
+      "tolerance_pct": 0.0,
+      "unit": "assertions",
+      "meaning": "FAIL assertions from DMTF's SPDM-Responder-Validator against the shipped responder configuration. Four are CHALLENGE_AUTH 'response signature' and four are KEY_EXCHANGE_RSP 'mut_auth_requested'; docs/validator-report.md roots each one",
+      "table": "docs/validator-report.md#2-the-four-arms",
+      "derivation": {
+        "kind": "value",
+        "of": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/caps-default",
+          "path": "counts.FAIL"
+        }
+      }
+    },
+    "validator_baseline_not_tested": {
+      "value": 55,
+      "tolerance_pct": 0.0,
+      "unit": "assertions",
+      "meaning": "assertions the suite recorded as NOT_TESTED in the baseline arm. The suite's own footer counts neither these nor the three configured-but-skipped cases, so pass+fail understates what it attempted",
+      "table": "docs/validator-report.md#2-the-four-arms",
+      "derivation": {
+        "kind": "value",
+        "of": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/caps-default",
+          "path": "counts.NOT_TESTED"
+        }
+      }
+    },
+    "validator_assertions_unlocked_by_one_capability_bit": {
+      "value": 611,
+      "tolerance_pct": 0.0,
+      "unit": "assertions",
+      "meaning": "★ clearing MUT_AUTH_CAP from the responder's advertised set, and nothing else, moved this many assertions from never-executed to executed. Four whole test groups -- FINISH_RSP, HEARTBEAT_ACK, KEY_UPDATE_ACK, END_SESSION_ACK -- record nothing at all until it is cleared, because every one of them needs a session and KEY_EXCHANGE aborts first. The capability delta is asserted separately to be exactly one bit",
+      "table": "docs/validator-report.md#3-one-capability-bit-611-assertions",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/caps-no-mut-auth",
+          "path": "assertions_recorded"
+        },
+        "subtrahend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/caps-default",
+          "path": "assertions_recorded"
+        }
+      }
+    },
+    "validator_proxy_changes_nothing": {
+      "value": 0,
+      "tolerance_pct": 0.0,
+      "unit": "assertions",
+      "meaning": "★ the control for the calibration: the same suite against the same responder THROUGH harness/tamper_proxy.py in passthrough mode records the same number of assertions. Zero is the assertion. Without it, a FAIL in the tampered arm could as easily mean the proxy cannot forward a handshake",
+      "table": "docs/validator-report.md#4-calibration",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/proxy-inert",
+          "path": "assertions_recorded"
+        },
+        "subtrahend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/caps-default",
+          "path": "assertions_recorded"
+        }
+      }
+    },
+    "validator_calibration_one_more_failure": {
+      "value": 1,
+      "tolerance_pct": 0.0,
+      "unit": "assertions",
+      "meaning": "★ flipping the last byte of one MEASUREMENTS signature in flight produces exactly one more FAIL than the inert arm. harness/validator_report.py --compare additionally requires that it is the assertion named 'response signature' and that nothing improved. This is what says the suite can report FAIL at all",
+      "table": "docs/validator-report.md#4-calibration",
+      "derivation": {
+        "kind": "delta",
+        "minuend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/proxy-flip-sig",
+          "path": "counts.FAIL"
+        },
+        "subtrahend": {
+          "tool": "validator",
+          "capture": "bench/data/w10-validator-20260919T184429Z/proxy-inert",
+          "path": "counts.FAIL"
         }
       }
     }

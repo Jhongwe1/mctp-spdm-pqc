@@ -72,6 +72,18 @@ def tool_output(tool: str, capture: str) -> dict:
         argv = [sys.executable, str(REPO / "harness" / "fields.py"),
                 str(target), "--json"]
         pick = lambda d: d                     # noqa: E731
+    elif tool == "validator":
+        # An arm of a conformance run. `capture` names the run directory and the
+        # arm, e.g. bench/data/w10-validator-.../caps-default, and the file read
+        # is that arm's test.log -- DMTF's own output -- re-parsed here rather
+        # than the assertions.json the run wrote beside it. Reading the derived
+        # file would only assert that two of this repository's own files agree;
+        # re-parsing the log asserts that the published count is still what the
+        # suite said.
+        target = REPO / f"{capture}.test.log"
+        argv = [sys.executable, str(REPO / "harness" / "validator_report.py"),
+                "--parse", str(target), "--json", "-"]
+        pick = lambda d: d                     # noqa: E731
     elif tool == "mctp_link":
         # The Gate 5 link captures: one record per MCTP PACKET, taken off an
         # AF_PACKET socket in the guest. A different file from the same

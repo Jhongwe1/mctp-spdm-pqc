@@ -1994,6 +1994,144 @@ PY
 [ $? -eq 0 ] && good "every finished drill carries the number it exists to produce" \
              || bad "a drill is claimed finished without its measurement"
 
+step "the conformance instruments can still reject"
+# Both of these are new in W10 and both exist to make a claim falsifiable, so
+# both have to be observed refusing something. validator_report.py is fed a
+# truncated log, a log whose footer disagrees with its own lines, and a log
+# with no assertions; challenge_verify.py is fed a signature over a transcript
+# one bit different, and a chain whose certificates do not tile it.
+_vr=0; _cv=0
+python3 harness/validator_report.py --self-test >/tmp/vr.txt 2>&1 || _vr=1
+python3 harness/challenge_verify.py  --self-test >/tmp/cv.txt 2>&1 || _cv=1
+sed -n 's/^/  /p' /tmp/vr.txt | grep -c 'ok  ' >/dev/null 2>&1 || true
+printf '  validator_report.py  %s\n' "$([ $_vr -eq 0 ] && echo 'every refusal fired' || echo 'FAILED')"
+printf '  challenge_verify.py  %s\n' "$([ $_cv -eq 0 ] && echo 'every refusal fired' || echo 'FAILED')"
+if [ $_vr -eq 0 ] && [ $_cv -eq 0 ]; then
+    good "both W10 analysis tools refuse what they are supposed to refuse"
+else
+    sed -n '/FAIL/p' /tmp/vr.txt /tmp/cv.txt | sed 's/^/  /'
+    bad "a W10 analysis tool accepted something it should have refused"
+fi
+rm -f /tmp/vr.txt /tmp/cv.txt
+
+step "the conformance suite can still be made to say FAIL"
+# The calibration, re-asserted from the COMMITTED logs rather than by running
+# the suite again: CI has no build tree. proxy-inert and proxy-flip-sig differ
+# by one byte of one signature, changed in flight, and the requirement is that
+# exactly one assertion regressed, that it is the one named "response
+# signature", and that nothing improved.
+#
+# Without this, docs/validator-report.md section 4 would be a paragraph about
+# a run nobody can repeat. With it, a change that quietly stopped the suite
+# noticing turns the badge red.
+_vrun="$(ls -d bench/data/w10-validator-* 2>/dev/null | tail -1)"
+if [ -z "$_vrun" ]; then
+    bad "no w10-validator run directory is committed, so the calibration cannot be re-asserted"
+elif [ ! -f "${_vrun}/proxy-inert.test.log" ] || [ ! -f "${_vrun}/proxy-flip-sig.test.log" ]; then
+    bad "${_vrun} is missing one of the two proxy arms"
+else
+    _tmpa="$(mktemp)"; _tmpb="$(mktemp)"
+    python3 harness/validator_report.py --parse "${_vrun}/proxy-inert.test.log" \
+        --label proxy-inert --json "$_tmpa" >/dev/null
+    python3 harness/validator_report.py --parse "${_vrun}/proxy-flip-sig.test.log" \
+        --label proxy-flip-sig --json "$_tmpb" >/dev/null
+    if python3 harness/validator_report.py --compare "$_tmpa" "$_tmpb" \
+           --require-regressed-message "response signature" | sed 's/^/  /'; then
+        good "one signature byte still moves exactly the assertion that reads it"
+    else
+        bad "the calibration no longer holds on the committed logs"
+    fi
+    rm -f "$_tmpa" "$_tmpb"
+fi
+
+step "the signature the conformance suite rejected still verifies"
+# docs/validator-report.md section 5 says the responder was right and the suite
+# was wrong. That is the strongest claim in the week and it rests on
+# arithmetic, so the arithmetic runs here, on the committed capture, every time.
+#
+# Two requirements, and the first one is what makes the second mean anything:
+# every connection that DID fetch the certificate must verify (the transcript
+# model is calibrated), and only then is the verdict on the ones that did not
+# worth reading.
+if [ -z "$_vrun" ] || [ ! -f "${_vrun}/caps-default.pcap" ]; then
+    bad "no committed conformance capture to verify against"
+else
+    _cvj="$(mktemp)"
+    if python3 harness/challenge_verify.py "${_vrun}/caps-default.pcap" \
+            --json "$_cvj" >/dev/null 2>&1; then
+        python3 - "$_cvj" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+cal, dis = d["calibration"], d["disputed"]
+cal_ok = sum(1 for r in cal if r["verified"] is True)
+dis_ok = sum(1 for r in dis if r["verified"] is True)
+print(f"  calibration  {cal_ok}/{len(cal)} verify   disputed  {dis_ok}/{len(dis)} verify")
+bad = 0
+if not cal or cal_ok != len(cal):
+    print("  the transcript model no longer reproduces a signature the suite accepts")
+    bad = 1
+if not dis:
+    print("  no disputed connection in the capture, so nothing is being asserted")
+    bad = 1
+elif dis_ok != len(dis):
+    print("  a signature the suite rejected no longer verifies here either -- "
+          "docs/validator-report.md section 5 would have to be rewritten")
+    bad = 1
+sys.exit(bad)
+PY
+        [ $? -eq 0 ] && good "the responder's CHALLENGE_AUTH signatures are still good" \
+                     || bad "the section 5 verdict does not reproduce"
+    else
+        bad "challenge_verify.py could not read the committed capture"
+    fi
+    rm -f "$_cvj"
+fi
+
+step "the conformance sample still runs fewer cases than the suite implements"
+# docs/validator-report.md section 2.1 states four numbers about two upstream
+# files: 73 cases implemented, 71 registered, three implemented-and-unregistered,
+# one registered-and-absent. They are checkable only where the upstream tree
+# exists, which is not CI. So this check is CONDITIONAL and says so loudly when
+# it is skipped, the same way the appraisal does when opa is missing -- a check
+# that silently does nothing is worse than no check, because it reports as
+# green.
+_valsrc="${LAB_DIR:-$HOME/spdm-lab}/work/spdm-emu-pqc/SPDM-Responder-Validator"
+_valcfg="${LAB_DIR:-$HOME/spdm-lab}/work/spdm-emu-pqc/spdm_emu/spdm_device_validator_sample/spdm_device_validator_config.c"
+if [ -d "$_valsrc" ] && [ -f "$_valcfg" ]; then
+    _audit="$(python3 harness/validator_report.py --audit-config "$_valsrc" "$_valcfg")"
+    printf '%s\n' "$_audit" | sed 's/^/  /'
+    _impl="$(printf '%s' "$_audit" | sed -n 's/.*implemented by the suite *\([0-9]*\).*/\1/p')"
+    _reg="$(printf '%s'  "$_audit" | sed -n 's/.*registered by the sample *\([0-9]*\).*/\1/p')"
+    if [ "$_impl" = "73" ] && [ "$_reg" = "71" ]; then
+        good "the two upstream files still disagree in both directions, by the counts the report states"
+    else
+        bad "docs/validator-report.md says 73 implemented and 71 registered; this tree says ${_impl:-?} and ${_reg:-?}"
+    fi
+else
+    printf '  --   no SPDM-Responder-Validator tree at %s\n' "$_valsrc"
+    printf '  --   section 2.1 of docs/validator-report.md is NOT being checked on this machine.\n'
+    printf '  --   Run harness/build_spdm_emu.sh pqc, or read the committed run directory.\n'
+fi
+
+step "the negative tests compile, and claim nothing they have not done"
+if [ -d negative ] && [ -f negative/Makefile ]; then
+    if make -C negative clean >/dev/null 2>&1 && make -C negative >/tmp/neg.txt 2>&1; then
+        sed -n 's/^/  /p' /tmp/neg.txt | head -6
+        make -C negative test 2>&1 | sed 's/^/  /'
+        _negdone="$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' negative/DONE.txt 2>/dev/null | wc -l)"
+        _negall="$(ls negative/test_*.c 2>/dev/null | wc -l)"
+        printf '  %s of %s negative test(s) claimed complete\n' "$_negdone" "$_negall"
+        good "every negative test compiles under -Werror and both sanitizers"
+        make -C negative clean >/dev/null 2>&1
+    else
+        sed 's/^/  /' /tmp/neg.txt | tail -20
+        bad "a negative test does not compile"
+    fi
+    rm -f /tmp/neg.txt
+else
+    bad "negative/ has no Makefile"
+fi
+
 step "private material is not tracked"
 # plan/ and archive/ hold the schedule this work is executed against; study/
 # holds a question bank and its answers, which is a record of what one person
