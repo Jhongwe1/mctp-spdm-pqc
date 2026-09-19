@@ -1,0 +1,185 @@
+# test_spdm_requester exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_requester.log
+#
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 2 test(s).
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 9 test(s).
+[==========] test_cases: 9 test(s) run.
+[  PASSED  ] 9 test(s).
+[==========] test_cases: Running 8 test(s).
+[==========] test_cases: 8 test(s) run.
+[  PASSED  ] 8 test(s).
+[==========] test_cases: Running 7 test(s).
+[==========] test_cases: 7 test(s) run.
+[  PASSED  ] 7 test(s).
+[==========] test_cases: Running 12 test(s).
+[==========] test_cases: 12 test(s) run.
+[  PASSED  ] 12 test(s).
+[==========] test_cases: Running 16 test(s).
+[==========] test_cases: 16 test(s) run.
+[  PASSED  ] 16 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 3 test(s).
+[==========] test_cases: 3 test(s) run.
+[  PASSED  ] 3 test(s).
+[==========] test_cases: Running 3 test(s).
+[==========] test_cases: 3 test(s) run.
+[  PASSED  ] 3 test(s).
+[==========] test_cases: Running 4 test(s).
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 4 test(s).
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 2 test(s).
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 4 test(s).
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+#
+# --- last 120 lines ---
+libspdm_receive_spdm_response[0] msg SPDM_KEY_PAIR_INFO(0x7c), size (0x28): 
+0000: 13 7c 00 00 01 01 00 00 01 00 01 00 01 00 00 00 01 00 00 00 0f 00 ff 30 0d 06 09 2a 86 48 86 f7 
+0020: 0d 01 01 01 05 00 00 00 
+[       OK ] req_get_key_pair_info_case2
+[ RUN      ] req_get_key_pair_info_case3
+libspdm_send_spdm_request[0] msg SPDM_GET_KEY_PAIR_INFO(0xfc), size (0x5): 
+0000: 14 fc 00 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_KEY_PAIR_INFO(0x7c), size (0x34): 
+0000: 14 7c 00 00 01 01 01 00 01 00 01 00 01 00 00 00 00 00 00 00 0f 00 02 30 0d 06 09 2a 86 48 86 f7 
+0020: 0d 01 01 01 05 00 05 01 00 00 00 04 04 01 00 00 00 00 00 00 
+[       OK ] req_get_key_pair_info_case3
+[ RUN      ] req_get_key_pair_info_case4
+libspdm_send_spdm_request[0] msg SPDM_GET_KEY_PAIR_INFO(0xfc), size (0x5): 
+0000: 13 fc 00 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_KEY_PAIR_INFO(0x7c), size (0x4): 
+0000: 13 7c 00 00 
+[       OK ] req_get_key_pair_info_case4
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 1 test(s).
+[ RUN      ] libspdm_test_requester_get_key_pair_info_error_case1
+libspdm_send_spdm_request[0] msg SPDM_GET_KEY_PAIR_INFO(0xfc), size (0x5): 
+0000: 13 fc 00 00 01 
+libspdm_send_spdm_request[0] status - 80040000u
+[       OK ] libspdm_test_requester_get_key_pair_info_error_case1
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 4 test(s).
+[ RUN      ] req_set_key_pair_info_case1
+libspdm_send_spdm_request[0] msg SPDM_SET_KEY_PAIR_INFO(0xfd), size (0x5): 
+0000: 13 fd 01 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_SET_KEY_PAIR_INFO_ACK(0x7d), size (0x18): 
+0000: 13 7d 00 00 01 00 00 00 01 00 01 00 01 00 00 00 00 00 00 00 0f 00 02 00 
+[       OK ] req_set_key_pair_info_case1
+[ RUN      ] req_set_key_pair_info_case2
+libspdm_send_spdm_request[0] msg SPDM_SET_KEY_PAIR_INFO(0xfd), size (0x5): 
+0000: 13 fd 01 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_SET_KEY_PAIR_INFO_ACK(0x7d), size (0x18): 
+0000: 12 7d 00 00 01 00 00 00 01 00 01 00 01 00 00 00 00 00 00 00 0f 00 02 00 
+[       OK ] req_set_key_pair_info_case2
+[ RUN      ] req_set_key_pair_info_case3
+libspdm_send_spdm_request[0] msg SPDM_SET_KEY_PAIR_INFO(0xfd), size (0x5): 
+0000: 13 fd 01 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_KEY_PAIR_INFO(0x7c), size (0x18): 
+0000: 13 7c 00 00 01 00 00 00 01 00 01 00 01 00 00 00 00 00 00 00 0f 00 02 00 
+[       OK ] req_set_key_pair_info_case3
+[ RUN      ] req_set_key_pair_info_case4
+libspdm_send_spdm_request[0] msg SPDM_SET_KEY_PAIR_INFO(0xfd), size (0x5): 
+0000: 14 fd 01 00 01 
+libspdm_receive_spdm_response[0] msg SPDM_ERROR(0x7f), size (0x4): 
+0000: 14 7f 0c 00 
+[       OK ] req_set_key_pair_info_case4
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 1 test(s).
+[ RUN      ] libspdm_test_requester_set_key_pair_info_err_case1
+libspdm_send_spdm_request[0] msg SPDM_SET_KEY_PAIR_INFO(0xfd), size (0x5): 
+0000: 13 fd 01 00 01 
+libspdm_send_spdm_request[0] status - 80040000u
+[       OK ] libspdm_test_requester_set_key_pair_info_err_case1
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 2 test(s).
+[ RUN      ] req_vendor_defined_request_case1
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1b): 
+0000: 10 fe 00 00 06 00 02 aa aa 10 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0x4c): 
+0000: 10 7e 00 00 06 00 02 aa aa 40 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0040: ff ff ff ff ff ff ff ff ff ff ff 00 
+case 1 255
+[       OK ] req_vendor_defined_request_case1
+[ RUN      ] req_vendor_defined_request_case2
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1f): 
+0000: 14 fe 80 00 06 00 02 aa aa 00 00 10 00 00 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0x50): 
+0000: 14 7e 80 00 06 00 02 aa aa 00 00 40 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0040: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 00 
+case 2 255
+[       OK ] req_vendor_defined_request_case2
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 4 test(s).
+[ RUN      ] libspdm_test_requester_vendor_cmds_err_case1
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1b): 
+0000: 10 fe 00 00 06 00 02 aa aa 10 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0x4c): 
+0000: 10 7e 00 00 06 00 02 aa aa 40 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0040: ff ff ff ff ff ff ff ff ff ff ff 00 
+case 1 162
+[       OK ] libspdm_test_requester_vendor_cmds_err_case1
+[ RUN      ] libspdm_test_requester_vendor_cmds_err_case2
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1f): 
+0000: 14 fe 80 00 06 00 02 aa aa 00 00 10 00 00 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0x50): 
+0000: 14 7e 00 00 06 00 02 aa aa 00 00 40 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0040: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 00 
+case 2 162
+[       OK ] libspdm_test_requester_vendor_cmds_err_case2
+[ RUN      ] libspdm_test_requester_vendor_cmds_err_case3
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1f): 
+0000: 14 fe 80 00 06 00 02 aa aa 00 00 10 00 00 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0xc): 
+0000: 14 7e 80 00 06 00 02 aa aa 00 00 00 
+case 3 162
+[       OK ] libspdm_test_requester_vendor_cmds_err_case3
+[ RUN      ] libspdm_test_requester_vendor_cmds_err_case4
+libspdm_send_spdm_request[0] msg SPDM_VENDOR_DEFINED_REQUEST(0xfe), size (0x1f): 
+0000: 14 fe 80 00 06 00 02 aa aa 00 00 10 00 00 00 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa 
+libspdm_receive_spdm_response[0] msg SPDM_VENDOR_DEFINED_RESPONSE(0x7e), size (0x4c): 
+0000: 14 7e 80 00 06 00 02 aa aa 00 00 40 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
+0040: ff ff ff ff ff ff ff ff ff ff ff 00 
+case 4 162
+[       OK ] libspdm_test_requester_vendor_cmds_err_case4
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).

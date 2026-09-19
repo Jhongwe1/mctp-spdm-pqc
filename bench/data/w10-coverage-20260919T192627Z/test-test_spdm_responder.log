@@ -1,0 +1,185 @@
+# test_spdm_responder exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_responder.log
+#
+[==========] test_cases: Running 6 test(s).
+[==========] test_cases: 6 test(s) run.
+[  PASSED  ] 6 test(s).
+[==========] test_cases: Running 17 test(s).
+[==========] test_cases: 17 test(s) run.
+[  PASSED  ] 17 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 4 test(s).
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 3 test(s).
+[==========] test_cases: 3 test(s) run.
+[  PASSED  ] 3 test(s).
+[==========] test_cases: Running 2 test(s).
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 14 test(s).
+[==========] test_cases: 14 test(s) run.
+[  PASSED  ] 14 test(s).
+[==========] test_cases: Running 16 test(s).
+[==========] test_cases: 16 test(s) run.
+[  PASSED  ] 16 test(s).
+[==========] test_cases: Running 18 test(s).
+[==========] test_cases: 18 test(s) run.
+[  PASSED  ] 18 test(s).
+[==========] test_cases: Running 8 test(s).
+[==========] test_cases: 8 test(s) run.
+[  PASSED  ] 8 test(s).
+[==========] test_cases: Running 23 test(s).
+[==========] test_cases: 23 test(s) run.
+[  PASSED  ] 23 test(s).
+[==========] test_cases: Running 1 test(s).
+[==========] test_cases: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 2 test(s).
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 5 test(s).
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 4 test(s).
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 8 test(s).
+[==========] test_cases: 8 test(s) run.
+[  PASSED  ] 8 test(s).
+[==========] test_cases: Running 2 test(s).
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 7 test(s).
+[==========] test_cases: 7 test(s) run.
+[  PASSED  ] 7 test(s).
+#
+# --- last 120 lines ---
+[ RUN      ] libspdm_test_responder_subscribe_event_types_ack_err_case2
+[       OK ] libspdm_test_responder_subscribe_event_types_ack_err_case2
+[ RUN      ] libspdm_test_responder_subscribe_event_types_ack_err_case3
+[       OK ] libspdm_test_responder_subscribe_event_types_ack_err_case3
+[ RUN      ] libspdm_test_responder_subscribe_event_types_ack_err_case4
+[       OK ] libspdm_test_responder_subscribe_event_types_ack_err_case4
+[ RUN      ] libspdm_test_responder_subscribe_event_types_ack_err_case5
+[       OK ] libspdm_test_responder_subscribe_event_types_ack_err_case5
+[==========] test_cases: 5 test(s) run.
+[  PASSED  ] 5 test(s).
+[==========] test_cases: Running 4 test(s).
+[ RUN      ] rsp_event_ack_case1
+Event Received
+Event Instance ID = [0x11223344]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x1], EventDetailLen = [0x8]
+Event Detail
+0000: cc dd ee ff 88 77 66 55 
+[       OK ] rsp_event_ack_case1
+[ RUN      ] rsp_event_ack_case2
+Event Received
+Event Instance ID = [0x11223343]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x4], EventDetailLen = [0x1]
+Event Detail
+0000: 05 
+Event Received
+Event Instance ID = [0x11223344]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x1], EventDetailLen = [0x8]
+Event Detail
+0000: cc dd ee ff 88 77 66 55 
+[       OK ] rsp_event_ack_case2
+[ RUN      ] rsp_event_ack_case3
+Event Received
+Event Instance ID = [0x11223343]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x1], EventDetailLen = [0x8]
+Event Detail
+0000: cc dd ee ff 88 77 66 55 
+Event Received
+Event Instance ID = [0x11223344]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x4], EventDetailLen = [0x1]
+Event Detail
+0000: 05 
+[       OK ] rsp_event_ack_case3
+[ RUN      ] rsp_event_ack_case4
+Event Received
+Event Instance ID = [0x11223343]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x4], EventDetailLen = [0x1]
+Event Detail
+0000: 05 
+Event Received
+Event Instance ID = [0x11223344]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x1], EventDetailLen = [0x8]
+Event Detail
+0000: cc dd ee ff 88 77 66 55 
+Event Received
+Event Instance ID = [0x11223345]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x2], EventDetailLen = [0x20]
+Event Detail
+0000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 
+Event Received
+Event Instance ID = [0x11223346]
+SVH ID = [0x0], SVH VendorIDLen = [0x0]
+EventTypeID = [0x3], EventDetailLen = [0x20]
+Event Detail
+0000: 00 02 04 06 08 0a 0c 0e 10 12 14 16 18 1a 1c 1e 20 22 24 26 28 2a 2c 2e 30 32 34 36 38 3a 3c 3e 
+[       OK ] rsp_event_ack_case4
+[==========] test_cases: 4 test(s) run.
+[  PASSED  ] 4 test(s).
+[==========] test_cases: Running 8 test(s).
+[ RUN      ] rsp_event_ack_err_case1
+[       OK ] rsp_event_ack_err_case1
+[ RUN      ] rsp_event_ack_err_case2
+[       OK ] rsp_event_ack_err_case2
+[ RUN      ] rsp_event_ack_err_case3
+[       OK ] rsp_event_ack_err_case3
+[ RUN      ] rsp_event_ack_err_case4
+[       OK ] rsp_event_ack_err_case4
+[ RUN      ] rsp_event_ack_err_case5
+[       OK ] rsp_event_ack_err_case5
+[ RUN      ] rsp_event_ack_err_case6
+[       OK ] rsp_event_ack_err_case6
+[ RUN      ] rsp_event_ack_err_case7
+[       OK ] rsp_event_ack_err_case7
+[ RUN      ] rsp_event_ack_err_case8
+[       OK ] rsp_event_ack_err_case8
+[==========] test_cases: 8 test(s) run.
+[  PASSED  ] 8 test(s).
+[==========] test_cases: Running 2 test(s).
+[ RUN      ] rsp_vendor_defined_response_case1
+Got request 0xaa, sent response 0xff
+[       OK ] rsp_vendor_defined_response_case1
+[ RUN      ] rsp_vendor_defined_response_case2
+Got request 0xaa, sent response 0xff
+[       OK ] rsp_vendor_defined_response_case2
+[==========] test_cases: 2 test(s) run.
+[  PASSED  ] 2 test(s).
+[==========] test_cases: Running 7 test(s).
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case1
+[       OK ] libspdm_test_responder_vendor_cmds_err_case1
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case2
+[       OK ] libspdm_test_responder_vendor_cmds_err_case2
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case3
+[       OK ] libspdm_test_responder_vendor_cmds_err_case3
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case4
+[       OK ] libspdm_test_responder_vendor_cmds_err_case4
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case5
+[       OK ] libspdm_test_responder_vendor_cmds_err_case5
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case6
+[       OK ] libspdm_test_responder_vendor_cmds_err_case6
+[ RUN      ] libspdm_test_responder_vendor_cmds_err_case7
+[       OK ] libspdm_test_responder_vendor_cmds_err_case7
+[==========] test_cases: 7 test(s) run.
+[  PASSED  ] 7 test(s).

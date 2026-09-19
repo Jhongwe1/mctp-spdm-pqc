@@ -1,0 +1,51 @@
+# test_spdm_secured_message exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_secured_message.log
+#
+[==========] spdm_secured_message_encode_decode_tests: Running 17 test(s).
+[==========] spdm_secured_message_encode_decode_tests: 17 test(s) run.
+[  PASSED  ] 17 test(s).
+#
+# --- last 120 lines ---
+[==========] spdm_secured_message_encode_decode_tests: Running 17 test(s).
+[ RUN      ] libspdm_test_secured_message_encode_case1
+[       OK ] libspdm_test_secured_message_encode_case1
+[ RUN      ] libspdm_test_secured_message_encode_case2
+[       OK ] libspdm_test_secured_message_encode_case2
+[ RUN      ] libspdm_test_secured_message_encode_case3
+[       OK ] libspdm_test_secured_message_encode_case3
+[ RUN      ] libspdm_test_secured_message_encode_case4
+[       OK ] libspdm_test_secured_message_encode_case4
+[ RUN      ] libspdm_test_secured_message_encode_case5
+[       OK ] libspdm_test_secured_message_encode_case5
+[ RUN      ] libspdm_test_secured_message_encode_case6
+[       OK ] libspdm_test_secured_message_encode_case6
+[ RUN      ] libspdm_test_secured_message_encode_case7
+Sequence number endianness is not determined.
+Attempting to determine endianness.
+[       OK ] libspdm_test_secured_message_encode_case7
+[ RUN      ] libspdm_test_secured_message_encode_case8
+Sequence number endianness is not determined.
+Attempting to determine endianness.
+[       OK ] libspdm_test_secured_message_encode_case8
+[ RUN      ] libspdm_test_secured_message_encode_case9
+[       OK ] libspdm_test_secured_message_encode_case9
+[ RUN      ] libspdm_test_secured_message_encode_case10
+Sequence number endianness is not determined.
+Attempting to determine endianness.
+[       OK ] libspdm_test_secured_message_encode_case10
+[ RUN      ] libspdm_test_secured_message_encode_case11
+[       OK ] libspdm_test_secured_message_encode_case11
+[ RUN      ] libspdm_test_secured_message_encode_case12
+[       OK ] libspdm_test_secured_message_encode_case12
+[ RUN      ] libspdm_test_secured_message_encode_case13
+[       OK ] libspdm_test_secured_message_encode_case13
+[ RUN      ] libspdm_test_secured_message_encode_case14
+[       OK ] libspdm_test_secured_message_encode_case14
+[ RUN      ] libspdm_test_secured_message_encode_case15
+[       OK ] libspdm_test_secured_message_encode_case15
+[ RUN      ] libspdm_test_secured_message_decode_case16
+[       OK ] libspdm_test_secured_message_decode_case16
+[ RUN      ] libspdm_test_secured_message_decode_case17
+[       OK ] libspdm_test_secured_message_decode_case17
+[==========] spdm_secured_message_encode_decode_tests: 17 test(s) run.
+[  PASSED  ] 17 test(s).

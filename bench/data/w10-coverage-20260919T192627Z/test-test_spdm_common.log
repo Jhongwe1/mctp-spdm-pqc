@@ -1,0 +1,131 @@
+# test_spdm_common exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_common.log
+#
+[==========] spdm_common_context_data_tests: Running 30 test(s).
+[==========] spdm_common_context_data_tests: 30 test(s) run.
+[  PASSED  ] 30 test(s).
+[==========] spdm_common_context_data_tests: Running 1 test(s).
+[==========] spdm_common_context_data_tests: 1 test(s) run.
+[  PASSED  ] 1 test(s).
+#
+# --- last 120 lines ---
+[==========] spdm_common_context_data_tests: Running 30 test(s).
+[ RUN      ] libspdm_test_common_context_data_case1
+[       OK ] libspdm_test_common_context_data_case1
+[ RUN      ] libspdm_test_common_context_data_case2
+[       OK ] libspdm_test_common_context_data_case2
+[ RUN      ] libspdm_test_common_context_data_case3
+[       OK ] libspdm_test_common_context_data_case3
+[ RUN      ] libspdm_test_common_context_data_case4
+[       OK ] libspdm_test_common_context_data_case4
+[ RUN      ] libspdm_test_verify_peer_cert_chain_buffer_case5
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+[       OK ] libspdm_test_verify_peer_cert_chain_buffer_case5
+[ RUN      ] libspdm_test_verify_peer_cert_chain_buffer_case6
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - FAIL (all root cert hash mismatch) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+[       OK ] libspdm_test_verify_peer_cert_chain_buffer_case6
+[ RUN      ] libspdm_test_verify_peer_cert_chain_buffer_case7
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - FAIL (all root cert hash mismatch) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+[       OK ] libspdm_test_verify_peer_cert_chain_buffer_case7
+[ RUN      ] libspdm_test_verify_peer_cert_chain_buffer_case8
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - FAIL (all root cert hash mismatch) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! verify_peer_cert_chain_buffer - PASS !!!
+[       OK ] libspdm_test_verify_peer_cert_chain_buffer_case8
+[ RUN      ] libspdm_test_set_data_case9
+[       OK ] libspdm_test_set_data_case9
+[ RUN      ] libspdm_test_process_opaque_data_supported_version_data_case10
+successful build multi element opaque data supported version! 
+[       OK ] libspdm_test_process_opaque_data_supported_version_data_case10
+[ RUN      ] libspdm_test_process_opaque_data_supported_version_data_case11
+successful build multi element opaque data supported version! 
+get element error!
+[       OK ] libspdm_test_process_opaque_data_supported_version_data_case11
+[ RUN      ] libspdm_test_process_opaque_data_supported_version_data_case12
+successful build multi element opaque data supported version! 
+[       OK ] libspdm_test_process_opaque_data_supported_version_data_case12
+[ RUN      ] libspdm_test_process_opaque_data_supported_version_data_case13
+successful build multi element opaque data supported version! 
+get element error!
+[       OK ] libspdm_test_process_opaque_data_supported_version_data_case13
+[ RUN      ] libspdm_test_process_opaque_data_selection_version_data_case14
+successful build multi element opaque data selection version! 
+[       OK ] libspdm_test_process_opaque_data_selection_version_data_case14
+[ RUN      ] libspdm_test_process_opaque_data_selection_version_data_case15
+successful build multi element opaque data selection version! 
+get element error!
+[       OK ] libspdm_test_process_opaque_data_selection_version_data_case15
+[ RUN      ] libspdm_test_process_opaque_data_selection_version_data_case16
+successful build multi element opaque data selection version! 
+[       OK ] libspdm_test_process_opaque_data_selection_version_data_case16
+[ RUN      ] libspdm_test_process_opaque_data_selection_version_data_case17
+successful build multi element opaque data selection version! 
+get element error!
+[       OK ] libspdm_test_process_opaque_data_selection_version_data_case17
+[ RUN      ] libspdm_test_secured_message_context_location_selection_case18
+[       OK ] libspdm_test_secured_message_context_location_selection_case18
+[ RUN      ] libspdm_test_export_master_secret_case19
+[       OK ] libspdm_test_export_master_secret_case19
+[ RUN      ] libspdm_test_check_context_case20
+data_transfer_size must be greater than or equal to SPDM_MIN_DATA_TRANSFER_SIZE (42).
+max_spdm_msg_size (42) must be greater than or equal to data_transfer_size (4608).
+[       OK ] libspdm_test_check_context_case20
+[ RUN      ] libspdm_test_max_session_count_case21
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX PSK session
+libspdm_allocate_req_session_id - MAX DHE session
+libspdm_allocate_req_session_id - MAX DHE session
+[       OK ] libspdm_test_max_session_count_case21
+[ RUN      ] libspdm_test_process_opaque_data_case22
+[       OK ] libspdm_test_process_opaque_data_case22
+[ RUN      ] libspdm_test_reset_context_leaf_key_case23
+[       OK ] libspdm_test_reset_context_leaf_key_case23
+[ RUN      ] libspdm_test_aead_limit_build_parse_case24
+[       OK ] libspdm_test_aead_limit_build_parse_case24
+[ RUN      ] libspdm_test_aead_limit_invalid_and_default_case25
+[       OK ] libspdm_test_aead_limit_invalid_and_default_case25
+[ RUN      ] libspdm_test_aead_limit_apply_to_session_case26
+[       OK ] libspdm_test_aead_limit_apply_to_session_case26
+[ RUN      ] libspdm_test_aead_limit_set_data_case27
+[       OK ] libspdm_test_aead_limit_set_data_case27
+[ RUN      ] libspdm_test_aead_limit_element_order_case28
+[       OK ] libspdm_test_aead_limit_element_order_case28
+[ RUN      ] libspdm_test_aead_limit_peer_support_case29
+[       OK ] libspdm_test_aead_limit_peer_support_case29
+[ RUN      ] libspdm_test_aead_limit_small_exponent_case30
+[       OK ] libspdm_test_aead_limit_small_exponent_case30
+[==========] spdm_common_context_data_tests: 30 test(s) run.
+[  PASSED  ] 30 test(s).
+[==========] spdm_common_context_data_tests: Running 1 test(s).
+[ RUN      ] libspdm_test_common_context_data_case1
+[       OK ] libspdm_test_common_context_data_case1
+[==========] spdm_common_context_data_tests: 1 test(s) run.
+[  PASSED  ] 1 test(s).

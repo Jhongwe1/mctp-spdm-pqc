@@ -1,0 +1,169 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w10-coverage-20260919T192627Z",
+    "name": "w10-coverage",
+    "flavor": "pqc",
+    "started_at": "2026-09-19T19:26:27Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "3c5574b240c98d758e5d5046e0c960a43f441dad",
+    "repo_dirty": "true",
+    "device_patch_applied": "yes",
+    "crypto_backend": "openssl (vendored by libspdm, statically linked)",
+    "crypto_openssl_version": "3.5.5",
+    "crypto_openssl_commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "lcov_version": "lcov: LCOV version 2.0-1",
+    "coverage_build_crypto": "openssl",
+    "coverage_build_toolchain": "GCC",
+    "unit_tests_found": "8",
+    "fuzz_targets_excluded": "69",
+    "full_test_output_kept_at": "spdm-emu-pqc/libspdm/build_cov/.test-output",
+    "test_logs_in_run_dir": "last 120 lines of each, plus every cmocka verdict line",
+    "unit_test_test_crypt": "0",
+    "unit_test_test_spdm_common": "0",
+    "unit_test_test_spdm_crypt": "0",
+    "unit_test_test_spdm_fips": "1",
+    "unit_test_test_spdm_requester": "0",
+    "unit_test_test_spdm_responder": "0",
+    "unit_test_test_spdm_sample": "1",
+    "unit_test_test_spdm_secured_message": "0",
+    "unit_tests_passed": "6",
+    "unit_tests_failed": "2",
+    "coverage_html_at": "spdm-emu-pqc/libspdm/build_cov/cov_html",
+    "finished_at": "2026-09-19T19:31:28Z"
+  },
+  "upstream": {
+    "flavor": "pqc",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "spdm_emu_ref": "4.0.0-rc",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_pinned_by": "spdm-emu submodule pointer",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "crypto_openssl_vendored": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "crypto_openssl_version": "3.5.5",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cflags": "",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-08-11T05:18:34Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z"
+  },
+  "commands": [
+    "lcov --zerocounters --directory /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov",
+    "lcov --capture --directory /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov --output-file /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/coverage.info.raw --rc branch_coverage=1 --ignore-errors mismatch\\,negative\\,unused\\,empty\\,source\\,gcov\\,unsupported",
+    "lcov --remove /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/coverage.info.raw \\*/unit_test/\\* \\*/os_stub/\\* \\*/openssl/\\* \\*/mbedtls/\\* /usr/\\* --output-file /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-coverage-20260919T192627Z/coverage.info --ignore-errors unused\\,empty\\,source",
+    "genhtml /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-coverage-20260919T192627Z/coverage.info --output-directory /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/cov_html --ignore-errors source\\,unmapped\\,empty",
+    "lcov --summary /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w10-coverage-20260919T192627Z/coverage.info --ignore-errors empty\\,unused"
+  ],
+  "artifacts": [
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 573,
+      "sha256": "adbb98c93c57d87b75e10cfd28f717efde375ef6f2e1ab74a8ae8f355c16bd84"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "by-directory.txt",
+      "bytes": 576,
+      "sha256": "d59dcbf4e66f6a25fe7bf8c85a23c20788a618dc293811e2b5b980b43e501b0c"
+    },
+    {
+      "path": "coverage.info",
+      "bytes": 221561,
+      "sha256": "dbdb7497c71a2112e44f7e0d0c75c64ba4e049923638aab95b0f64ade227252b"
+    },
+    {
+      "path": "genhtml.log",
+      "bytes": 10340,
+      "sha256": "adcc4cc3aaac383b00230c93824d5f5096b5d55e691c522f465a6b8d3f77fd2b"
+    },
+    {
+      "path": "lcov-capture.log",
+      "bytes": 48146,
+      "sha256": "aec70fc92235fbc1582f963831aebee5e1980ef0419ad414c37954871245c07f"
+    },
+    {
+      "path": "lcov-remove.log",
+      "bytes": 20710,
+      "sha256": "abce5f627cf3e0d71a733f547d82da9a5c8f77c20f62cb6272e69652f339d388"
+    },
+    {
+      "path": "summary.txt",
+      "bytes": 716,
+      "sha256": "61251ebfeee436edcfdc621cac5d2b8d325a55c74d9b812eebdf379466e2a2da"
+    },
+    {
+      "path": "test-test_crypt.log",
+      "bytes": 5419,
+      "sha256": "49bb4f28e6c8e0bcd38cc07fee705cc2dff755c4d78a7074e718bdd3136d25bf"
+    },
+    {
+      "path": "test-test_spdm_common.log",
+      "bytes": 7410,
+      "sha256": "8bd93ac0c7cffbaa7348dcfa01317c4218bc143a1a1ee5d3fd5bcf79a0fe323a"
+    },
+    {
+      "path": "test-test_spdm_crypt.log",
+      "bytes": 2698,
+      "sha256": "3901b30379d250e45c7f9daba4827c613327fcc42b93d05a0bb999d3fd1b2254"
+    },
+    {
+      "path": "test-test_spdm_fips.log",
+      "bytes": 1072,
+      "sha256": "907295f5580790133b3945a00f866486e02e505dba3d59c1e5699ebbf910f008"
+    },
+    {
+      "path": "test-test_spdm_requester.log",
+      "bytes": 9349,
+      "sha256": "757a1d09455ad5b08ec3622ec89785e3ddf5f0a43cea76d73b37aa4b00b5f9b5"
+    },
+    {
+      "path": "test-test_spdm_responder.log",
+      "bytes": 7011,
+      "sha256": "66c26e8af083e3577221b444a73564dcd86baf5595fc964c51206b510760765f"
+    },
+    {
+      "path": "test-test_spdm_sample.log",
+      "bytes": 1869,
+      "sha256": "92308f10f066f7151c7ec0db53ade18685dc53830b19126f3d9ce5babf1a22d7"
+    },
+    {
+      "path": "test-test_spdm_secured_message.log",
+      "bytes": 2653,
+      "sha256": "d6e480e4054dee6da081d43872ee0467b4007206c0916eb8da118075508e7697"
+    },
+    {
+      "path": "tests.txt",
+      "bytes": 388,
+      "sha256": "b937fc0e470cbc70df68b9d270e6e99f8ceffd1cba3dea170d79e27819d1d5fb"
+    }
+  ],
+  "artifact_count": 17,
+  "artifact_bytes": 341103
+}

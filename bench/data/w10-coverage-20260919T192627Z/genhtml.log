@@ -1,0 +1,206 @@
+Found 100 entries.
+Found common filename prefix "/home/key/spdm-lab/work/spdm-emu-pqc/libspdm/library"
+Generating output.
+Processing file spdm_common_lib/libspdm_com_opaque_data.c
+  lines=288 hit=257 functions=14 hit=14
+Processing file spdm_responder_lib/libspdm_rsp_capabilities.c
+  lines=242 hit=201 functions=3 hit=3
+Processing file spdm_requester_lib/libspdm_req_get_measurement_extension_log.c
+  lines=143 hit=100 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_send_event.c
+  lines=74 hit=63 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_get_supported_event_types.c
+  lines=90 hit=60 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_measurements.c
+  lines=214 hit=180 functions=3 hit=2
+Processing file spdm_crypt_lib/libspdm_crypt_asym.c
+  lines=619 hit=314 functions=40 hit=27
+Processing file spdm_secured_message_lib/libspdm_secmes_context_data.c
+  lines=156 hit=80 functions=17 hit=14
+Processing file spdm_requester_lib/libspdm_req_psk_exchange.c
+  lines=284 hit=202 functions=4 hit=3
+Processing file spdm_requester_lib/libspdm_req_get_digests.c
+  lines=168 hit=157 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_certificate.c
+  lines=111 hit=87 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_endpoint_info.c
+  lines=95 hit=82 functions=1 hit=1
+Processing file spdm_common_lib/libspdm_com_crypto_service.c
+  lines=353 hit=285 functions=21 hit=20
+Processing file spdm_responder_lib/libspdm_rsp_chunk_response.c
+  lines=82 hit=78 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_respond_if_ready.c
+  lines=33 hit=28 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_set_certificate.c
+  lines=118 hit=90 functions=3 hit=3
+Processing file spdm_responder_lib/libspdm_rsp_subscribe_event_types_ack.c
+  lines=55 hit=45 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_encap_subscribe_event_types_ack.c
+  lines=49 hit=42 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_psk_finish.c
+  lines=176 hit=124 functions=4 hit=3
+Processing file spdm_secured_message_lib/libspdm_secmes_key_exchange.c
+  lines=17 hit=16 functions=4 hit=4
+Processing file spdm_requester_lib/libspdm_req_negotiate_algorithms.c
+  lines=459 hit=401 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_get_certificate.c
+  lines=291 hit=199 functions=4 hit=4
+Processing file spdm_requester_lib/libspdm_req_set_key_pair_info.c
+  lines=102 hit=65 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_get_key_pair_info.c
+  lines=173 hit=128 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_get_csr.c
+  lines=119 hit=81 functions=2 hit=2
+Processing file spdm_crypt_lib/libspdm_crypt_hkdf.c
+  lines=38 hit=8 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_encap_supported_event_types.c
+  lines=38 hit=35 functions=1 hit=1
+Processing file spdm_secured_message_lib/libspdm_secmes_session.c
+  lines=318 hit=250 functions=22 hit=10
+Processing file spdm_common_lib/libspdm_com_event.c
+  lines=50 hit=46 functions=3 hit=3
+Processing file spdm_requester_lib/libspdm_req_get_measurements.c
+  lines=404 hit=299 functions=5 hit=5
+Processing file spdm_requester_lib/libspdm_req_challenge.c
+  lines=245 hit=193 functions=4 hit=4
+Processing file spdm_responder_lib/libspdm_rsp_encap_challenge.c
+  lines=138 hit=110 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_digests.c
+  lines=87 hit=78 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_encap_key_update.c
+  lines=78 hit=54 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_receive_send.c
+  lines=349 hit=140 functions=15 hit=9
+Processing file spdm_responder_lib/libspdm_rsp_encap_get_certificate.c
+  lines=165 hit=95 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_key_pair_info.c
+  lines=69 hit=62 functions=1 hit=1
+Processing file spdm_secured_message_lib/libspdm_secmes_encode_decode.c
+  lines=328 hit=271 functions=5 hit=5
+Processing file spdm_responder_lib/libspdm_rsp_version.c
+  lines=51 hit=46 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_encap_send_event.c
+  lines=48 hit=37 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_key_exchange_rsp.c
+  lines=314 hit=230 functions=3 hit=3
+Processing file spdm_responder_lib/libspdm_rsp_encap_get_endpoint_info.c
+  lines=128 hit=102 functions=3 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_error.c
+  lines=24 hit=24 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_event_ack.c
+  lines=103 hit=85 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_encap_digests.c
+  lines=69 hit=61 functions=1 hit=1
+Processing file spdm_common_lib/libspdm_com_msg_log.c
+  lines=48 hit=38 functions=6 hit=5
+Processing file spdm_crypt_lib/libspdm_crypt_key_schedule.c
+  lines=115 hit=96 functions=3 hit=3
+Processing file spdm_requester_lib/libspdm_req_encap_request.c
+  lines=224 hit=150 functions=5 hit=4
+Processing file spdm_common_lib/libspdm_com_support.c
+  lines=198 hit=103 functions=29 hit=18
+Processing file spdm_responder_lib/libspdm_rsp_algorithms.c
+  lines=415 hit=348 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_encap_challenge_auth.c
+  lines=97 hit=83 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_heartbeat_ack.c
+  lines=41 hit=31 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_handle_response_state.c
+  lines=30 hit=25 functions=1 hit=1
+Processing file spdm_crypt_lib/libspdm_crypt_hash.c
+  lines=192 hit=50 functions=10 hit=10
+Processing file spdm_requester_lib/libspdm_req_encap_key_update_ack.c
+  lines=61 hit=53 functions=1 hit=1
+Processing file spdm_common_lib/libspdm_com_context_data_session.c
+  lines=125 hit=93 functions=8 hit=7
+Processing file spdm_crypt_lib/libspdm_crypt_aead.c
+  lines=60 hit=28 functions=5 hit=5
+Processing file spdm_requester_lib/libspdm_req_encap_certificate.c
+  lines=83 hit=59 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_finish_rsp.c
+  lines=220 hit=176 functions=4 hit=4
+Processing file spdm_requester_lib/libspdm_req_get_capabilities.c
+  lines=276 hit=242 functions=4 hit=4
+Processing file spdm_responder_lib/libspdm_rsp_end_session_ack.c
+  lines=39 hit=30 functions=1 hit=1
+Processing file spdm_secured_message_lib/libspdm_secmes_key_exchange_pqc.c
+  lines=27 hit=0 functions=5 hit=0
+Processing file spdm_responder_lib/libspdm_rsp_encap_response.c
+  lines=264 hit=132 functions=12 hit=6
+Processing file spdm_requester_lib/libspdm_req_subscribe_event_types.c
+  lines=82 hit=58 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_key_update.c
+  lines=163 hit=131 functions=2 hit=2
+Processing file /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/include/internal/libspdm_common_lib.h
+  lines=11 hit=11 functions=2 hit=2
+Processing file spdm_common_lib/libspdm_com_context_data.c
+  lines=1662 hit=766 functions=73 hit=66
+Processing file spdm_responder_lib/libspdm_rsp_set_key_pair_info_ack.c
+  lines=147 hit=114 functions=1 hit=1
+Processing file spdm_crypt_lib/libspdm_crypt_cert.c
+  lines=763 hit=442 functions=25 hit=22
+Processing file spdm_crypt_lib/libspdm_crypt_hmac.c
+  lines=142 hit=4 functions=7 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_chunk_send_ack.c
+  lines=140 hit=134 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_send_receive.c
+  lines=366 hit=310 functions=5 hit=5
+Processing file spdm_responder_lib/libspdm_rsp_measurement_extension_log.c
+  lines=60 hit=49 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_encap_get_digests.c
+  lines=121 hit=106 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_heartbeat.c
+  lines=77 hit=62 functions=2 hit=2
+Processing file spdm_crypt_lib/libspdm_crypt_rng.c
+  lines=4 hit=4 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_encap_event_ack.c
+  lines=95 hit=80 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_get_version.c
+  lines=108 hit=92 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_get_endpoint_info.c
+  lines=162 hit=145 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_supported_event_types.c
+  lines=43 hit=37 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_handle_error_response.c
+  lines=239 hit=187 functions=5 hit=5
+Processing file spdm_responder_lib/libspdm_rsp_psk_exchange_rsp.c
+  lines=233 hit=172 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_key_exchange.c
+  lines=401 hit=309 functions=5 hit=5
+Processing file spdm_requester_lib/libspdm_req_encap_endpoint_info.c
+  lines=91 hit=76 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_finish.c
+  lines=253 hit=188 functions=6 hit=5
+Processing file spdm_crypt_lib/libspdm_crypt_pqc_kem.c
+  lines=81 hit=4 functions=9 hit=1
+Processing file spdm_requester_lib/libspdm_req_vendor_defined_request.c
+  lines=164 hit=136 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_common.c
+  lines=79 hit=68 functions=3 hit=3
+Processing file spdm_common_lib/libspdm_com_crypto_service_session.c
+  lines=126 hit=101 functions=7 hit=7
+Processing file spdm_crypt_lib/libspdm_crypt_pqc_asym.c
+  lines=167 hit=6 functions=18 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_challenge_auth.c
+  lines=148 hit=121 functions=1 hit=1
+Processing file spdm_responder_lib/libspdm_rsp_vendor_defined_response.c
+  lines=104 hit=95 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_csr.c
+  lines=101 hit=81 functions=1 hit=1
+Processing file spdm_requester_lib/libspdm_req_common.c
+  lines=52 hit=48 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_psk_finish_rsp.c
+  lines=117 hit=93 functions=2 hit=2
+Processing file spdm_requester_lib/libspdm_req_encap_error.c
+  lines=20 hit=9 functions=2 hit=1
+Processing file spdm_requester_lib/libspdm_req_end_session.c
+  lines=78 hit=63 functions=2 hit=2
+Processing file spdm_responder_lib/libspdm_rsp_key_update_ack.c
+  lines=87 hit=74 functions=1 hit=1
+Processing file spdm_crypt_lib/libspdm_crypt_dhe.c
+  lines=109 hit=40 functions=7 hit=7
+Processing file spdm_responder_lib/libspdm_rsp_set_certificate_rsp.c
+  lines=114 hit=90 functions=2 hit=2
+Overall coverage rate:
+  lines......: 69.7% (11834 of 16980 lines)
+  functions......: 79.9% (421 of 527 functions)

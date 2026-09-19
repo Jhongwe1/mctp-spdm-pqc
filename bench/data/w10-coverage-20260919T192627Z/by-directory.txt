@@ -1,0 +1,11 @@
+
+  lines covered, by library directory
+
+  directory                                  lines     hit       %
+  spdm_requester_lib                          6094    4781   78.5%
+  spdm_responder_lib                          4889    3740   76.5%
+  spdm_common_lib                             2850    1689   59.3%
+  spdm_crypt_lib                              2290     996   43.5%
+  spdm_secured_message_lib                     846     617   72.9%
+  internal                                      11      11  100.0%
+  TOTAL                                      16980   11834   69.7%

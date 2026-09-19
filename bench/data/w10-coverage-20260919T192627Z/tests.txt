@@ -1,0 +1,8 @@
+test_crypt                                   ok
+test_spdm_common                             ok
+test_spdm_crypt                              ok
+test_spdm_fips                               rc=1
+test_spdm_requester                          ok
+test_spdm_responder                          ok
+test_spdm_sample                             rc=1
+test_spdm_secured_message                    ok

@@ -1,0 +1,36 @@
+# test_spdm_sample exited 1
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_sample.log
+#
+[==========] spdm_sample_tests: Running 2 test(s).
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_sample/test_spdm_sample.c:67: error: Failure!
+[  FAILED  ] libspdm_test_spdm_verify_cert_chain_callback_function
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_sample/test_spdm_sample.c:103: error: Failure!
+[  FAILED  ] libspdm_test_spdm_verify_cert_dicetcdinfo
+[==========] spdm_sample_tests: 2 test(s) run.
+[  PASSED  ] 0 test(s).
+[  FAILED  ] spdm_sample_tests: 2 test(s), listed below:
+[  FAILED  ] libspdm_test_spdm_verify_cert_chain_callback_function
+[  FAILED  ] libspdm_test_spdm_verify_cert_dicetcdinfo
+ 2 FAILED TEST(S)
+#
+# --- last 120 lines ---
+[==========] spdm_sample_tests: Running 2 test(s).
+[ RUN      ] libspdm_test_spdm_verify_cert_chain_callback_function
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_sample/test_spdm_sample.c:67: error: Failure!
+Unable to open file dice_cert/dice_root_cert.der
+[  FAILED  ] libspdm_test_spdm_verify_cert_chain_callback_function
+[ RUN      ] libspdm_test_spdm_verify_cert_dicetcdinfo
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_sample/test_spdm_sample.c:103: error: Failure!
+Unable to open file dice_cert/dice_cert.bin
+[  FAILED  ] libspdm_test_spdm_verify_cert_dicetcdinfo
+[==========] spdm_sample_tests: 2 test(s) run.
+[  PASSED  ] 0 test(s).
+[  FAILED  ] spdm_sample_tests: 2 test(s), listed below:
+[  FAILED  ] libspdm_test_spdm_verify_cert_chain_callback_function
+[  FAILED  ] libspdm_test_spdm_verify_cert_dicetcdinfo
+
+ 2 FAILED TEST(S)

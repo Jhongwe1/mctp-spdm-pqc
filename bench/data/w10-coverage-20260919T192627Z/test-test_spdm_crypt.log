@@ -1,0 +1,50 @@
+# test_spdm_crypt exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_crypt.log
+#
+[==========] test_cases: Running 11 test(s).
+[==========] test_cases: 11 test(s) run.
+[  PASSED  ] 11 test(s).
+#
+# --- last 120 lines ---
+[==========] test_cases: Running 11 test(s).
+[ RUN      ] libspdm_test_crypt_spdm_get_dmtf_subject_alt_name_from_bytes
+[       OK ] libspdm_test_crypt_spdm_get_dmtf_subject_alt_name_from_bytes
+[ RUN      ] libspdm_test_crypt_spdm_get_dmtf_subject_alt_name
+[       OK ] libspdm_test_crypt_spdm_get_dmtf_subject_alt_name
+[ RUN      ] libspdm_test_crypt_spdm_x509_certificate_check
+Requester certificate contains Responder OID.
+Responder certificate contains Requester OID.
+Error in verifying the Public Key Algorithm field.
+Error in verifying the Public Key Algorithm field.
+Hardware identity OID present in alias leaf certificate.
+[       OK ] libspdm_test_crypt_spdm_x509_certificate_check
+[ RUN      ] libspdm_test_crypt_spdm_x509_set_cert_certificate_check
+[       OK ] libspdm_test_crypt_spdm_x509_set_cert_certificate_check
+[ RUN      ] libspdm_test_crypt_spdm_verify_cert_chain_data
+!!! VerifyCertificateChainData - FAIL (cert chain verify failed)!!!
+!!! VerifyCertificateChainData - FAIL (cert chain verify failed)!!!
+Hardware identity OID present in alias leaf certificate.
+!!! VerifyCertificateChainData - FAIL (leaf certificate check failed)!!!
+[       OK ] libspdm_test_crypt_spdm_verify_cert_chain_data
+[ RUN      ] libspdm_test_crypt_spdm_verify_certificate_chain_buffer
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! VerifyCertificateChainBuffer - FAIL (cert_chain->length mismatch) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+!!! VerifyCertificateChainBuffer - FAIL (cert_chain->length mismatch) !!!
+!!! VerifyCertificateChainBuffer - PASS (cert root hash match) !!!
+Hardware identity OID present in alias leaf certificate.
+!!! VerifyCertificateChainBuffer - FAIL (leaf certificate check failed)!!!
+[       OK ] libspdm_test_crypt_spdm_verify_certificate_chain_buffer
+[ RUN      ] libspdm_test_crypt_asym_verify
+[       OK ] libspdm_test_crypt_asym_verify
+[ RUN      ] libspdm_test_crypt_req_asym_verify
+[       OK ] libspdm_test_crypt_req_asym_verify
+[ RUN      ] libspdm_test_crypt_palindrome
+[       OK ] libspdm_test_crypt_palindrome
+[ RUN      ] libspdm_test_crypt_rsa_palindrome
+[       OK ] libspdm_test_crypt_rsa_palindrome
+[ RUN      ] libspdm_test_crypt_ecdsa_palindrome
+[       OK ] libspdm_test_crypt_ecdsa_palindrome
+[==========] test_cases: 11 test(s) run.
+[  PASSED  ] 11 test(s).

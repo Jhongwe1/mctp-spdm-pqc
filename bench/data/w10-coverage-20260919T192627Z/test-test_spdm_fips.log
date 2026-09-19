@@ -1,0 +1,26 @@
+# test_spdm_fips exited 1
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_spdm_fips.log
+#
+[==========] spdm_crypt_lib_tests: Running 1 test(s).
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_fips/test_spdm_fips.c:32: error: Failure!
+[  FAILED  ] libspdm_test_fips
+[==========] spdm_crypt_lib_tests: 1 test(s) run.
+[  PASSED  ] 0 test(s).
+[  FAILED  ] spdm_crypt_lib_tests: 1 test(s), listed below:
+[  FAILED  ] libspdm_test_fips
+ 1 FAILED TEST(S)
+#
+# --- last 120 lines ---
+[==========] spdm_crypt_lib_tests: Running 1 test(s).
+[ RUN      ] libspdm_test_fips
+[  ERROR   ] --- status
+[   LINE   ] --- /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/unit_test/test_spdm_fips/test_spdm_fips.c:32: error: Failure!
+test is valid only when LIBSPDM_FIPS_MODE is open.
+[  FAILED  ] libspdm_test_fips
+[==========] spdm_crypt_lib_tests: 1 test(s) run.
+[  PASSED  ] 0 test(s).
+[  FAILED  ] spdm_crypt_lib_tests: 1 test(s), listed below:
+[  FAILED  ] libspdm_test_fips
+
+ 1 FAILED TEST(S)

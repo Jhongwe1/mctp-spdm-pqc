@@ -1,0 +1,125 @@
+# test_crypt exited 0
+# full output: /home/key/spdm-lab/work/spdm-emu-pqc/libspdm/build_cov/.test-output/test_crypt.log
+#
+#
+# --- last 120 lines ---
+- X509 Gen CSR test ... 
+  - Construct Cert [Pass]
+  - Get Private Key - [Pass]
+  - Gen CSR - [Pass]
+
+- X509 Certificate Verification with Trusted CA ...[Pass]
+- X509 Certificate Chain Verification ... [Pass]
+- X509 Certificate CA cert verify itself Verification ... [Pass]
+- X509 Certificate CA cert verify itself Verification with large cert len[Pass]
+- X509 Certificate end cert verify itself Verification ... [Pass]
+- X509 Certificate end cert verify itself Verification with large cert len[Pass]
+- X509 Certificate Chain get leaf certificate Verification ... [Pass]
+- X509 Certificate Chain get leaf certificate Verification ... [Pass]
+- X509 Certificate Chain get root certificate Verification ... [Pass]
+- X509 Certificate subject Bytes Retrieving ... [Pass]
+- X509 Certificate context Retrieving ... 
+  - Retrieving Common name = "DMTF libspdm slh-dsa-sha2-128s intermediate cert" (size = 49) - [PASS]
+  - Retrieving Oraganization name - [PASS]
+ - Retrieving version = 2 - [Pass]
+  - Retrieving serial_number = 1 - [Pass]
+  - Retrieving issuer Bytes ...  - [Pass]
+  - Retrieving Issuer Common name = "DMTF libspdm slh-dsa-sha2-128s ca" (size = 34) - [Pass]
+  - Retrieving Issuer Oraganization name - [Pass]
+  - Retrieving  SubjectAltName (size = 42) - [Pass]
+  - Retrieving Validity - [Pass]
+  - Set date_time - [Pass]
+  - Set date_time - [Pass]
+  - Compare date_time - [Pass]
+- X509 Gen CSR test ... 
+  - Construct Cert [Pass]
+  - Get Private Key - [Pass]
+  - Gen CSR - [Pass]
+
+Crypto DH Engine Testing:
+- Context1 ... Context2 ... Generate key1 ... Generate key2 ... Compute key1 ... Compute key2 ... Compare Keys ... [Pass]
+
+Crypto EC-DH key Exchange Testing:
+- Context1 ... Context2 ... Generate key1 ... Generate key2 ... Compute key1 ... Compute key2 ... Compare Keys ... [Pass]
+- Context1 ... Context2 ... Generate key1 ... Generate key2 ... Compute key1 ... Compute key2 ... Compare Keys ... [Pass]
+
+Crypto EC-DSA Signing Verification Testing:
+- Context1 ... Context2 ... Compute key1 ... Compute key2 ... 
+- EC-DSA Signing ... EC-DSA Verification ... [Pass]
+- EC-DSA Signing ... EC-DSA Verification ... [Pass]
+
+Crypto EC-DSA Signing Verification Testing with SetPubKey:
+- Context1 ... Context2 ... Compute key in Context1 ... Export key in Context1 ... Import key in Context2 ... 
+- EC-DSA Signing in Context1 ... EC-DSA Verification in Context2 ... [Pass]
+
+Set public and private key Testing:
+- Context1 ... Import public key in Context1 ... Import private key in Context1 ... 
+- EC-DSA Signing in Context1 ... EC-DSA Verification in Context1 ... [Pass]
+
+Crypto EC key Retrieving Testing: 
+- Retrieve EC Private key from PEM ...[Pass]
+- EC-DSA Signing ... [Pass]
+- Retrieve EC Public key from DER ...[Pass]
+- EC-DSA Verification using Public key from DER ... [Pass]
+- Retrieve EC Public key from X509 ... [Pass]
+- EC-DSA Verification using Public key from X509 ... [Pass]
+
+Crypto Ed-DSA Signing Verification Testing:
+- Context1 ... 
+- Ed-DSA Signing ... Ed-DSA Verification ... [Pass]
+Context2 ... 
+- Ed-DSA Signing ... Ed-DSA Verification ... [Pass]
+
+Crypto Ed key Retrieving Testing: 
+- Retrieve Ed Private key from PEM ...[Pass]
+- Ed-DSA Signing ... [Pass]
+- Retrieve Ed Public key from DER ...[Pass]
+- Ed-DSA Verification using Public from DER ... [Pass]
+- Retrieve Ed Public key from X509 ... [Pass]
+- Ed-DSA Verification using Public from X509 ... [Pass]
+
+Crypto sm2 Signing Verification Testing:
+- Context1 ... Compute key1 ... 
+- SM2 Signing ... SM2 Verification ... [Pass]
+
+Crypto sm2 Signing Verification Testing with SetPubKey:
+- Context1 ... Context2 ... Compute key in Context1 ... Export key in Context1 ... Import key in Context2 ... 
+- sm2 Signing in Context1 ... sm2 Verification in Context2 ... [Pass]
+
+Crypto sm2 key Retrieving Testing: 
+- Retrieve sm2 Private key from PEM ...[Pass]
+- SM2 Signing ... [Pass]
+- Retrieve sm2 Public key from DER ... [Pass]
+- SM2 Verification using Public key from DER ... [Pass]
+- Retrieve sm2 Public key from X509 ... [Pass]
+- SM2 Verification using Public key from X509 ... [Pass]
+ 
+Crypto PRNG Engine Testing:
+- Random Generation...[Pass]
+
+Crypto ML-KEM Engine Testing:
+- Context1 ... Context2 ... Generate encap key1 ... Encapsulate shared secret2 ... Decapsulate shared secret1 ... Compare Keys ... [Pass]
+
+Crypto ML-DSA Signing Verification Testing:
+- Context1 ... 
+- ML-DSA Signing ... ML-DSA GetPubKey ... ML-DSA SetPubKey ... ML-DSA Verification ... [Pass]
+
+Crypto ML-DSA key Retrieving Testing: 
+- Retrieve ML-DSA Private key from PEM ...[Pass]
+- ML-DSA Signing ... [Pass]
+- Retrieve ML-DSA Public key from DER ...[Pass]
+- ML-DSA Verification using Public key from DER ... [Pass]
+- Retrieve ML-DSA Public key from X509 ... [Pass]
+- ML-DSA Verification using Public key from X509 ... [Pass]
+
+Crypto SLH-DSA Signing Verification Testing:
+- Context1 ... 
+- SLH-DSA Signing ... SLH-DSA GetPubKey ... SLH-DSA SetPubKey ... SLH-DSA Verification ... [Pass]
+
+Crypto SLH-DSA key Retrieving Testing: 
+- Retrieve SLH-DSA Private key from PEM ...[Pass]
+- SLH-DSA Signing ... [Pass]
+- Retrieve SLH-DSA Public key from DER ...[Pass]
+- SLH-DSA Verification using Public key from DER ... [Pass]
+- Retrieve SLH-DSA Public key from X509 ... [Pass]
+- SLH-DSA Verification using Public key from X509 ... [Pass]
