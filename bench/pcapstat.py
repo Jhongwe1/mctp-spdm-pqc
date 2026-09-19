@@ -89,6 +89,7 @@ Exit codes: 0 ok · 1 --check found a disagreement · 2 unreadable capture
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import struct
 import subprocess
@@ -1281,6 +1282,38 @@ def selftest() -> int:
         if n != 1:
             bad("an empty selection compared equal to a non-empty one — this is "
                 "the exact shape of a post-quantum arm that silently fell back")
+
+        print("a seed corpus is deduplicated, and one direction of it")
+        # Four messages: two identical GET_VERSIONs, one different one, and a
+        # RESPONSE. A corpus that counted messages rather than distinct bytes
+        # would report three seeds where there are two, and a corpus that
+        # ignored direction would feed a responder target its own output.
+        gv1 = bytes([0x10, 0x84, 0x00, 0x00])
+        gv2 = bytes([0x11, 0x84, 0x00, 0x00])
+        ver = bytes([0x10, 0x04, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x10, 0x00])
+        checks += 1
+        p = _synthetic_capture([gv1, gv2, gv1, ver], tmp / "seeds.pcap")
+        rep = export_seeds(p, tmp / "seeds", "req")
+        if rep["messages_seen"] != 3 or rep["seeds_written"] != 2:
+            bad(f"three REQ messages with one repeat exported as "
+                f"{rep['seeds_written']} seed(s) from {rep['messages_seen']} seen")
+        written = sorted((tmp / "seeds" / "SPDM_GET_VERSION").glob("*.bin"))
+        if len(written) != 2 or {f.read_bytes() for f in written} != {gv1, gv2}:
+            bad(f"the exported seeds are not the two distinct requests: {written}")
+        if (tmp / "seeds" / "SPDM_VERSION").exists():
+            bad("a RSP->REQ message was exported into a responder corpus")
+        checks += 1
+        rep2 = export_seeds(p, tmp / "seeds2", "rsp")
+        if rep2["seeds_written"] != 1 or not (tmp / "seeds2" / "SPDM_VERSION").is_dir():
+            bad(f"--seed-direction rsp did not select the other half: {rep2}")
+        checks += 1
+        # Same capture, same bytes on disk: the names are digests, so a second
+        # export is not a second corpus.
+        before = sorted(f.name for f in (tmp / "seeds" / "SPDM_GET_VERSION").glob("*"))
+        export_seeds(p, tmp / "seeds", "req")
+        after = sorted(f.name for f in (tmp / "seeds" / "SPDM_GET_VERSION").glob("*"))
+        if before != after:
+            bad(f"exporting twice changed the corpus: {before} -> {after}")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -1426,6 +1459,90 @@ def cross_check(path: Path, stats: dict) -> int:
     return 1 if failures else 0
 
 
+# ------------------------------------------------------------- fuzz seeds ---
+#
+# libspdm's fuzz targets take one SPDM message per file, starting at the SPDM
+# header, and nothing else. Read out of
+# unit_test/fuzzing/spdm_unit_fuzzing_common/toolchain_harness.c and one
+# target's source at the commit in third_party/spdm-emu-pqc.pin:
+# libspdm_init_test_buffer() reads the whole file into test_buffer, and
+# libspdm_run_test_harness() hands it straight to libspdm_get_response_<x>()
+# as the received request. It even rewrites request_response_code to the one
+# that target expects, so the CODE of a seed matters less than its shape.
+#
+# That is exactly a REQ->RSP message from a capture with the MCTP framing
+# removed, which is what this file already has. Hence this exporter: the seeds
+# are not synthesised, they are the requests a real handshake actually sent.
+#
+# The direction is not a detail. A responder target is fed requests; feeding it
+# a RESPONSE gives it a message whose first byte the handler rejects, and the
+# fuzzer then spends its budget rediscovering the request format. So the
+# default is REQ->RSP and the flag exists for the requester targets, which want
+# the other half.
+
+SEED_DIRECTIONS = {"req": "REQ->RSP", "rsp": "RSP->REQ", "both": None}
+
+
+def export_seeds(path: Path, out_dir: Path, direction: str = "req") -> dict:
+    """One file per DISTINCT SPDM message, in a directory per message type.
+
+    Distinct by bytes, and the filename is a digest of those bytes, so the same
+    capture always produces the same tree and two captures can be compared by
+    listing it. A validator run carries 128 GET_VERSION messages and they are
+    one seed, not 128 copies of one seed -- a corpus counted before it is
+    deduplicated overstates itself by two orders of magnitude.
+
+    It re-reads the capture through read_pcap rather than calling messages(),
+    which drops the message bytes off every entry before returning. Same
+    primitives, one extra pass, and no exported field that only exists for this
+    caller.
+    """
+    want = SEED_DIRECTIONS[direction]
+    summary, packets = read_pcap(path)
+    framing = framing_bytes(summary["linktype"])
+    if framing is None:
+        raise Truncated(f"link type {summary['linktype']} is not one this tool frames")
+    raw = path.read_bytes()
+
+    seen: dict[str, set[bytes]] = {}
+    total = 0
+    for p in packets:
+        body = raw[p["file_offset"]:p["file_offset"] + p["captured_bytes"]]
+        if len(body) < framing + 4:
+            continue
+        if body[MCTP_HEADER_BYTES] != MCTP_TYPE_SPDM:
+            continue
+        msg = body[framing:]
+        code = msg[1]
+        here = "REQ->RSP" if is_request(code) else "RSP->REQ"
+        if want is not None and here != want:
+            continue
+        total += 1
+        seen.setdefault(SPDM_CODES.get(code, f"UNKNOWN_0x{code:02x}"), set()).add(msg)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    by_type = {}
+    for name in sorted(seen):
+        d = out_dir / name
+        d.mkdir(exist_ok=True)
+        sizes = []
+        for msg in sorted(seen[name]):
+            digest = hashlib.sha256(msg).hexdigest()[:12]
+            (d / f"{digest}.bin").write_bytes(msg)
+            sizes.append(len(msg))
+        by_type[name] = {"distinct": len(sizes), "bytes": sum(sizes),
+                         "smallest": min(sizes), "largest": max(sizes)}
+
+    return {
+        "capture": str(path),
+        "out_dir": str(out_dir),
+        "direction": want or "both",
+        "messages_seen": total,
+        "seeds_written": sum(v["distinct"] for v in by_type.values()),
+        "by_type": by_type,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Count SPDM messages and bytes straight out of a capture.")
@@ -1436,12 +1553,43 @@ def main() -> int:
                     help="require fields.py, reading the decode, to agree")
     ap.add_argument("--selftest", action="store_true",
                     help="feed the parsers a wrong answer and require a refusal")
+    ap.add_argument("--export-seeds", type=Path, metavar="DIR",
+                    help="write one file per distinct SPDM message, in a "
+                         "directory per message type, as libspdm's fuzz "
+                         "targets consume them")
+    ap.add_argument("--seed-direction", choices=sorted(SEED_DIRECTIONS),
+                    default="req",
+                    help="which half of the conversation to export "
+                         "(default req: what a RESPONDER target is fed)")
     args = ap.parse_args()
 
     if args.selftest:
         return selftest()
     if args.pcap is None:
         ap.error("a capture is required unless --selftest is given")
+
+    if args.export_seeds is not None:
+        if not args.pcap.exists():
+            print(f"error: no such file: {args.pcap}", file=sys.stderr)
+            return 2
+        try:
+            report = export_seeds(args.pcap, args.export_seeds,
+                                  args.seed_direction)
+        except (NotAPcap, Truncated) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(report, indent=2))
+            return 0
+        print(f"  from      {report['capture']}")
+        print(f"  into      {report['out_dir']}")
+        print(f"  direction {report['direction']}")
+        print(f"  {report['messages_seen']} message(s) -> "
+              f"{report['seeds_written']} distinct seed(s)")
+        for name, v in sorted(report["by_type"].items()):
+            print(f"    {name:<36} {v['distinct']:>3} seed(s)  "
+                  f"{v['smallest']}..{v['largest']} bytes")
+        return 0 if report["seeds_written"] else 1
 
     if not args.pcap.exists():
         print(f"error: no such file: {args.pcap}", file=sys.stderr)
