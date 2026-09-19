@@ -3,13 +3,17 @@
 > **This project performs protocol-level correctness validation. It is not a
 > security assessment.**
 
-**Status: outline.** This document is completed in G6, when there is a
-verification pipeline whose limits can be described from evidence rather than
-from intention. What is written below is what is already known on day one, and
-it is deliberately weighted towards the right-hand column.
+**Status: the outline was published on day one and filled in on 2026-10-12**,
+when G6 produced limits that could be described from evidence rather than from
+intention. The day-one text is still here, unedited, above the sections added
+since; a threat scope written at the end is written to fit the results, and
+being able to compare the two versions in `git log` is the only defence
+against that.
 
-Publishing the outline now rather than the finished document later is the
-point: a threat scope written at the end is written to fit the results.
+What week ten added is [§ The five layers](#the-five-layers-of-the-thing-this-project-is-built-on),
+which is *libspdm's own* threat model rather than this project's, and
+[§ What the implementation layer costs](#what-the-implementation-layer-costs),
+which is where the fuzzing and coverage work lands.
 
 ## What this project can show
 
@@ -89,6 +93,86 @@ Recorded now because they are easy to forget once results exist.
    way that leaves a published private key reachable in the direction nobody
    looked at. `harness/fields.py` reports `layout.distinct_root_hashes` so the
    count is checked rather than remembered.
+
+## The five layers of the thing this project is built on
+
+Everything above is about SPDM and about this project. This section is about
+**`libspdm`**, because a protocol's threat model and an implementation's are
+different documents, and the library ships its own: `doc/threat_model.md`, at
+the commit in [`third_party/spdm-emu-pqc.pin`](../third_party/spdm-emu-pqc.pin).
+It is reproduced here in its own terms rather than summarised, because the
+column that matters is the one that is easy to paraphrase away.
+
+| Layer | Component | **External input** | Threats it names |
+|:--:|---|---|---|
+| **1** | `(req)asymsignlib` / `psklib` — holds the private key and the PSK | **None** | information disclosure, elevation of privilege, tampering |
+| **2** | `spdm_secured_message_lib` — DH secret, session keys, key update | cipher message to be decrypted (**malicious**) | information disclosure, elevation of privilege, tampering, **denial of service** |
+| **3** | `spdm_common_lib` / `spdm_requester_lib` / `spdm_responder_lib` | received SPDM message (**malicious**) | tampering, denial of service |
+| **4** | `SpdmTransportXxxLib` — MCTP, PCI DOE | received transport-layer message (**malicious**) | tampering, denial of service |
+| **5** | device send/receive | hardware device I/O (**malicious**) | denial of service |
+
+★ **The layering is by the trustworthiness of the external input, not by
+abstraction.** Level 1 has no external input at all, which is why the threat
+list there is about what leaks out rather than about what comes in; level 5 has
+nothing *but* external input and can only be made to stop. The sizes of the
+threat lists are the shape of the argument.
+
+**Where this project has been, layer by layer:**
+
+| Layer | What this repository has touched |
+|:--:|---|
+| 1 | nothing. The keys are DMTF's sample keys or generated here and not protected; see *Assumptions inherited from the emulator* above |
+| 2 | nothing. No arm of any experiment here has ever established a secure session — `--exe_session NO_END` does not include `EXE_SESSION_KEY_EX`, and the captures carry no `KEY_EXCHANGE`. It took a fuzz corpus to make that visible: ten of seventeen responder fuzz targets could not be seeded from this project's own handshakes |
+| 3 | **most of it.** The handshake walkthrough, the tamper points, the conformance run, and the fuzz corpus all live here |
+| 4 | week nine — a real Linux MCTP link and a PCIe DOE mailbox, [`docs/transports.md`](transports.md) |
+| 5 | nothing. Emulator throughout |
+
+## What the implementation layer costs
+
+The row above that matters most is level 3, because it is the one a device
+exposes to a peer it does not control, and because **the protocol being correct
+does not make its implementation correct**. Those are separate claims with
+separate evidence, and conflating them is the most common way an attestation
+story goes wrong.
+
+**The two upstream projects are not in the same position, and saying so
+precisely is worth more than saying it loudly.**
+
+| | |
+|---|---|
+| **`libspdm`** | the protocol library. It ships **six families of AFL fuzz targets — about sixty-nine individual targets** — under `unit_test/fuzzing/`, a seed corpus of 69 directories and 81 files, an OSS-Fuzz configuration, and CI workflows for CodeQL and Coverity. Its security policy points at the [DMTF Security Issue Reporting Process](https://www.dmtf.org/securityissuereporting) |
+| **`spdm-emu`** | the demonstration program. Its own `README.md` says, verbatim: *"This package is only the sample code to show the concept. It does not have a full validation such as robustness functional test and fuzzing test. It does not meet the production quality yet."* |
+
+So "the reference implementation has no fuzzing" is false about the library and
+true about the sample, and this project uses the sample for protocol flow and
+the library for anything that is about robustness.
+[`docs/negative-tests.md`](negative-tests.md) is what that produced: a corpus
+comparison, a coverage figure, and a time-boxed run that found nothing, reported
+as a result rather than as an absence.
+
+**What is still out of scope here, named rather than implied:**
+
+- **Memory safety of `libspdm`.** Reproducing the *class* of a published
+  advisory is not auditing an implementation for it, and a few minutes of local
+  fuzzing at eight executions per second is not either. The arithmetic is in
+  `negative-tests.md` §3.
+- **Anything at all about the crypto backend.** The fuzz build uses mbedtls
+  because upstream's own fuzzing configuration does; every capture here was
+  produced against libspdm's vendored OpenSSL 3.5.5. Two different binaries.
+- **The FIPS vectors.** `test_spdm_fips` exists in 4.0 and **refuses to run**
+  in a default build — `LIBSPDM_FIPS_MODE` is `0` in
+  `include/library/spdm_lib_config.h:139`, and the test says
+  *"test is valid only when LIBSPDM_FIPS_MODE is open"* rather than passing
+  vacuously. That is good test design and it means this project has **not**
+  exercised the known-answer vectors for the RNG that `GET_MEASUREMENTS` draws
+  its nonce from. A predictable nonce is a replay defence that is not there,
+  and nothing here has checked it.
+
+> **If anything found here ever looked like a real vulnerability**, the route is
+> the DMTF Security Issue Reporting Process above — not a public issue, not a
+> commit message, and not a project write-up, until it is published. Nothing
+> found so far is in that category: the two upstream findings this project has
+> are a stale configuration array and a test case that discards its own input.
 
 ## The question this project exists to ask
 

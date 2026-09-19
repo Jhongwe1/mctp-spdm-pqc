@@ -37,11 +37,12 @@ needs a date attached to it.
 | Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
 | Thirteenth found while pinning an A/B's control variables | **done** | 2026-09-14 | `spdm-emu`: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back, and then makes the handshake impossible — the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported, and `--mut_auth NO` does not clear that capability bit. Six packets and a bare status code. See below |
 | Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: `--cap` is parsed by the requester and never read; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
+| Eighteenth and nineteenth, from the official conformance suite | **done** | 2026-10-12 | `spdm-emu`: the validator sample's configuration array and the `SPDM-Responder-Validator` submodule it configures disagree **in both directions** — three implemented cases are never requested, including the only two that test SPDM 1.3, and one requested case does not exist and prints nothing. And `SPDM-Responder-Validator` itself: a case whose message mask omits `GET_CERTIFICATE` reports the device's **valid** signature as FAIL, because the case's own `libspdm_init_connection` freed the chain its setup fetched. **Proved**, not argued — `harness/challenge_verify.py` verifies the disputed signatures against the leaf key after calibrating on the ones the suite accepts. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
-| **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | 2026-09-12 | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
-| **This project's** second change prepared, linted, not sent | **`TODO(me)`** | 2026-09-18 | a first `README.md` for `openbmc/spdm`, written against the review that killed the 2025 attempt. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md). Commit `d3c84a1`, Change-Id `Ib0191ead…`, prettier and markdownlint clean against OpenBMC's own configs |
-| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 → prepared W09, two of them |
+| **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | prepared 2026-09-12, **freshness re-checked 2026-10-12** | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
+| **This project's** second change prepared, linted, not sent | **`TODO(me)`** | prepared 2026-09-18, **re-linted and freshness re-checked 2026-10-12** | a first `README.md` for `openbmc/spdm`, written against the review that killed the 2025 attempt. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md). Commit `d3c84a1`, Change-Id `Ib0191ead…`, prettier and markdownlint clean against OpenBMC's own configs |
+| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 → prepared W09, two of them → W10 re-verified both against an unchanged upstream and left the keystroke where it belongs |
 | Reviewer response received | not started | | |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
@@ -900,10 +901,177 @@ not.) `bench/claims.json` asserts it as
 [ADR 0009](../decisions/0009-a-third-build-flavor.md) is why that assertion
 rather than a small diff is what makes the sweep admissible.
 
-**Not yet reported**, and this one is the most likely of the seventeen to be
+**Not yet reported**, and this one is the most likely of the nineteen to be
 wanted: it is a feature with a patch, a test matrix and a control, aimed at a
 parameter the project's own CI already has two workflows about
 (`chunk_check.yml`, `chunk_device_sample.yml`).
+
+## Two more, from running the official conformance suite — 2026-10-12
+
+Both found by running `SPDM-Responder-Validator` four ways and then reading the
+source to explain what came back. Both are on repositories this project already
+has an account and an agreement for. Neither is submitted, and the second is
+the strongest candidate here so far because it comes with a proof rather than a
+reading.
+
+### ⑱ `spdm-emu`'s validator configuration disagrees with the suite it configures
+
+`spdm_emu/spdm_device_validator_sample/spdm_device_validator_config.c`, against
+`SPDM-Responder-Validator` at the submodule pointer `c27bb1c7`.
+
+The sample program's configuration array and the suite's own case tables are
+out of step **in both directions**:
+
+| | case | what happens at runtime |
+|---|---|---|
+| implemented, not registered | `SPDM_RESPONDER_TEST_CASE_CAPABILITIES_SUCCESS_13` | prints `- skipped` |
+| implemented, not registered | `SPDM_RESPONDER_TEST_CASE_ALGORITHMS_SUCCESS_13` | prints `- skipped` |
+| implemented, not registered | `SPDM_RESPONDER_TEST_CASE_CERTIFICATE_SIZE_REQ` | prints `- skipped` |
+| **registered, not implemented** | `SPDM_RESPONDER_TEST_CASE_CERTIFICATE_SPDM_X509_CERTIFICATE` | **prints nothing at all** |
+
+The first three are defined in `spdm_responder_test.h` and present in the
+library's `common_test_case_t` tables —
+`spdm_responder_test_2_capabilities.c:1278`,
+`spdm_responder_test_3_algorithms.c:2005`,
+`spdm_responder_test_5_certificate.c:709` — and absent from the configuration,
+so the framework prints one line each and moves on.
+
+The fourth is the other way round and is worse. `common_test_run_test_suite`
+iterates the **library's** case table, so a case that exists only in the
+configuration is never looked for: no `- skipped` line, no assertion, nothing.
+A reader counting the sample's output concludes it ran 71 configured cases. It
+ran 70, and one of the 71 is imaginary.
+
+**Why it matters rather than being tidy.** The two `SUCCESS_13` cases are the
+**only** cases in the suite that exercise SPDM 1.3. With them unregistered, a
+clean report from this sample says nothing about a responder's behaviour above
+1.2 — and not because the suite cannot reach it.
+
+**Evidence, in three forms:**
+
+1. the four source locations above, at the pinned submodule commit;
+2. a run: `bench/data/w10-validator-20260919T184429Z/caps-default.test.log`
+   carries exactly three `- skipped` lines and no mention of case 5.5;
+3. a checker rather than a claim —
+   `python3 harness/validator_report.py --audit-config <validator-src> <config.c>`
+   recomputes the whole table from the two files, and
+   `harness/verify_repo.sh` runs it wherever the upstream tree is present.
+
+**Shape of a change.** Four lines in one array: add the three cases, remove the
+one that does not exist. No behaviour change to the suite, no new test code.
+**Why it is a good first submission to this repository:** it is mechanical, it
+is verifiable from the two files alone, and it is the kind of drift a
+submodule bump produces rather than anyone's mistake.
+
+**Not submitted.** `DMTF/spdm-emu` takes GitHub pull requests; change ⑲ below
+is on the same repository and should go first or with it.
+
+### ⑲ ★ A conformance case reports FAIL for an input it discarded itself
+
+`SPDM-Responder-Validator`,
+`library/spdm_responder_conformance_test_lib/spdm_responder_test_6_challenge_auth.c`.
+
+Four assertions fail against a responder whose signatures are **correct**:
+
+```
+test assertion 6.2.7  - FAIL response signature
+test assertion 6.3.7  - FAIL response signature
+test assertion 6.12.7 - FAIL response signature
+test assertion 6.13.7 - FAIL response signature
+```
+
+and the four are exactly the cases whose message mask omits `GET_CERTIFICATE`
+(`B2` and `B3`, at 1.0/1.1 and at 1.2/1.3). The case that omits `GET_DIGESTS`
+and keeps the certificate — `6.14`, `A1B4C1` — passes. **The certificate fetch
+is necessary and sufficient**, and the digests are irrelevant.
+
+**The mechanism.** The case's setup, `spdm_test_case_challenge_auth_setup_vca_digest`,
+fetches the peer certificate chain at `:202`. The case body then calls
+`libspdm_init_connection()` at `:363`, which sends `GET_VERSION`, which calls
+`libspdm_reset_context()`, which frees
+`connection_info.peer_used_cert_chain[]`. A mask that does not re-fetch the
+chain arrives at
+
+```c
+libspdm_verify_challenge_auth_signature(spdm_context, true, slot_id, sig, size)
+```
+
+with nothing for `libspdm_get_peer_cert_chain_data` to return, and the function
+returns `false` from `libspdm_x509_get_cert_from_cert_chain` before any
+signature arithmetic happens. The device is then recorded as having produced a
+bad signature.
+
+**The proof, which is why this is a report and not an opinion.**
+`harness/challenge_verify.py` rebuilds the transcript from the capture and
+hands the arithmetic to OpenSSL. It calibrates first — on the nine connections
+that *did* fetch the certificate and that the suite passes, so that a failure to
+reproduce would mean the tool's transcript model is wrong rather than the
+suite's verdict — and only then reports the disputed ones:
+
+```
+calibration  9/9 verify        disputed  2/2 verify
+  packet 284   SPDM 1.1 slot 0   M1M2 266 B (144 +   0 + 122)  -> verified
+  packet 306   SPDM 1.1 slot 0   M1M2 370 B (144 + 104 + 122)  -> verified
+```
+
+The middle term is the whole finding: 1,775 bytes of certificate exchange in
+the transcripts that pass, **0** and **104** in the two that fail — and the
+signatures over those shorter transcripts are good.
+
+**Shape of a change.** Two candidates, and the pull request should say which
+and why rather than assuming:
+
+1. **Provision the chain into the local context before the reset.**
+   `libspdm_reset_context` preserves `local_context` by design — its own
+   comment says *"Local context information is preserved"* — so a setup that
+   stores the fetched chain with `LIBSPDM_DATA_PEER_PUBLIC_CERT_CHAIN` would
+   survive the `GET_VERSION` the case itself sends. This keeps every case's
+   message mask exactly as designed, which is the point of the `B` axis.
+2. **Record `NOT_TESTED` instead of `FAIL`.** The framework already has the
+   result for "the suite could not make this assertion", and it is the honest
+   one for an assertion whose input the suite does not hold. Smaller, and it
+   does not restore the coverage the cases were written for.
+
+(1) is preferred and (2) is the fallback if a maintainer objects to the setup
+holding state across a reset. The pull request offers both.
+
+**Why this is worth submitting.** A conformance suite that reports a conforming
+device as non-conforming is the one defect class a conformance suite cannot
+have. Anybody running it against a real responder sees four failures with a
+message — `response signature` — that points straight at their crypto, and the
+time that costs is the argument.
+
+**Evidence:** the source locations above; the run directory
+`bench/data/w10-validator-20260919T184429Z`; `harness/challenge_verify.py` with
+its own self-test; and `harness/verify_repo.sh`, which re-runs the proof against
+the committed capture on every CI run so the claim cannot rot.
+
+**Not submitted.** Same keystroke rule as the other two.
+
+## Freshness, checked immediately before the keystroke was offered — 2026-10-12
+
+Two changes have been sitting prepared since September. Neither has been sent,
+and a prepared change decays: the base moves, the defect gets fixed by somebody
+else, the linters change their minds. So both were re-checked **today**, and
+this table is the record of that rather than of the original work.
+
+| | `DMTF/spdm-emu` — ② `CoRimTool.py verify` | `openbmc/spdm` — a first `README.md` |
+|---|---|---|
+| prepared | 2026-09-12, commit `425aa5a` | 2026-09-18, commit `d3c84a1`, `Change-Id: Ib0191ead…` |
+| base then | `ea77f25` | `72e3ea9` |
+| **upstream tip today** | **`ea77f25`** — unchanged | **`72e3ea9`** — unchanged, **0** commits since |
+| still applies | yes, no rebase needed | yes, no rebase needed |
+| still needed | yes — the two lines are still there | yes — `git ls-tree origin/main` still shows no README |
+| its own `Tested:` claims | the load-bearing one, *"a corrupted signature is still refused"*, is re-asserted by `harness/verify_repo.sh` on every run, through `rats/interop.sh`'s half-patched copy | prettier 3.3.3 `--check` and markdownlint-cli 0.41.0 **re-run today**, both clean, with the two configs fetched from `openbmc-build-scripts` today rather than from a cached copy |
+| **not re-run today** | — | the 863-target `meson compile` and the 3/3 `meson test`. Verified 2026-09-18 against a tree that has not moved since, which is what the row above establishes; stated here rather than implied |
+
+★ **The freshness check is a separate act from the work, and it belongs
+immediately before the outward one.** A change verified in September and sent
+in October is a change verified against a repository that no longer exists.
+Standing rule 19 is about reading the rest of the function; this is the same
+rule pointed at the rest of the world.
+
+**Both are still one keystroke away, and the keystroke is the author's.**
 
 ## Three identity traps, all of which are silent until they are not
 

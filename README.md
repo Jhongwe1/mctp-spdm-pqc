@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 9 of a 14-week programme. The table below is the truth about what
+This is week 10 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -38,12 +38,75 @@ exists today, not what is planned. Planned work is in
 | G3 | RATS verification pipeline | **complete** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is judged FAIL, and the `rats` job turns red if it stops being. The version rule is now `evidence >= reference`, and the four cases that prove the change moved **exactly one** verdict — and did not loosen the integrity rule — run in CI |
 | G4 | post-quantum cost quantification | **complete** — **Table 2** and **Figures 2 and 3**: six algorithm groups over three matched comparisons, a DataTransferSize sweep on a build made to have one, and every signature length in the table re-derived from a message-size difference and landing on its FIPS constant exactly ([`docs/pqc-cost.md`](docs/pqc-cost.md)). The negotiation costs 152 bytes in all six groups; the certificate chain is 86% of the post-quantum arm; and DataTransferSize turns out to be a latency parameter, not a bandwidth one — 3.1% of bytes against 59 round trips over a 32x range |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — **Table 4**: both arms of the post-quantum comparison run across a real Linux MCTP link, in a guest whose kernel has the subsystem this host lacks, and every packet is counted off the wire instead of divided. The model reproduces all 953 of them, at seven message lengths where the plausible wrong formula would have said something else. Separately, one SPDM `GET_VERSION` crosses a real PCIe DOE mailbox on a QEMU NVMe device and comes back answered ([`docs/transports.md`](docs/transports.md)) |
-| G6 | conformance and negative testing | not started |
-| G7 | upstream contribution | **in progress** — agreements and account done. Two changes are now **prepared and not sent**: a first README for `openbmc/spdm`, written against the review that killed the last attempt and run through OpenBMC's own prettier and markdownlint before it leaves; and the earlier one, where `CoRimTool.py verify` does not verify: `CoRimTool.py verify` does not verify, in two lines that mask each other, and fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Seventeen** candidates now carry evidence and none has been sent — the newest is a 55-line patch making `DataTransferSize` settable, with a capture proving it inert where it is not aimed |
+| G6 | conformance and negative testing | **in progress** — the conformance half is done; the negative tests are W11. DMTF's own `SPDM-Responder-Validator` run **four ways** against this responder, with a root cause and a classification for each of its eight failures, and — because a suite observed only passing has not been shown able to fail — a fourth arm that changes **one byte of one signature in flight** and requires exactly the assertion that reads it to move, and nothing else ([`docs/validator-report.md`](docs/validator-report.md)). Two upstream findings came out of it, the second **proved rather than argued**: the four `response signature` failures are the suite's own test case discarding the certificate chain it needs, and the responder's signatures verify against the leaf key. Clearing **one** capability bit moved **611** assertions from never-executed to executed. Fuzzing and coverage are beside it ([`docs/negative-tests.md`](docs/negative-tests.md)) — 69.7% line coverage, 11,432 executions, no crashes, and a corpus comparison that **withdrew the claim it was written to support**. `negative/` holds three specifications and no assertions yet |
+| G7 | upstream contribution | **in progress** — agreements and account done. Two changes are **prepared and not sent**, and on 2026-10-12 both were re-checked against upstream rather than assumed still to apply: `DMTF/spdm-emu` is still at `ea77f25` and `openbmc/spdm` still has no README, zero commits later. A first README for `openbmc/spdm`, re-linted today with prettier and markdownlint against configs fetched today; and the earlier one, where `CoRimTool.py verify` does not verify, in two lines that mask each other — fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Nineteen** candidates now carry evidence and none has been sent. The newest is the strongest: a conformance suite reporting a conforming device as non-conforming, with the proof attached |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 10 established
+
+**Gate 6's upper half, and the week the instrument was wrong.**
+
+DMTF publishes a conformance suite — `SPDM-Responder-Validator`, written to
+DSP-IS0023 — and `spdm-emu` has been building it into this project's tree since
+week one. Running it is one command. **Running it four times is the week.**
+
+A suite that has only ever been observed passing has not been shown able to
+fail, so three of the four arms exist to make it say something else:
+
+| | |
+|---|---|
+| **one capability bit** | clearing `MUT_AUTH_CAP` from the responder's advertised set moved **611 assertions** from never-executed to executed, and turned four entire test groups from `pass: 0, fail: 0` into results. That "only one bit moved" is read back off both captures and required to hold **in every negotiated version** — and it is not free: two assertions elsewhere went the other way. There is no configuration that maximises the report |
+| **one signature byte** | the suite reached the responder through week five's tamper proxy twice: once changing nothing, which had to reproduce the baseline exactly, and once flipping the last byte of one `MEASUREMENTS` signature. **Exactly one assertion moved, and it is the one named `response signature`.** Nothing improved, and every assertion that vanished is inside that same case |
+
+★ **And then the strongest result this project has produced.** The suite reports
+four `CHALLENGE_AUTH` signature failures. The cases that fail are exactly the
+ones whose message mask omits `GET_CERTIFICATE`; the one that omits the
+*digests* and keeps the certificate passes. Reading the source says why — each
+case calls `libspdm_init_connection()`, which sends `GET_VERSION`, which calls
+`libspdm_reset_context()`, which frees the certificate chain the case's own
+setup fetched.
+
+**That is a story, and this repository does not publish stories.**
+`harness/challenge_verify.py` rebuilds the transcript from the capture and hands
+the arithmetic to OpenSSL — and calibrates before it answers, verifying the nine
+connections the suite *passes* before reporting on the two it fails:
+
+```
+calibration   9 of 9 verify
+disputed      2 of 2 verify
+```
+
+**The responder's signatures are valid. The conformance suite reports a
+conforming device as non-conforming**, because its own test case discarded the
+input it needed. That is upstream candidate ⑲ and it ships with its proof.
+
+**The fuzzing half withdrew a claim instead of making one.** The sentence this
+week was meant to produce — *"my seeds are real messages, not random bytes"* —
+compares against an opponent nobody fields. libspdm ships a corpus: 69
+directories, 81 files, mostly one hand-written seed per target. Measured with
+`afl-showmap` rather than asserted, this project's 312 deduplicated seeds reach
+**fewer** edges than upstream's on three of thirteen comparable targets, and the
+first run of the comparison — drawn from two successful handshakes — lost
+outright and added **zero** edges on `algorithms`. It is committed with its
+losing numbers.
+
+> ★ **A seed is not good because it is real. It is good because the run it came
+> from went somewhere.** Two successful handshakes contain one well-formed
+> message per type and no error paths, because a handshake that took one would
+> not have completed. Adding a capture of the conformance run — which sends
+> malformed requests deliberately — reversed every column.
+
+Eleven thousand four hundred and thirty-two executions, no crashes, and the
+arithmetic that makes that a result rather than a shrug: **9.07 executions per
+second**, so even the eight-hour campaign the plan asked for is three orders of
+magnitude short of where an absence of crashes would mean anything. 69.7% line
+coverage, 76.5% of the responder handlers, and two unit tests that do not pass
+because one **refuses to run without `LIBSPDM_FIPS_MODE`** and the other cannot
+find a fixture — neither of which is a failing assertion, which is now standing
+rule 20.
 
 ### What week 9 established
 
@@ -903,6 +966,15 @@ harness/       build, capture, health-check and analysis scripts
   check_claims.py  re-derive every published cross-capture ratio, tolerance zero
   mkfigures.py render figures/ from the data, and refuse a drifted one
   verify_repo.sh  everything CI checks, runnable locally
+  run_validator.sh DMTF's conformance suite, four arms, three of which
+               exist to make it say something other than PASS       (W10)
+  validator_report.py  read its log, compare two runs assertion by
+               assertion, and audit the suite against its own config (W10)
+  challenge_verify.py  rebuild M1M2 from a capture and ask OpenSSL     (W10)
+  run_fuzz.sh  libspdm's AFL targets, seeded from this project's own
+               captures and measured against the corpus upstream ships (W10)
+  run_coverage.sh  libspdm's unit tests under gcov, minus the 69 fuzz
+               targets a GCC build also produces                      (W10)
   lib/         shared shell helpers; provenance stamping; the handshake runner
 docs/          baseline, design notes, decision records, roadmap
   handshake-walkthrough.md   every message, field by field, numbers checked by CI
@@ -914,7 +986,12 @@ docs/          baseline, design notes, decision records, roadmap
                              and the formulas both are usually written wrong
   measurement.md             how an experiment is run here, with a worked example
   transports.md              what --trans MCTP is, and what it is not
-  threat-scope.md            what is and is not claimed, and against whom
+  threat-scope.md            what is and is not claimed, and against whom,
+                             plus libspdm's own five-layer threat model
+  validator-report.md        the official conformance suite, run four ways,
+                             and which of its failures were its own
+  negative-tests.md          fuzzing, coverage, and a seed-corpus claim that
+                             was measured and then withdrawn
   decisions/   architecture decision records — why, not what
   upstream/    upstream contribution tracking
 bench/
@@ -936,7 +1013,9 @@ rats/          reference values and verification policy          (from W06)
 transport/     real-transport glue                               (from W09)
   data-transfer-size.patch  55 lines making the parameter that decides round
                trips settable at run time — upstream candidate 17     (W08)
-negative/      negative and conformance tests                    (from W10)
+negative/      three advisory CLASSES, specified in W10 and written in W11.
+               All three compile under -Werror with both sanitizers and
+               DONE.txt is empty, so CI claims none of them      (from W10)
 ```
 
 Upstream source is not vendored. `third_party/*.pin` records the exact commits

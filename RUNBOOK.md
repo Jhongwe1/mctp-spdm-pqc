@@ -15,7 +15,7 @@
 |---|---|
 | 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
 | 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
-| **現在做到哪?** | ★★★ **W09 收工(2026-09-18)。Gate 5 關掉了** ——**兩條真實傳輸都跑通**:古典與後量子兩臂的握手整條走 **真的 Linux MCTP 網路**(真 EID、真路由表、kernel 配的 tag、64 bytes 的真分段),**953 個後量子封包對 115 個古典封包,是數出來的不是除出來的**;另一條是**真的 PCIe DOE 信箱**,一則 `GET_VERSION` 穿過 config space 拿到 `VERSION`。宿主的 kernel 一個位元組都沒動(`ADR 0010`)。★ 順便發現一件這個 repo publish 了三週的事是錯的:177 bytes 那個「判別案例」其實判別不了任何東西,因為 `59 × 3 = 177`(§11.8)。以下是 W08 收工(2026-09-14)的內容。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
+| **現在做到哪?** | ★★★ **W10 收工(2026-10-12)。Gate 6 開了一半** ——**DMTF 官方的一致性測試跑了四次**,不是一次。一次只會告訴你這台裝置怎麼樣,四次才說得出這支測試本身看得見什麼:其中一臂把一個 capability 位元關掉,**611 個 assertion 從「沒跑過」變成「跑過」**;另一臂把一個簽章的最後一個 byte 在飛行中翻掉,**要求恰好一個 assertion 變 FAIL,而且是名字叫 `response signature` 的那一個**。★ 最硬的一件:那支官方測試報的四個 `response signature` 失敗,**是它自己的 test case 把驗簽要用的憑證鏈丟掉了** —— 這不是推理,是把 M1M2 從 capture 重建、用葉憑證的公鑰驗過的(§11.9)。fuzz 與覆蓋率也做完了,而且**把原本要講的那句話撤掉了**:我的種子在 8 個 target 裡有 3 個比上游手寫的還差。以下是 W09 收工(2026-09-18)的內容。**Gate 5 關掉了** ——**兩條真實傳輸都跑通**:古典與後量子兩臂的握手整條走 **真的 Linux MCTP 網路**(真 EID、真路由表、kernel 配的 tag、64 bytes 的真分段),**953 個後量子封包對 115 個古典封包,是數出來的不是除出來的**;另一條是**真的 PCIe DOE 信箱**,一則 `GET_VERSION` 穿過 config space 拿到 `VERSION`。宿主的 kernel 一個位元組都沒動(`ADR 0010`)。★ 順便發現一件這個 repo publish 了三週的事是錯的:177 bytes 那個「判別案例」其實判別不了任何東西,因為 `59 × 3 = 177`(§11.8)。以下是 W08 收工(2026-09-14)的內容。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
 | ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
 | ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
 | ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**當時 128/128 通過(W03 之後是 164/164),而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
@@ -45,8 +45,8 @@
 | G3 | RATS 驗證流水線 | ✅ **完成** —— 參考值、COSE 簽章背書、政策、判定,十條臂全跑過一遍(**Table 3**,`docs/rats-pipeline.md`)。**那個沒有任何一層擋得住的篡改被擋下來了,而且指得出是哪一條規則、哪一個 index。** 版本規則也收尾了:改成逐 index 的「不低於參考值」,舊的那份被**凍結**成 `rats/policy-v0-equality.rego`,四份 capture 跑兩個政策、**八格只有一格動**,CI 斷言這件事(§11.6)。放寬的代價寫在結果旁邊:`>=` 只擋得住低於參考值的回滾 |
 | G4 | 後量子成本 | ✅ **完成**(W07 起跑,W08 收)—— **六組全部**,排成三組對齊的比較:古典 vs 後量子在 **NIST level 3 與 level 5 各一組**(8.99× 與 **10.91×**,缺口隨等級變大),以及格基 vs hash-based 在同一個 KEM 下比。**十八個控制變因是從 `key.c` 讀出來的,不是從 `--help`**,每一臂把十二組協商結果加四個推導事實讀回來比對,對不上就整個 run 失敗。**Figure 2／Figure 3**、`docs/pqc-cost.md`、`docs/fragmentation.md` |
 | G5 | 真實傳輸 | ✅ **完成**(W09)—— **兩條路都成**。① **真的 MCTP 網路**:guest kernel 自己編、開 `CONFIG_MCTP`,guest 的 root 就是宿主的檔案系統(9p 唯讀),所以 W01 編的 `spdm_*_emu` 原封不動就能跑。兩臂握手整條走 mctp-serial,**A0 115 個封包、P2 953 個,全部數出來,模型每一則都對得上**。**對照組是決定性的**:同一個握手在訊息層的 capture 跟 W08 socket 那條**逐則長度完全一樣** —— 換傳輸沒有改變協定。② **真的 PCIe DOE 信箱**:QEMU 的 NVMe 開 `spdm_port`,guest 裡 `lspci -vvv` 看得到 Data Object Exchange capability,`transport/doe_probe` 從 userspace 打信箱、列出三個 DOE 協定、送一則 `GET_VERSION` 拿回 `VERSION`(1.0~1.4)。★ **封包比 8.29× 小於位元組比 9.11×**,因為一個傳輸單位是整個算的 —— 這件事在 socket 那條上永遠量不到(§11.8)|
-| G6 | 一致性與負面測試 | ⬜ 未開始(W10~W11) |
-| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**現在有兩個 patch 備好、都還沒送出**。第二個是 `openbmc/spdm` 的第一份 README:那個 repo 到現在還沒有 README,但 2025-05 有人送過一版(change 80422),被 owner 以「寫了程式碼做不到的假設功能」打回、CI 紅兩次、掛一年後被 bot 自動 abandon。**那份 review 就是規格**:只寫 merged tree 真的有的東西、引用 reviewer 要的 Redfish design、補 reviewer 要的 Code organization 章節,而且送出前先用 OpenBMC 自己的 prettier 與 markdownlint 跑過。第一個 patch 是**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。十三個候選有證據,送出去的是零 |
+| G6 | 一致性與負面測試 | 🟡 **進行中**(W10 做完上半,負面測試是 W11)—— DMTF 的 `SPDM-Responder-Validator` 跑了**四臂**,八個失敗每一個都追到根因、而且分類成「行為錯」還是「能力/組態」(`docs/validator-report.md`)。★ 三臂的存在目的是**讓那支測試講出 PASS 以外的話**:去掉一個 `MUT_AUTH_CAP` 解鎖 **611 個 assertion 跟四整組測試**(而且「只動了這一個位元」是從兩份 capture 把 Flags 讀回來比對的,不是從旗標宣稱的);穿過一支**什麼都不改的 proxy** 要逐項重現基線;再穿過同一支 proxy **翻掉一個簽章位元組**,要求恰好一個 assertion 變 FAIL。★ 兩個上游發現,第二個是**證明**不是主張:`harness/challenge_verify.py` 先在那支測試「會通過」的九條連線上校準,再驗它判 FAIL 的那兩條 —— 兩條都驗過,所以錯的是測試不是裝置。fuzz 與覆蓋率:312 顆去重種子對上游的 81 顆,用 `afl-showmap` **量**而不是**說**;11,432 次執行、0 崩潰,以及「為什麼這是預期結果」的算術;行覆蓋率 69.7%、responder handler 76.5%(`docs/negative-tests.md`)。`negative/` 有三份規格、零個 assertion,`DONE.txt` 是空的,CI 一個都不宣稱 |
+| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**現在有兩個 patch 備好、都還沒送出**。第二個是 `openbmc/spdm` 的第一份 README:那個 repo 到現在還沒有 README,但 2025-05 有人送過一版(change 80422),被 owner 以「寫了程式碼做不到的假設功能」打回、CI 紅兩次、掛一年後被 bot 自動 abandon。**那份 review 就是規格**:只寫 merged tree 真的有的東西、引用 reviewer 要的 Redfish design、補 reviewer 要的 Code organization 章節,而且送出前先用 OpenBMC 自己的 prettier 與 markdownlint 跑過。第一個 patch 是**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。★ **十九個候選有證據,送出去的是零。** 2026-10-12 把兩個備好的 change 對上游重新檢查過一次:`DMTF/spdm-emu` 還停在 `ea77f25`、`openbmc/spdm` 的 main 還是沒有 README(而且那之後零個 commit),兩個都還適用、也都還需要。README 那份的 prettier 與 markdownlint **當天用當天抓的 config 重跑過**。**備好的東西會過期,所以新鮮度檢查要貼著送出那一刻做** |
 | G8 | 交付與敘事 | ⬜ 未開始(W12~W14) |
 
 ---
@@ -67,6 +67,7 @@
 | [9](#9-出問題時症狀--原因--解法) | 出問題時:症狀 → 原因 → 解法 | 查表 |
 | [10](#10-基本功c-drills) | 基本功:c-drills | 每週 |
 | [11](#11-每天怎麼用這個-repo) | 每天怎麼用這個 repo | — |
+| [11.9](#119--一支測試說你錯了要怎麼知道是不是它錯了w10-做的事) | ★ **一支測試說你錯了,要怎麼知道是不是它錯了**(W10) | 讀 12 分 |
 | [12](#12-把一切從零重建驗證可重現性) | 把一切從零重建 | 40 分 |
 | [附錄](#附錄-a-指令速查) | 指令速查、詞彙表 | 查表 |
 
@@ -1777,6 +1778,189 @@ P2 46 筆 58966 bytes)。所以**換傳輸沒有改變協定**,兩層之間差�
 好,再用 `ip link set <dev> netns <ns>` 搬過去。
 
 ---
+
+### 11.9 ★ 一支測試說你錯了,要怎麼知道是不是它錯了(W10 做的事)
+
+**一句話:** 官方一致性測試判了你四個 FAIL。你要怎麼分辨「我的裝置壞了」跟
+「那支測試壞了」?**答案是:把它判 FAIL 的那個簽章,自己驗一次。**
+
+#### 先講三個會害你白忙半天的事
+
+**① 結果不在 stdout,在 `test.log`。**
+
+```bash
+# 計畫書寫的是這樣,而這兩行會印出 0
+./harness/run_validator.sh 2>&1 | tee /tmp/v.log
+grep -ciE 'PASS|FAIL' /tmp/v.log     # -> 0
+```
+
+因為 `common_test_utility_lib.c` 裡是 `fopen("test.log", "w+")`,每一行結果都
+`fprintf` 到那個檔案,**而且開在「當下的工作目錄」**。主程式只往 console 印四行
+banner。
+
+**② 結束碼恆為 0。** `spdm_device_validator_sample.c` 的 `main()` 最後是無條件
+`return 0`。全部 assertion 都失敗也是 0,連都沒連上也是 0。
+
+> ★ 這是這個 repo 第三次踩同一個形狀:管線的結束碼、`spdm_dump` 的輸出長度、
+> 現在是一個常數的 return value。**三次都是「拿手邊最容易取得的訊號」代替
+> 「真正的判準」。**
+
+**③ `NOT_TESTED` 兩邊都不算。** 那支測試自己印的 footer 是
+`pass: 1077, fail: 8`,但它總共記錄了 **1140** 個 assertion。差的 55 個是
+`NOT_TESTED` ——「想測但測不成」。**那 55 個才是有訊息量的。**
+
+#### 怎麼跑
+
+```bash
+bash harness/run_validator.sh            # 四臂,大約四分鐘
+bash harness/run_validator.sh --list     # 四臂各是什麼
+```
+
+四臂長這樣,而且**三臂的目的是讓它講出 PASS 以外的話**:
+
+| 臂 | 動了什麼 | 為什麼要有它 |
+|---|---|---|
+| `caps-default` | 什麼都沒動 | 基線。只有這一臂的數字可以被引用成「我的 responder 考幾分」 |
+| `caps-no-mut-auth` | responder 的能力集少一個 `MUT_AUTH` | 量「一個 capability 位元值多少錢」 |
+| `proxy-inert` | 中間插一支**什麼都不改**的 proxy | **控制組,而且要先跑。** 沒有它,下一臂紅了你分不出是「測試抓到了」還是「proxy 轉不動一份 1.6 MB 的握手」 |
+| `proxy-flip-sig` | 同一支 proxy,翻掉一個簽章的最後一個 byte | **校準。** 一支只被看過「通過」的測試,沒有被證明過它會「失敗」 |
+
+#### 結果:一個位元組,和一個位元
+
+**校準那一臂:**
+
+```
+proxy-inert  ->  proxy-flip-sig
+  regressed        1
+  improved         0
+  disappeared    122
+    PASS->FAIL  7.6.7      response signature
+```
+
+恰好一個 assertion 變紅,而且是驗簽的那一個。消失的 122 個**全部在同一個 case
+裡面**(失敗之後就 return 了),工具會單獨斷言這件事 —— 不然一次連鎖失敗可以
+藏住第二個無關的破洞。
+
+**能力位元那一臂:**
+
+```
+1.0   0x00000037 -> 0x00000037   moved: nothing      <- 1.0 根本沒有這個位元
+1.1   0x0000fbf7 -> 0x0000faf7   moved: MUT_AUTH_CAP
+1.2   0x001afbf7 -> 0x001afaf7   moved: MUT_AUTH_CAP
+1.3   0x399afbf7 -> 0x399afaf7   moved: MUT_AUTH_CAP
+1.4   0xb99afbf7 -> 0xb99afaf7   moved: MUT_AUTH_CAP
+```
+
+**assertion 從 1140 變成 1751 —— 多了 611 個。** 原本 `FINISH_RSP`、
+`HEARTBEAT_ACK`、`KEY_UPDATE_ACK`、`END_SESSION_ACK` 四整組的 footer 都是
+`pass: 0, fail: 0`,看起來像「這組沒有 assertion」,其實是「這組的每一個 case
+都起不來」。
+
+> ★ **而且不是開越多越好。** 關掉那個位元之後,`3.5.15` 跟 `3.6.15` 兩個原本
+> 看不到的 assertion 變紅了。**沒有一個組態可以把報告最大化** —— 所以一份
+> conformance 報告如果沒有附上組態,就是一個沒有單位的數字。
+
+#### ★ 然後是最硬的那一步:證明那四個 FAIL 是測試自己的錯
+
+失敗的四個 case 有一個共同點,而且要讀原始碼才看得到:**它們都是「沒有去抓憑證」
+的那幾個**。
+
+| case | 這個 case 送了什麼 | 結果 |
+|---|---|---|
+| 6.1 | VCA + `GET_DIGESTS` + `GET_CERTIFICATE` | PASS |
+| 6.2 | 只有 VCA | **FAIL** |
+| 6.3 | VCA + `GET_DIGESTS` | **FAIL** |
+| 6.14 | VCA + `GET_CERTIFICATE`(沒有 digests) | PASS |
+
+**抓憑證是充分且必要條件,digests 完全無關。**
+
+原因在 `spdm_responder_test_6_challenge_auth.c`:setup 在 `:202` 抓了憑證鏈,
+然後 case 本體在 `:363` 又呼叫了一次 `libspdm_init_connection()` —— 那會送
+`GET_VERSION`,而 `GET_VERSION` 會呼叫 `libspdm_reset_context()`,**把 setup
+抓到的憑證鏈清掉**。mask 裡沒有 `GET_CERTIFICATE` 的 case 就再也沒有公鑰可以驗簽。
+
+**但「我讀原始碼讀出來的」不算數。** 所以:
+
+```bash
+python3 harness/challenge_verify.py     bench/data/w10-validator-20260919T184429Z/caps-default.pcap
+```
+
+它做的事是:從 capture 把 `M1M2 = A || B || C` 重建出來,然後**把密碼學交給
+openssl**(這個分工是 `certs/check_chain.py` 訂的:「這個檔案管結構,openssl
+管密碼學」)。
+
+★ **而且它會先校準再回答:**
+
+```
+calibration -- 有抓憑證、那支測試判 PASS 的連線
+  9 of 9 verify
+  ok   這個 transcript 模型重現得出一個那支測試接受的簽章
+
+disputed -- 沒抓憑證、那支測試判 FAIL 的連線
+  2 of 2 verify
+    packet 284   M1M2 266 B (144 +   0 + 122)  -> True
+    packet 306   M1M2 370 B (144 + 104 + 122)  -> True
+```
+
+中間那一欄就是整個發現:通過的那些有 1775 bytes 的憑證交換,失敗的那兩條是
+**0** 跟 **104** —— 而且那兩條短 transcript 上的簽章**是好的**。
+
+> **判決:responder 的簽章是對的。那支測試判 FAIL,是因為它自己把驗簽要用的
+> 輸入丟掉了。**
+>
+> 如果校準那一步沒過,這個工具**不會給任何判決** —— 因為那代表我的 transcript
+> 模型是錯的,而不是那支測試錯了。這是整支工具最重要的一行。
+
+#### fuzz 那半邊,和一句被撤掉的話
+
+原本要講的是「**我的 fuzz 種子是真實訊息,不是亂數**」。前半句是真的,後半句
+比錯了對手:**libspdm 自己就附種子語料**(69 個目錄、81 個檔案)。
+
+```bash
+bash harness/run_fuzz.sh --no-fuzz     # 只做確定性的那半:抽種子 + 語料對照
+bash harness/run_fuzz.sh --seconds 420 # 加上有時間盒的真 fuzz
+```
+
+`afl-showmap -C` 會把整個語料跑一遍、回報碰到的 edge 聯集 —— 確定性的,所以是
+單一數值不是中位數。
+
+```
+  target                                 upstream   mine   both   added
+  test_spdm_responder_algorithms              601    685    711    +110
+  test_spdm_responder_heartbeat_ack          2955   2898   2959      +4   <- 我的比較差
+  test_spdm_responder_version                 442    442    442       0
+```
+
+**8 個 target 裡有 3 個,我的種子碰到的 edge 比上游那一顆手寫種子還少。**
+而且第一次跑的時候(只用兩份握手 capture)更慘:`algorithms` 只有 378。
+
+> ★ **種子好不好,不在於它是不是真的,在於它來自的那次執行有沒有走到別的地方。**
+> 兩份成功的握手,每種訊息就只有一顆「長得很正確」的樣本 —— 沒有版本不符、沒有
+> 無效參數、沒有錯誤路徑,因為走到那些的握手不會成功。把一致性測試那份 capture
+> 加進來(它**故意**送那些),數字就翻過來了。
+
+還有一個發現不是關於 fuzz 的:**17 個 target 裡有 10 個一顆種子都抽不到**,因為
+這個專案的握手從來沒有建立過 session(`--exe_session NO_END` 不包含
+`EXE_SESSION_KEY_EX`)。`harness/lib/arms.sh` 的註解從寫下來那天就講了這件事,
+**是一份 fuzz 語料讓它的後果變成看得見的**。
+
+#### 「跑了沒發現東西」要怎麼講才誠實
+
+```
+  11,432 次執行 / 1,260 秒  =  每秒 9.07 次
+```
+
+AFL 自己在 log 裡就警告 `The target binary is pretty slow!`。照這個速度:
+
+| 預算 | 執行次數 |
+|---|---:|
+| 實際跑的 21 分鐘 | 11,432 |
+| 計畫書要的 8 小時 | 約 261,000 |
+| 24 小時 | 約 784,000 |
+
+一個 fuzz campaign 正常是用**百萬次**在算的。所以就算真的跑滿八小時,離「沒有
+崩潰這件事能說明什麼」還差三個數量級 —— **這才是本機 fuzz 找不到東西的誠實理由,
+而不是「運氣不好」。**
 
 ## 12. 把一切從零重建(驗證可重現性)
 
