@@ -1,0 +1,77 @@
+advisory=DMTF-2026-0003
+ghsa-id=GHSA-chjj-xvqx-c8w4
+cve-id=CVE-2026-61810
+summary=SPDM (DSP0274) FINISH transcript under-specifies the new 1.4 OpaqueData fields
+cwe=CWE-325 Missing Cryptographic Step
+severity=medium
+cvss-version=4.0
+cvss-score=6.0
+cvss-vector=CVSS:4.0/AV:A/AC:L/AT:P/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N
+published-at=2026-07-03T02:09:38Z
+updated-at=2026-08-25T02:27:02Z
+url=https://github.com/DMTF/libspdm/security/advisories/GHSA-chjj-xvqx-c8w4
+api=https://api.github.com/repos/DMTF/libspdm/security-advisories
+in-global-advisory-database=no
+in-nvd=no
+in-mitre-cve-services=no
+affected=DSP0274 1.4.0
+patched=DSP0274 1.4.1
+affected-product-kind=specification
+affected-package=DSP0274 SPDM Specification
+reference=https://github.com/DMTF/libspdm/issues/3633
+issue-opened-at=2026-06-02T08:33:27Z
+issue-title=Question about FINISH signature transcript in SPDM 1.4 vs libspdm implementation
+definitions-affected=5
+definition-1=FINISH signature, mutual authentication (anchor definition_th_fi_req_mut)
+definition-2=FINISH HMAC, Responder-only authentication (anchor definition_th_fi_req_vf)
+definition-3=FINISH HMAC, mutual authentication (anchor definition_th_fi_req_vf_mut)
+definition-4=FINISH_RSP HMAC, Responder-only authentication (anchor definition_th_fi_res_vf)
+definition-5=FINISH_RSP HMAC, mutual authentication (anchor definition_th_fi_res_vf_mut)
+spec-1.4.0-pin=third_party/dsp0274.pin
+spec-1.4.1-pin=third_party/dsp0274-1.4.1.pin
+sha256=ab3bdffafc22d6c0a20bd2f277d95d34fa5619ac5a2241183e41f9eb772105b4
+bytes=6916
+retrieved-at=2026-10-19T18:18:25Z
+quoted-in=docs/advisories.md
+consumed-by=harness/check_advisories.py,negative/test_transcript_coverage.c,negative/negative.h,docs/transcript.md
+# ★ THE ONE OF THE THREE THAT IS NOT A BUG IN ANY PROGRAM.
+#
+# The affected product is a DOCUMENT. Every implementation that followed
+# DSP0274 1.4.0 correctly has the defect, and no amount of reviewing, fuzzing
+# or sanitizing an implementation finds it, because there is nothing wrong with
+# the implementation. What is wrong is the paragraph it was written from.
+#
+# That is why this pin names two specification pins rather than a commit range.
+# Both versions were downloaded and read; docs/transcript.md section 3 quotes
+# all five definitions from each, and the phrase "[FINISH].SPDM Header Fields"
+# occurs five times in 1.4.0 and zero times in 1.4.1.
+#
+# ★★ AND THE ENUMERATION WAS NOT WRONG WHEN IT WAS WRITTEN. In SPDM 1.3 a
+# FINISH was a four-byte header followed by its authenticator, so "the SPDM
+# Header Fields" WAS everything a signature had to cover. Adding two fields to
+# Table 80 made a sentence in a different chapter false. 1.4.1 replaces the
+# enumeration with an exclusion — "* except the Signature and
+# RequesterVerifyData fields" — which is correct by construction for a field
+# that does not exist yet.
+#
+# Three identifiers, three databases, and only one hit
+# ----------------------------------------------------
+# This is the only one of the three 2026 advisories with a CVE, and it scores
+# LOWER than the two without. On the retrieval date:
+#
+#   api.github.com/repos/DMTF/libspdm/security-advisories   the record, HTTP 200
+#   github.com/advisories/GHSA-chjj-xvqx-c8w4               404
+#   cveawg.mitre.org/api/cve/CVE-2026-61810                 404
+#   services.nvd.nist.gov ... ?cveId=CVE-2026-61810         totalResults: 0
+#
+# So a reader handed "CVE-2026-61810" and told to look it up finds nothing in
+# the two places they would look. Standing rule 7 exists for exactly this, and
+# it is the reason W10 refused to write these identifiers down before they had
+# been checked.
+#
+# ★ Reading the vector is worth more than reading the score: VC:N/VI:H/VA:N
+# says the defect costs integrity only — nothing is disclosed and nothing stops
+# working — and AV:A says the attacker has to be on the same bus. Those two
+# together are why 6.0 and not more.
+#
+# Not vendored, for third_party/dmtf-2026-0002.pin's reason, word for word.

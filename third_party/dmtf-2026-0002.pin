@@ -1,0 +1,71 @@
+advisory=DMTF-2026-0002
+ghsa-id=GHSA-m4wc-xmvg-369f
+cve-id=NONE
+summary=Requester may read unauthorized memory via GET_MEASUREMENT_EXTENSION_LOG
+cwe=CWE-680 Integer Overflow to Buffer Overflow
+severity=medium
+cvss-version=4.0
+cvss-score=6.9
+cvss-vector=CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:N/VA:L/SC:N/SI:N/SA:N
+published-at=2026-04-03T19:23:38Z
+updated-at=2026-04-28T15:06:50Z
+url=https://github.com/DMTF/libspdm/security/advisories/GHSA-m4wc-xmvg-369f
+api=https://api.github.com/repos/DMTF/libspdm/security-advisories
+in-global-advisory-database=no
+affected=libspdm 3.4 to 3.8.1
+patched=libspdm 3.8.2 and 4.0
+patch-commit-3.8.2=f55cf6d48ec69b4ac60a63903e9c6a2cb0fd155d
+patch-commit-4.0=a6b4990eb45ee99d9bb11dabb52d68d42c738772
+site=library/spdm_responder_lib/libspdm_rsp_measurement_extension_log.c
+defective-line=if ((uint64_t)(offset + length) > spdm_mel_len) {
+repaired-line=if (((uint64_t)offset + length) > spdm_mel_len) {
+precondition-1=the Responder advertises MEL_CAP
+precondition-2=the Responder advertises CHUNK_CAP
+precondition-3=libspdm_copy_mem() does not stop a copy whose src_len exceeds dst_len
+sha256=474efd7a6298be2b30fa90b0934e34c7d1527a7d83bbe8be32bd55acc932d986
+bytes=6703
+retrieved-at=2026-10-19T18:18:25Z
+quoted-in=docs/advisories.md
+consumed-by=harness/check_advisories.py,negative/test_offset_length.c,negative/negative.h
+# ★ THE FIX IS ONE CHARACTER OF PARENTHESIS, AND THAT IS THE WHOLE LESSON.
+#
+# The widening cast was already there. It was applied to the SUM:
+#
+#     (uint64_t)(offset + length)      offset and length are both uint32_t, so
+#                                      the addition happens in unsigned int and
+#                                      WRAPS; the cast then widens a value that
+#                                      has already lost the carry
+#
+#     ((uint64_t)offset + length)      one operand is widened FIRST, so the
+#                                      addition happens in 64 bits and cannot
+#                                      wrap
+#
+# A reviewer scanning for "is there a cast" finds one in both versions. That is
+# why negative/test_offset_length.c asserts the behaviour instead of inspecting
+# the text, and why its defect 1 is this expression rather than a paraphrase of
+# it: same shape, same operand widths, same outcome.
+#
+# ★ The same expression at GET_CERTIFICATE's 16-bit field widths does NOT wrap,
+# because uint16_t operands are promoted to int before the addition. The
+# advisory is against the 32-bit message and not the 16-bit one, and that is
+# not a coincidence. Defects 1 and 2 of that test separate the two.
+#
+# Two things the advisory says that a version number does not
+# -----------------------------------------------------------
+# NO CVE WAS ISSUED. It scores 6.9 under CVSS 4.0 — higher than DMTF-2026-0003,
+# which does have one. A CVE is a decision about deployment, not a threshold on
+# a score.
+#
+# NOT IN GITHUB'S GLOBAL ADVISORY DATABASE. This is a repository advisory on
+# DMTF/libspdm. https://github.com/advisories/GHSA-m4wc-xmvg-369f — the URL a
+# reader tries first — returns 404. url= above is the one that resolves.
+#
+# Released alongside its fix: libspdm 3.8.2 was published at 19:25:51Z on the
+# same day, one hundred and thirty-three seconds after this advisory.
+#
+# Not vendored: the advisory is not this repository's to redistribute. sha256=
+# is the digest of the JSON record for this GHSA id as returned by api= on
+# retrieved-at, extracted with `jq '.[] | select(.ghsa_id=="...")'`.
+# harness/check_advisories.py --refresh re-fetches and reports any drift; the
+# weekly `upstream` CI job runs it, so a changed advisory is noticed without
+# making every pull request depend on somebody else's API.

@@ -1,0 +1,68 @@
+advisory=DMTF-2026-0001
+ghsa-id=GHSA-j54w-759w-xj3m
+cve-id=NONE
+summary=Stack corruption in cryptlib_mbedtls CSR generation due to out-of-bounds write
+cwe=CWE-20 Improper Input Validation
+severity=medium
+cvss-version=4.0
+cvss-score=6.9
+cvss-vector=CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:N/SI:N/SA:N
+published-at=2026-02-10T16:32:51Z
+updated-at=2026-04-28T14:54:50Z
+url=https://github.com/DMTF/libspdm/security/advisories/GHSA-j54w-759w-xj3m
+api=https://api.github.com/repos/DMTF/libspdm/security-advisories
+in-global-advisory-database=no
+affected=libspdm 3.0 to 3.8.1
+patched=libspdm 3.8.2 and 4.0
+patch-commit-3.8.2=704bc9916ccd8c034f912f13b75fd890a19eb3f3
+patch-commit-4.0=713e32c09191477822fe028bf3905a3d728338e4
+site=os_stub/cryptlib_mbedtls/pk/x509.c, libspdm_convert_subject_to_string()
+repaired-marker=/*check total space needed: name + '=' + value + ',' + '\0'*/
+precondition-1=the Responder advertises CSR_CAP
+precondition-2=libspdm_gen_csr*() is implemented with libspdm_gen_x509_csr() from cryptlib_mbedtls
+reported-at=2026-01-18
+reported-by=Nicholas Carlini
+discovered-by=a Claude LLM, per the advisory's own acknowledgement
+sha256=022cd39169bc1b32be6999ebd480307f19b3a798dfe574c8899ac3462105a770
+bytes=3949
+retrieved-at=2026-10-19T18:18:25Z
+quoted-in=docs/advisories.md
+consumed-by=harness/check_advisories.py,negative/test_oversized_field.c,negative/negative.h
+# ★ THE CHECK WAS THERE. IT RAN AFTER THE WRITE.
+#
+# The defective version copied the attribute name, then '=', then the value,
+# then ',', decrementing a signed counter as it went, and only then asked:
+#
+#     if (buff_len < 0) { ... return false; }
+#
+# By the time that is false, the bytes are already in the buffer. The published
+# fix deletes it and puts a check in FRONT of the copy that accounts for
+# everything the copy will write — the name, the '=', the value, the ',' and
+# the terminator:
+#
+#     if (buff_len < (int32_t)(cur->name_len + 1 + obj_len + 1 + 1))
+#
+# It also moves the ASN.1 tag fetch above the copy, because until the tag has
+# been read obj_len is not yet the length of the thing about to be written.
+#
+# negative/test_oversized_field.c's defect 7 is that shape: the same refusal,
+# after the same copy. It is the reason that file returns a distinct status for
+# "refused, and wrote anyway", and the reason every destination in it sits in
+# front of a guard region that the test reads by hand.
+#
+# Two things the advisory says that a version number does not
+# -----------------------------------------------------------
+# NO CVE WAS ISSUED, and the advisory states why in its own words: "Though a
+# CVE severity score is provided, due to the unlikely chance of implementation
+# in a production device, no CVE has been issued." It scores 6.9 all the same.
+#
+# THE ATTACK SURFACE IS BACK-END SPECIFIC. The defect is in cryptlib_mbedtls.
+# The same protocol library under the OpenSSL back end does not reach it — and
+# post-quantum support exists only under OpenSSL, so "should this device move
+# to ML-DSA" is not only an algorithm question: it is a question about which
+# crypto back end, and therefore which set of defects, the device inherits.
+#
+# NOT IN GITHUB'S GLOBAL ADVISORY DATABASE; https://github.com/advisories/
+# GHSA-j54w-759w-xj3m returns 404. url= above is the one that resolves.
+#
+# Not vendored, for third_party/dmtf-2026-0002.pin's reason, word for word.
