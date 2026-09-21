@@ -24,7 +24,7 @@ cd "$REPO_ROOT" || exit 1
 
 step "shellcheck"
 if command -v shellcheck >/dev/null 2>&1; then
-    if shellcheck -x -S warning harness/*.sh certs/*.sh rats/*.sh; then
+    if shellcheck -x -S warning harness/*.sh certs/*.sh rats/*.sh negative/*.sh; then
         good "no warnings or errors"
     else
         bad "shellcheck reported problems"
@@ -157,6 +157,7 @@ if python3 -m py_compile harness/fields.py bench/pcapstat.py \
                          harness/check_claims.py \
                          harness/lib/check_negotiated.py \
                          harness/lib/ci_tools_check.py \
+                         harness/check_advisories.py \
                          device/gen_measurements.py rats/cose.py \
                          rats/appraise.py rats/rats_selftest.py; then
     good "fields.py, pcapstat.py, exp04_fragmentation.py, gen_measurements.py and rats/ compile"
@@ -2113,24 +2114,72 @@ else
     printf '  --   Run harness/build_spdm_emu.sh pqc, or read the committed run directory.\n'
 fi
 
-step "the negative tests compile, and claim nothing they have not done"
+step "the negative tests, and every defect they say they can catch"
+# `make test` is not a loop over three binaries. It rebuilds each finished test
+# once per declared defect variant and requires each of those to be caught by
+# exactly the cases the file predicted — no fewer (rule 11) and no others
+# (rule 13) — and then runs the two --asan-demo halves, which assert what this
+# toolchain does and does not report about an overflow.
+#
+# So the exit status of this one command covers three suites, twenty-four
+# cases, twenty-one deliberately wrong implementations and one claim about the
+# sanitizer. The counts are printed from the binaries rather than written here,
+# because a count kept in two places is a count that drifts.
 if [ -d negative ] && [ -f negative/Makefile ]; then
     if make -C negative clean >/dev/null 2>&1 && make -C negative >/tmp/neg.txt 2>&1; then
         sed -n 's/^/  /p' /tmp/neg.txt | head -6
-        make -C negative test 2>&1 | sed 's/^/  /'
-        _negdone="$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' negative/DONE.txt 2>/dev/null | wc -l)"
-        _negall="$(ls negative/test_*.c 2>/dev/null | wc -l)"
-        printf '  %s of %s negative test(s) claimed complete\n' "$_negdone" "$_negall"
-        good "every negative test compiles under -Werror and both sanitizers"
+        if make -C negative test >/tmp/negtest.txt 2>&1; then
+            grep -E '^  (PASS|FAIL)|asan_demo|^ALL NEGATIVE' /tmp/negtest.txt \
+                | sed 's/^/  /'
+            _negdone="$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' negative/DONE.txt 2>/dev/null | wc -l)"
+            _negall="$(ls negative/test_*.c 2>/dev/null | wc -l)"
+            printf '  %s of %s negative test(s) claimed complete\n' "$_negdone" "$_negall"
+            good "every defect variant caught by exactly the cases its file predicted"
+        else
+            tail -40 /tmp/negtest.txt | sed 's/^/  /'
+            bad "a negative test, or one of its defect variants, did not behave as declared"
+        fi
         make -C negative clean >/dev/null 2>&1
     else
         sed 's/^/  /' /tmp/neg.txt | tail -20
         bad "a negative test does not compile"
     fi
-    rm -f /tmp/neg.txt
+    rm -f /tmp/neg.txt /tmp/negtest.txt
 else
     bad "negative/ has no Makefile"
 fi
+
+step "the advisory verdicts still come out of the evidence"
+# docs/advisories.md states six verdicts about whether this project's own two
+# builds carry three published defects. They are not opinions: each one is
+# assembled from an advisory pin, a recorded run, the capability bits in the
+# committed captures, and a grep of the source the compiler read.
+#
+# ★ --selftest first, and it is the half that matters. A tool that answered
+# NOT-AFFECTED for everything would pass --check against a patched tree and say
+# nothing at all. The selftest feeds it evidence that must produce every other
+# verdict, including the one where its two routes disagree, and fails if the
+# answer does not move. Rule 11, applied to a verdict instead of a parser.
+#
+# The output is captured and then printed, rather than piped into sed inside
+# the `if`. A pipeline's status is its LAST command's, so `cmd | sed` is always
+# a success — which is the defect the step "no branch is decided by a pipeline
+# that can lose its producer" exists to find, and there is no reason for this
+# file to contain the thing it checks other files for.
+if _adv="$(python3 harness/check_advisories.py --selftest 2>&1)"; then
+    printf '%s\n' "$_adv" | sed 's/^/  /'
+    if _adv="$(python3 harness/check_advisories.py --check docs/advisories.md 2>&1)"; then
+        printf '%s\n' "$_adv" | sed 's/^/  /'
+        good "the document's verdicts match the recorded evidence, and the tool can still say otherwise"
+    else
+        printf '%s\n' "$_adv" | sed 's/^/  /'
+        bad "docs/advisories.md states a verdict the evidence does not support"
+    fi
+else
+    printf '%s\n' "$_adv" | sed 's/^/  /'
+    bad "check_advisories.py cannot reproduce a verdict it is supposed to be able to reach"
+fi
+unset _adv
 
 step "private material is not tracked"
 # plan/ and archive/ hold the schedule this work is executed against; study/

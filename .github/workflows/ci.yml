@@ -28,10 +28,25 @@ name: CI
 #                      red when a tampered measurement stops being rejected
 #   now      drills    every C drill compiles under -Werror + both sanitizers;
 #                      the ones named in c-drills/DONE.txt are run
-#   now      negative  the three advisory-class tests compile under the same
-#                      flags; the ones named in negative/DONE.txt are run,
-#                      which is currently none of them and the job says so
-#   G6       upstream  build libspdm from the pinned commit, run its unit tests
+#   now      negative  the three advisory-class tests, every one of their
+#                      declared defect variants, and the two runs that assert
+#                      what AddressSanitizer does and does not see
+#   weekly   upstream  the pins still name what they say, libspdm builds from
+#                      the pinned commit and passes its own unit tests, and the
+#                      three advisories have not been edited under us
+#
+# Why `upstream` is weekly and not on every push
+# ----------------------------------------------
+# It builds libspdm and a vendored OpenSSL, which is twenty minutes, and it
+# talks to two external services. Neither cost buys protection for this
+# repository's code: the thing it evidences is "I can build upstream and my
+# pins still point where they say", and that is a fact that is weekly-true.
+#
+# Putting it on every push would make a pull request go red because somebody
+# else force-pushed a tag, which trains people to ignore the badge — and a
+# badge people ignore is worse than no badge. So it runs on a schedule and on
+# demand, and the README says so rather than leaving a reader to assume every
+# job guards every commit.
 #
 # What W10 added to `verify` rather than to a job of its own: the conformance
 # work produced two analysis tools and three assertions, and all five belong
@@ -60,6 +75,10 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    # Mondays, 04:17 UTC. Not on the hour: GitHub queues scheduled runs and the
+    # top of the hour is where everybody else's are.
+    - cron: '17 4 * * 1'
 
 permissions:
   contents: read
@@ -214,9 +233,113 @@ jobs:
             echo "### Negative tests: ${done_count} of ${total} complete"
             echo
             if [ "${done_count}" -eq 0 ]; then
-              echo "W10 wrote the specifications; W11 writes the assertions."
-              echo "All ${total} skeletons compile under \`-Werror\` with both"
-              echo "sanitizers, and **none of them is claimed as passing** —"
-              echo "\`DONE.txt\` is what \`make test\` runs and it is empty."
+              echo "The skeletons compile under \`-Werror\` with both sanitizers,"
+              echo "and **none of them is claimed as passing** — \`DONE.txt\` is"
+              echo "what \`make test\` runs and it is empty."
+            else
+              # The counts are asked OF the files rather than written here, for
+              # the reason the header comment gives about the step list.
+              cases=0; defects=0
+              for t in $(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' DONE.txt); do
+                cases=$((cases + $(./"$t" --list | grep -c '^case ')))
+                defects=$((defects + $(./"$t" --defects)))
+              done
+              echo "${cases} cases and **${defects} defect variants**. Each"
+              echo "defect is a deliberately wrong implementation that has to be"
+              echo "caught by exactly the cases its own file predicted — no"
+              echo "fewer, and no others."
             fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  upstream:
+    name: the pins still name what they say, and upstream still builds
+    # Weekly and on demand only. The header comment says why: twenty minutes of
+    # somebody else's build, protecting a claim that is weekly-true.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      # ★ Before the build, not after. A build that succeeds against a moved
+      # pin has proved nothing about the pin, and the pin is the thing every
+      # published number in this repository is attributed to.
+      - name: The tags this project pins still point where the pins say
+        run: |
+          fail=0
+          for pin in third_party/spdm-emu-stable.pin third_party/spdm-emu-pqc.pin; do
+            ref="$(awk -F= '/^libspdm-ref=/{print $2}' "$pin")"
+            want="$(awk -F= '/^libspdm=/{print $2}' "$pin")"
+            got="$(git ls-remote https://github.com/DMTF/libspdm.git "refs/tags/${ref}^{}" \
+                   | cut -f1)"
+            [ -n "$got" ] || got="$(git ls-remote https://github.com/DMTF/libspdm.git \
+                                    "refs/tags/${ref}" | cut -f1)"
+            if [ "$got" = "$want" ]; then
+              echo "  ok   $pin: $ref is still $want"
+            else
+              echo "  FAIL $pin: $ref is now ${got:-absent}, the pin says $want"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: The three advisories have not been edited under their pins
+        # Drift is news rather than a failure, so this does not gate the build.
+        # What it must not do is go unnoticed, which is the whole reason it runs
+        # somewhere rather than nowhere.
+        run: python3 harness/check_advisories.py --refresh
+
+      - name: Clone libspdm at the commit third_party/spdm-emu-pqc.pin names
+        run: |
+          sha="$(awk -F= '/^libspdm=/{print $2}' third_party/spdm-emu-pqc.pin)"
+          git init --quiet /tmp/libspdm
+          git -C /tmp/libspdm remote add origin https://github.com/DMTF/libspdm.git
+          git -C /tmp/libspdm fetch --quiet --depth 1 origin "$sha"
+          git -C /tmp/libspdm checkout --quiet FETCH_HEAD
+          git -C /tmp/libspdm submodule update --init --depth 1 --recursive
+          echo "HEAD=$(git -C /tmp/libspdm rev-parse HEAD)  pin=$sha"
+          test "$(git -C /tmp/libspdm rev-parse HEAD)" = "$sha"
+
+      - name: Build it, the way third_party/spdm-emu-pqc.pin says it was built
+        working-directory: /tmp/libspdm
+        run: |
+          cmake -S . -B build -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET=Release \
+                -DCRYPTO=openssl
+          cmake --build build -j"$(nproc)"
+
+      - name: Its own unit tests
+        working-directory: /tmp/libspdm/build
+        run: |
+          # Named individually rather than globbed. Standing rule 20: sixty-nine
+          # fuzz targets live in the same directory and answer "file error" to
+          # being run with no argument, which an earlier version of
+          # harness/run_coverage.sh counted as six broken unit tests.
+          for t in test_spdm_requester test_spdm_responder test_crypt; do
+            if [ -x "bin/$t" ]; then
+              echo "--- $t ---"
+              "./bin/$t"
+            else
+              echo "--- $t is not in this build ---"
+            fi
+          done
+
+      - name: Report
+        if: always()
+        run: |
+          {
+            echo "### Upstream"
+            echo
+            echo "Weekly. It answers three questions and none of them is about"
+            echo "this repository's own code:"
+            echo
+            echo "1. do the tags \`third_party/*.pin\` name still resolve to the"
+            echo "   commits the pins record"
+            echo "2. does libspdm still build at that commit, with the flags the"
+            echo "   pin says its captures were taken with"
+            echo "3. have the three 2026 advisories been edited since they were"
+            echo "   pinned"
+            echo
+            echo "1 and 2 are the precondition for sending anything upstream."
+            echo "3 is the only thing in this pipeline that can change without"
+            echo "anybody here touching a file."
           } >> "$GITHUB_STEP_SUMMARY"
