@@ -15,8 +15,16 @@
 #      names, and caught it (rule 11),
 #   4. is clean under -Werror, AddressSanitizer and UndefinedBehaviorSanitizer.
 #
-# Nothing qualifies yet. W10 wrote the specifications; W11 writes the tests.
+# W11 wrote all three. Condition 3 is no longer a thing a person does once and
+# remembers: each file declares its own defect variants and exactly which cases
+# each must move, `make test` builds and runs every one of them, and a defect
+# that moves a case nobody predicted fails the build the same way a defect that
+# moves nothing does.
+#
+#   test_offset_length         9 cases, 8 defects
+#   test_oversized_field       7 cases, 6 defects, plus the two --asan-demo runs
+#   test_transcript_coverage   8 cases, 6 defects, plus a calibration
 
-# test_offset_length
-# test_oversized_field
-# test_transcript_coverage
+test_offset_length
+test_oversized_field
+test_transcript_coverage

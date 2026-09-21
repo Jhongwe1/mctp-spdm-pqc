@@ -1,0 +1,62 @@
+{
+  "generated_by": "harness/run_exposure.sh",
+  "offline": false,
+  "flavors": {
+    "stable": {
+      "libspdm_commit": "3560bc4bc48104cec6c55d1a25288b48c27b1007",
+      "libspdm_ref": "3.8.0",
+      "cryptlib_linked": "libcryptlib_openssl.a",
+      "cryptlib_present": "cryptlib_mbedtls cryptlib_null cryptlib_openssl",
+      "build_target": "Release",
+      "debug_enable_zero_at_cmakelists_line": 886,
+      "assert_expands_to_nothing": true,
+      "copy_mem_copies_after_assert": true,
+      "advisories": {
+        "DMTF-2026-0002": {
+          "fixed_line_present": false,
+          "defective_line_present": true,
+          "ancestry_3_8_2": "behind",
+          "ancestry_4_0": "behind"
+        },
+        "DMTF-2026-0001": {
+          "fixed_line_present": false,
+          "defective_line_present": true,
+          "ancestry_3_8_2": "behind",
+          "ancestry_4_0": "behind"
+        },
+        "DMTF-2026-0003": {
+          "kind": "specification",
+          "session_established_by_this_project": false
+        }
+      }
+    },
+    "pqc": {
+      "libspdm_commit": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+      "libspdm_ref": "4.0.0-rc",
+      "cryptlib_linked": "libcryptlib_openssl.a",
+      "cryptlib_present": "cryptlib_mbedtls cryptlib_null cryptlib_openssl",
+      "build_target": "Release",
+      "debug_enable_zero_at_cmakelists_line": 998,
+      "assert_expands_to_nothing": true,
+      "copy_mem_copies_after_assert": true,
+      "advisories": {
+        "DMTF-2026-0002": {
+          "fixed_line_present": true,
+          "defective_line_present": false,
+          "ancestry_3_8_2": "diverged",
+          "ancestry_4_0": "ahead"
+        },
+        "DMTF-2026-0001": {
+          "fixed_line_present": true,
+          "defective_line_present": false,
+          "ancestry_3_8_2": "diverged",
+          "ancestry_4_0": "ahead"
+        },
+        "DMTF-2026-0003": {
+          "kind": "specification",
+          "session_established_by_this_project": false
+        }
+      }
+    }
+  }
+}
