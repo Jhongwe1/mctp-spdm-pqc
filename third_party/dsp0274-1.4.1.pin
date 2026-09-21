@@ -1,0 +1,52 @@
+source=DSP0274 Security Protocol and Data Model (SPDM) Specification
+version=1.4.1
+url=https://www.dmtf.org/sites/default/files/standards/documents/DSP0274_1.4.1.pdf
+sha256=a5259037e0853913efc0efd07358669a4bcfc630d3a61eb1cf09e3758db057b6
+bytes=1670077
+pages=313
+retrieved-at=2026-10-19T18:16:02Z
+quoted-in=docs/transcript.md
+sections-read=633-644 (the five FINISH and FINISH_RSP transcript definitions, all of them, against the same sections of 1.4.0)
+supersedes=third_party/dsp0274.pin
+# WHY THIS SITS BESIDE 1.4.0 RATHER THAN REPLACING IT
+#
+# third_party/dsp0274.pin pins 1.4.0 and is NOT retired by this file. Every
+# claim in docs/certchain.md and every field name in certs/openssl.cnf was
+# checked against the text of 1.4.0, and verify_repo.sh asserts that those two
+# files still carry 1.4.0's digest. Moving the pin would leave those claims
+# citing a document nobody had read them against — which is the failure standing
+# rule 7 describes, arriving through the front door.
+#
+# So: a pinned document is the evidence that the claims checked against it were
+# checked. Replacing it does not update those claims; it un-checks them.
+# docs/decisions/0011-two-versions-of-one-specification.md is the long version.
+#
+# And in this particular case the DIFFERENCE between the two versions is the
+# result. DMTF-2026-0003 is a defect in a document, and the only way to show
+# it was repaired is to hold both documents open. A single pin cannot express
+# a diff.
+#
+# WHAT WAS CHECKED, AND WHAT IT SAYS
+#
+# 1.4.0 re-downloaded on the same day as this file and hashed to
+# a2035c64f614640ba34133ad255589269bf13c9d816414638fb22d89eb5369d9, which is
+# byte for byte the digest third_party/dsp0274.pin recorded on 2026-08-31. The
+# pin still names the document it named eight weeks ago.
+#
+# Extracted with `pdftotext -layout` from both, the phrase
+#
+#     [FINISH] . SPDM Header Fields      (and [FINISH_RSP] . SPDM Header fields)
+#
+# occurs FIVE times in 1.4.0 and ZERO times in 1.4.1 — which is the count the
+# advisory gives for affected definitions, arrived at independently. All five
+# now read "* except the ... field(s)". docs/transcript.md section 3 quotes
+# both versions of all five side by side.
+#
+# 1.4.1 is 313 pages against 1.4.0's 306, and is the SMALLER file (1,670,077
+# bytes against 1,838,236) — a different PDF producer, not a smaller document.
+# Neither number is evidence of anything and both are here so that a reader who
+# downloads it and gets different ones knows immediately.
+#
+# Not vendored — the PDF is not this repository's to redistribute, and lives
+# outside it under LAB_DIR/spec/dsp0274_141.pdf. What is pinned is the digest
+# of the exact file that was read.
