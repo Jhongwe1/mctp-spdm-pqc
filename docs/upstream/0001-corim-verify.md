@@ -8,7 +8,18 @@
 - **Found:** 2026-09-12, by running the tool's own published example verbatim
   before connecting anything of this project's to it.
 - **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `corim-verify-public-key`, on top of
-  upstream `main` at `ea77f25`.
+  upstream `main` at **`b5f3ec1`** — rebased on 2026-10-19 from `ea77f25`,
+  because the freshness check found that main had moved. **The two commits
+  that moved it do not touch this file**, the rebase was clean, and the diff
+  is byte-identical across it (`7266972074be02bc…`). The pre-rebase commit is
+  kept as the tag `w11-before-rebase` = `425aa5a`.
+- **Re-checked 2026-10-19, immediately before sending:** both defective lines
+  are still in upstream `main` — `EC2Key(crv='P_256', d=key)` at line 209 and
+  `cose_msg.verify_signature(Algorithm)` at line 212 — so the change is still
+  needed. `DMTF/spdm-emu` issue and PR search for `CoRimTool` and `EC2Key`:
+  **0 results each**, unchanged since 2026-09-12. `CONTRIBUTING.md` is still
+  the one these rules were read from. All the `Tested:` lines re-run on the
+  rebased tree by `bash rats/interop.sh` — every comparison agreed.
 
 ---
 

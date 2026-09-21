@@ -1059,7 +1059,8 @@ this table is the record of that rather than of the original work.
 |---|---|---|
 | prepared | 2026-09-12, commit `425aa5a` | 2026-09-18, commit `d3c84a1`, `Change-Id: Ib0191ead…` |
 | base then | `ea77f25` | `72e3ea9` |
-| **upstream tip today** | **`ea77f25`** — unchanged | **`72e3ea9`** — unchanged, **0** commits since |
+| **upstream tip on 2026-10-12** | `ea77f25` — unchanged | `72e3ea9` — unchanged |
+| **upstream tip on 2026-10-19** | ★ **`b5f3ec1`** — **MOVED, 2 commits.** Neither touches `CoRimTool.py`; the branch was rebased and the diff is byte-identical | **`72e3ea9`** — still unchanged, **0** commits since, README still 404 |
 | still applies | yes, no rebase needed | yes, no rebase needed |
 | still needed | yes — the two lines are still there | yes — `git ls-tree origin/main` still shows no README |
 | its own `Tested:` claims | the load-bearing one, *"a corrupted signature is still refused"*, is re-asserted by `harness/verify_repo.sh` on every run, through `rats/interop.sh`'s half-patched copy | prettier 3.3.3 `--check` and markdownlint-cli 0.41.0 **re-run today**, both clean, with the two configs fetched from `openbmc-build-scripts` today rather than from a cached copy |
