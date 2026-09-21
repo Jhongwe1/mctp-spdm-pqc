@@ -15,7 +15,7 @@
 |---|---|
 | 我在做什麼? | 用 DMTF 的參考實作(`libspdm` / `spdm-emu`)建一條**可量測、可重現**的 SPDM 裝置證明流程,產出證據當**求職作品集** |
 | 總共多久? | 14 週,2026-08-11 ~ 2026-11-15 |
-| **現在做到哪?** | ★★★ **W10 收工(2026-10-12)。Gate 6 開了一半** ——**DMTF 官方的一致性測試跑了四次**,不是一次。一次只會告訴你這台裝置怎麼樣,四次才說得出這支測試本身看得見什麼:其中一臂把一個 capability 位元關掉,**611 個 assertion 從「沒跑過」變成「跑過」**;另一臂把一個簽章的最後一個 byte 在飛行中翻掉,**要求恰好一個 assertion 變 FAIL,而且是名字叫 `response signature` 的那一個**。★ 最硬的一件:那支官方測試報的四個 `response signature` 失敗,**是它自己的 test case 把驗簽要用的憑證鏈丟掉了** —— 這不是推理,是把 M1M2 從 capture 重建、用葉憑證的公鑰驗過的(§11.9)。fuzz 與覆蓋率也做完了,而且**把原本要講的那句話撤掉了**:我的種子在 8 個 target 裡有 3 個比上游手寫的還差。以下是 W09 收工(2026-09-18)的內容。**Gate 5 關掉了** ——**兩條真實傳輸都跑通**:古典與後量子兩臂的握手整條走 **真的 Linux MCTP 網路**(真 EID、真路由表、kernel 配的 tag、64 bytes 的真分段),**953 個後量子封包對 115 個古典封包,是數出來的不是除出來的**;另一條是**真的 PCIe DOE 信箱**,一則 `GET_VERSION` 穿過 config space 拿到 `VERSION`。宿主的 kernel 一個位元組都沒動(`ADR 0010`)。★ 順便發現一件這個 repo publish 了三週的事是錯的:177 bytes 那個「判別案例」其實判別不了任何東西,因為 `59 × 3 = 177`(§11.8)。以下是 W08 收工(2026-09-14)的內容。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
+| **現在做到哪裡?** | ★★★ **W11 收工(2026-10-25)。Gate 6 關掉了** ——計畫給了四個通報編號，W10 一個都不寫進程式碼（standing rule 7：**沒查過原始來源的一律不引**）。W11 去查了，**四個都是對的**——但查這件事本身挖出三件「不查就會講錯」的事：① 三個都**不在 GitHub 的全域 advisory 資料庫裡**，`github.com/advisories/GHSA-…` 那個人會先點的網址 **三個全部 404**；② 三個裡面 **兩個根本沒有 CVE**，而且沒 CVE 的那兩個分數**更高**（6.9 對 6.0）——DMTF-2026-0001 自己寫的理由是「實際裝置上實作到的機率低」，**所以 CVE 是一個關於部署的判斷，不是分數門檻**；③ 唯一那個 CVE（CVE-2026-61810）**NVD 查不到、MITRE CVE Services 也 404**。★★ 而且 `DSP0274 1.4.1` 現在抱得到了（計畫說可能抱不到），所以第三個通報——一個**規格的漏洞，不是程式的**——可以把兩個版本的 PDF 摄下來對照：`[FINISH].SPDM Header Fields` 這句話在 **1.4.0 出現五次、1.4.1 出現零次**，五次正好是通報說的五個定義。★★★ **修正不是補一個欄位，是換一種寫法**：1.4.0 列舉「要放進來的部分」，1.4.1 改成「除了簽章本身以外全部」。而且那個列舉寫的時候是對的——SPDM 1.3 的 FINISH 就是四個 byte 的 header 加簽章，**它是在別人改了另一章的 Table 80 之後才變錯的**（§11.10）。**三個類別寫成了測試**：24 個 case 對 **21 個故意寫錯的實作**，每個錯誤都要**事先宣告它會動到哪幾個 case**，動得太少（rule 11）跟動到沒人預測的（rule 13）一樣算失敗。它當天就抓到我一個預測錯誤。★ 寫這三個測試學到三件讀文章學不到的：**同一行錯的程式在 32-bit 欄位是漏洞、在 16-bit 只是拒錯理由**（integer promotion）；**ASan 看得到裸陣列溢出、看不到同一個 struct 裡溢到下一個成員**（這句是跑出來的，不是背的）；以及**讀上游真正的 patch 才發現 W10 定的狀態碼根本說不出那個錯誤**（檢查在複製之後才跑，回傳值是對的，記憶體已經沒了）。★★ **而且我去量了自己的 build 有沒有這三個洞**，五個独立的判準、兩條互相印證的路徑：`pqc` 那支兩個修正都有；`stable`（libspdm 3.8.0）**AFFECTED**，而且最后一個先決條件不是程式錯——`libspdm_copy_mem()` 確實有檢查 `src_len > dst_len`，但它寫成 `LIBSPDM_ASSERT`，而 `TARGET=Release` 會 `-DLIBSPDM_DEBUG_ENABLE=0`，**那個宏展開成空白，下面的複製迴圈照跑**（§11.11）。注意：這不影響這個 repo 任何一個數字，因為要踩到它得送 `GET_MEASUREMENT_EXTENSION_LOG`，**而所有 committed capture 裡一次都沒送過**（這句也是程式從 decode 算出來的）。CI 多了第五個 job `upstream`，**每週跑一次而不是每次 push**（理由寫在 ci.yml 裡）。以下是 W10 收工(2026-10-12)的內容。**Gate 6 開了一半** ——**DMTF 官方的一致性測試跑了四次**,不是一次。一次只會告訴你這台裝置怎麼樣,四次才說得出這支測試本身看得見什麼:其中一臂把一個 capability 位元關掉,**611 個 assertion 從「沒跑過」變成「跑過」**;另一臂把一個簽章的最後一個 byte 在飛行中翻掉,**要求恰好一個 assertion 變 FAIL,而且是名字叫 `response signature` 的那一個**。★ 最硬的一件:那支官方測試報的四個 `response signature` 失敗,**是它自己的 test case 把驗簽要用的憑證鏈丟掉了** —— 這不是推理,是把 M1M2 從 capture 重建、用葉憑證的公鑰驗過的(§11.9)。fuzz 與覆蓋率也做完了,而且**把原本要講的那句話撤掉了**:我的種子在 8 個 target 裡有 3 個比上游手寫的還差。以下是 W09 收工(2026-09-18)的內容。**Gate 5 關掉了** ——**兩條真實傳輸都跑通**:古典與後量子兩臂的握手整條走 **真的 Linux MCTP 網路**(真 EID、真路由表、kernel 配的 tag、64 bytes 的真分段),**953 個後量子封包對 115 個古典封包,是數出來的不是除出來的**;另一條是**真的 PCIe DOE 信箱**,一則 `GET_VERSION` 穿過 config space 拿到 `VERSION`。宿主的 kernel 一個位元組都沒動(`ADR 0010`)。★ 順便發現一件這個 repo publish 了三週的事是錯的:177 bytes 那個「判別案例」其實判別不了任何東西,因為 `59 × 3 = 177`(§11.8)。以下是 W08 收工(2026-09-14)的內容。**G1／G2／G3 完成**(逐欄位文件、三層鏈、**Table 1** 十條受控臂、篡改必被判 FAIL 的 CI、版本規則從「完全相等」改成「不低於參考值」而且用凍結的舊政策證明只有一格動,§11.6)。★★ **G4 完成**:六組演算法排成**三組對齊的比較**,**協商本身在六組裡是逐位元組相同的 152 bytes**(後量子一個位元組都不花在「談定演算法」上),**表裡每一個簽章長度都是從訊息長度差算出來的,而且六個全部剛好等於 FIPS 的常數**,以及 `DataTransferSize` 掃 32 倍範圍:**位元組動 3.1%、來回次數 59 → 0**(§11.7、`docs/pqc-cost.md`)|
 | ★ 一句話成果(W01) | 「我以為我跑的是最小握手。我砍了 `--exe_conn`,**但漏了 `--exe_session`,它的預設值有 14 項** —— 1116 封包、53 秒、結束碼 1。教訓是:**結束碼不是判決**,同一天有三個工具回答了稍微不同的問題」 |
 | ★★ 一句話成果(W02 · 主) | 「我把 554 個封包的『最小握手』砍到 **30** 個,而且證明被砍掉的 526 個封包送的是**完全相同的 528 個位元組** —— 263 趟來回 vs **1 趟**。兩個 528 都是腳本從兩份不同的 capture 各自算出來的」 |
 | ★★ 一句話成果(W02 · 機制) | 「逐欄位文件裡的每一個數字都寫成 `<!--claim key=value-->`,`fields.py --check` 從 capture 重新算一次。**當時 128/128 通過(W03 之後是 164/164),而且我證明過它會紅**:數字漂一個位元、欄位名寫錯、capture 不見 —— 三種都會讓建置失敗」 |
@@ -33,7 +33,7 @@
 | 專案那軌 vs 基本功那軌 | 🔴 專案 **超前**;**基本功欠八題,`SCORECARD.md` 八列全空,`DONE.txt` 連續第九個工作天是空的。這是這個 repo 目前最大的缺口,而且它現在的形狀變了 —— 專案那軌不只是跑在前面,它在幫一個從來沒開始的軌道製造工作** —— repo 量的是「這個系統怎麼運作」,`SCORECARD.md` 是**唯一一個量「我」的東西**。面試時 repo 讓你進到白板前面,白板上考的是 D1~D8 |
 | ⚠️ W08 之後仍然存在的障礙 | **一個專案裡兩個 OpenSSL。** libspdm 自己編 submodule 那份(**3.5.5**,PQC 就是它做的);系統的 `openssl` 是 3.0.13,`openssl list -signature-algorithms \| grep ml-dsa` 回空,所以**要簽自己的 PQC 憑證那條是紅的**。★ 2026-09-14 補上的不是這件事——這一行從 W07 就在這裡了——補上的是**機制**:在那之前 `manifest.json` 只記系統那個 3.0.13,每一份 pin 只寫 `crypto=openssl`。**知道一件事,跟有東西把它記下來,是兩件事。** 現在 `crypto-openssl-vendored` 與 `crypto-openssl-version` 在三份 pin 裡,而且是用 `--pin-only` 補的,沒有重新編譯 |
 | 我最該先讀哪一段? | 想知道握手每個欄位在幹嘛 → [`docs/handshake-walkthrough.md`](docs/handshake-walkthrough.md);想知道 `--trans MCTP` 為什麼不是真的 MCTP → [`docs/transports.md`](docs/transports.md);想知道踩過哪些坑 → `LOG.md`;想知道數字憑什麼可信 → 本檔 §6 的 `manifest.json` 那段 |
-| ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我 —— 但這一條在 09-12 變了一半。** 那個真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)**現在存在了**,它是三個 job 裡唯一一個會因為安全性質失效而變紅的。**還沒被保護的是**:沒有 `upstream` job(要 G6);`rats` job 斷言的是「這十條臂的判定必須是這些答案」,不是「這個政策抓得到所有壞東西」;而 `t3b_foreign` 那條——對的量測、錯的憑證來源——兩層都判 PASS,因為身分不在這個政策的職責裡。**沒裝 `opa` 的機器跑 `verify_repo.sh` 會直接紅**,不會靜靜跳過(2026-09-13 拿掉 PATH 實測過)。09-14 之後多了兩件被保護的事:**版本規則的四案例表**(八格只有一格可以動)、以及 **`bench/claims.json` 裡每一個跨 capture 的比值**(容差 0%,拿掉一個位元組就紅)<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
+| ⚠️ 三個一定要記住的 | ① **綠 ≠ 有在保護我 —— 但這一條在 09-12 變了一半。** 那個真正該綠的 `rats` job(斷言「篡改過的量測必須被判 FAIL」)**現在存在了**,它是三個 job 裡唯一一個會因為安全性質失效而變紅的。**還沒被保護的是**:`upstream` job 在 W11 建出來了,但它**每週跑一次、不是每次 push**(它建的是別人的程式碼,二十分鐘,而且上游改個 tag 就會紅——**一個會因為別人手滑而變紅的 badge,會訓練人忽略它**);`rats` job 斷言的是「這十條臂的判定必須是這些答案」,不是「這個政策抓得到所有壞東西」;而 `t3b_foreign` 那條——對的量測、錯的憑證來源——兩層都判 PASS,因為身分不在這個政策的職責裡。**沒裝 `opa` 的機器跑 `verify_repo.sh` 會直接紅**,不會靜靜跳過(2026-09-13 拿掉 PATH 實測過)。09-14 之後多了兩件被保護的事:**版本規則的四案例表**(八格只有一格可以動)、以及 **`bench/claims.json` 裡每一個跨 capture 的比值**(容差 0%,拿掉一個位元組就紅)。W11 再多兩件:**21 個故意寫錯的實作,每一個都要被它自己宣告的那幾個 case 抓到**;以及 **`docs/advisories.md` 的六個判定必須是從證據重算出來的**,而且那支工具自己有 selftest,能證明它**答得出 NOT-AFFECTED 以外的答案**——一個永遠回「沒事」的判定工具,跟沒有判定工具是一樣的<br>② **結束碼不是判決**,看封包數、看 log 的 error 行、看解出來的欄位<br>③ **解碼短 ≠ 握手短**。`spdm_dump` 的憑證鏈上限是 **4096 bytes**(量出來的,不是查表的),後量子鏈 16853 bytes 會讓它中途停下 |
 
 ### 現在的關卡狀態
 
@@ -45,8 +45,8 @@
 | G3 | RATS 驗證流水線 | ✅ **完成** —— 參考值、COSE 簽章背書、政策、判定,十條臂全跑過一遍(**Table 3**,`docs/rats-pipeline.md`)。**那個沒有任何一層擋得住的篡改被擋下來了,而且指得出是哪一條規則、哪一個 index。** 版本規則也收尾了:改成逐 index 的「不低於參考值」,舊的那份被**凍結**成 `rats/policy-v0-equality.rego`,四份 capture 跑兩個政策、**八格只有一格動**,CI 斷言這件事(§11.6)。放寬的代價寫在結果旁邊:`>=` 只擋得住低於參考值的回滾 |
 | G4 | 後量子成本 | ✅ **完成**(W07 起跑,W08 收)—— **六組全部**,排成三組對齊的比較:古典 vs 後量子在 **NIST level 3 與 level 5 各一組**(8.99× 與 **10.91×**,缺口隨等級變大),以及格基 vs hash-based 在同一個 KEM 下比。**十八個控制變因是從 `key.c` 讀出來的,不是從 `--help`**,每一臂把十二組協商結果加四個推導事實讀回來比對,對不上就整個 run 失敗。**Figure 2／Figure 3**、`docs/pqc-cost.md`、`docs/fragmentation.md` |
 | G5 | 真實傳輸 | ✅ **完成**(W09)—— **兩條路都成**。① **真的 MCTP 網路**:guest kernel 自己編、開 `CONFIG_MCTP`,guest 的 root 就是宿主的檔案系統(9p 唯讀),所以 W01 編的 `spdm_*_emu` 原封不動就能跑。兩臂握手整條走 mctp-serial,**A0 115 個封包、P2 953 個,全部數出來,模型每一則都對得上**。**對照組是決定性的**:同一個握手在訊息層的 capture 跟 W08 socket 那條**逐則長度完全一樣** —— 換傳輸沒有改變協定。② **真的 PCIe DOE 信箱**:QEMU 的 NVMe 開 `spdm_port`,guest 裡 `lspci -vvv` 看得到 Data Object Exchange capability,`transport/doe_probe` 從 userspace 打信箱、列出三個 DOE 協定、送一則 `GET_VERSION` 拿回 `VERSION`(1.0~1.4)。★ **封包比 8.29× 小於位元組比 9.11×**,因為一個傳輸單位是整個算的 —— 這件事在 socket 那條上永遠量不到(§11.8)|
-| G6 | 一致性與負面測試 | 🟡 **進行中**(W10 做完上半,負面測試是 W11)—— DMTF 的 `SPDM-Responder-Validator` 跑了**四臂**,八個失敗每一個都追到根因、而且分類成「行為錯」還是「能力/組態」(`docs/validator-report.md`)。★ 三臂的存在目的是**讓那支測試講出 PASS 以外的話**:去掉一個 `MUT_AUTH_CAP` 解鎖 **611 個 assertion 跟四整組測試**(而且「只動了這一個位元」是從兩份 capture 把 Flags 讀回來比對的,不是從旗標宣稱的);穿過一支**什麼都不改的 proxy** 要逐項重現基線;再穿過同一支 proxy **翻掉一個簽章位元組**,要求恰好一個 assertion 變 FAIL。★ 兩個上游發現,第二個是**證明**不是主張:`harness/challenge_verify.py` 先在那支測試「會通過」的九條連線上校準,再驗它判 FAIL 的那兩條 —— 兩條都驗過,所以錯的是測試不是裝置。fuzz 與覆蓋率:312 顆去重種子對上游的 81 顆,用 `afl-showmap` **量**而不是**說**;11,432 次執行、0 崩潰,以及「為什麼這是預期結果」的算術;行覆蓋率 69.7%、responder handler 76.5%(`docs/negative-tests.md`)。`negative/` 有三份規格、零個 assertion,`DONE.txt` 是空的,CI 一個都不宣稱 |
-| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**現在有兩個 patch 備好、都還沒送出**。第二個是 `openbmc/spdm` 的第一份 README:那個 repo 到現在還沒有 README,但 2025-05 有人送過一版(change 80422),被 owner 以「寫了程式碼做不到的假設功能」打回、CI 紅兩次、掛一年後被 bot 自動 abandon。**那份 review 就是規格**:只寫 merged tree 真的有的東西、引用 reviewer 要的 Redfish design、補 reviewer 要的 Code organization 章節,而且送出前先用 OpenBMC 自己的 prettier 與 markdownlint 跑過。第一個 patch 是**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。★ **十九個候選有證據,送出去的是零。** 2026-10-12 把兩個備好的 change 對上游重新檢查過一次:`DMTF/spdm-emu` 還停在 `ea77f25`、`openbmc/spdm` 的 main 還是沒有 README(而且那之後零個 commit),兩個都還適用、也都還需要。README 那份的 prettier 與 markdownlint **當天用當天抓的 config 重跑過**。**備好的東西會過期,所以新鮮度檢查要貼著送出那一刻做** |
+| G6 | 一致性與負面測試 | ✅ **完成** —— DMTF 的 `SPDM-Responder-Validator` 跑了**四臂**,八個失敗每一個都追到根因、而且分類成「行為錯」還是「能力/組態」(`docs/validator-report.md`)。★ 三臂的存在目的是**讓那支測試講出 PASS 以外的話**:去掉一個 `MUT_AUTH_CAP` 解鎖 **611 個 assertion 跟四整組測試**(而且「只動了這一個位元」是從兩份 capture 把 Flags 讀回來比對的,不是從旗標宣稱的);穿過一支**什麼都不改的 proxy** 要逐項重現基線;再穿過同一支 proxy **翻掉一個簽章位元組**,要求恰好一個 assertion 變 FAIL。★ 兩個上游發現,第二個是**證明**不是主張:`harness/challenge_verify.py` 先在那支測試「會通過」的九條連線上校準,再驗它判 FAIL 的那兩條 —— 兩條都驗過,所以錯的是測試不是裝置。fuzz 與覆蓋率:312 顆去重種子對上游的 81 顆,用 `afl-showmap` **量**而不是**說**;11,432 次執行、0 崩潰,以及「為什麼這是預期結果」的算術;行覆蓋率 69.7%、responder handler 76.5%(`docs/negative-tests.md`)。★★ W11 把下半做完:三個類別寫成測試,**24 個 case 對 21 個故意寫錯的實作**,每個錯誤版本都要**事先宣告它會動到哪幾個 case**,動得太少(rule 11)跟動到沒人預測的(rule 13)一樣算失敗;外加兩次跑 `--asan-demo`,**把「ASan 看得到什麼、看不到什麼」變成斷言而不是記憶**。四個 advisory 編號全部對照過原始來源,全部正確——但**三個都不在 GitHub 全域資料庫、兩個根本沒有 CVE、唯一那個 CVE 在 NVD 跟 MITRE 都查不到**(`docs/advisories.md` §1)。★★ 另外量了**這個 repo 自己的 build 有沒有這三個洞**:`pqc` 兩個修正都有,`stable`(3.8.0)其中一個 **AFFECTED**,五個先決條件全中(`docs/advisories.md` §3)|
+| G7 | 上游貢獻 | 🟡 **進行中** — 環境已備妥;**現在有兩個 patch 備好、都還沒送出**。第二個是 `openbmc/spdm` 的第一份 README:那個 repo 到現在還沒有 README,但 2025-05 有人送過一版(change 80422),被 owner 以「寫了程式碼做不到的假設功能」打回、CI 紅兩次、掛一年後被 bot 自動 abandon。**那份 review 就是規格**:只寫 merged tree 真的有的東西、引用 reviewer 要的 Redfish design、補 reviewer 要的 Code organization 章節,而且送出前先用 OpenBMC 自己的 prettier 與 markdownlint 跑過。第一個 patch 是**第一個 patch 已經備好、還沒送出**:`CoRimTool.py` 的 `verify` 根本沒有在驗簽章,而且是兩行互相遮蔽的缺陷——只修看起來明顯的那一行,會把「什麼都不接受」變成「什麼都接受」。分支、commit、PR 內文都寫好了,按送出的那一下是他的(`docs/upstream/0001-corim-verify.md`)。★ **十九個候選有證據,送出去的是零。** 2026-10-19 貼著送出那一刻又檢查了一次,★★ **而這次它真的抓到東西**:`DMTF/spdm-emu` 的 main **動了**,`ea77f25` → `b5f3ec1`,兩個 commit。兩個都沒碰到 `CoRimTool.py`,所以 rebase 乾淨、**diff 位元組完全相同**、那兩行有問題的程式**今天還在 main 裡**(209 行跟 212 行),commit message 裡每一條 `Tested:` 也在 rebase 後的樹上重跑過一次(`bash rats/interop.sh`,全部一致)。`openbmc/spdm` 則完全沒動:還是 `72e3ea9`、還是沒有 README、`main` 還是唯一的 head、`OWNERS` 也沒變。**備好的東西會過期,所以新鮮度檢查要貼著送出那一刻做** —— 這一條這次不是格言,是真的擋下一次「用兩週前的 base 送 PR」 |
 | G8 | 交付與敘事 | ⬜ 未開始(W12~W14) |
 
 ---
@@ -68,6 +68,8 @@
 | [10](#10-基本功c-drills) | 基本功:c-drills | 每週 |
 | [11](#11-每天怎麼用這個-repo) | 每天怎麼用這個 repo | — |
 | [11.9](#119--一支測試說你錯了要怎麼知道是不是它錯了w10-做的事) | ★ **一支測試說你錯了,要怎麼知道是不是它錯了**(W10) | 讀 12 分 |
+| [11.10](#1110--一個漏洞在文件裡不在程式裡w11-做的事上半) | ★★★ **一個漏洞在文件裡,不在程式裡**(W11) | 讀 10 分 |
+| [11.11](#1111--那我自己的-build-有沒有這些洞w11-做的事下半) | ★★ **那我自己的 build 有沒有這些洞**(W11) | 讀 8 分 |
 | [12](#12-把一切從零重建驗證可重現性) | 把一切從零重建 | 40 分 |
 | [附錄](#附錄-a-指令速查) | 指令速查、詞彙表 | 查表 |
 
@@ -1962,6 +1964,207 @@ AFL 自己在 log 裡就警告 `The target binary is pretty slow!`。照這個�
 崩潰這件事能說明什麼」還差三個數量級 —— **這才是本機 fuzz 找不到東西的誠實理由,
 而不是「運氣不好」。**
 
+### 11.10 ★ 一個漏洞在文件裡,不在程式裡(W11 做的事,上半)
+
+這一節是整個專案技術上最高的一個點,而且它跟「寫程式」幾乎沒關係。
+
+#### 先講清楚 transcript 是什麼
+
+SPDM 的簽章**不是一則訊息簽一次**。握手快結束的時候那個簽章,簽的是
+**transcript**:到目前為止交換過的每一則訊息,照送出的順序接起來。
+
+為什麼要這樣做?因為這樣那個簽章講的就不是「這則訊息是真的」,而是
+**「整段對話就是我們兩邊以為的那段對話」**。中間人只要動了任何一則訊息,
+接起來的位元組就變了,簽章就驗不過。
+
+所以整個設計靠的是這一句:
+
+> **一個簽章值多少,等於它涵蓋了多少位元組。**
+
+反過來說:**如果有一則訊息被收下了、卻沒有被接進 transcript**,那攻擊者去改
+那則訊息,**不會動到任何簽章涵蓋的東西**。簽章照樣驗過、握手照樣完成、
+驗證方照樣滿意——而它滿意的那件事,不是實際發生的事。
+
+#### SPDM 1.4 改了什麼,以及沒改什麼
+
+1.4 在 `FINISH` 加了兩個欄位,而且放在簽章**前面**:
+
+```
+  offset 0   SPDMVersion          ┐
+  offset 1   RequestResponseCode  │ 這四個 byte 叫 "SPDM Header Fields"
+  offset 2   Param1               │ ——就只有這四個
+  offset 3   Param2               ┘
+  offset 4   OpaqueDataLength     ← 1.4 新增
+  offset 6   OpaqueData           ← 1.4 新增
+  ...        Signature            ← 簽 transcript
+  ...        RequesterVerifyData  ← transcript hash 的 HMAC
+```
+
+**但有五個 transcript 定義沒跟著改**,還是寫到「`[FINISH].SPDM Header Fields`」
+為止——也就是只到那四個 byte。所以照字面讀,那兩個新欄位**是在簽章前面送出去
+的、而且沒有被簽到**。中間人可以改,簽章跟 HMAC 都還是過。
+
+#### ★★ 修正不是補一個欄位,是換一種寫法
+
+我把 1.4.0 跟 1.4.1 兩份 PDF 都抓下來、都釘了 pin、都讀了,然後對照:
+
+| | 1.4.0(有洞) | 1.4.1(修好) |
+|---|---|---|
+| 最後一步 | `[FINISH] . SPDM Header Fields` | `[FINISH] . * except the Signature and RequesterVerifyData fields.` |
+
+```bash
+# 這兩個數字是這一節的證據,自己跑一次就知道
+pdftotext -layout "$LAB_DIR/spec/dsp0274_140.pdf" - | grep -c 'SPDM Header [Ff]ields'   # 5
+pdftotext -layout "$LAB_DIR/spec/dsp0274_141.pdf" - | grep -c 'SPDM Header [Ff]ields'   # 0
+```
+
+**五次變零次**,而五正好是通報說受影響的定義數量——這個數字是我自己從文件算出來
+的,不是抄通報的。
+
+差別在**形狀**:
+
+| | |
+|---|---|
+| **列舉**(1.4.0) | 「要放進來的是這幾項」。訊息一改,就得有人回來改這段——**而沒有任何機制強迫那件事發生** |
+| **排除**(1.4.1) | 「除了簽章本身以外全部」。對一個**還不存在的欄位**也是對的 |
+
+#### ★★★ 而且那個列舉,寫下來的時候是對的
+
+SPDM **1.3** 的 `FINISH` 就是四個 byte 的 header 加簽章,中間什麼都沒有。
+所以「SPDM Header Fields」**真的就是簽章該涵蓋的全部**,那段話當時完全正確。
+
+**它是在別人改了另一章的 Table 80 之後才變錯的。**
+
+> 這就是這個類別:**一句對的話,被遠處的一個改動弄錯了,而中間那個接縫沒有任何
+> 東西在看。**
+
+面試講到這裡可以收在一句:**「簽章的安全性不是來自『有簽』,是來自
+『涵蓋了每一個在它之前送出去的位元組』。而那個保證要寫成排除,不能寫成列舉。」**
+
+#### 讀 CVSS 向量比讀分數值錢十倍
+
+```
+CVSS:4.0/AV:A/AC:L/AT:P/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N     6.0
+```
+
+| | |
+|---|---|
+| `VC:N` / **`VI:H`** / `VA:N` | **只傷完整性**。不洩密、不影響可用性——攻擊者改的是兩邊都以為驗過的資料 |
+| `AV:A` | **Adjacent**,攻擊者要在同一條匯流排上,不是從網路 |
+
+分數是查來的,向量是懂的。而且這三個 2026 通報裡,**它是分數最低的那個,卻是唯一
+有 CVE 的那個**(§11.11)。
+
+#### 我做了什麼、沒做什麼
+
+- **做了**:抓兩個版本、算 hash、釘 pin、讀了 633–644 節、對照五個定義;把類別寫成
+  測試(`negative/test_transcript_coverage.c`,8 個 case、6 個錯誤版本)。
+- **沒做**:發現它、回報它、實作修正。它是 2026-06-02 在 libspdm issue 3633 被提出的。
+- **做不到**:在線上看到它。**這個專案從來沒有建立過 secure session**
+  (`docs/threat-scope.md` level 2),所以這裡根本沒有 `FINISH`、沒有 transcript。
+  測試是**模型**,檔案第一段就這樣寫。
+
+⚠️ **講法注意。** 不要說「我找到一個 SPDM 的漏洞」。要說
+**「我讀了兩個版本的規格,把那五個定義的差異整理出來,並且把那個類別寫成一個會失敗的測試。」**
+
+---
+
+### 11.11 ★ 那我自己的 build 有沒有這些洞?(W11 做的事,下半)
+
+上一節跟 `negative/` 講的都是**類別**。這一節是另一個問題,而且是別人真的會問的
+那一個:**你自己跑的那份 libspdm,有沒有這三個洞?**
+
+#### 「版本號在範圍內」不是答案
+
+這是最容易做錯的一步。版本比對只是**五件事裡的第一件**,而另外四件常常跟它講不一樣:
+
+| # | 問題 | 誰回答 |
+|:--|---|---|
+| 1 | 釘住的版本在受影響範圍裡嗎 | 通報 |
+| 2 | 修正那個 **commit** 是我這個 commit 的祖先嗎 | GitHub 的 `compare` API |
+| 3 | 修好的那**一行**在我硬碟上的原始碼裡嗎 | `grep`,對編譯器真的讀的那個檔 |
+| 4 | 有問題的程式碼**有被連進去**嗎 | build 出來的 `.a` |
+| 5 | 通報自己列的先決條件成立嗎 | capability 位元 + assert 展開成什麼 |
+
+**2 跟 3 是故意重複的。** standing rule 12:兩條路走到同一個答案,就讓它們互相
+印證。工具如果發現兩邊不合,會印 `DISAGREEMENT` 然後非零結束,**而不是挑一個**
+——因為一條錯的路,長得跟一條對的路一模一樣。
+
+```bash
+# 量一次(要網路,要 LAB_DIR 的 build tree)
+bash harness/run_exposure.sh
+
+# 只從已經 commit 的證據重算(CI 跑的就是這兩個)
+python3 harness/check_advisories.py --selftest
+python3 harness/check_advisories.py --check docs/advisories.md
+```
+
+#### 結果
+
+| | `stable` — libspdm 3.8.0 | `pqc` — libspdm 4.0.0-rc |
+|---|---|---|
+| DMTF-2026-0001 | **PRESENT-NOT-REACHABLE** | NOT-AFFECTED |
+| DMTF-2026-0002 | **AFFECTED** | NOT-AFFECTED |
+| DMTF-2026-0003 | NOT-APPLICABLE | NOT-APPLICABLE |
+
+#### ★★ 最值得講的那一格:`stable` / DMTF-2026-0002
+
+五個先決條件**全中**,而最後一個不是程式寫錯:
+
+```c
+void libspdm_copy_mem(void *dst_buf, size_t dst_len,
+                      const void *src_buf, size_t src_len)
+{
+    ...
+    if (src_len > dst_len) {
+        LIBSPDM_ASSERT(0);      // ← 檢查在這裡
+    }
+    while (src_len-- != 0) {    // ← 而且不管上面怎樣,照抄
+        *(dst++) = *(src++);
+    }
+}
+```
+
+**檢查是有的。它寫成 `LIBSPDM_ASSERT`。**
+這個專案用 `TARGET=Release` build,而 `libspdm/CMakeLists.txt:886` 是:
+
+```cmake
+add_compile_options(-DLIBSPDM_DEBUG_ENABLE=0)
+```
+
+`debuglib.h` 看到這個就把 `LIBSPDM_ASSERT(expression)` 定義成**空的**。
+所以那個邊界檢查**在原始碼裡、不在二進位檔裡**,而下面那個複製迴圈照跑。
+
+> ★ 這一句值得背:**「那個檢查存在,而且在出貨的 build 裡什麼都不做——
+> 因為它是用 assert 寫的,而 assert 就是那個保證會在 release build 裡消失的東西。」**
+
+**但這不影響這個 repo 的任何一個數字。** 要踩到它得送
+`GET_MEASUREMENT_EXTENSION_LOG`,而**所有 committed capture 裡一次都沒送過**
+——這句話也是工具從 decode 檔算出來的,不是我說的。
+
+#### ★ 另一格也值得講:present ≠ reachable
+
+`stable` 對 DMTF-2026-0001 是 **PRESENT-NOT-REACHABLE**:版本在範圍內、修正沒有、
+`CSR_CAP` 98 份 capture 全都有廣告——**但那段程式在 `cryptlib_mbedtls` 裡,
+而我們連的是 `libcryptlib_openssl.a`**。三個後端都在樹裡,連進去的只有一個。
+
+再往上推一層,這就是後量子那條線的隱藏成本:
+
+> **同一個協定函式庫,換一個 crypto 後端,攻擊面就是另一組。**
+> 而 PQC 只有 OpenSSL 後端有。所以「要不要上 ML-DSA」不只是演算法問題,
+> 是**整個 crypto 後端要不要換**的問題,而換後端會換掉一整組缺陷。
+
+`docs/pqc-cost.md` 量的是位元組;**這是那個成本裡不是位元組的部分。**
+
+#### ⚠️ 這一節不是什麼
+
+- **不是 libspdm 的稽核。** 是一台筆電上兩個 checkout 的六個判定。
+- **不是漏洞通報。** 三個通報都已經公開、都已經修好。那個 AFFECTED 講的是一份
+  **故意釘住的舊版本**,修法是 `git checkout 3.8.2`。
+- **不是「`pqc` 是安全的」。** 是「那兩個特定的修正在裡面,而且是兩條路各查一次」。
+
+---
+
 ## 12. 把一切從零重建(驗證可重現性)
 
 **這一節是這份 runbook 的驗收條件。** 每隔一段時間跑一次,確認它沒有腐爛。
@@ -2178,6 +2381,18 @@ pkill -f spdm_responder_emu                       # 收工
 # ── 讀出「實際協商到什麼」(不是你要求什麼)★ ────────────
 ~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /tmp/x.pcap | grep ' SPDM_ALGORITHMS'
 ~/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /tmp/x.pcap | grep -m1 SPDM_VERSION
+
+
+# ── ★ 負面測試:三個 advisory 類別(W11,見 §11.10)──────
+cd negative && make test      # 3 個 suite、24 個 case、21 個故意寫錯的實作
+cd negative && make list      # 每個檔在斷言什麼、每個錯誤版本該動到哪幾個 case
+bash negative/asan_demo.sh ./negative/test_oversized_field   # ASan 看得到/看不到什麼
+
+# ── ★ 我自己的 build 有沒有這三個洞(W11,見 §11.11)─────
+bash harness/run_exposure.sh                              # 要網路 + build tree
+python3 harness/check_advisories.py --selftest            # 它答得出別的答案嗎
+python3 harness/check_advisories.py --check docs/advisories.md
+python3 harness/check_advisories.py --refresh             # 通報被改過了嗎(每週 CI 會跑)
 
 # ── 基本功 ──────────────────────────────────────────────
 cd c-drills && make test

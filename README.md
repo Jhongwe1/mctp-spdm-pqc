@@ -26,7 +26,7 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ## Current status
 
-This is week 10 of a 14-week programme. The table below is the truth about what
+This is week 11 of a 14-week programme. The table below is the truth about what
 exists today, not what is planned. Planned work is in
 [`docs/roadmap.md`](docs/roadmap.md), which carries the same table.
 
@@ -38,12 +38,87 @@ exists today, not what is planned. Planned work is in
 | G3 | RATS verification pipeline | **complete** — reference values, a COSE-signed endorsement, a policy and a verdict, over all ten tamper arms ([`docs/rats-pipeline.md`](docs/rats-pipeline.md)). **Table 3.** The one tamper nothing in SPDM refused is judged FAIL, and the `rats` job turns red if it stops being. The version rule is now `evidence >= reference`, and the four cases that prove the change moved **exactly one** verdict — and did not loosen the integrity rule — run in CI |
 | G4 | post-quantum cost quantification | **complete** — **Table 2** and **Figures 2 and 3**: six algorithm groups over three matched comparisons, a DataTransferSize sweep on a build made to have one, and every signature length in the table re-derived from a message-size difference and landing on its FIPS constant exactly ([`docs/pqc-cost.md`](docs/pqc-cost.md)). The negotiation costs 152 bytes in all six groups; the certificate chain is 86% of the post-quantum arm; and DataTransferSize turns out to be a latency parameter, not a bandwidth one — 3.1% of bytes against 59 round trips over a 32x range |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — **Table 4**: both arms of the post-quantum comparison run across a real Linux MCTP link, in a guest whose kernel has the subsystem this host lacks, and every packet is counted off the wire instead of divided. The model reproduces all 953 of them, at seven message lengths where the plausible wrong formula would have said something else. Separately, one SPDM `GET_VERSION` crosses a real PCIe DOE mailbox on a QEMU NVMe device and comes back answered ([`docs/transports.md`](docs/transports.md)) |
-| G6 | conformance and negative testing | **in progress** — the conformance half is done; the negative tests are W11. DMTF's own `SPDM-Responder-Validator` run **four ways** against this responder, with a root cause and a classification for each of its eight failures, and — because a suite observed only passing has not been shown able to fail — a fourth arm that changes **one byte of one signature in flight** and requires exactly the assertion that reads it to move, and nothing else ([`docs/validator-report.md`](docs/validator-report.md)). Two upstream findings came out of it, the second **proved rather than argued**: the four `response signature` failures are the suite's own test case discarding the certificate chain it needs, and the responder's signatures verify against the leaf key. Clearing **one** capability bit moved **611** assertions from never-executed to executed. Fuzzing and coverage are beside it ([`docs/negative-tests.md`](docs/negative-tests.md)) — 69.7% line coverage, 11,432 executions, no crashes, and a corpus comparison that **withdrew the claim it was written to support**. `negative/` holds three specifications and no assertions yet |
-| G7 | upstream contribution | **in progress** — agreements and account done. Two changes are **prepared and not sent**, and on 2026-10-12 both were re-checked against upstream rather than assumed still to apply: `DMTF/spdm-emu` is still at `ea77f25` and `openbmc/spdm` still has no README, zero commits later. A first README for `openbmc/spdm`, re-linted today with prettier and markdownlint against configs fetched today; and the earlier one, where `CoRimTool.py verify` does not verify, in two lines that mask each other — fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Nineteen** candidates now carry evidence and none has been sent. The newest is the strongest: a conformance suite reporting a conforming device as non-conforming, with the proof attached |
+| G6 | conformance and negative testing | **complete** — DMTF's own `SPDM-Responder-Validator` run **four ways** against this responder, with a root cause and a classification for each of its eight failures, and — because a suite observed only passing has not been shown able to fail — a fourth arm that changes **one byte of one signature in flight** and requires exactly the assertion that reads it to move, and nothing else ([`docs/validator-report.md`](docs/validator-report.md)). Two upstream findings came out of it, the second **proved rather than argued**: the four `response signature` failures are the suite's own test case discarding the certificate chain it needs, and the responder's signatures verify against the leaf key. Clearing **one** capability bit moved **611** assertions from never-executed to executed. Fuzzing and coverage are beside it ([`docs/negative-tests.md`](docs/negative-tests.md)) — 69.7% line coverage, 11,432 executions, no crashes, and a corpus comparison that **withdrew the claim it was written to support**. And [`negative/`](negative/) now holds the three advisory classes as tests: **24 cases and 21 deliberately wrong implementations**, each of which must be caught by exactly the cases its own file predicted — no fewer and no others — plus two runs that assert what AddressSanitizer does and does not see. Separately, whether *this project's* builds carry the three defects is measured rather than argued ([`docs/advisories.md`](docs/advisories.md)): **one of the two flavors is affected**, on five independent preconditions |
+| G7 | upstream contribution | **in progress** — agreements and account done. Two changes are **prepared and not sent**, and on 2026-10-19 both were re-checked against upstream immediately before sending rather than assumed still to apply. ★ **That check earned its place this time:** `DMTF/spdm-emu` had **moved**, `ea77f25` → `b5f3ec1`, two commits — neither touching `CoRimTool.py`, so the branch was rebased, the diff came through byte-identical, both defective lines are still in `main`, and every `Tested:` line was re-run on the rebased tree. `openbmc/spdm` is unchanged: still `72e3ea9`, still no README, `main` still the only head, `OWNERS` unchanged. The changes are a first README for `openbmc/spdm`; and the earlier one, where `CoRimTool.py verify` does not verify, in two lines that mask each other — fixing only the obvious one turns a verifier that accepts nothing into one that accepts anything. Branch, commit and pull-request body are ready; the keystroke is the author's. **Nineteen** candidates now carry evidence and none has been sent. The newest is the strongest: a conformance suite reporting a conforming device as non-conforming, with the proof attached |
 | G8 | delivery and write-up | not started |
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What week 11 established
+
+**Gate 6's lower half, and an identifier that does not resolve.**
+
+`plan/W11` named four advisory identifiers. Week 10 refused to write any of
+them into a source file, because standing rule 7 — *nothing is cited that has
+not been checked against the primary source* — applies to a security advisory
+more than to anything else. Week 11 checked them.
+
+**All four are correct.** And checking them produced three facts that would
+have been wrong if they had been assumed:
+
+| | |
+|---|---|
+| **none of the three is in GitHub's global advisory database** | they are *repository* advisories on `DMTF/libspdm`, so `https://github.com/advisories/GHSA-m4wc-xmvg-369f` — the URL a reader tries first — returns **404** for every one of them |
+| **two of the three have no CVE**, and they are the two with the *higher* score | 6.9 and 6.9 against 6.0. DMTF-2026-0001 says why in its own words: *"due to the unlikely chance of implementation in a production device, no CVE has been issued"* — a CVE is a judgement about deployment, not a threshold on a number |
+| **the one CVE was in neither place a CVE lives** | `CVE-2026-61810` returned 404 from MITRE's CVE Services and `totalResults: 0` from NVD |
+
+★ **And `DSP0274 1.4.1` turned out to be downloadable**, which the plan had
+warned it might not be. So the third advisory — a defect in a *specification*,
+not a library — could be read in both versions instead of taken on trust. The
+phrase `[FINISH].SPDM Header Fields` occurs **five times in 1.4.0 and zero
+times in 1.4.1**, which is the count the advisory gives for affected
+definitions, arrived at from the documents. All five now read *"`*` except the
+Signature and RequesterVerifyData fields"*.
+
+> ★★ **The fix is not a field. It is a change of shape.** 1.4.0 enumerated what
+> the transcript *includes*; 1.4.1 names what it *excludes*. And the
+> enumeration was not wrong when it was written — in SPDM 1.3 a `FINISH` was a
+> four-byte header followed by its authenticator, so "the SPDM Header Fields"
+> really was everything a signature had to cover. **It became wrong when
+> somebody edited a different chapter.** ([`docs/transcript.md`](docs/transcript.md))
+
+**The three classes are now tests, and the tests have to be able to fail.**
+`negative/` holds 24 cases and **21 deliberately wrong implementations**. Each
+defect declares in advance exactly which cases it must move and which of those
+it must move all the way to accepting the input; `make test` builds every one
+and fails if a case moves that nobody predicted — rule 13, mechanised — as
+loudly as if none moves at all. It corrected its author on the day it was
+written.
+
+Three things came out of writing them that reading about them would not have:
+
+- **The same wrong expression is not equally wrong at every field width.**
+  `off + len` wraps for `uint32_t` operands and does not for `uint16_t`, which
+  are promoted to `int` first. At 32 bits the naive check **accepts** an
+  out-of-range window; at 16 bits it refuses for the wrong reason. The advisory
+  is against the 32-bit message. Two defects differ *only* in that, and the
+  suite asserts the difference rather than describing it.
+- **AddressSanitizer reports an overflow out of a bare array and says nothing
+  about the same overflow into the next member of the same struct** — asserted
+  by a script that runs both, so a toolchain upgrade turns the build red rather
+  than quietly invalidating a paragraph. A layer above it, GCC rejects the first
+  at *compile* time through `_FORTIFY_SOURCE` and not the second, and only when
+  the length is a constant. A firmware length never is.
+- **Reading the published fix found a failure mode the week-10 status codes
+  could not report.** DMTF-2026-0001's defective code *did* check the remaining
+  space — after the copy. **The refusal it returned was the right refusal**, so
+  a suite comparing status codes would have seen nothing.
+
+★ And DMTF-2026-0002's entire fix is **one character of parenthesis**:
+`(uint64_t)(offset + length)` became `((uint64_t)offset + length)`. The widening
+cast was already there; it was applied to a sum that had already wrapped.
+
+**Is this project affected?** Measured, not argued, five ways per advisory
+([`docs/advisories.md`](docs/advisories.md) §3). The `pqc` flavor carries both
+fixes. The `stable` flavor — libspdm 3.8.0 — is **AFFECTED** by DMTF-2026-0002,
+and every precondition the advisory names holds, including the one that is not
+about the code: `libspdm_copy_mem()` *does* check `src_len > dst_len`, the check
+is spelled `LIBSPDM_ASSERT`, and `TARGET=Release` defines
+`LIBSPDM_DEBUG_ENABLE=0`, which makes that macro expand to nothing while the
+copy loop below it runs regardless. No capture in this repository has ever sent
+the request that reaches it, and that is re-derived from the decodes rather than
+asserted.
 
 ### What week 10 established
 
