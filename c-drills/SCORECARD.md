@@ -34,9 +34,9 @@ open, and the practice is not practising the thing it is supposed to practise.
 | D5 | `d5_endian` | | / 15 min | | | | |
 | D6 | `d6_packed_struct` | | / 15 min | | | | |
 | D4 | BST delete | | / 25 min | | | | |
-| D2 | `d2_offset_length` | | / 10 min | | | | |
+| D2 | `d2_offset_length` | | / 10 min | | | | ⚠️ **after reference** |
 | D7 | ring buffer | | / 20 min | | | | |
-| D8 | length-bounded string copy | | / 15 min | | | | |
+| D8 | length-bounded string copy | | / 15 min | | | | ⚠️ **after reference** |
 
 **Error categories** — classify every mistake as one of these three, because
 the fix is different for each:
@@ -59,6 +59,41 @@ the sentence in your head. If that is what you wrote, say so in
 `c-drills/README.md` — it is the only evidence in this repository about what
 gets reached for under time pressure, and it is worth more than a passing
 test, which only says the second attempt was right.
+
+## ⚠️ D2 and D8 stopped being measurements on 2026-10-19
+
+On that day `negative/test_offset_length.c` and `negative/test_oversized_field.c`
+were written, and both contain a worked, commented, correct version of exactly
+what D2 and D8 ask for:
+
+```c
+/* D2's subject */   if ((size_t)len > total - off) { ... }
+/* D8's subject */   if (declared > msg_len) ...; if (declared > dest_size) ...;
+                     if (declared == dest_size) ...   /* and dest[declared] = 0 */
+```
+
+**So the two rows below are no longer the thing this file exists to measure.**
+Writing C with no compiler to ask is one skill; writing it after reading a
+correct version is a different and much easier one, and the number this
+scorecard tracks cannot tell them apart.
+
+What is lost precisely:
+
+| | |
+|---|---|
+| **D2's second question** — *which version did you reach for first* | **gone.** `off + len <= total` against `len <= total - off` is now a thing that has been read rather than a thing that was reached for, and that question was worth more than the compile-error count |
+| D2 and D8 compile-error counts | still worth recording, and **not comparable** with the other six. Mark them `(after reference)` in the table |
+| the other six drills | unaffected |
+
+**It was a deliberate trade and it is recorded as one.** Week 11 had three C
+test suites, a five-way exposure analysis, a specification diff and a CI job in
+it, and doing the drills first would have been the only way to keep both. The
+ordering was the whole fix and it was not taken.
+
+★ **The repair, if it is wanted:** D2 and D8 are the two drills whose *shape*
+recurs everywhere in this protocol. A fresh problem in the same class — a ring
+buffer's wrap, a length-prefixed field walk — measures the same muscle without
+the answer having been published. `mock/` is where an unseen problem belongs.
 
 ## Rewrite rounds
 
