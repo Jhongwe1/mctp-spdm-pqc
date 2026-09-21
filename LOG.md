@@ -4491,3 +4491,229 @@ for captures. It is not specific to captures.
   further on, and the README's linters were re-run with configs fetched today.
   A change verified in September and sent in October is a change verified
   against a repository that no longer exists.
+
+## 2026-10-19 · Day 13 · four identifiers that were right, and a URL that was not
+
+Gate 6's lower half. The three advisory classes written as tests that can fail,
+the identifiers checked against their primary sources, and — because the
+question was there and the evidence was reachable — whether this project's own
+two builds carry the defects.
+
+Four things worth keeping. The first is the one I did not expect to be a
+finding at all, and the last is a prediction of mine that the machinery
+refused.
+
+---
+
+### 1. Every identifier was correct and the obvious URL returned 404
+
+**現象** `plan/W11` names three GHSA identifiers and one CVE. W10 refused to
+write any of them into a source file — standing rule 7 — so the first task of
+the week was to check them. The first request returned 404. So did the second
+and the third:
+
+```
+404  https://api.github.com/advisories/GHSA-m4wc-xmvg-369f
+404  https://api.github.com/advisories/GHSA-j54w-759w-xj3m
+404  https://api.github.com/advisories/GHSA-chjj-xvqx-c8w4
+404  https://cveawg.mitre.org/api/cve/CVE-2026-61810
+```
+
+Four for four, from two independent databases.
+
+**假設** Three, and they are not equally likely.
+
+1. **The identifiers are wrong.** A plan written weeks ahead naming four
+   plausible-looking advisory IDs is exactly the shape of a fabricated
+   citation, and rule 7 exists because that shape is common.
+2. **The advisories exist somewhere else.** GitHub's *global* database ingests
+   advisories for packages in ecosystems it knows — npm, PyPI, Go. A C library
+   built with CMake is in none of them.
+3. **The request needs authentication.** Plausible for a rate limit, less so
+   for a 404.
+
+**先驗哪個、為什麼** (2), and on grounds that had nothing to do with the
+advisories.
+
+**A 404 from an aggregator and a 404 from the owner are different claims, and
+only one of them had been made.** Every one of those URLs asks a database that
+collects other people's advisories. The repository that publishes them had not
+been asked, and asking it is one request.
+
+The second reason is about the plan rather than the protocol: the surrounding
+details were *internally consistent in a way fabrications usually are not*. The
+CVSS vector `AV:A/AC:L/AT:P/PR:N/UI:N/VC:N/VI:H/VA:N` scores to 6.0 under the
+4.0 metrics, the affected ranges `3.4–3.8.1` and `3.0–3.8.1` fit a real release
+history, and the five internal anchor names were spelled the way a real
+document spells them. A wrong identifier usually arrives with wrong
+neighbours.
+
+**根因** All three are **repository advisories** on `DMTF/libspdm`, published
+through GitHub's per-repository security advisory feature, and never ingested
+into the global database because libspdm is not in a package ecosystem it
+covers. One request to `api.github.com/repos/DMTF/libspdm/security-advisories`
+returned all five advisories the project has ever published, 2023 and 2026.
+
+And the checking produced three facts I would have got wrong by assuming:
+
+| | |
+|---|---|
+| **two of the three have no CVE at all**, and they are the two with the *higher* score — 6.9 against 6.0 | DMTF-2026-0001 says why: *"due to the unlikely chance of implementation in a production device, no CVE has been issued"* |
+| `CVE-2026-61810` is in **neither** NVD nor MITRE's CVE Services | GitHub is a CNA and assigned it; the record had not propagated |
+| libspdm 3.8.2 was published **133 seconds** after the advisory it fixes | 19:23:38Z and 19:25:51Z on 2026-04-03 |
+
+**教訓** **Whether an identifier resolves is a property of the database you
+asked, not of the identifier.** So a citation has to carry the URL that
+*resolves*, and this repository now pins one per advisory
+(`third_party/dmtf-2026-000N.pin`) with the retrieval digest and an
+`in-global-advisory-database=no` field, because the absence is the part a
+reader will trip over.
+
+The stronger version, which is about how to answer a question rather than how
+to cite one: **when a lookup fails, the next question is "did I ask the thing
+that owns the answer", not "is the answer wrong".** I had three hypotheses and
+the cheapest discriminating request settled it in twenty seconds, which is
+2026-10-12's lesson arriving in a different costume — *the discriminating fact
+first, and it was free*.
+
+---
+
+### 2. A capability that 96 captures advertise and an intersection reported absent
+
+**現象** The exposure checker needs to know whether the responder advertises
+`MEL_CAP` and `CHUNK_CAP`, because DMTF-2026-0002 requires both. Its first
+version took the **intersection** of the responder flags over every committed
+capture and reported `CHUNK_CAP` **absent** — which would have turned the
+verdict from AFFECTED into PRESENT-NOT-REACHABLE.
+
+**假設** (a) the responder genuinely does not advertise it; (b) the flags
+parser is reading the wrong side of the exchange; (c) some captures clear it.
+
+**先驗哪個、為什麼** (c), immediately, because **this repository contains arms
+named after doing exactly that.** `A0-nochunk` and `P2-nochunk` exist so that
+`docs/pqc-cost.md` can compare a chunked fetch against a windowed one; clearing
+`CHUNK_CAP` is their entire purpose. The hypothesis was not a guess about the
+data, it was a memory of why the data exists.
+
+**根因** 96 of 98 captures advertise it. Two clear it deliberately. An
+intersection over a set that includes deliberate negative controls reports the
+controls as the configuration.
+
+**教訓** **"The configuration lacks X" and "an experiment removed X" are
+different facts, and a set intersection erases the difference.** The tool now
+reports a count — `MEL_CAP and CHUNK_CAP advertised together in 96 of 98` — and
+a precondition is satisfied when at least one capture shows all the bits it
+needs, with the count printed beside the verdict.
+
+★ And the general form, which is the half worth carrying: **a negative control
+is data that is supposed to disagree, so any aggregate computed across a corpus
+that contains one is computing something else.** This repository has spent ten
+weeks building arms whose job is to differ. Every statistic over "all captures"
+is now suspect by default, and the two that exist are counts rather than
+intersections.
+
+---
+
+### 3. The first draft of the sanitizer demonstration did not compile, and that was the result
+
+**現象** `negative/test_oversized_field.c` was meant to show that
+AddressSanitizer reports an overflow out of a bare `char[64]` and says nothing
+about the same overflow into the next member of an enclosing struct. It did not
+build:
+
+```
+error: '__builtin___memcpy_chk' forming offset [64, 71] is out of the
+bounds [0, 64] of object 'cn' with type 'char[64]' [-Werror=array-bounds=]
+```
+
+**假設** (a) the test is wrong; (b) `-Werror` is too strict for a deliberate
+overflow; (c) the compiler is telling me something.
+
+**先驗哪個、為什麼** (c), because of *which* builtin is named. `__builtin___
+memcpy_chk` is `_FORTIFY_SOURCE`'s fortified `memcpy`, and it only appears when
+the compiler can prove a size — so the diagnostic is not a style complaint, it
+is a static bounds check that fired. And it fired on the **bare array** half
+and not on the struct-member half, which is the same asymmetry the runtime
+demonstration was written to show, one layer earlier.
+
+**根因** `__builtin_object_size` of a sub-object reports the size of the object
+that *encloses* it, so `f.cn` is 320 bytes to the fortifier and `cn` is 64. GCC
+therefore rejects one and not the other — and it can only do either because the
+length was a literal `72`.
+
+**教訓** **The static check draws the same line the sanitizer draws, and it
+only draws it when the length is a constant.** A firmware length is never a
+constant: it is a field off the wire. So the demonstration makes the length
+`volatile`, which is what makes it honest rather than a compiler exercise, and
+`negative/asan_demo.sh` now asserts both halves at run time so that a toolchain
+upgrade changing either answer turns the build red instead of quietly
+invalidating a paragraph in `docs/negative-tests.md`.
+
+★ The line worth keeping: **three layers were supposed to be watching this
+overflow — the compiler, the sanitizer, and the bound in the code — and each of
+them watches a different subset.** Which is rule 11 pointed at the instruments
+rather than at the code: *a check is worth what it rejects*, and until this
+week nothing here had established what AddressSanitizer rejects.
+
+---
+
+### 4. ★ A prediction of mine that the machinery refused
+
+**現象** Each negative test declares, in advance, exactly which cases a given
+deliberately-wrong implementation must move. `test_transcript_coverage.c`
+defect 3 — *the whole message is demanded, authenticator included* — was
+declared to move cases 0, 4 and 6, the three that expect `NEG_OK`. The runner
+refused it:
+
+```
+[3] **BAD**  the signature appended to its own
+             got      NEG_OK   <-- the input was ACCEPTED
+WRONG DOOR   1 case(s) moved that were not predicted to
+```
+
+**假設** (a) the runner's set comparison is wrong; (b) case 3 is redundant with
+another case; (c) the prediction is wrong.
+
+**先驗哪個、為什麼** (c), because the other seven defects had just passed on the
+same comparison code, and because the report named the direction: the
+unpredicted case was **ACCEPTED**, not merely moved. A comparison bug does not
+produce a coherent severity. And "accepted" is a specific enough claim to check
+by hand in one line.
+
+**根因** Case 3 feeds a transcript whose last slice covers the whole `FINISH`
+including its signature — and defect 3 demands exactly that. **The one mistake
+refuses every correct transcript and accepts the one incoherent one**, because
+covering-the-authenticator is both what it wrongly requires and what case 3
+wrongly does.
+
+**教訓** I had reasoned about a defect in one direction — *what will it
+refuse* — and a defect has two. The declaration is now `{0, 3, 4, 6}` with
+`{3}` as the accepted subset, and the comment beside it says which came first.
+
+★ **That is the mechanism doing the job the rule was written for.** Standing
+rule 11 says a check is worth what it rejects. Rule 13 says two breaks caught
+by one check are one check. Both were satisfiable by hand for nine weeks and
+neither was ever exercised against *my own reasoning* until the prediction was
+written down where a build could disagree with it. **The difference between a
+discipline and a mechanism is whether it can tell you that you are wrong on a
+Tuesday.**
+
+---
+
+### And one thing that was spent rather than learned
+
+`negative/test_offset_length.c` and `negative/test_oversized_field.c` contain
+worked, correct versions of what `c-drills` D2 and D8 ask for. Writing them
+this week **cost those two drills their measurement** — particularly D2's
+second question, *which version did you reach for first*, which was the only
+evidence in this repository about what gets reached for under time pressure.
+
+It was a deliberate trade with a cheap alternative that was not taken: doing
+the two drills first, on paper, would have cost twenty-five minutes and kept
+both. `c-drills/SCORECARD.md` records it as a decision with its price rather
+than leaving two rows that quietly mean something else than the other six.
+
+**教訓** — and it is a scheduling one rather than a technical one:
+**when two pieces of work share a subject and one of them is a measurement of
+me, the measurement goes first, because it is the only one of the two that
+cannot be redone.**
