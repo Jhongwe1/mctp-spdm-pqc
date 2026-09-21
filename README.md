@@ -22,6 +22,47 @@ byte-level cost comparison of post-quantum algorithms against classical ones.
 
 ![CI](https://github.com/Jhongwe1/mctp-spdm-pqc/actions/workflows/ci.yml/badge.svg)
 
+> ★ The badge is four jobs, and a fifth that runs **weekly** rather than on
+> every push. What each one protects, and what none of them protects, is in
+> [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — which says so in its
+> own header rather than leaving a reader to assume a green badge means more
+> than it does.
+
+---
+
+## Verifying this repository in five minutes, without building anything
+
+Everything below runs against **committed evidence**. None of it needs
+`libspdm`, a build tree, a network or more than `python3`, `gcc` and `make`.
+That constraint is deliberate: a claim that can only be checked by the person
+who made it is not a claim a reader can use.
+
+```bash
+git clone https://github.com/Jhongwe1/mctp-spdm-pqc && cd mctp-spdm-pqc
+
+bash harness/verify_repo.sh        # ~90 s, and it is the whole argument
+```
+
+| what it re-derives, and what would turn it red | where |
+|---|---|
+| every published cross-capture number, **re-computed from the captures it names, at a tolerance of zero** — change one byte of one `.pcap` and it fails | `harness/check_claims.py` |
+| every number a document *quotes*, against the capture named beside it | `harness/fields.py --check` |
+| a **tampered measurement is still judged FAIL**, and the exit code reaches the shell in both directions | `rats/appraise.py` |
+| the version rule was loosened in **one direction only** — four cases under the live policy and a frozen copy of the one it replaced, and exactly one verdict may have moved | `rats/test_svn_policy.sh` |
+| 24 negative-test cases against **21 deliberately wrong implementations**, each of which must be caught by exactly the cases its own file declared in advance | `negative/` |
+| six verdicts about whether this project's own builds carry three 2026 advisories — and a self-test proving the tool can still answer something other than "not affected" | `harness/check_advisories.py` |
+| every committed figure still renders, byte-identically, from the data it claims to show | `harness/mkfigures.py --check` |
+| every artifact still hashes to what its `manifest.json` attests to — 1,939 of them | `harness/verify_repo.sh` |
+
+★ **Most of those checks exist in pairs**: one that runs the mechanism, and one
+that feeds it something wrong and requires it to fail. A check that has never
+been observed failing is arithmetic that happens to agree — standing rule 11,
+and it is the rule the rest of this repository is built on.
+
+The one thing it deliberately does **not** do is rebuild upstream. That is the
+weekly job, and [`RUNBOOK.md`](RUNBOOK.md) §12 is the forty-minute version for
+anyone who wants it.
+
 ---
 
 ## Current status
