@@ -265,19 +265,48 @@ jobs:
       # pin has proved nothing about the pin, and the pin is the thing every
       # published number in this repository is attributed to.
       - name: The tags this project pins still point where the pins say
+        # ★ Standing rule 20, which is the reason this is longer than it looks
+        # like it needs to be: a lookup that did not happen is not a tag that
+        # moved, and an empty `git ls-remote` is indistinguishable from both
+        # unless something asks which it was. So the remote is listed ONCE,
+        # that listing is required to be non-empty before anything is concluded
+        # from it, and only then is each tag looked up inside it.
+        #
+        # Without that, one bad minute of DNS reports "the tag is now absent"
+        # — and a weekly job that cries drift when the network hiccups is a
+        # weekly job whose output nobody reads.
+        #
+        # The dereference is also not optional. These are LIGHTWEIGHT tags:
+        # refs/tags/4.0.0-rc^{} does not exist for them and refs/tags/4.0.0-rc
+        # is the commit. An annotated tag is the other way round. Asking for
+        # both and preferring the dereferenced one is correct for either.
         run: |
+          refs="$(git ls-remote --tags https://github.com/DMTF/libspdm.git)" || {
+            echo "  could not list refs from DMTF/libspdm — the network, not a pin"
+            exit 1
+          }
+          if [ -z "$refs" ]; then
+            echo "  DMTF/libspdm reported no tags at all, which is not a drift"
+            echo "  report: it is a broken lookup. Not concluding anything."
+            exit 1
+          fi
+          echo "  listed $(printf '%s\n' "$refs" | wc -l) refs"
+
           fail=0
           for pin in third_party/spdm-emu-stable.pin third_party/spdm-emu-pqc.pin; do
             ref="$(awk -F= '/^libspdm-ref=/{print $2}' "$pin")"
             want="$(awk -F= '/^libspdm=/{print $2}' "$pin")"
-            got="$(git ls-remote https://github.com/DMTF/libspdm.git "refs/tags/${ref}^{}" \
-                   | cut -f1)"
-            [ -n "$got" ] || got="$(git ls-remote https://github.com/DMTF/libspdm.git \
-                                    "refs/tags/${ref}" | cut -f1)"
-            if [ "$got" = "$want" ]; then
+            got="$(printf '%s\n' "$refs" | awk -v r="refs/tags/${ref}^{}" '$2==r{print $1}')"
+            [ -n "$got" ] || got="$(printf '%s\n' "$refs" \
+                                    | awk -v r="refs/tags/${ref}" '$2==r{print $1}')"
+            if [ -z "$got" ]; then
+              echo "  FAIL $pin: the tag $ref is GONE from a listing that returned"
+              echo "       $(printf '%s\n' "$refs" | wc -l) other refs. The pin says $want"
+              fail=1
+            elif [ "$got" = "$want" ]; then
               echo "  ok   $pin: $ref is still $want"
             else
-              echo "  FAIL $pin: $ref is now ${got:-absent}, the pin says $want"
+              echo "  FAIL $pin: $ref now resolves to $got, the pin says $want"
               fail=1
             fi
           done
