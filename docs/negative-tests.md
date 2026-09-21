@@ -1,4 +1,4 @@
-# Fuzzing, coverage, and a corpus that had to be measured rather than asserted
+# Negative testing: three advisory classes, fuzzing, coverage, and a corpus that had to be measured rather than asserted
 
 > **This project performs protocol-level correctness validation. It is not a
 > security assessment.** Running a fuzzer is the outermost edge of the second
@@ -11,13 +11,17 @@ runs on OSS-Fuzz, has CodeQL and Coverity in CI, and ships about sixty-nine AFL
 targets of its own. An afternoon of local fuzzing finding something they have
 not is close enough to zero that planning for it would be dishonest.
 
-So this page is not about whether there are bugs. It is about two things that
+So this page is not about whether there are bugs. It is about three things that
 can come out either way:
 
 1. **the seed corpus** — a claim that this project's seeds are better than the
    alternative, evaluated against the alternative instead of asserted;
 2. **the coverage** — how much of the library the tests actually reach, so that
-   "no crashes" has a denominator.
+   "no crashes" has a denominator;
+3. **three advisory classes, written as tests that can fail** (§6) — where "can
+   fail" is mechanical rather than aspirational: every test is also compiled
+   against a deliberately wrong implementation, and has to catch it through
+   exactly the case it predicted.
 
 | | |
 |---|---|
@@ -277,7 +281,146 @@ defence that is not there, and nothing in this project has checked it.
   number this repository publishes is re-derived on every CI run; these are
   not, and that is stated here rather than left for a reader to discover.
 
-## 6. Reproducing it
+## 6. ★ Three advisory classes, written as tests that can fail
+
+| | |
+|---|---|
+| directory | [`negative/`](../negative/) — three tests, 24 cases, **21 defect variants** |
+| advisories | [`docs/advisories.md`](advisories.md), and one pin each in `third_party/` |
+| the third one in depth | [`docs/transcript.md`](transcript.md) |
+
+```bash
+cd negative && make test     # every test, every defect variant, both sanitizers
+./test_offset_length --list  # what it asserts, and what each defect must move
+```
+
+### 6.1 Why the class and not the payload
+
+The payloads of the three 2026 advisories are fixed. Rebuilding one produces a
+test that passes against every version of libspdm anybody will run — **a test
+that cannot fail is documentation with a build step.**
+
+The classes do not get patched:
+
+| file | class | where it comes from |
+|---|---|---|
+| `test_offset_length.c` | `Offset + Length` computed in a type that wraps | every message carrying a window into a larger object, and SPDM has three |
+| `test_oversized_field.c` | a declared length checked against the message rather than against the destination | every variable-length field a sender chooses the size of |
+| `test_transcript_coverage.c` | a signature over a transcript that omits a message the conversation accepted | every rule of the form "hash these parts" |
+
+**These are not an audit of libspdm.** Nothing here includes a libspdm header
+or links a libspdm object, deliberately: a suite that linked the library would
+*appear* to be testing it, and reproducing a class is not auditing an
+implementation for it. Whether this project's own builds carry the defects is a
+different question with a different method, and it is answered in
+[`docs/advisories.md`](advisories.md) §3.
+
+### 6.2 ★★ What makes it a negative suite rather than a table of assertions
+
+Standing rule 11 says a check is worth what it rejects and that **something has
+to prove it rejects.** For a negative test that is not a formality: a suite of
+assertions about refusals passes trivially against an implementation that
+refuses everything, and almost as easily against one that refuses nothing, if
+the assertions were written by reading the implementation.
+
+So each file is compiled more than once. Undefined `NEG_DEFECT` builds the
+implementation the file argues is correct. `-DNEG_DEFECT=k` builds a
+**deliberately wrong one** — and the file declares, *in advance*, exactly which
+cases that mistake must move, and which of those it must move all the way to
+`NEG_OK`.
+
+| the run says | and that means |
+|---|---|
+| `DEFECT CAUGHT` | exactly the predicted cases moved, in the predicted direction |
+| `DEFECT MISSED` | the suite cannot see the mistake it exists for — rule 11 |
+| `WRONG DOOR` | a case moved that nobody predicted: two cases caught by one check — rule 13 |
+| `WRONG SEVERITY` | it moved, but a refusal and an accepted input are not the same event |
+
+**Every one of the 24 cases is moved by at least one defect.** A case no defect
+can move is a case that has never done anything, and the build would not say so
+without this.
+
+★ It found a wrong prediction on the day it was written. `test_transcript_
+coverage.c` defect 3 — *the whole message is demanded, authenticator included* —
+was declared to move the three cases that expect `NEG_OK`. It also **accepts**
+the one transcript that covers a signature with itself, because that is the only
+transcript whose last slice is the whole message. One mistake in both directions
+at once, and the half that was missed is the half that opens something. The
+declaration in the file is now the one the runner confirmed, with a comment
+saying which came first.
+
+### 6.3 ★★★ Three things writing them taught that reading about them would not
+
+**1. The same wrong expression is not equally wrong at every field width.**
+
+```c
+uint32_t off, len;    off + len    both already have the rank of int, so the
+                                   addition happens in unsigned int and WRAPS
+
+uint16_t off, len;    off + len    both are promoted to int first, because int
+                                   can represent every uint16_t, so the sum is
+                                   65537 and does NOT wrap
+```
+
+Identical source. At 32 bits it **accepts** an out-of-range window; at 16 bits
+it refuses — for the wrong reason, but it refuses. `GET_MEASUREMENT_EXTENSION_
+LOG` carries 32-bit fields and `GET_CERTIFICATE` carries 16-bit ones, and
+DMTF-2026-0002 is against the first. Defects 1 and 2 of `test_offset_length.c`
+differ *only* in whether the sum is stored back into the field's own type, and
+the suite asserts the difference rather than describing it — standing rule 18.
+
+**2. The sanitizers do not see two of the three classes, and one of the two for
+a reason worth knowing.**
+
+| | |
+|---|---|
+| unsigned overflow | **defined** behaviour in C, so UBSan is silent by design |
+| a transcript that omits a message | nothing is out of bounds; every line is correct |
+| an overflow out of a **bare** array | ASan reports it |
+| the same overflow into the **next member of the same struct** | ASan says **nothing** |
+
+That last pair is asserted rather than recalled. `negative/asan_demo.sh` runs
+both and requires the first to be reported and the second not to be, so a
+toolchain upgrade that changes either answer turns the build red instead of
+quietly invalidating this paragraph:
+
+```
+  asan_demo bare  : reported by AddressSanitizer, exit 1   (as expected)
+  asan_demo member: silent, and the guard after the destination was
+                    overwritten                          (as expected)
+```
+
+★ And a layer above it, found by the compiler refusing to build the first
+draft: with a **constant** length, GCC rejects the bare-array version at compile
+time through `_FORTIFY_SOURCE`'s fortified `memcpy`, and does **not** reject the
+struct-member version — because `__builtin_object_size` of a sub-object reports
+the size of the object enclosing it. The compiler draws the same line the
+sanitizer draws, one layer earlier. **A firmware length is never a constant**,
+which is why the demonstration makes it `volatile` and why the static check is
+not the thing protecting a responder.
+
+**3. Reading the real fix found a failure mode the specification's own status
+codes could not report.** DMTF-2026-0001's defective code *did* check the
+remaining space — after the copy, by asking whether a signed counter had gone
+negative. **The refusal it returned was the right refusal.** A suite comparing
+status codes would have seen nothing at all. So `negative.h` grew
+`NEG_ERR_FIELD_WRITE_ESCAPED_BUFFER`, every destination sits in front of a guard
+region the test reads by hand, and defect 7 is that shape. Rule 16 asks for a
+stable code per distinguishable outcome; this one was distinguishable and had no
+door until a published patch was read line by line.
+
+### 6.4 What the suite does not claim
+
+- **Not a finding.** All three advisories are published and fixed upstream.
+- **Not a test of libspdm.** See 6.1. The exposure question is separate and is
+  measured separately.
+- **Not a demonstration that the classes are absent anywhere.** It demonstrates
+  that they are understood well enough to be written down, fed a malformed
+  input, and refused *through the door that names them*.
+- **Not a memory-safety suite.** One of the three is a specification defect and
+  no sanitizer would ever reach it.
+
+## 7. Reproducing it
 
 ```bash
 # the deterministic half: seeds, the message-to-target map, and the edge counts
@@ -292,8 +435,19 @@ bash harness/run_coverage.sh --list     # which binaries it considers unit tests
 
 # the seed exporter's own self-test, which CI runs
 python3 bench/pcapstat.py --selftest
+
+# ---- §6, and none of it needs a build tree or a network --------------------
+cd negative && make test        # 3 suites, 24 cases, 21 defect variants
+make list                       # what each file asserts and what each defect moves
+bash asan_demo.sh ./test_oversized_field   # what the sanitizer does and does not see
 ```
 
-Both builds are made the way `libspdm/doc/test.md` and
+Both fuzz and coverage builds are made the way `libspdm/doc/test.md` and
 `unit_test/fuzzing/fuzzing_AFL.sh` say, and `run_fuzz.sh` prints the exact
 `cmake` line in its error message when the build is absent.
+
+★ `negative/` deliberately needs neither. It compiles with `gcc` and nothing
+else, which is what lets CI run the whole of §6 — including every defect
+variant — in a couple of seconds on a machine with no libspdm in it. The same
+constraint is what keeps the claim honest: a suite that linked the library
+would appear to be testing it.
