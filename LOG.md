@@ -4725,3 +4725,206 @@ than leaving two rows that quietly mean something else than the other six.
 **when two pieces of work share a subject and one of them is a measurement of
 me, the measurement goes first, because it is the only one of the two that
 cannot be redone.**
+
+## 2026-09-22 · Day 14 · two changes sent, and a premise I wrote down before I measured it
+
+Gate 7's outward half. Both prepared changes went out — `DMTF/spdm-emu`
+[#524](https://github.com/DMTF/spdm-emu/pull/524) by pull request and
+`openbmc/spdm` [94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773) by
+Gerrit — each after its own freshness check, and **each check changed what was
+sent**.
+
+Three things worth keeping. The middle one is about me rather than about
+somebody else's code, and it is the one I would talk about.
+
+---
+
+### 1. The push target in my own instructions was the wrong repository
+
+**現象** `docs/upstream/0002-openbmc-readme.md` §7, written on 2026-09-18 and
+reviewed against its own checklist, says:
+
+```sh
+git push origin HEAD:refs/for/main
+```
+
+`git remote -v` in that working tree says:
+
+```
+origin	https://github.com/openbmc/spdm.git (fetch)
+origin	https://github.com/openbmc/spdm.git (push)
+```
+
+That is the **read-only GitHub mirror**. There was no Gerrit remote in the tree
+at all.
+
+**假設** Three.
+
+1. **The instruction is right and the tree is wrong** — a remote was configured
+   once and removed.
+2. **The instruction was copied from the rehearsal**, which ran against a
+   different repository.
+3. **Gerrit accepts `refs/for/` through the GitHub URL** by some redirect.
+   Written down because it was the comfortable one, not because it was
+   plausible.
+
+**先驗哪個、為什麼** (2), because it is the only one that explains *why the
+error survived a review*. (1) predicts a deletion nobody performed; (3) predicts
+a mechanism nobody has documented. (2) predicts a sentence that was true where
+it was written and false where it was pasted — which is the shape of every
+instruction defect there has ever been.
+
+And it costs one `grep`: `docs/upstream/README.md` records the rehearsal as
+`git push openbmc.gerrit HEAD:refs/for/master`, against `openbmc/docs`, on
+2026-08-05.
+
+**根因** The rehearsal tree had a Gerrit remote. This tree was cloned from
+GitHub for the *build* work — the five blockers of 2026-08-11 — and never
+acquired one, because nothing had ever been pushed from it. The instruction
+generalised `HEAD:refs/for/<branch>`, which is the part that transfers, and
+carried `origin` with it, which is the part that does not.
+
+Repaired by reading rather than guessing: `ssh openbmc.gerrit gerrit
+ls-projects` returns `openbmc/spdm`, so the remote is
+`ssh://openbmc.gerrit/openbmc/spdm`, and `git push --dry-run` printed
+`* [new reference] HEAD -> refs/for/main` before anything real was sent.
+
+**教訓** ★ **A rehearsal proves the path it took. Its coverage is the set of
+things that were identical between it and the real run — and nobody writes that
+set down.** The 2026-08-05 rehearsal proved the CLA, the DCO, the `commit-msg`
+hook and Gerrit's CI, and every one of those transferred. It could not prove a
+remote that exists in one working tree and not another, and **it gave no signal
+that it had not.**
+
+Same defect class as `--exe_session`, and as the `| tee` that swallowed a
+build's exit code: the thing that was never checked is invisible *because*
+nothing about it failed.
+
+---
+
+### 2. Eleven entries agreed with `git log` and two did not — and I had already written the ADR explaining why all of them disagreed
+
+**現象** Filling in §8's `Opened:` field, sitting directly beneath `URL:`,
+raised the question of which calendar this project's dates are on. I answered
+from memory — *prose follows the plan calendar, commits follow the real one* —
+wrote an ADR whose Context section said the repository had kept two clocks since
+day one, and then went to measure it.
+
+| | heading | the commit that introduced it |
+|---|---|---|
+| Day 1 – Day 11 | 2026-08-11 … 2026-09-18 | **the same dates** |
+| Day 12 | `2026-10-12` | `6ea2e8d`, 2026-09-20 |
+| Day 13 | `2026-10-19` | `648d2a2`, 2026-09-22 |
+
+The premise was false for eleven of the thirteen entries it described.
+
+**假設** Two, once the numbers were on the table.
+
+1. **A deliberate convention**, adopted at Day 12 and applied from there.
+2. **Drift**, beginning when the real clock outran the fourteen-week plan.
+
+**先驗哪個、為什麼** (1) first, and deliberately in a place where it would have
+to show up if it were true. `third_party/*.pin` was that place: a systematic
+convention about dates would reach the pins.
+
+It had not. They carry no date field at all except `retrieved-at=`, and those
+held a **real time of day with a substituted date** — `18:18:25Z` is 02:18 the
+following morning at +0800, an hour and a half before `f2afa02` committed them.
+A convention does not half-apply to a timestamp.
+
+**根因** Both, in sequence. It started as arithmetic — weeks 10 and 11 were
+executed in two sessions, so the prose took the plan's dates for those weeks —
+and was then *remembered* as a convention, which is how it survived two sessions
+and reached 31 occurrences across 19 tracked files.
+
+What decided the repair was neither hypothesis. **`plan/` is gitignored, and
+`verify_repo.sh` fails the build if it ever becomes tracked.** A reader of the
+published repository cannot open the calendar those dates are on. They can open
+`git log`, which disagrees with them by 22 and 27 days. All 31 were converted;
+`W10` and `W11` stay everywhere they appear, because they name work rather than
+days. [ADR 0012](docs/decisions/0012-two-calendars-and-which-one-governs.md).
+
+**教訓** ★ **I wrote the decision record before I ran the measurement, and the
+measurement falsified its first paragraph.**
+
+Standing rule 7 — do not cite what you have not checked — reads like a rule
+about other people's advisory numbers. It is a rule about your own premises, and
+those are harder, because a premise about your own repository arrives feeling
+like recall instead of like a citation. There is no external 404 to stop you.
+
+The narrower lesson, and the one that decided the fix: **a convention that
+points at something you did not publish is not a convention.** It is an
+explanation the reader cannot check, offered by a repository whose entire claim
+is that its claims can be checked —
+[0004](docs/decisions/0004-derivations-must-reproduce.md) aimed at dates rather
+than at figures.
+
+`harness/verify_repo.sh` now requires every `## YYYY-MM-DD` heading in this file
+to have at least one commit authored that day. Run against this morning's tree
+it fails on exactly the two entries above and passes on the other eleven, which
+is the only reason it is worth adding. CI's `verify` job gained
+`fetch-depth: 0`, because `actions/checkout` fetches one commit by default and a
+check that cannot fail is what that ADR is about.
+
+---
+
+### 3. A checklist item written about a hypothetical fired on its first real use
+
+**現象** `0002-openbmc-readme.md` §6 says to re-run prettier and markdownlint
+before sending, *"because a rebase can change nothing in the file and everything
+about whether they are installed."* `README.md` had not changed. `openbmc/spdm`
+had not moved — still `72e3ea9`. Both linters were gone from the machine.
+
+**假設** Barely a debugging situation, but the response is a real choice.
+(a) Skip them — the file is unchanged and they passed on 2026-09-18.
+(b) Reinstall at the pinned versions and re-run.
+
+**先驗哪個、為什麼** (b), on the ground that actually separates them: the commit
+message contains a sentence claiming they were run. **A `Tested:` line is a
+claim about a command that produced output**, and the last time that output
+existed was four days and one machine state ago.
+
+**根因** Not established, and it does not need to be. `command -v prettier` and
+`command -v markdownlint` both returned nothing; Node 18.19.1 and npx 9.2.0 were
+present; `npx --yes prettier@3.3.3` had them back in seconds. Whether an `npx`
+cache was cleared or a `node_modules` deleted is a question about this machine,
+not about the change.
+
+Re-run at the pinned versions — 3.3.3 and 0.41.0, deliberately below current,
+because this box has Node 18 and markdownlint-cli 0.42 uses a regular-expression
+`v` flag that needs Node 20 — with both configs fetched from
+`openbmc-build-scripts` on the day rather than from a copy. Clean, both.
+
+**教訓** **The environment is a variable in every `Tested:` line, and it is the
+one nobody pins.** The tree was pinned, the tool versions were pinned, the
+configs were re-fetched. What changed was whether the tools existed at all, and
+no pin expresses that.
+
+---
+
+### And the thing that went right, which is the point of the day
+
+Everything local said #524 was intact: `patch-id` unchanged across the second
+rebase (`40e9bb3b…`), the blob unchanged (`a5762c04…`), 392 CRLF and 0 bare LF.
+
+**None of those is a number GitHub computes.** The pull request page
+independently reports `1 commit`, `1 file changed`, `+3 −2`, and renders lines
+206–218 rather than the whole file — the same claim, reached by somebody else
+along a different path.
+
+Standing rule 12 was written about two implementations of CoRIM being made to
+agree. It applies here, and this is the first time in this project that the
+second implementation belonged to somebody else.
+
+The line endings were the row with a way to go wrong. Git for Windows carries
+`core.autocrlf=true` in its **system** configuration on this machine; the WSL
+git that owns the branch has it unset in all three scopes. A push from the wrong
+side would have turned a two-line change into `+392 −392` — still one file, so
+the file count would not have shown it, and the two lines worth reading would
+have been buried under 390 that were not.
+
+**What Gate 7 still owes is the half nobody controls.** `DMTF/spdm-emu` merged
+three commits in the two days before #524 was opened; `openbmc/spdm` last merged
+on 2026-07-31 and has 37 changes open. Silence from the second for a week is the
+expected outcome and not a failure — its `CONTRIBUTING.md` has a section called
+"Pace of Review" that says so.
