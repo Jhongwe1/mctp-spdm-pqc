@@ -473,10 +473,22 @@ step "every LOG.md entry is dated the day its work was committed"
 # open. The rule is now the simplest one that is checkable — a heading's date
 # has to be a date on which something was committed.
 #
-# A shallow clone cannot answer this. It says so rather than passing, because a
-# check that silently cannot fail is exactly what that ADR complains about.
+# A shallow clone cannot answer this, and what to do about that depends on who
+# is asking.
+#
+# ★ Locally it skips, because a shallow clone is a reasonable thing to have.
+#   In CI it FAILS, and that is the whole point: the job's log is not readable
+#   without a token — the API returns 403 even for a public repository — so a
+#   green run has to *mean* the comparison happened. If a skip were allowed
+#   there, dropping `fetch-depth: 0` from ci.yml would silently disarm this
+#   step and nothing would ever go red. That is precisely the failure ADR 0012
+#   describes, rebuilt inside the check written to prevent it.
 if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
-    printf '  --   shallow clone — LOG.md dates not compared against git log\n'
+    if [ -n "${CI:-}" ]; then
+        bad "shallow clone in CI — ci.yml must keep fetch-depth: 0 on this job"
+    else
+        printf '  --   shallow clone — LOG.md dates not compared against git log\n'
+    fi
 else
     log_dates=$(grep -oE '^## 2[0-9]{3}-[0-9]{2}-[0-9]{2}' LOG.md | cut -d' ' -f2 | sort -u)
     commit_dates=$(git log --format=%ad --date=short | sort -u)
