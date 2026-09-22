@@ -165,10 +165,43 @@ Change-Id: Ib0191ead35bb19c0be46935c0da3a89b34b2a27d
 `git -C ~/spdm-lab/work/openbmc-spdm show HEAD` is the authority; the message is
 not duplicated here so that it cannot drift.
 
+> ### ⚠ Corrected 2026-09-22, by a reviewer, on this change
+>
+> The paragraph below was **true about `CONTRIBUTING.md` and wrong about
+> OpenBMC.** There is a policy — [89452](https://gerrit.openbmc.org/c/openbmc/docs/+/89452),
+> *"Document AI coding assistant policy"*, by Ed Tanous — and on 2026-09-22
+> Chinmay Shripad Hegde pointed at it from this very trailer.
+>
+> It is **in review, not merged**: `raw.githubusercontent.com/openbmc/docs/
+> master/coding-assistants.md` returns 404. That is exactly why grepping a
+> merged file could not find it, and exactly why grepping a merged file was the
+> wrong instrument. **A project's rules live in its open changes as well as in
+> its tree**, and one Gerrit query would have found this one:
+>
+> ```
+> gerrit query project:openbmc/docs message:"AI coding"        -> 89452
+> gerrit query project:openbmc/docs file:coding-assistants.md  -> 89452
+> ```
+>
+> Both were run on 2026-09-22 and both return it. `message:Assisted-by` does
+> not, which is worth knowing too: the query that looks like the obvious one is
+> the one that fails.
+>
+> **The change already complies with it**, which is luck rather than diligence.
+> The policy requires that an AI must not add `Signed-off-by` (only a human can
+> certify the DCO, and the human is responsible for reviewing the work), and
+> that attribution take the form `Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1]
+> [TOOL2]` with basic tools omitted. This commit carries one human sign-off
+> matching the author, no `Co-authored-by`, and
+> `Assisted-by: Claude Code:claude-opus-5`. Verified rather than assumed —
+> thirteen claims checked mechanically before the reply was posted, and one of
+> the checks was itself wrong: `grep -i AI` on the sign-off line matched the
+> `ai` in `gmail`.
+
 **On the `Assisted-by:` trailer.** OpenBMC's `CONTRIBUTING.md` has no AI policy
 — the word does not appear in the file, digest
 `e27c7768eedaeded3823727087a6e8e6c7034bfb91c5a60deb7305c108480301`, read
-2026-09-18. So the trailer is neither required nor forbidden, and including it
+2026-09-18 and unchanged on 2026-09-22. So the trailer is neither required nor forbidden, and including it
 is a choice. It is included because DMTF *does* require it, this contributor
 sends changes to both, and one convention across both is easier to defend than
 a rule followed only where it is enforced. `harness/check_upstream_commit.sh
@@ -298,13 +331,36 @@ there being one.
 - Change-Id:  Ib0191ead35bb19c0be46935c0da3a89b34b2a27d
 - Patchset 1: d3c84a100487d01a94f578a4722cab7a483ad7ea
 - Files:      README.md, ADDED, +130 -0
-- Reviewers added: TODO(me)
-- CI result:  TODO(me)
+- Reviewers:  not requested by me.  Chinmay Shripad Hegde reviewed
+              within 35 minutes and added Ratan Gupta; by 11:10 UTC all
+              six people in OWNERS were on the change, including
+              Patrick Williams, who rejected 80422.
+- CI result:  Verified+1, Build Successful, jenkins job 149171.
 - Review round trips:
-    Patchset 1 -> TODO(me)
+    Patchset 1 -> two inline comments on /COMMIT_MSG, both unresolved,
+                  neither a change request:
+                  line 26 - context on 80422: the daemon functionality
+                    was not in the tree when it was written, so its
+                    README could not have described it.  Agreed, and
+                    offered to reword that paragraph.
+                  line 43 - the Assisted-by trailer: read the AI
+                    assistant policy in openbmc/docs 89452 and align.
+                    ANSWERED; the change already conforms.  See the
+                    correction box in section 4.
+    Patchset 2 -> not pushed.  Deliberate: neither comment asks for a
+                  change, and Ratan Gupta and Patrick Williams had just
+                  been added and had not spoken.  One revision that
+                  answers everything beats two that answer half.
 - What I learned from this review, specifically: TODO(me)
-- Outcome: open, status NEW
+- Outcome: open, status NEW, 2 unresolved threads
 ```
+
+> ★ **The review arrived in 35 minutes, and it found the one thing the
+> preparation got wrong.** Not the README — the research behind the commit
+> message. Section 4 said OpenBMC has no AI policy, on the evidence of a grep
+> over `CONTRIBUTING.md`; a reviewer produced one from a change in flight. That
+> is the whole argument for sending work to people rather than checking it
+> against yourself, and it cost 35 minutes to learn.
 
 ### §6's checklist, worked through on the day
 

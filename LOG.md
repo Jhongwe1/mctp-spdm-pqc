@@ -4902,6 +4902,87 @@ no pin expresses that.
 
 ---
 
+### 4. The policy I had concluded did not exist, produced by a reviewer in 35 minutes
+
+Written after the entry above, on the same day, because the review arrived
+before the day ended.
+
+**現象** `0002-openbmc-readme.md` §4 said OpenBMC has no AI-assistant policy:
+the word does not appear in `CONTRIBUTING.md`, digest `e27c7768…`, checked on
+2026-09-18 and checked again in the hour before the push. Thirty-five minutes
+after the change was pushed, Chinmay Shripad Hegde commented on the
+`Assisted-by:` line and linked
+[`openbmc/docs` 89452](https://gerrit.openbmc.org/c/openbmc/docs/+/89452),
+`coding-assistants.md` — *"Document AI coding assistant policy"*, by Ed Tanous.
+
+**假設** Two.
+
+1. **The policy is new**, written after 2026-09-18, and the research was right
+   when it was done.
+2. **It was there the whole time** and the instrument could not see it.
+
+**先驗哪個、為什麼** (2), on one observable that separates them cheaply:
+`raw.githubusercontent.com/openbmc/docs/master/coding-assistants.md` returns
+**404**. A policy merged recently would be present there and carry a date. A
+document that is absent from `master` but has a Gerrit URL with a patchset
+number in it — `/89452/4/` — is *in review*, and that is a state a grep over a
+merged tree cannot represent at all.
+
+**根因** 89452 is open, at patchset 4. The instrument was a `grep` over one
+merged file; the conclusion written down from it was about an organisation.
+Both of these find it in one command:
+
+```
+gerrit query project:openbmc/docs message:"AI coding"        -> 89452
+gerrit query project:openbmc/docs file:coding-assistants.md  -> 89452
+```
+
+★ and `message:Assisted-by` — the query that looks like the obvious one —
+returns nothing. Run on 2026-09-22, after the fact, because "it was findable"
+is a claim and claims get checked.
+
+**教訓** ★ **A project's rules live in its open changes as well as in its tree.
+"The word does not appear in `CONTRIBUTING.md`" is a measurement of one file,
+and it was written down as a conclusion about a project.**
+
+This is finding 2 again — a narrow true measurement promoted to a wide claim —
+four hours later and pointed outward instead of inward. The difference is who
+caught it: not me, and not any check I could have written. It took a stranger
+35 minutes against four days of my own preparation, **and that is the entire
+argument for sending work to people instead of checking it against yourself.**
+
+The change already conformed to the policy — one human `Signed-off-by` matching
+the author, no `Co-authored-by`, and `Assisted-by: Claude Code:claude-opus-5` in
+the `AGENT_NAME:MODEL_VERSION` form it specifies. That is luck and is recorded
+as luck. Conforming to a rule you did not know existed is not compliance; it is
+a convention carried over from DMTF that happened to match.
+
+**And the audit of my own reply had a broken check inside it.** Thirteen claims
+were verified mechanically before the reply was posted. One came back BAD: *no
+AI in Signed-off-by*. The line is
+
+```
+Signed-off-by: Chung-Wei Lan <zwwe1f@gmail.com>
+```
+
+and the test was `grep -ci -e claude -e AI`, which matched the `ai` in **gmail**.
+The same shape as the pipeline exit code, the decode length and the validator's
+`return 0`: an easy signal standing in for the real criterion. It was caught
+only because a BAD verdict on a line I had already read was implausible enough
+to be worth looking at — which is not a mechanism, and is why the replacement
+check matches `\bAI\b` and six agent names instead.
+
+**Where it leaves the change.** Both comments answered the same day; neither is
+a change request, so no patchset 2 was pushed — Ratan Gupta and Patrick
+Williams had just been added and had not spoken, and one revision that answers
+everything beats two that answer half. By 11:10 UTC every one of the six people
+in `OWNERS` was on the change, **including Patrick Williams**, who rejected
+80422 with *"I don't know why we are adding a README with hypotheticals that do
+not match the code."* The change was written to answer that sentence. He has
+not said anything yet, and that is the next thing worth waiting for.
+
+---
+
 ### And the thing that went right, which is the point of the day
 
 Everything local said #524 was intact: `patch-id` unchanged across the second
@@ -4923,8 +5004,17 @@ side would have turned a two-line change into `+392 −392` — still one file, 
 the file count would not have shown it, and the two lines worth reading would
 have been buried under 390 that were not.
 
-**What Gate 7 still owes is the half nobody controls.** `DMTF/spdm-emu` merged
-three commits in the two days before #524 was opened; `openbmc/spdm` last merged
-on 2026-07-31 and has 37 changes open. Silence from the second for a week is the
-expected outcome and not a failure — its `CONTRIBUTING.md` has a section called
-"Pace of Review" that says so.
+**What Gate 7 still owes is the half nobody controls** — and some of it arrived
+before the day ended, from the repository I had written off as the slow one.
+
+`openbmc/spdm` last merged on 2026-07-31, has 37 changes open, and its
+`CONTRIBUTING.md` has a section called "Pace of Review" that makes a week a
+reasonable wait. **It took 35 minutes.** `DMTF/spdm-emu`, which merged three
+commits in the two days before #524 was opened and looked like the fast one, has
+said nothing.
+
+★ **The prediction was reasonable, was based on real numbers, and was wrong in
+the direction that mattered.** A repository's merge rate measures what its
+maintainers finish, not how fast they read — and those are different people's
+attention, on different days. Finding 4 is what the "slow" one sent back, and it
+was the one thing four days of preparation had got wrong.
