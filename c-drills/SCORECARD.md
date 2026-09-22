@@ -60,7 +60,7 @@ the sentence in your head. If that is what you wrote, say so in
 gets reached for under time pressure, and it is worth more than a passing
 test, which only says the second attempt was right.
 
-## ⚠️ D2 and D8 stopped being measurements on 2026-10-19
+## ⚠️ D2 and D8 stopped being measurements on 2026-09-22
 
 On that day `negative/test_offset_length.c` and `negative/test_oversized_field.c`
 were written, and both contain a worked, commented, correct version of exactly

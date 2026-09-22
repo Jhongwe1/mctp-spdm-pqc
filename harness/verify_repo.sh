@@ -466,6 +466,31 @@ else
     good "scope at line $scope, badge at line ${badge:-none}"
 fi
 
+step "every LOG.md entry is dated the day its work was committed"
+# ★ ADR 0012. Eleven entries agreed with `git log` and two did not: those two
+# carried dates from plan/, which is not in this repository and by policy never
+# will be, so a reader could check them only against a calendar they cannot
+# open. The rule is now the simplest one that is checkable — a heading's date
+# has to be a date on which something was committed.
+#
+# A shallow clone cannot answer this. It says so rather than passing, because a
+# check that silently cannot fail is exactly what that ADR complains about.
+if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+    printf '  --   shallow clone — LOG.md dates not compared against git log\n'
+else
+    log_dates=$(grep -oE '^## 2[0-9]{3}-[0-9]{2}-[0-9]{2}' LOG.md | cut -d' ' -f2 | sort -u)
+    commit_dates=$(git log --format=%ad --date=short | sort -u)
+    undated=""
+    for d in $log_dates; do
+        printf '%s\n' "$commit_dates" | grep -qxF "$d" || undated="$undated $d"
+    done
+    if [ -n "$undated" ]; then
+        bad "LOG.md heading dates with no commit that day:$undated"
+    else
+        good "$(printf '%s\n' "$log_dates" | wc -l | tr -d ' ') distinct entry dates, every one has commits"
+    fi
+fi
+
 step "the fragmentation arithmetic, and the two formulas it is usually confused with"
 # ★ Two layers split a large SPDM message and they cost different things: a
 # chunk is a whole request/response round trip, an MCTP packet is a continuation

@@ -2,7 +2,7 @@
 
 Input the implementation should reject, and proof that it does.
 
-**Status on 2026-10-19 (W11):** all three are written. **24 cases, 21 defect
+**Status on 2026-09-22 (W11):** all three are written. **24 cases, 21 defect
 variants**, every case moved by at least one defect, and two runs that assert
 what the sanitizer does and does not see. `make test` runs all of it in about
 two seconds and needs no libspdm, no network and no build tree.

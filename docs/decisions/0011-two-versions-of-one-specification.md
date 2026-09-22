@@ -1,6 +1,6 @@
 # ADR 0011 — Two versions of one specification, both pinned
 
-**Date:** 2026-10-19
+**Date:** 2026-09-22
 **Status:** accepted
 **Supersedes:** nothing. **Related:** [0003](0003-provenance-manifests.md),
 [0004](0004-derivations-must-reproduce.md),
@@ -88,5 +88,5 @@ for pinning, and it is also the reason not to overwrite one.
 Whether this project's own implementations follow 1.4.0's transcript rule. They
 do not compute a FINISH transcript at all — **nothing here has ever established
 a secure session**, which `docs/threat-scope.md` level 2 has said since
-2026-10-12. `negative/test_transcript_coverage.c` models the rule rather than
+2026-09-20. `negative/test_transcript_coverage.c` models the rule rather than
 running it, and says so in its first paragraph.

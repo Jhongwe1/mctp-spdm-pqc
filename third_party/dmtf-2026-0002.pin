@@ -24,7 +24,7 @@ precondition-2=the Responder advertises CHUNK_CAP
 precondition-3=libspdm_copy_mem() does not stop a copy whose src_len exceeds dst_len
 sha256=474efd7a6298be2b30fa90b0934e34c7d1527a7d83bbe8be32bd55acc932d986
 bytes=6703
-retrieved-at=2026-10-19T18:18:25Z
+retrieved-at=2026-09-21T18:18:25Z
 quoted-in=docs/advisories.md
 consumed-by=harness/check_advisories.py,negative/test_offset_length.c,negative/negative.h
 # ★ THE FIX IS ONE CHARACTER OF PARENTHESIS, AND THAT IS THE WHOLE LESSON.

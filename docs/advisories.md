@@ -272,7 +272,7 @@ The affected product is a specification. Any implementation that follows
 DSP0274 1.4.0 exactly has the defect, so "is my library patched" is not the
 question. The question is whether this project computes a FINISH transcript at
 all, and it does not: **nothing here has ever established a secure session**,
-which `docs/threat-scope.md` level 2 has said since 2026-10-12.
+which `docs/threat-scope.md` level 2 has said since 2026-09-20.
 
 So the class is modelled rather than run —
 [`negative/test_transcript_coverage.c`](../negative/test_transcript_coverage.c)

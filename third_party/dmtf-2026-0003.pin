@@ -31,7 +31,7 @@ spec-1.4.0-pin=third_party/dsp0274.pin
 spec-1.4.1-pin=third_party/dsp0274-1.4.1.pin
 sha256=ab3bdffafc22d6c0a20bd2f277d95d34fa5619ac5a2241183e41f9eb772105b4
 bytes=6916
-retrieved-at=2026-10-19T18:18:25Z
+retrieved-at=2026-09-21T18:18:25Z
 quoted-in=docs/advisories.md
 consumed-by=harness/check_advisories.py,negative/test_transcript_coverage.c,negative/negative.h,docs/transcript.md
 # ★ THE ONE OF THE THREE THAT IS NOT A BUG IN ANY PROGRAM.

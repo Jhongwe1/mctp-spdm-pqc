@@ -1,6 +1,6 @@
 # Limitations
 
-> ### ⚠️ This page is a SKELETON, started 2026-10-25 (W11), to be finished in W12
+> ### ⚠️ This page is a SKELETON, started 2026-09-22 (W11), to be finished in W12
 >
 > The layers and the headings are settled. Entries marked **`TODO(W12)`** are
 > places where a limitation is known to exist and has not yet been written down
@@ -145,7 +145,7 @@ support"*.
 - **Nineteen candidates carry evidence and none has been sent.** G7 is in
   progress and the count of merged changes is **zero**.
 - **Two changes are prepared and not sent**, and the freshness check on
-  2026-10-19 found that one of their base repositories had moved. The rebase was
+  2026-09-22 found that one of their base repositories had moved. The rebase was
   clean; the point is that prepared work expires.
 - `TODO(W12)` — if no reviewer has responded by the W12 stop-loss, this section
   becomes *"what I read, what I found, and why I did not send it"*, which is a

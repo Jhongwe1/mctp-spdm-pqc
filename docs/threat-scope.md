@@ -3,7 +3,7 @@
 > **This project performs protocol-level correctness validation. It is not a
 > security assessment.**
 
-**Status: the outline was published on day one and filled in on 2026-10-12**,
+**Status: the outline was published on day one and filled in on 2026-09-20**,
 when G6 produced limits that could be described from evidence rather than from
 intention. The day-one text is still here, unedited, above the sections added
 since; a threat scope written at the end is written to fit the results, and

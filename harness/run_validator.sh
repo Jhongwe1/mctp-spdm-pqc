@@ -218,7 +218,7 @@ for row in "${ARMS[@]}"; do
         # whole suite -- init_client in platform_client_routine, before any
         # test group starts -- so one connection is the right number and the
         # proxy can be told to expect it. Cost of finding that out the other
-        # way: one aborted run on 2026-10-12, recorded in LOG.md.
+        # way: one aborted run on 2026-09-20, recorded in LOG.md.
         proxy_args=(--listen "$PROXY_PORT" --forward "$HS_PORT"
                     --once --report "$proxy_report")
         case "$mode" in

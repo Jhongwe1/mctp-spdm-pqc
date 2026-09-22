@@ -318,7 +318,7 @@ static const int m2[] = { 1, 2, 7, -1 };  static const int a2[] = { 2, 7, -1 };
  * — it also ACCEPTS the one transcript that covers a signature with itself,
  * because that transcript is the only one whose last slice is the whole
  * message. One mistake, in both directions at once, and the half that was
- * missed is the half that opens something. 2026-10-19 in LOG.md. */
+ * missed is the half that opens something. 2026-09-22 in LOG.md. */
 static const int m3[] = { 0, 3, 4, 6, -1 };  static const int a3[] = { 3, -1 };
 static const int m4[] = { 5, -1 };        static const int a4[] = { 5, -1 };
 static const int m5[] = { 1, 7, -1 };     static const int a5[] = { 1, -1 };

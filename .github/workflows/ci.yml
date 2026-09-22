@@ -93,6 +93,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          # ★ The LOG.md date check below compares entry headings against
+          # `git log`, and actions/checkout defaults to a single commit. A
+          # shallow clone would make that check either always fail or always
+          # skip, and a check that cannot fail is ADR 0012's whole complaint.
+          fetch-depth: 0
 
       - name: Install shellcheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck

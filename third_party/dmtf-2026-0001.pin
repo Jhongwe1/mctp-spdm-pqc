@@ -25,7 +25,7 @@ reported-by=Nicholas Carlini
 discovered-by=a Claude LLM, per the advisory's own acknowledgement
 sha256=022cd39169bc1b32be6999ebd480307f19b3a798dfe574c8899ac3462105a770
 bytes=3949
-retrieved-at=2026-10-19T18:18:25Z
+retrieved-at=2026-09-21T18:18:25Z
 quoted-in=docs/advisories.md
 consumed-by=harness/check_advisories.py,negative/test_oversized_field.c,negative/negative.h
 # ★ THE CHECK WAS THERE. IT RAN AFTER THE WRITE.

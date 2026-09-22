@@ -114,7 +114,7 @@ HS_RESPONDER_EXTRA=()
 # The program run against the responder, relative to the binary directory.
 #
 # It defaults to the requester emulator, which is what every caller before
-# 2026-10-12 ran and what all of them still run. Week ten added a second
+# 2026-09-20 ran and what all of them still run. Week ten added a second
 # client: DMTF's own conformance suite, `spdm_device_validator_sample`, which
 # is a different program driving the same socket at the same responder.
 #

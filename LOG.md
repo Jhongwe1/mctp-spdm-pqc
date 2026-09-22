@@ -14,8 +14,16 @@ grounds, is the difference between an entry the next reader can reuse and one
 they can only re-run.
 
 Entries marked **`TODO(me)`** are placeholders for things only I can write —
-what I read, what I concluded, how the drill went. They are left blank rathe
+what I read, what I concluded, how the drill went. They are left blank rather
 than filled with something plausible.
+
+**The dates are the real ones.** Every heading below carries the date its work
+was done, and `git log` agrees: `harness/verify_repo.sh` requires at least one
+commit authored on the date of every heading in this file. Week labels — `W10`,
+`W11`, `plan/W11` — name units of the schedule, not days. Two entries carried
+plan-calendar dates instead until 2026-09-22 and were corrected then; the
+measurement and the reasoning are in
+[`docs/decisions/0012-two-calendars-and-which-one-governs.md`](docs/decisions/0012-two-calendars-and-which-one-governs.md).
 
 ---
 
@@ -4216,7 +4224,7 @@ than 6.12 — or a userspace SPDM state machine, which is libspdm's job and not
 
 **`TODO(me)`** — What I am least sure about right now: _______________
 
-## 2026-10-12 · Day 12 · the instrument said I was wrong, and the instrument was wrong
+## 2026-09-20 · Day 12 · the instrument said I was wrong, and the instrument was wrong
 
 Gate 6's upper half. DMTF's own conformance suite, run four ways against this
 project's responder; libspdm's own fuzz targets, seeded from this project's own
@@ -4492,7 +4500,7 @@ for captures. It is not specific to captures.
   A change verified in September and sent in October is a change verified
   against a repository that no longer exists.
 
-## 2026-10-19 · Day 13 · four identifiers that were right, and a URL that was not
+## 2026-09-22 · Day 13 · four identifiers that were right, and a URL that was not
 
 Gate 6's lower half. The three advisory classes written as tests that can fail,
 the identifiers checked against their primary sources, and — because the
@@ -4573,7 +4581,7 @@ The stronger version, which is about how to answer a question rather than how
 to cite one: **when a lookup fails, the next question is "did I ask the thing
 that owns the answer", not "is the answer wrong".** I had three hypotheses and
 the cheapest discriminating request settled it in twenty seconds, which is
-2026-10-12's lesson arriving in a different costume — *the discriminating fact
+2026-09-20's lesson arriving in a different costume — *the discriminating fact
 first, and it was free*.
 
 ---
