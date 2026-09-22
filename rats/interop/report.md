@@ -1,6 +1,6 @@
 # rats/interop — measured, not asserted
 
-Produced by `bash rats/interop.sh` on 2026-09-21T19:37:16Z.
+Produced by `bash rats/interop.sh` on 2026-09-22T06:56:22Z.
 Not re-run in CI; what CI re-runs is the comparison against the files
 here. See harness/verify_repo.sh.
 
