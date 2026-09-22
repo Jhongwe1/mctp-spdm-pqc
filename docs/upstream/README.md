@@ -37,13 +37,13 @@ needs a date attached to it.
 | Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
 | Thirteenth found while pinning an A/B's control variables | **done** | 2026-09-14 | `spdm-emu`: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back, and then makes the handshake impossible — the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported, and `--mut_auth NO` does not clear that capability bit. Six packets and a bare status code. See below |
 | Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: `--cap` is parsed by the requester and never read; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
-| Eighteenth and nineteenth, from the official conformance suite | **done** | 2026-10-12 | `spdm-emu`: the validator sample's configuration array and the `SPDM-Responder-Validator` submodule it configures disagree **in both directions** — three implemented cases are never requested, including the only two that test SPDM 1.3, and one requested case does not exist and prints nothing. And `SPDM-Responder-Validator` itself: a case whose message mask omits `GET_CERTIFICATE` reports the device's **valid** signature as FAIL, because the case's own `libspdm_init_connection` freed the chain its setup fetched. **Proved**, not argued — `harness/challenge_verify.py` verifies the disputed signatures against the leaf key after calibrating on the ones the suite accepts. See below |
+| Eighteenth and nineteenth, from the official conformance suite | **done** | 2026-09-20 | `spdm-emu`: the validator sample's configuration array and the `SPDM-Responder-Validator` submodule it configures disagree **in both directions** — three implemented cases are never requested, including the only two that test SPDM 1.3, and one requested case does not exist and prints nothing. And `SPDM-Responder-Validator` itself: a case whose message mask omits `GET_CERTIFICATE` reports the device's **valid** signature as FAIL, because the case's own `libspdm_init_connection` freed the chain its setup fetched. **Proved**, not argued — `harness/challenge_verify.py` verifies the disputed signatures against the leaf key after calibrating on the ones the suite accepts. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
-| **This project's** first change prepared, reviewed, not sent | **`TODO(me)`** | prepared 2026-09-12, **freshness re-checked 2026-10-12** | branch, commit and pull-request body ready; see [`0001-corim-verify.md`](0001-corim-verify.md). It is one keystroke and the keystroke is the author's |
-| **This project's** second change prepared, linted, not sent | **`TODO(me)`** | prepared 2026-09-18, **re-linted and freshness re-checked 2026-10-12** | a first `README.md` for `openbmc/spdm`, written against the review that killed the 2025 attempt. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md). Commit `d3c84a1`, Change-Id `Ib0191ead…`, prettier and markdownlint clean against OpenBMC's own configs |
-| **This project's** first change submitted | not started | | scheduled W03 → slipped → prepared W06 → prepared W09, two of them → W10 re-verified both against an unchanged upstream and left the keystroke where it belongs |
-| Reviewer response received | not started | | |
+| **This project's** first change **SENT** | **done** | prepared 2026-09-12, **sent 2026-09-22** | [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524) — `CoRimTool.py verify` does not verify. Rebased onto `16119ea` and every `Tested:` line re-asserted in the hour before the push; `patch-id` and blob came through unchanged. DCO check green. Reviewers assigned by CODEOWNERS: **jyao1**, **steven-bellock**. See [`0001-corim-verify.md`](0001-corim-verify.md) §8 |
+| **This project's** second change **SENT** | **done** | prepared 2026-09-18, **sent 2026-09-22** | [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773) — a first `README.md`, written against the review that killed the 2025 attempt. Upstream `main` had **not** moved; both linters had vanished from the machine and were reinstalled at their pinned versions and re-run clean. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md) §10 |
+| **This project's** first change submitted | **done** | 2026-09-22 | scheduled W03 → slipped → prepared W06 → prepared W09, two of them → W10 re-verified both against an unchanged upstream → **both sent on the same day, each after its own freshness check, and one of those checks changed what was sent** (0001 was rebased; 0002's linters had to be reinstalled before they could agree) |
+| Reviewer response received | not started | | two threads are open. `DMTF/spdm-emu` last merged something this week; `openbmc/spdm` last merged on 2026-07-31 with 37 changes open, so silence there is the expected outcome rather than a failure |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -906,7 +906,7 @@ wanted: it is a feature with a patch, a test matrix and a control, aimed at a
 parameter the project's own CI already has two workflows about
 (`chunk_check.yml`, `chunk_device_sample.yml`).
 
-## Two more, from running the official conformance suite — 2026-10-12
+## Two more, from running the official conformance suite — 2026-09-20
 
 Both found by running `SPDM-Responder-Validator` four ways and then reading the
 source to explain what came back. Both are on repositories this project already
@@ -1048,7 +1048,7 @@ the committed capture on every CI run so the claim cannot rot.
 
 **Not submitted.** Same keystroke rule as the other two.
 
-## Freshness, checked immediately before the keystroke was offered — 2026-10-12
+## Freshness, checked immediately before the keystroke was offered — 2026-09-20
 
 Two changes have been sitting prepared since September. Neither has been sent,
 and a prepared change decays: the base moves, the defect gets fixed by somebody
@@ -1059,8 +1059,8 @@ this table is the record of that rather than of the original work.
 |---|---|---|
 | prepared | 2026-09-12, commit `425aa5a` | 2026-09-18, commit `d3c84a1`, `Change-Id: Ib0191ead…` |
 | base then | `ea77f25` | `72e3ea9` |
-| **upstream tip on 2026-10-12** | `ea77f25` — unchanged | `72e3ea9` — unchanged |
-| **upstream tip on 2026-10-19** | ★ **`b5f3ec1`** — **MOVED, 2 commits.** Neither touches `CoRimTool.py`; the branch was rebased and the diff is byte-identical | **`72e3ea9`** — still unchanged, **0** commits since, README still 404 |
+| **upstream tip on 2026-09-20** | `ea77f25` — unchanged | `72e3ea9` — unchanged |
+| **upstream tip on 2026-09-22** | ★ **`b5f3ec1`** — **MOVED, 2 commits.** Neither touches `CoRimTool.py`; the branch was rebased and the diff is byte-identical | **`72e3ea9`** — still unchanged, **0** commits since, README still 404 |
 | still applies | yes, no rebase needed | yes, no rebase needed |
 | still needed | yes — the two lines are still there | yes — `git ls-tree origin/main` still shows no README |
 | its own `Tested:` claims | the load-bearing one, *"a corrupted signature is still refused"*, is re-asserted by `harness/verify_repo.sh` on every run, through `rats/interop.sh`'s half-patched copy | prettier 3.3.3 `--check` and markdownlint-cli 0.41.0 **re-run today**, both clean, with the two configs fetched from `openbmc-build-scripts` today rather than from a cached copy |
@@ -1073,6 +1073,44 @@ Standing rule 19 is about reading the rest of the function; this is the same
 rule pointed at the rest of the world.
 
 **Both are still one keystroke away, and the keystroke is the author's.**
+
+## Both sent — 2026-09-22
+
+The keystroke was the author's and it happened. A third freshness check ran
+first, because the second one was two days old and the rule is *immediately*
+before, not *recently* before. It changed what was sent, both times.
+
+| | [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524) | [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773) |
+|---|---|---|
+| pipeline | GitHub pull request, from a fork | Gerrit, `refs/for/main` |
+| sent | 2026-09-22 | 2026-09-22 |
+| commit | `d7ceeaa` | `d3c84a1`, patchset 1 |
+| base | **`16119ea`** — moved again, **one** commit, merged that same day | `72e3ea9` — unchanged |
+| what the check changed | **rebased a second time.** `patch-id` `40e9bb3b…` and the blob `a5762c04…` both came through unchanged, and the pinned `pqc` tree's copy of `CoRimTool.py` hashes the same as upstream's at the new base — so `rats/interop.sh` re-asserts the `Tested:` lines against *the same bytes the change targets*, which is a statement worth making precisely rather than loosely | **both linters had vanished from the machine.** Reinstalled at their pinned versions, configs re-fetched, re-run: clean |
+| still needed | yes — both lines read out of the freshly fetched objects, not a cache | yes — README still 404, and no open Gerrit change mentions one |
+| nobody got there first | PR and issue search for `CoRimTool`, `EC2Key`, `verify_signature`: 0 | Gerrit `message:README` on this project: 0. Change 80422 still ABANDONED |
+| upstream CI | green on `main`, five workflows | — |
+| first check back | **DCO — success** | pending |
+| reviewers | **jyao1**, **steven-bellock**, assigned by CODEOWNERS rather than requested | to be added from `reviewers:`, not `owners:` |
+
+### Two things this day taught that the preparation had not
+
+**① A document that tells you how to send a change is not a mechanism.**
+`0002-openbmc-readme.md` §7 said `git push origin HEAD:refs/for/main`, and that
+tree's `origin` is `https://github.com/openbmc/spdm.git` — the **read-only
+GitHub mirror**. The Gerrit remote did not exist in that working tree at all.
+The rehearsal on 2026-08-05 proved the pipeline against `openbmc/docs`, whose
+tree already had the remote, so it proved everything except the thing that was
+missing here. It fails loudly, which is the only reason this is a paragraph and
+not an incident.
+
+**② The verification a reader can run is worth more than the one you ran.**
+Everything local said the change was intact: `patch-id` unchanged, blob
+unchanged, 392 CRLF and 0 bare LF. None of those is a number GitHub computes.
+The PR page says `1 commit`, `1 file changed`, `+3 −2`, and shows lines 206–218
+rather than the whole file — the same claim, reached by somebody else along a
+different path. `docs/roadmap.md` standing rule 12 was written about two
+implementations of CoRIM; it applies to this.
 
 ## Three identity traps, all of which are silent until they are not
 

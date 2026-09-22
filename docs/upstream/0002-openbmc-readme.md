@@ -2,7 +2,9 @@
 
 **Target:** `openbmc/spdm` at `72e3ea9` (`main`, last merged 2026-07-31)
 **Pipeline:** Gerrit, `gerrit.openbmc.org`
-**State:** prepared, reviewed against its own checklist, **not sent**
+**State: SUBMITTED, 2026-09-22** — change
+[94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773), patchset 1.
+See §10.
 **Prepared:** 2026-09-18
 **Local:** `~/spdm-lab/work/openbmc-spdm`, branch `readme`, commit `d3c84a1`
 
@@ -200,6 +202,8 @@ fine.
 ## 6. The checklist, before sending
 
 Nothing below is mechanisable, which is why it is a list and not a script.
+**It was worked through on 2026-09-22 immediately before the push; every
+answer is in [§10](#10-after-it-is-sent), including the two that had changed.**
 
 - [ ] **Has somebody added a README since 2026-09-18?**
       `curl -sI https://raw.githubusercontent.com/openbmc/spdm/main/README.md`
@@ -226,8 +230,28 @@ Nothing below is mechanisable, which is why it is a list and not a script.
 
 ```sh
 cd ~/spdm-lab/work/openbmc-spdm
-git push origin HEAD:refs/for/main
+git remote add gerrit ssh://openbmc.gerrit/openbmc/spdm   # once
+git push gerrit HEAD:refs/for/main
 ```
+
+> ### ★ This section said `origin` until the day it was used, and `origin` is the wrong repository
+>
+> The working tree was cloned from GitHub, so its only remote was
+> `https://github.com/openbmc/spdm.git` — **the read-only mirror**. Following
+> this file's own instruction would have pushed at GitHub rather than Gerrit.
+> It fails loudly, so nothing would have been damaged; it fails at the one
+> moment when an unexplained error costs the most.
+>
+> The mistake is specific and worth naming: **a Gerrit project and its GitHub
+> mirror have the same path and different meanings**, and nothing about the URL
+> says which one accepts a push. A rehearsal against a *different* repository
+> (`openbmc/docs`, 2026-08-05) proved the pipeline and did not prove this
+> remote, because that tree had the Gerrit remote already configured.
+>
+> The project name was read out of Gerrit — `ssh openbmc.gerrit gerrit
+> ls-projects` returns `openbmc/spdm` — rather than assumed from the GitHub
+> path, and `git push --dry-run` printed `* [new reference] HEAD ->
+> refs/for/main` before anything real was sent.
 
 ★ `main`, not `master`. `git ls-remote --heads` returns exactly one head for
 this repository and it is `refs/heads/main` — which is unusual for OpenBMC and
@@ -265,3 +289,43 @@ That is a result and it goes in `docs/upstream/README.md` with the reviewer's
 reason quoted, the same way change 80422's rejection is quoted in §0 of this
 file. The value of a review thread does not depend on the verdict; it depends on
 there being one.
+
+## 10. After it is sent
+
+```
+- URL:        https://gerrit.openbmc.org/c/openbmc/spdm/+/94773
+- Pushed:     2026-09-22
+- Change-Id:  Ib0191ead35bb19c0be46935c0da3a89b34b2a27d
+- Patchset 1: d3c84a100487d01a94f578a4722cab7a483ad7ea
+- Files:      README.md, ADDED, +130 -0
+- Reviewers added: TODO(me)
+- CI result:  TODO(me)
+- Review round trips:
+    Patchset 1 -> TODO(me)
+- What I learned from this review, specifically: TODO(me)
+- Outcome: open, status NEW
+```
+
+### §6's checklist, worked through on the day
+
+| item | answer on 2026-09-22 |
+|---|---|
+| has somebody added a README? | no — `raw.githubusercontent.com/openbmc/spdm/main/README.md` returns **404**, and a Gerrit query for open changes with `message:README` on this project returns **nothing** |
+| has `main` moved? | **no** — still `72e3ea9`. So the `Tested:` build claims, run 2026-09-18, are claims about the tree that is still there. They were not re-run, and that is stated rather than implied |
+| is `main` still the only branch? | yes, exactly one head |
+| does `OWNERS` still name the same reviewers? | yes — Lei Yu, Ratan Gupta, Archana Kakani; owners Manoj Kiran Eda and Patrick Williams |
+| the two linters | **both had vanished from the machine.** Reinstalled at the pinned versions through `npx` and re-run against configs fetched from `openbmc-build-scripts` on the day: prettier 3.3.3 → *All matched files use Prettier code style!*; markdownlint-cli 0.41.0 → exit 0, no output |
+| `check_upstream_commit.sh --profile openbmc` | every rule satisfied, including `Change-Id` last so an amend will not add a second one |
+| does Gerrit know who I am? | `Hi **Chung-Wei Lan**, you have successfully connected over SSH` — the legal name, matching the sign-off. The OAuth display-name trap of 2026-08-04 has stayed fixed |
+| OpenBMC's `CONTRIBUTING.md` | unchanged, `e27c7768eeda…`; the word *AI* still appears **0** times, so `Assisted-by:` remains a disclosure rather than a requirement |
+
+> ★ **The linter row is the one worth keeping.** §6 says to re-run them
+> *"because a rebase can change nothing in the file and everything about whether
+> they are installed"* — and the file had not changed, and they were gone. A
+> checklist item written about a hypothetical fired on its first real use.
+
+### What changed since this file was written
+
+`openbmc/spdm` now has **37** open changes rather than 34, and none of them is a
+README. The three arrivals do not affect this change and are recorded because
+"unchanged" is a measurement and it came back false.

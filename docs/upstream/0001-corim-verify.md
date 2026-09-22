@@ -3,23 +3,32 @@
 - **Repo:** `DMTF/spdm-emu` (GitHub pull request)
 - **File:** `spdm_emu/spdm_device_verifier_tool/CoRimTool.py`, two lines in one
   function
-- **Status:** **prepared, not submitted.** The branch and the commit exist;
-  sending it is the author's keystroke, on the author's account.
+- **Status: SUBMITTED, 2026-09-22** —
+  <https://github.com/DMTF/spdm-emu/pull/524>. See §8.
 - **Found:** 2026-09-12, by running the tool's own published example verbatim
   before connecting anything of this project's to it.
-- **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `corim-verify-public-key`, on top of
-  upstream `main` at **`b5f3ec1`** — rebased on 2026-10-19 from `ea77f25`,
-  because the freshness check found that main had moved. **The two commits
-  that moved it do not touch this file**, the rebase was clean, and the diff
-  is byte-identical across it (`7266972074be02bc…`). The pre-rebase commit is
-  kept as the tag `w11-before-rebase` = `425aa5a`.
-- **Re-checked 2026-10-19, immediately before sending:** both defective lines
+- **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `corim-verify-public-key`, **rebased
+  twice**, each time because a freshness check found `main` had moved and
+  neither mover touched this file:
+  | on | from | onto | diff |
+  |---|---|---|---|
+  | 2026-09-22 | `ea77f25` | `b5f3ec1` (2 commits) | byte-identical, `7266972074be02bc…` |
+  | 2026-09-22, immediately before sending | `b5f3ec1` | **`16119ea`** (1 commit) | `patch-id` and blob unchanged — `40e9bb3b447a95b6…` / `a5762c04ccef3eac…` |
+  Both pre-rebase commits are kept as tags: `w11-before-rebase` = `425aa5a`,
+  `pre-rebase-20260922T053152Z` = `ed10221`. The submitted commit is
+  **`d7ceeaa`**.
+- **Re-checked 2026-09-22, immediately before the push:** both defective lines
   are still in upstream `main` — `EC2Key(crv='P_256', d=key)` at line 209 and
-  `cose_msg.verify_signature(Algorithm)` at line 212 — so the change is still
-  needed. `DMTF/spdm-emu` issue and PR search for `CoRimTool` and `EC2Key`:
-  **0 results each**, unchanged since 2026-09-12. `CONTRIBUTING.md` is still
-  the one these rules were read from. All the `Tested:` lines re-run on the
-  rebased tree by `bash rats/interop.sh` — every comparison agreed.
+  `cose_msg.verify_signature(Algorithm)` at line 212, **read out of the freshly
+  fetched objects rather than from a cached copy** — so the change is still
+  needed. `DMTF/spdm-emu` issue and PR search for `CoRimTool`, `EC2Key` and
+  `verify_signature`: **0 results each**, unchanged since 2026-09-12.
+  `CONTRIBUTING.md` still hashes to `52b95edb1267…`, the copy these rules were
+  read from. Upstream CI green on `main` across all five workflows. All the
+  `Tested:` lines re-run on the rebased tree by `bash rats/interop.sh` — **19
+  checks**, one confirming the patch itself and eighteen comparisons across
+  four sections, every one green, and `rats/interop/report.md` came back
+  byte-identical apart from its own timestamp.
 
 ---
 
@@ -295,11 +304,14 @@ where it belongs — a checklist is a discipline and this one had already missed
    and "EC2Key" on 2026-09-12: 0 results each. RE-CHECK ON THE DAY.
 ☑ not a new feature, so no prior discussion is expected
    (CONTRIBUTING.md step 6: open a PR against main and respond to review)
-☐ target repo's CI is green on main
-☐ decide the channel. Public PR, on the reasoning in README.md ② — the
+☑ target repo's CI is green on main — checked 2026-09-22: TPM CI, PQC,
+   and the 1.1 / 1.3 / latest certificate workflows all green on `16119ea`
+☑ decide the channel. **Public PR**, on the reasoning in README.md ② — the
    fail-open is not reachable in shipping code, because the key defect
    means the tool accepts nothing. If that reasoning is wrong, the
-   channel is DMTF's security reporting process instead.
+   channel is DMTF's security reporting process instead. The premise was
+   re-verified on the day rather than recalled: the key line is still
+   there, so `verify` still raises before any result is discarded.
 ```
 
 **No CLA to sign** — see §0.5. The only paperwork is the sign-off already in
@@ -329,12 +341,37 @@ a week later is a URL nobody can attach to a reviewer's first comment.
 ## 8. After it is sent
 
 ```
-- URL:
-- Opened:
-- CI result:
+- URL:      https://github.com/DMTF/spdm-emu/pull/524
+- Opened:   2026-09-22
+- Commit:   d7ceeaa, on upstream main 16119ea
+- Reviewers: assigned by CODEOWNERS, not requested by me —
+             jyao1 and steven-bellock
+- CI result: DCO  completed  success.  No other check ran against a
+             Python-only change; the combined status stayed pending.
 - Review round trips:
-    Patchset 1 -> <reviewer> said <what>
-    Patchset 2 -> I changed <what>, because <why>
-- What I learned from this review, specifically:
-- Outcome: merged / changes requested / closed (why)
+    Patchset 1 -> TODO(me)
+- What I learned from this review, specifically: TODO(me)
+- Outcome: open
 ```
+
+### What GitHub said back, checked rather than assumed
+
+The three numbers the PR page reports are an independent re-derivation of what
+was measured locally, by the other side, along a different path — the local
+evidence was `patch-id` and blob digests, and neither of those is what GitHub
+computes. `docs/roadmap.md` standing rule 12, pointed at a pull request.
+
+| | local, before the push | GitHub, after it |
+|---|---|---|
+| commits | 1 | 1 |
+| files | 1 | 1 |
+| lines | `+3 −2` | `+3 −2` |
+| scope of the diff | 392 CRLF / 0 bare LF preserved | diff shows lines 206–218, **not the whole file** |
+| base ← head | `16119ea` ← `d7ceeaa` | `DMTF:main ← Jhongwe1:corim-verify-public-key` |
+
+The line-ending row is the one that had a way to go wrong. `CoRimTool.py` is a
+CRLF file; Git for Windows carries `core.autocrlf=true` in its **system**
+configuration on this machine, while the WSL git that owns the branch has it
+unset in all three scopes. Touching the tree from the wrong side would have
+turned a two-line change into `+392 −392` — one file still, so the file count
+would not have shown it.
