@@ -237,14 +237,16 @@ work:
 - **Limit. Two changes sent, neither merged.** `DMTF/spdm-emu` #524 had no human
   response as of 2026-09-23. `openbmc/spdm` 94773 received a −1 from an owner on
   patchset 1, for reading as AI-generated documentation that costs a reviewer
-  more than it saves; patchset 2 is prepared
-  ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11).
+  more than it saves. The same owner said of patchset 2 that its instructions
+  were unlike any other OpenBMC repository's, and patchset 3 was sent on
+  2026-09-23 in their layout
+  ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
 - **Not done. Seventeen of the nineteen candidates were not sent.** Each is recorded
   with its evidence and the reason it was held back
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
 - **Limit. Each change is against one upstream commit.** #524 against
-  `spdm-emu` `16119ea`, and 94773 patchset 2 against `openbmc/spdm` `32e9f8b`.
+  `spdm-emu` `16119ea`, and 94773 patchset 3 against `openbmc/spdm` `32e9f8b`.
   Upstream moves, and a gap either change addresses may be closed by someone
   else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not
