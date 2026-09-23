@@ -34,8 +34,9 @@ both open. The full record, including a −1 and what it changed, is in
 
 _Table 1, condensed from [`docs/tamper.md`](docs/tamper.md). Rows 2a and 2b
 print the same status for opposite reasons, and row 1 is invisible to SPDM by
-design, which is why the verifier exists. SPDM 1.4, ECDSA P-384, SHA-384, read
-back from `ALGORITHMS` in the control capture rather than from the flags.
+design, which is why the verifier exists. SPDM 1.4, ECDSA P-384 with SHA-384,
+measurements hashed with SHA-512 — read back from `ALGORITHMS` in the control
+capture rather than from the flags.
 `spdm-emu` `5f01d2f` and `libspdm` `8a92317` (4.0.0-rc) with this project's
 measurement-source patch. Captures and manifests:
 [`bench/data/w5-tamper-20260910T092621Z/`](bench/data/w5-tamper-20260910T092621Z/)._
