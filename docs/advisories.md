@@ -229,12 +229,27 @@ it runs either way. That is the advisory's third precondition, and it is met not
 by a mistake but by a build type.
 
 **What it does not mean.** No measurement in this repository is affected. The
-defect is reached through `GET_MEASUREMENT_EXTENSION_LOG`, and **no committed
-capture contains that request** — `check_advisories.py` re-derives that from the
-decodes rather than taking anyone's word for it. The twenty-two message codes
-that do appear are in `docs/handshake-walkthrough.md`. The honest summary is:
-*a responder in this lab would answer that request unsafely, and nothing here
-has ever asked it.*
+defect is reached through `GET_MEASUREMENT_EXTENSION_LOG`, and **no `stable`
+responder has ever been asked it.** No capture from the `stable` flavor holds a
+session, and none carries the request in cleartext.
+
+> ★ **Corrected 2026-09-23.** This paragraph said *"no committed capture
+> contains that request"*, and `check_advisories.py` said it re-derived that
+> from the decodes. It re-derived it from the decodes that existed: 132 of 152
+> captures. [`harness/census.sh`](../harness/census.sh) decoded the rest, and
+> one of them — `healthcheck-pqc-20260811T052725Z/minimal.pcap`, the week-1 run
+> that left `--exe_session` at its default — holds an SPDM 1.4 secure session.
+> By the emulator's own source (`spdm_requester_session.c`), a 1.4 session with
+> that default sends `GET_MEASUREMENT_EXTENSION_LOG` inside it, and the
+> requester logged no error for it. The records are encrypted, so the capture
+> cannot show it and the census counts it as 0 in cleartext.
+>
+> It does not change the verdict. That run was the `pqc` flavor, which carries
+> the fix. What it changes is the sentence: *no committed capture shows that
+> request* is true, and *no committed capture contains it* was not.
+
+The honest summary is: *a `stable` responder in this lab would answer that
+request unsafely, and nothing here has ever asked one.*
 
 ### 3.3 `stable` / DMTF-2026-0001 — **PRESENT-NOT-REACHABLE**
 
@@ -270,9 +285,22 @@ a patched tree as unpatched.
 
 The affected product is a specification. Any implementation that follows
 DSP0274 1.4.0 exactly has the defect, so "is my library patched" is not the
-question. The question is whether this project computes a FINISH transcript at
-all, and it does not: **nothing here has ever established a secure session**,
-which `docs/threat-scope.md` level 2 has said since 2026-09-20.
+question, and there is no fix commit in either tree to look for.
+
+> ★ **Corrected 2026-09-23.** The reason given here was *"nothing here has ever
+> established a secure session"*. Two committed captures contradict it, and
+> neither had been decoded until the census: the week-1 run that left
+> `--exe_session` at its default holds a mutually authenticated **SPDM 1.4**
+> `FINISH`, and the conformance suite's no-mut-auth arm holds `FINISH` at 1.1 and
+> 1.2. The 1.1 and 1.2 ones cannot carry this defect — their `FINISH` has no
+> field between header and authenticator. The 1.4 one can, and whether it does
+> depends on what libspdm puts in the transcript. Its requester appends the
+> header, `OpaqueDataLength` and `OpaqueData` before it signs
+> (`libspdm_req_finish.c`, the append immediately before
+> `libspdm_generate_finish_req_signature`), which is 1.4.1's meaning. That is a
+> reading of source and has **not** been checked against the capture: verifying
+> the requester's `FINISH` signature over both transcripts would settle it, and
+> is the next experiment rather than a claim.
 
 So the class is modelled rather than run —
 [`negative/test_transcript_coverage.c`](../negative/test_transcript_coverage.c)

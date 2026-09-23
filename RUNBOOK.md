@@ -1942,8 +1942,9 @@ bash harness/run_fuzz.sh --seconds 420 # 加上有時間盒的真 fuzz
 > 加進來(它**故意**送那些),數字就翻過來了。
 
 還有一個發現不是關於 fuzz 的:**17 個 target 裡有 10 個一顆種子都抽不到**,因為
-這個專案的握手從來沒有建立過 session(`--exe_session NO_END` 不包含
-`EXE_SESSION_KEY_EX`)。`harness/lib/arms.sh` 的註解從寫下來那天就講了這件事,
+這個專案**用來量測的**握手從來沒有建立過 session(`--exe_session NO_END` 不包含
+`EXE_SESSION_KEY_EX`)。(2026-09-23 更正了措辭:原本寫「這個專案的握手」,
+但第一週那次沒設 `NO_END` 的 run 有建立 session,見 §11.10 的更正。)`harness/lib/arms.sh` 的註解從寫下來那天就講了這件事,
 **是一份 fuzz 語料讓它的後果變成看得見的**。
 
 #### 「跑了沒發現東西」要怎麼講才誠實
@@ -2060,8 +2061,14 @@ CVSS:4.0/AV:A/AC:L/AT:P/PR:N/UI:N/VC:N/VI:H/VA:N/SC:N/SI:N/SA:N     6.0
 - **做了**:抓兩個版本、算 hash、釘 pin、讀了 633–644 節、對照五個定義;把類別寫成
   測試(`negative/test_transcript_coverage.c`,8 個 case、6 個錯誤版本)。
 - **沒做**:發現它、回報它、實作修正。它是 2026-06-02 在 libspdm issue 3633 被提出的。
-- **做不到**:在線上看到它。**這個專案從來沒有建立過 secure session**
-  (`docs/threat-scope.md` level 2),所以這裡根本沒有 `FINISH`、沒有 transcript。
+- **做不到(2026-09-23 更正)**:原本這裡寫「**這個專案從來沒有建立過 secure
+  session**,所以這裡根本沒有 `FINISH`」——**錯了**。第一週那次 `--exe_session`
+  留預設值的 run(`bench/data/healthcheck-pqc-20260811T052725Z/minimal.pcap`)
+  裡**有一個 SPDM 1.4、雙向認證的 `FINISH`**,只是從來沒有人 decode 過那份 capture,
+  直到 `harness/census.sh` 把全部 152 份掃了一遍才找到。兩端都是 libspdm,
+  握手成功只代表**兩端一致**,不代表用的是哪一版定義。讀原始碼,libspdm 的 requester
+  簽章前會把 `OpaqueData` 也放進 transcript(1.4.1 的意思),**但還沒拿那份 capture
+  驗證**——驗那一個簽章在兩種 transcript 下哪個會過,就是下一個實驗。
   測試是**模型**,檔案第一段就這樣寫。
 
 ⚠️ **講法注意。** 不要說「我找到一個 SPDM 的漏洞」。要說
@@ -2138,9 +2145,18 @@ add_compile_options(-DLIBSPDM_DEBUG_ENABLE=0)
 > ★ 這一句值得背:**「那個檢查存在,而且在出貨的 build 裡什麼都不做——
 > 因為它是用 assert 寫的,而 assert 就是那個保證會在 release build 裡消失的東西。」**
 
-**但這不影響這個 repo 的任何一個數字。** 要踩到它得送
-`GET_MEASUREMENT_EXTENSION_LOG`,而**所有 committed capture 裡一次都沒送過**
-——這句話也是工具從 decode 檔算出來的,不是我說的。
+**但這不影響這個 repo 的任何一個數字。** 要踩到它得對 **`stable`** 的 responder
+送 `GET_MEASUREMENT_EXTENSION_LOG`,而**沒有任何一份 `stable` 的 capture 建立過
+session,也沒有一份用明文送過它**。
+
+> ⚠️ **2026-09-23 更正。** 原本這裡寫「**所有 committed capture 裡一次都沒送過**
+> ——這句話也是工具從 decode 檔算出來的」。工具只讀得到**有 decode 的** capture:
+> 152 份裡的 132 份。第一週那份沒 decode 的 capture 裡有一段加密的 SPDM 1.4
+> session,照模擬器自己的原始碼(`spdm_requester_session.c`),它**會**在 session
+> 裡送這個請求——只是加密了,誰都看不到;而且那是 `pqc`,修正已經在裡面。
+> **「工具算出來的」只對它讀得到的那些 capture 成立**,而它讀不到哪些,以前沒有
+> 任何東西會說。現在 `verify_repo.sh` 會:每一份 capture 要嘛有 decode、要嘛在
+> 最新的 `census.tsv` 裡,否則紅燈。
 
 #### ★ 另一格也值得講:present ≠ reachable
 

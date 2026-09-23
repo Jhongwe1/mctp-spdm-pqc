@@ -163,11 +163,19 @@ exactly the cases the file predicts.
 `DMTF/libspdm` issue 3633 on 2026-06-02, and the specification was repaired in
 1.4.1.
 
-**Could not.** Observe it on the wire. Nothing in this project has ever
-established a secure session — `docs/threat-scope.md` level 2 — so there is no
-`FINISH` here, no transcript to under-cover, and no capture in which any of
-this appears. `test_transcript_coverage.c` says so in its own first paragraph
-and models the rule instead. The real transcript arithmetic this project does
+**Could not, until a census found it.** Observe it on the wire. This paragraph
+said *"nothing in this project has ever established a secure session, so there
+is no `FINISH` here"*, and that was wrong about this repository's own evidence.
+`bench/data/healthcheck-pqc-20260811T052725Z/minimal.pcap`, the week-1 run that
+left `--exe_session` at its default, holds a **mutually authenticated SPDM 1.4
+`FINISH`** between the two libspdm emulators — `SigIncl=1` — and nothing had
+decoded it (corrected 2026-09-23; [`advisories.md`](advisories.md) §3.5). Both
+ends are libspdm, so the handshake completing shows they agree, not which
+definition they follow. libspdm's requester appends the header,
+`OpaqueDataLength` and `OpaqueData` before it signs, which is 1.4.1's meaning;
+verifying that one signature over both candidate transcripts would turn that
+reading into a measurement. `test_transcript_coverage.c` models the rule in
+the meantime. The real transcript arithmetic this project does
 own is `harness/challenge_verify.py`, which rebuilds `M1M2` from a capture and
 hands it to OpenSSL; that tool cannot be this one, because its transcript is
 never allowed to be wrong.

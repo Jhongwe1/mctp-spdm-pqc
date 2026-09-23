@@ -122,7 +122,7 @@ threat lists are the shape of the argument.
 | Layer | What this repository has touched |
 |:--:|---|
 | 1 | nothing. The keys are DMTF's sample keys or generated here and not protected; see *Assumptions inherited from the emulator* above |
-| 2 | nothing. No arm of any experiment here has ever established a secure session — `--exe_session NO_END` does not include `EXE_SESSION_KEY_EX`, and the captures carry no `KEY_EXCHANGE`. It took a fuzz corpus to make that visible: ten of seventeen responder fuzz targets could not be seeded from this project's own handshakes |
+| 2 | **nothing measured.** No arm any published number rests on establishes a session — `--exe_session NO_END` does not include `EXE_SESSION_KEY_EX`. It took a fuzz corpus to make that visible: ten of seventeen responder fuzz targets could not be seeded from this project's own handshakes. ★ *Corrected 2026-09-23:* this cell said no arm of **any** experiment had established a session and that the captures carry no `KEY_EXCHANGE`. Two committed captures do: the week-1 run with `--exe_session` left at its default (SPDM 1.4, mutual authentication, 552 encrypted records), and the conformance suite's no-mut-auth arm, where `FINISH_RSP` passes <!--xclaim validator_finish_rsp_passes_without_mut_auth=135-->135 assertions. Neither had been decoded, and nothing is measured from either ([`harness/census.sh`](../harness/census.sh)) |
 | 3 | **most of it.** The handshake walkthrough, the tamper points, the conformance run, and the fuzz corpus all live here |
 | 4 | week nine — a real Linux MCTP link and a PCIe DOE mailbox, [`docs/transports.md`](transports.md) |
 | 5 | nothing. Emulator throughout |

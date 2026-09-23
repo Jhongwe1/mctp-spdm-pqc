@@ -86,7 +86,13 @@ for pinning, and it is also the reason not to overwrite one.
 ## What this does not decide
 
 Whether this project's own implementations follow 1.4.0's transcript rule. They
-do not compute a FINISH transcript at all — **nothing here has ever established
-a secure session**, which `docs/threat-scope.md` level 2 has said since
-2026-09-20. `negative/test_transcript_coverage.c` models the rule rather than
-running it, and says so in its first paragraph.
+do not compute a FINISH transcript at all. `negative/test_transcript_coverage.c`
+models the rule rather than running it, and says so in its first paragraph.
+
+*Corrected 2026-09-23.* This section also said that nothing here had ever
+established a secure session. One committed capture holds a mutually
+authenticated SPDM 1.4 session between the two libspdm emulators, the week-1
+run with `--exe_session` left at its default, and its `FINISH` is exactly the
+message this decision is about. Whether libspdm signs 1.4.0's transcript or
+1.4.1's is therefore checkable against that capture, and has not been checked
+([`advisories.md`](../advisories.md) §3.5).
