@@ -513,3 +513,143 @@ reason: fix it. A −1 because no README is wanted from this source: abandon wit
 two lines of thanks, and the review is still the evidence. Silence: no ping for
 two weeks, which is what `CONTRIBUTING.md`'s "Pace of Review" asks, and then
 one.
+
+## 12. A second comment, and patchset 3 — 2026-09-23
+
+**Patchset 2 was pushed** by the author at 15:59:39 UTC: `3feccaf`, 59 lines,
+mode 644, his sign-off. The −1 was dropped by the copy rule §11 read off 14
+changes, and CI returned `Verified+1` at 16:01:09
+([job 149426](https://jenkins.openbmc.org/job/ci-repository/149426/console)).
+
+Five minutes and forty-two seconds later, Patrick Williams replied in his own
+thread on patchset 1, with no vote:
+
+> This is still nothing like any other instructions we have.
+
+**Three readings**, tested in this order (`LOG.md`, 2026-09-24): the
+instructions are unlike the other repositories' instructions; the whole file is
+unlike their files; or no README is wanted from this source. The first two can
+be measured against the other repositories in an afternoon. The third can only
+be answered by the reviewer, so it is what is left if the first two come back
+clean.
+
+### What was measured
+
+The `README.md` of 34 OpenBMC repositories, fetched on 2026-09-23: sdbusplus,
+phosphor-logging, entity-manager, dbus-sensors, pldm, bmcweb,
+phosphor-certificate-manager, phosphor-networkd, phosphor-host-ipmid,
+phosphor-state-manager, phosphor-power, phosphor-fan-presence,
+phosphor-led-manager, phosphor-bmc-code-mgmt, smbios-mdr, phosphor-objmgr,
+phosphor-post-code-manager, phosphor-inventory-manager, service-config-manager,
+phosphor-virtual-sensor, phosphor-time-manager, phosphor-debug-collector,
+phosphor-hostlogger, phosphor-dbus-interfaces, libmctp, phosphor-event,
+phosphor-gpio-monitor, phosphor-hwmon, phosphor-sel-logger, phosphor-pid-control,
+phosphor-ipmi-flash, phosphor-misc, bios-settings-mgr and openpower-occ-control.
+
+| what patchset 2 told a reader | of the 34, how many say it |
+|---|:-:|
+| a specific GCC version | **0** |
+| `dbus-run-session` | **0** |
+| a virtualenv, or `pip install` | 1 (sdbusplus) |
+| a named distribution | 1 (sdbusplus) |
+
+★ And the finding that made the `dbus-run-session` line unnecessary rather than
+merely unusual. OpenBMC's CI runs a repository's unit tests through
+`run-unit-test-docker.sh`, which starts the container with `--privileged=true`
+and wraps `unit-test.py` in `dbus-unit-test.py`: a private `dbus-daemon`,
+started with `/usr/share/dbus-1/system.conf`. In the job for patchset 3
+([149439](https://jenkins.openbmc.org/job/ci-repository/149439/console)),
+`spdm:test_policy_manager` is `OK` and the summary is `Ok: 3`, `Fail: 0`. The
+`AccessDenied` that patchset 2 documented happens outside that path. It is
+real, and it is knowledge about my machine rather than about the project, which
+is — as far as one sentence can be read — the distinction the comment drew.
+
+The shape of the file, over the same 34:
+
+| | the 34 | patchset 3 |
+|---|---|---|
+| length | median 91.5 lines; three are shorter than patchset 3 | 28 lines |
+| a paragraph before the first section | 25 | yes |
+| `## To Build` | 8, the most common build heading (`Building` 5, `Build` 2) | yes |
+| a meson configure command and `ninja -C` | 19 have a meson configure command in some form (`meson build`, `meson builddir`, `meson <build directory>`, `meson setup build`, with or without options) and 18 have `ninja -C <dir>`. The literal lines `meson setup build` and `ninja -C build`: 5 and 8 | the literal lines |
+| unit tests pointed at `local-ci-build.md` | 2 (pldm, phosphor-debug-collector) | yes |
+| `## Hosted Services` | 1 (phosphor-post-code-manager, whose layout patchset 3 follows) | yes |
+| a link to a design in `openbmc/docs` | 5 | yes |
+
+> ★ **A count has to say what it counted.** The first summary of this survey,
+> in a working note and never in this repository, said *"19 `meson setup
+> build`, 18 `ninja -C build`"*. Those are the counts of two regular expressions
+> that match the whole family; the literal lines are 5 and 8. The conclusion
+> survives, because patchset 3's form is the family's, but it was one step from
+> being published as a claim about the text.
+
+### Patchset 3
+
+`2ea9ab3`: what `spdmd` does, the design, `## To Build` with the two lines, the
+unit tests pointed at `local-ci-build.md` as pldm does, and `## Hosted
+Services`. Removed: the GCC version, the virtualenv and `dbus-run-session`. The
+GCC 13.3 internal compiler error survives in the commit message's `Tested:`
+line, where a reviewer reads it and a newcomer is not asked to.
+
+Two things were caught in the hour before it was sent.
+
+1. ★ **A `Tested:` line written before its command was run.** The first
+   candidate said that `ninja -C` on the build directory *"then reports no work
+   to do"*. Run, it failed: that directory had been configured with an in-tree
+   `.venv`, deleted when patchset 2 was finalised. The line was rewritten to
+   what ran — `meson setup` and `ninja` with GCC 14 in a fresh directory, 863
+   of 863 targets at 16:34:25 UTC, and no `FAILED:`, `error:` or `warning:`
+   line in the log itself — before it was signed.
+2. ★★ **A sentence true on the day and false on the merge.** The README said
+   *"It does not run the SPDM protocol itself; libspdm is not a dependency."*
+   True of `32e9f8b`. But `openbmc/spdm` had 37 open changes, this one
+   included, and a chain of them by this change's own reviewers — Ratan
+   Gupta's 80264, and Chinmay Shripad Hegde's 80267 *"spdmd: Add libspdm
+   dependency and device secret lib"*, among others at patchsets 38 to 42, all
+   updated that day — adds `dependency('libspdm')`. The current patchsets of
+   the other 36 were read for any added or removed line naming a fact the
+   README states, and 80267 is the only one. The sentence was deleted rather
+   than reworded, so that every remaining sentence is true before that chain
+   lands and after it, only less complete after. **Checking a document against
+   the tree it was written from is not checking it against the tree it will
+   merge into.**
+
+The build was not re-run after that edit, and the reason is a measurement: no
+build file mentions `README.md` (`git grep -i readme` over every `meson.build`
+and `meson.options`), so the build's inputs were those of the tree built at
+16:34. The linters read it, and were re-run: clean, with the configs fetched
+from `openbmc-build-scripts` at `e62fb77`, which had moved since §11's
+`8e613ad`.
+
+80422 was re-read too, because a reviewer had added its author. It was
+**abandoned by a bot**, for failing CI and a year without activity, not
+withdrawn with a plan to redo it. And Patrick's position on it — *"It is
+unnecessary overhead to add a line to the README when you have a feature done?
+That's rather surprising."* — is that a README tracks the merged code and grows
+as features land. Patchset 3 is written to that.
+
+**Sent at 17:08:53 UTC.** The sign-off and the push were the author's, and the
+commit was checked after he signed it: its message byte-identical to the
+reviewed draft plus one `Signed-off-by`, its tree different from the prepared
+candidate only in `README.md`, `check_upstream_commit.sh --profile openbmc`
+with no FAIL, and `git push --dry-run` accepted. CI `Verified+1` at 17:10:44
+([job 149439](https://jenkins.openbmc.org/job/ci-repository/149439/console));
+`README.md` 28 lines, mode 33188, which is 100644.
+
+> The assistant's `git commit --amend` of the prepared candidate was refused by
+> its own permission classifier, as a destructive git operation, and was not
+> worked around. The author applied the reviewed message and signed it in one
+> command of his own. The keystroke that changes a commit sent under his name
+> is his: that is 89452's rule for the sign-off, and it turned out to be the
+> tool's rule for the amend.
+
+**Not sent: replies to the three open threads** — Patrick's, and Chinmay
+Shripad Hegde's two on patchset 1's commit message, whose requests patchset 2
+had already met. The author decided on the day to wait for the reviewers' next
+move. The cost is recorded rather than argued: the notification of patchset 3
+carries no word of what changed, and two threads whose requests are done stay
+open.
+
+**What happens next** is §11's rule, unchanged. A −1 with a reason: fix it. A
+−1 because no README is wanted from this source: two lines of thanks, then
+abandon. Silence: no ping for two weeks from the push, which is 2026-10-07.

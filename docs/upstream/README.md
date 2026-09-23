@@ -45,7 +45,9 @@ needs a date attached to it.
 | **This project's** first change submitted | **done** | 2026-09-22 | scheduled W03 → slipped → prepared W06 → prepared W09, two of them → W10 re-verified both against an unchanged upstream → **both sent on the same day, each after its own freshness check, and one of those checks changed what was sent** (0001 was rebased; 0002's linters had to be reinstalled before they could agree) |
 | Reviewer response received | **done** | 2026-09-22, **35 minutes after the push** | `openbmc/spdm` 94773: CI `Verified+1`, then two inline comments from **Chinmay Shripad Hegde** — who was also a reviewer on the change this one supersedes. Neither is a change request; one supplies context on 80422 and adds its original author, the other points at an AI-assistant policy this project had concluded did not exist. Both answered the same day, every factual claim in the replies checked mechanically first. All six people in `OWNERS` are now on the change, **including Patrick Williams**, who rejected 80422. `DMTF/spdm-emu` #524: DCO green, no human response yet |
 | ★ **The first −1** | **received** | 2026-09-22, 19:17 UTC | Patrick Williams, one of the two owners with approval authority, on 94773 patchset 1: *"I'm not interested in reviewing AI-generated documentation. There are bits here that are potentially useful but I'm not merging something that is a waste of human time to read."* An audit then found three defects in patchset 1 that every earlier check had passed, including that the two findings the change existed for were **not in the file**. [`0002`](0002-openbmc-readme.md) §11 |
-| Patchset 2 | **prepared, not pushed** | 2026-09-23 | 59 lines instead of 130, mode 644, every command in it re-run that day against `32e9f8b`. Prepared **without** `Signed-off-by`, because 89452 says an AI agent must not add one; the sign-off and the push are the author's. [`0002`](0002-openbmc-readme.md) §11 has the three commands |
+| Patchset 2 | **pushed** | 2026-09-23, 15:59 UTC | 59 lines instead of 130, mode 644, every command in it re-run that day against `32e9f8b`. Prepared **without** `Signed-off-by`, because 89452 says an AI agent must not add one; signed and pushed by the author. The −1 dropped by the copy rule, CI `Verified+1`. [`0002`](0002-openbmc-readme.md) §11–§12 |
+| A second comment from the same owner | **received** | 2026-09-23, 16:05 UTC, under six minutes after the push | Patrick Williams, no vote: *"This is still nothing like any other instructions we have."* Measured against 34 other OpenBMC READMEs: what patchset 2 added — a GCC version, `dbus-run-session`, a virtualenv — appears in 0, 0 and 1 of them, and OpenBMC's CI starts its own `dbus-daemon`, under which the test patchset 2 documented passes. [`0002`](0002-openbmc-readme.md) §12 |
+| Patchset 3 | **sent** | 2026-09-23, 17:08 UTC | 28 lines in the layout the other repositories use; CI `Verified+1`. Caught in the hour before it: a `Tested:` line written before its command ran, and a README sentence the reviewers' own open chain (80267, *"Add libspdm dependency"*) would have made false on merge. Replies to the three open threads **not sent**, by the author's decision on the day. [`0002`](0002-openbmc-readme.md) §12 |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -85,7 +87,8 @@ helped; is it one logical change; and is it likely to land from someone nobody
 there knows. #524 passed all four. 94773 passed the first three and was a
 calculated risk on the fourth, because the repository's owner had already
 rejected one README. The −1 on patchset 1 was about something else, and
-[`0002`](0002-openbmc-readme.md) §11 is what it taught.
+[`0002`](0002-openbmc-readme.md) §11 is what it taught; the second comment, on
+patchset 2, is §12.
 
 ## Two upstreams, two processes, and the paperwork does not carry over
 
@@ -277,6 +280,12 @@ the change.
 > README of patchset 1 contains neither finding, and this paragraph was written
 > from the plan for the file. Patchset 2 contains both.
 > [`0002`](0002-openbmc-readme.md) §2 and §11.
+>
+> **And patchset 3, the same day, removes both again, on purpose.** Neither
+> appears in any of 34 other OpenBMC READMEs, and the project's CI runs the
+> tests under a `dbus-daemon` of its own, where the second is not a problem.
+> The first survives in the commit message's `Tested:` line.
+> [`0002`](0002-openbmc-readme.md) §12.
 
 **What was read before writing it, and what it changed.** The obvious framing —
 "there is no README, so write one" — is how change
