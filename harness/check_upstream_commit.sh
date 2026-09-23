@@ -79,14 +79,21 @@
 #   * **50/72, a Signed-off-by with a full real name, and a statement of how it
 #     was tested.** Same shape as DMTF's, and the CONTRIBUTING.md is explicit
 #     that "xXthorXx" and a bare given name are not acceptable.
-#   * ★ **No AI policy at all.** The word does not appear in the file. So
-#     `Assisted-by:` is neither required nor forbidden, and `Co-authored-by`
-#     naming an AI is not a rule violation here the way it is at DMTF. This
-#     script therefore REPORTS the disclosure rather than requiring it, and the
-#     decision to disclose anyway is the author's — recorded in
-#     `docs/upstream/0002-openbmc-readme.md`. A check that invented a rule the
-#     project does not have would be worse than no check: it would teach the
-#     wrong rule set for the next repository.
+#   * ★ **An AI policy exists, and it is in review rather than merged.** This
+#     header said "No AI policy at all" until 2026-09-23, on the evidence that
+#     the word does not appear in CONTRIBUTING.md. A reviewer on 94773 pointed
+#     at openbmc/docs 89452, `coding-assistants.md`, 404 on master — a grep
+#     over a merged file could not have seen it. What it says:
+#       - attribution SHOULD be `Assisted-by: AGENT_NAME:MODEL_VERSION`, and
+#         the word is under dispute in that review ("should" or "can");
+#       - "AI agents MUST NOT add Signed-off-by tags". That rule is about WHO
+#         TYPED the line, and no check on a finished commit can see who typed
+#         anything. So it is printed below as something this script does not
+#         know, and the prepared commit is left for the human to sign.
+#     This script still REPORTS the disclosure rather than requiring it: the
+#     policy is not merged, and a check that enforced an unmerged rule would
+#     teach the wrong rule set for the next repository just as surely as one
+#     that invented a rule.
 #
 # Exit code 0 = ready to send.
 
@@ -290,12 +297,23 @@ check_commit_openbmc() {   # check_commit_openbmc <repo-dir>
         no "$n Change-Id lines. Gerrit refuses that. An amend that appends a trailer after the Change-Id makes the hook add a second one; put the Change-Id last."
     fi
 
-    # The hook writes it last for a reason, and keeping it there is what stops
-    # the failure above from recurring on the next amend.
-    if [ "$(grep -vE '^\s*$' <<<"$msg" | tail -1)" = "$(grep -E '^Change-Id:' <<<"$msg" | tail -1)" ]; then
-        ok "Change-Id is the last trailer, so the next amend will not add another"
+    # What stops the failure above from recurring is that the Change-Id sits
+    # in the message's LAST PARAGRAPH, which is where the hook's
+    # `git interpret-trailers --parse` looks for it.
+    #
+    # ★ Corrected 2026-09-23. This check used to require the Change-Id on the
+    # last LINE, and the 15 most recent commits merged into openbmc/spdm all
+    # put Signed-off-by after it — `git commit --amend -s` appends the sign-off
+    # to the same trailer block. The stricter rule failed every commit the
+    # target has ever accepted, and it would have refused the one command a
+    # human uses to sign a prepared commit. A rule the target's own history
+    # breaks is the thing this script's header says not to encode.
+    local last_para
+    last_para="$(awk 'BEGIN { RS = "" } { p = $0 } END { print p }' <<<"$msg")"
+    if grep -q '^Change-Id:' <<<"$last_para"; then
+        ok "Change-Id is in the final trailer block, so the next amend will not add another"
     else
-        no "Change-Id is not the last line; an amend will append a second one"
+        no "Change-Id is not in the message's last paragraph; the commit-msg hook will add a second one on the next amend"
     fi
 
     # -- the shape reviewers read first --------------------------------------
@@ -319,10 +337,10 @@ check_commit_openbmc() {   # check_commit_openbmc <repo-dir>
 
     # -- disclosure, reported and not required -------------------------------
     #
-    # ★ OpenBMC has no AI policy. Requiring a trailer the project does not ask
-    # for would encode this author's preference as that project's rule, and the
-    # whole reason this script exists is that the rules of a project you have
-    # not contributed to are not the ones you already know.
+    # ★ OpenBMC's AI policy is in review (openbmc/docs 89452), not merged, and
+    # its own reviewers are arguing about "should" against "can". Requiring the
+    # trailer would encode an unsettled rule as a settled one; the header says
+    # why that is as wrong as inventing one.
     if grep -q '^Assisted-by: ' <<<"$msg"; then
         skip "Assisted-by present — not required by OpenBMC, disclosed anyway: $(grep '^Assisted-by:' <<<"$msg" | head -1)"
     else
@@ -483,10 +501,26 @@ Change-Id: I0123456789abcdef0123456789abcdef01234567"
         "$good_obmc
 Change-Id: Ifedcba9876543210fedcba9876543210fedcba98"
 
-    # And the shape that causes it, caught one amend earlier.
-    run_case_obmc "openbmc: a trailer after the Change-Id" 1 \
+    # And the shape that causes it, caught one amend earlier: a trailer added
+    # as a NEW PARAGRAPH after the Change-Id, so the hook no longer finds one.
+    run_case_obmc "openbmc: a new paragraph after the Change-Id" 1 \
         "$good_obmc
+
 Assisted-by: Claude Code:claude-opus-5"
+
+    # ★ And its neighbour, which the first version of this suite got backwards:
+    # a sign-off appended to the SAME trailer block. That is what
+    # `git commit --amend -s` produces, and it is the order of the 15 most
+    # recent commits merged into openbmc/spdm. It must pass.
+    run_case_obmc "openbmc: Signed-off-by after Change-Id, as merged" 0 \
+        "component: a subject under fifty characters
+
+A body line that stays inside seventy-two characters, saying why.
+
+Tested: nothing, this is a fixture
+
+Change-Id: I0123456789abcdef0123456789abcdef01234567
+Signed-off-by: Jane Developer <jane@example.com>"
 
     run_case_obmc "openbmc: no component prefix" 1 \
         "${good_obmc/component: a subject under fifty characters/a subject with no component prefix}"
@@ -621,6 +655,9 @@ if [ "$FAILED" -eq 0 ]; then
     if [ "$PROFILE" = openbmc ]; then
         printf '    * whether the CLA has been accepted. Gerrit answers that\n'
         printf '      on the push, and it is the one failure that is loud\n'
+        printf '    * whether YOU typed the Signed-off-by. openbmc/docs 89452:\n'
+        printf '      "AI agents MUST NOT add Signed-off-by tags". Sign it with\n'
+        printf '      git commit --amend -s --no-edit, yourself\n'
     fi
     printf '  Those are the checklist in docs/upstream/0001-corim-verify.md\n'
     printf '  section 6, and none of them is mechanisable.\n'
