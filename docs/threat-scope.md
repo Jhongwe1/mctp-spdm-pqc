@@ -15,16 +15,21 @@ which is *libspdm's own* threat model rather than this project's, and
 [§ What the implementation layer costs](#what-the-implementation-layer-costs),
 which is where the fuzzing and coverage work lands.
 
+What week twelve added, on 2026-09-23, is the protocol's side of the same
+question: [§ What SPDM defends against](#what-spdm-defends-against),
+[§ what it does not, and what does](#what-spdm-does-not-defend-against-and-what-does),
+and [this project's own blind spot](#the-blind-spot-in-that-list).
+
 ## What this project can show
 
 | Claim | How it will be evidenced | Gate |
 |---|---|---|
-| A handshake completes and yields a measurement | capture file plus a field-by-field decode | G1 |
+| A handshake completes and yields a measurement | capture file plus a field-by-field decode | G1 — **done**, [`handshake-walkthrough.md`](handshake-walkthrough.md) |
 | Modifying a device measurement changes the evidence on the wire | before/after captures, byte-level diff | G2 — **done**, [`tamper.md`](tamper.md) row 1 |
 | Modifying a message **in flight** is rejected by the measurement signature | a proxy between the emulators, two arms — the signed content changed, and the signature changed — and CI fails if either stops being rejected | G2 — **done**, rows 2a and 2b |
 | A verifier comparing against reference values rejects the modified evidence | policy input, policy, verdict, all in the repository | G3 — **done**, [`rats-pipeline.md`](rats-pipeline.md) Table 3: the device-side tamper of row 1 is judged FAIL and names the index. The rollback half is done too — an upgrade passes and a downgrade is refused under its own category, and the four cases that show the change moved exactly one verdict run in CI. What it still cannot see is a rollback that stays **above** the reference value, which is stated beside the result rather than here |
-| That rejection keeps working | CI asserts the tampered case **fails** | G6 |
-| Post-quantum algorithms cost N more bytes and M more round trips | captures under both, with the negotiated algorithm read back out of the capture rather than assumed | G4 |
+| That rejection keeps working | CI asserts the tampered case **fails** | G6 — **done**, and earlier than planned: the `rats` job in [`ci.yml`](../.github/workflows/ci.yml), built with G3, asserts the verdict of every arm |
+| Post-quantum algorithms cost N more bytes and M more round trips | captures under both, with the negotiated algorithm read back out of the capture rather than assumed | G4 — **done**, [`pqc-cost.md`](pqc-cost.md) Table 2 |
 
 ## What this project cannot show
 
@@ -173,6 +178,57 @@ as a result rather than as an absence.
 > commit message, and not a project write-up, until it is published. Nothing
 > found so far is in that category: the two upstream findings this project has
 > are a stale configuration array and a test case that discards its own input.
+
+## What SPDM defends against
+
+Added 2026-09-23. These are properties of the protocol when a requester uses it
+as DSP0274 intends. The right-hand column says whether this project **observed**
+each one or only read about it, because those are different claims and the
+second kind is easy to repeat as if it were the first.
+
+| | what the protocol gives the requester | observed here? |
+|:-:|---|---|
+| 1 | **An identity check.** `CHALLENGE` makes the responder sign a fresh nonce with the private key of a certificate chain, and the requester validates the chain against a root it was given out of band. A device without the key cannot answer. | **Partly.** The signature is checked every time. The chain's authority is checked too, but the sample requester treats a failure as a warning: `t3b_foreign` completes a handshake against a root it was never given ([`tamper.md` §8](tamper.md)) |
+| 2 | **Integrity of the report in transit.** `MEASUREMENTS` is signed, so a change on the wire breaks the signature. | **Yes.** Rows 2a and 2b of Table 1: one byte changed, `VERIF_FAIL` both times |
+| 3 | **Freshness.** The requester's nonce is inside what is signed, so a recorded answer cannot be replayed against a new request. | **Half.** `harness/challenge_verify.py` rebuilds signed transcripts that contain the nonce and verifies them. No arm ever replays an old answer, so the refusal itself was never observed |
+| 4 | **Protection of the negotiation.** The version, capabilities and algorithms exchange is part of the transcript `CHALLENGE_AUTH` signs, so downgrading the algorithms in flight breaks the signature. | **Indirectly.** The same tool rebuilds that transcript, `M1M2 = A‖B‖C` with `A` the negotiation, and OpenSSL verifies it. Nothing here tampers with the negotiation itself |
+| 5 | **A confidential, integrity-protected channel**, through a session and DSP0277 secured messages. | **Seen, not measured.** Two committed captures hold sessions over ECDHE P-384 — the week-1 run and the conformance suite's no-mut-auth arm, level 2 above — and nothing here decrypts or measures them |
+
+## What SPDM does not defend against, and what does
+
+| | not defended by SPDM | what does |
+|:-:|---|---|
+| 1 | **A device that signs the wrong measurement honestly.** Firmware that was already compromised when it measured, or that measures the wrong thing, produces a correctly signed report. Row 1 of Table 1 is exactly this, and SPDM passes it. | a hardware root of trust that measures from immutable code first, and a verifier that holds reference values; `rats/` is this project's version of the second half |
+| 2 | **Deciding whether a measurement is the right value.** SPDM carries the value and has no opinion about it. | a verifier with reference values from the firmware publisher, and a policy for what a mismatch means (RATS, CoRIM) |
+| 3 | **Extraction of the device's key.** Physical access, side channels and fault injection attack the key, not the protocol. | a root of trust designed and certified against those attacks |
+| 4 | **Change after the check.** A signed report is true at the moment it was signed and says nothing about the next second. | re-attestation on a schedule or on an event, and measurement logs that record what changed |
+| 5 | **Defects in the SPDM implementation.** A parser bug is reachable by anyone who can send a message, before any signature is checked. | fuzzing, review, memory-safe code and prompt updates — and the section below |
+| 6 | **Denial of service.** A device or a bus that stops answering is not an authentication problem. | platform design: timeouts, isolation, and a decided meaning for an attestation that never completes |
+
+### The blind spot in that list
+
+The table above treats SPDM as a protocol. But the implementation of a
+protocol is attack surface too, and it is where the attacks actually were in
+2026. `libspdm` published three advisories that year
+([`advisories.md`](advisories.md)):
+
+- **DMTF-2026-0002.** `GET_MEASUREMENT_EXTENSION_LOG` checked `offset + length`
+  after the sum had already wrapped in 32 bits, so the check passed and the read
+  went out of bounds. The fix is one pair of parentheses.
+- **DMTF-2026-0001.** Handling a `GET_CSR` request, the length check ran after
+  the copy, so an oversized field was already past the end of the buffer when
+  the code refused it.
+- **DMTF-2026-0003.** A defect in the specification, not the code. DSP0274
+  1.4.0 defined the `FINISH` transcript as the message's header fields, which
+  was all of the message until 1.4 added fields to it. 1.4.1 rewrote the
+  definition as everything except the signature and `RequesterVerifyData`
+  ([`transcript.md`](transcript.md)).
+
+**None of the three is a cryptography problem.** Two are C: integer promotion,
+and the order of a check and a write. The third is reading a specification
+whose meaning changed when a different chapter was edited. That is why
+[`negative/`](../negative/) tests the three classes rather than the three
+payloads: a payload stops working once it is fixed, and a class does not.
 
 ## The question this project exists to ask
 
