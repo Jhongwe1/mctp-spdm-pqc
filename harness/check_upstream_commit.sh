@@ -104,6 +104,40 @@ skip() { printf '  \033[33m--\033[0m    %s\n' "$*"; }
 
 # ---------------------------------------------------------------- rules -----
 
+# -- file modes, which both profiles share ------------------------------------
+#
+# ★ 2026-09-23. openbmc/spdm 94773 patchset 1 added README.md as 100755. The
+# file had been copied out of /mnt/c, where DrvFs reports every file as
+# executable, into a tree with core.filemode=true, and `git add` recorded what
+# it was given. Thirteen mechanical checks, two linters and this script passed
+# it. Gerrit prints the mode in the file list, which a reviewer reads before
+# the diff.
+#
+# The rule is lintian's: an executable file has to be something the kernel can
+# execute, which for a text file means a #! line. The first two bytes are read
+# through a process substitution rather than `| head`, so that no branch here
+# is decided by a pipeline whose producer can be killed.
+check_file_modes() {   # check_file_modes <repo-dir>
+    local dir="$1" line rest mode sha path first bad=0 n=0
+    while IFS= read -r line; do
+        # :<old mode> <new mode> <old sha> <new sha> <status>TAB<path>
+        rest="${line#:}"
+        mode="$(cut -d' ' -f2 <<<"$rest")"
+        sha="$(cut -d' ' -f4 <<<"$rest")"
+        path="${line#*$'\t'}"
+        n=$((n + 1))
+        [ "$mode" = 100755 ] || continue
+        first="$(head -c 2 < <(git -C "$dir" cat-file blob "$sha"))"
+        if [ "$first" != '#!' ]; then
+            no "$path is executable (100755) and does not start with #! — chmod 644, git add, amend"
+            bad=1
+        fi
+    done < <(git -C "$dir" diff-tree -r --root --no-commit-id --diff-filter=AMT HEAD)
+    if [ "$bad" = 0 ]; then
+        ok "no file in this commit is executable without a #! line ($n file(s))"
+    fi
+}
+
 check_commit() {   # check_commit <repo-dir>
     local dir="$1" msg author sob subj long n
     msg="$(git -C "$dir" log -1 --format='%B')"
@@ -177,6 +211,8 @@ check_commit() {   # check_commit <repo-dir>
     else
         no "no Tested: line"
     fi
+
+    check_file_modes "$dir"
 
     if [ "$(git -C "$dir" status --porcelain | wc -l)" = 0 ]; then
         ok "working tree clean"
@@ -299,6 +335,8 @@ check_commit_openbmc() {   # check_commit_openbmc <repo-dir>
 
     # -- the thing this script cannot see ------------------------------------
     skip "the Individual CLA to manager@lfprojects.org is NOT checkable from here; Gerrit rejects the push if it is missing, and docs/upstream/README.md records the date it was sent"
+
+    check_file_modes "$dir"
 
     if [ "$(git -C "$dir" status --porcelain | wc -l)" = 0 ]; then
         ok "working tree clean"
@@ -478,6 +516,36 @@ Change-Id: I0123456789abcdef0123456789abcdef01234567}"
         printf '    FAIL %-42s expected 1 failure, got %s\n' "openbmc: a one-word sign-off name" "$got"
         fails=$((fails + 1))
     fi
+
+    # ── file modes ────────────────────────────────────────────────────────
+    #
+    # ★ The first case is 94773 patchset 1, reduced. The other two are what
+    # rule 13 asks for: the neighbours the check must NOT refuse — a script
+    # that really is executable, and a text file that is not. A mode check
+    # that passed all three, or failed all three, would look identical in a
+    # one-case suite.
+    git -C "$t" config user.name "Jane Developer"
+    git -C "$t" config core.filemode true
+
+    mode_case() {   # mode_case <name> <expected-fails> <file> <content> <mode>
+        cases=$((cases + 1))
+        printf '%b' "$4" > "$t/$3"
+        chmod "$5" "$t/$3"
+        git -C "$t" add "$3"
+        git -C "$t" commit -q -m "$good_obmc" 2>/dev/null
+        FAILED=0
+        got="$(check_commit_openbmc "$t" 2>&1 | grep -c 'FAIL')"
+        if [ "$got" = "$2" ]; then
+            printf '    ok   %-42s %s failure(s)\n' "$1" "$got"
+        else
+            printf '    FAIL %-42s expected %s failure(s), got %s\n' "$1" "$2" "$got"
+            fails=$((fails + 1))
+        fi
+    }
+
+    mode_case "a README added as 100755" 1 README.md '# spdm\n' 755
+    mode_case "a script added as 100755, with #!" 0 run.sh '#!/bin/sh\nexit 0\n' 755
+    mode_case "a README added as 100644" 0 NOTES.md '# notes\n' 644
 
     rm -rf "$t"
     printf '\n  %s case(s), %s failed\n' "$cases" "$fails"
