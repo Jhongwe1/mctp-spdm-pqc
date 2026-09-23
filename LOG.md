@@ -5236,6 +5236,16 @@ today.
 
 ---
 
+### Deviations from `plan/W12`, with reasons
+
+| the plan says | what was done | why |
+|---|---|---|
+| `LOG.md ≥ 54`, `commit ≥ 114` | 17 day-entries, and over 210 commits | the counting basis recorded on 2026-09-20: entries here are per day, not per event |
+| README runs `make tables`, `make emu`, `make rats` | the README gives the scripts that exist | there is no top-level Makefile, and a first screen that names commands which fail is worse than a longer one |
+| `docs/upstream.md` with a candidates section | the section is in `docs/upstream/README.md` | that file has been the upstream record since week 1, and its links would not survive a move |
+| five diagrams, *"自己畫"* — drawn yourself | drafted by the assistant in Mermaid, from the repository's own evidence | the week's DoD needed them; what the plan was protecting is that I can draw them without the page, and that is `TODO(me)`: each one redrawn on paper, from memory |
+| the ninety-second test with somebody who does not know SPDM | not done | it needs a person, and it is the only check of the first screen that is not the author |
+
 ### Not done today, and the reason for each
 
 - **Pushing patchset 2.** The sign-off is a DCO certification and the push is
