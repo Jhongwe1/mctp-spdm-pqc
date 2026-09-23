@@ -18,6 +18,10 @@ from a single capture should be a `<!--claim k=v-->` in the document that
 states it, checked by fields.py, and adding it here as well would create a
 second place for it to be right.
 
+A document that QUOTES one of these cross-capture numbers marks the quotation
+`<!--xclaim key=value-->`, and the same run holds the quotation to the stored
+value. That closes the last link, from this file to the sentence a reader sees.
+
 Why a value may be null
 -----------------------
 A claim with `"value": null` is one this project has NOT measured. It is not a
@@ -42,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -201,6 +206,64 @@ def derive(d: dict) -> float:
     raise Unreachable(f"no derivation called {kind!r}")
 
 
+# ── where a document quotes one of these numbers ─────────────────────────────
+#
+# Added 2026-09-23, when the README was rewritten around its first screen. The
+# chain from a capture to this file was checked; the last link — from this file
+# to the sentence a reader actually sees — was not. A README can say "8.99x"
+# long after claims.json says something else, and nothing would notice, which
+# is the gap between "CI re-derives the numbers" and "CI re-derives the numbers
+# on this page".
+#
+#     <!--xclaim pqc_handshake_ratio_level3_meas_op_all=8.99-->**8.99×**
+#
+# The marker names a key here and the value as written; the value must equal
+# the stored one at the precision it is written with, and the visible text
+# right after the marker must show the same number. The second half is what
+# stops a marker being updated while the sentence beside it is not.
+XCLAIM = re.compile(r"<!--xclaim ([a-z0-9_]+)=(-?[0-9]+(?:\.[0-9]+)?)-->")
+
+
+def check_doc_markers(claims: dict, docs: list[tuple[str, str]]) -> tuple[int, list[str]]:
+    """Return (markers seen, problems) for every xclaim marker in `docs`."""
+    seen = 0
+    problems: list[str] = []
+    for name, text in docs:
+        for m in XCLAIM.finditer(text):
+            seen += 1
+            key, shown = m.group(1), m.group(2)
+            where = f"{name}: {key}"
+            c = claims.get(key)
+            if c is None:
+                problems.append(f"{where} is not in bench/claims.json")
+                continue
+            if c.get("value") is None:
+                problems.append(f"{where} names a quantity this project has not measured")
+                continue
+            places = len(shown.split(".")[1]) if "." in shown else 0
+            stored = f"{float(c['value']):.{places}f}"
+            if stored != shown:
+                problems.append(f"{where} says {shown}; claims.json holds {stored} "
+                                f"at the same precision")
+                continue
+            visible = text[m.end():m.end() + 40].lstrip(" *_`").replace(",", "")
+            if not visible.startswith(shown):
+                problems.append(f"{where} marker says {shown} and the text beside it "
+                                f"says {visible[:12]!r}")
+    return seen, problems
+
+
+def tracked_markdown() -> list[tuple[str, str]]:
+    out = subprocess.run(["git", "ls-files", "*.md"], cwd=REPO,
+                         capture_output=True, text=True, check=True).stdout
+    docs = []
+    for rel in out.split():
+        text = (REPO / rel).read_text(encoding="utf-8")
+        if "<!--xclaim " in text:
+            docs.append((rel, text))
+    return docs
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--claims", type=Path, default=CLAIMS)
@@ -253,9 +316,17 @@ def main() -> int:
         for name, c in claims.items():
             print(f"  {name}\n      {c.get('meaning', '')}")
 
+    docs = tracked_markdown()
+    seen, problems = check_doc_markers(claims, docs)
+    for p in problems:
+        print(f"  FAIL  {p}")
+    failures += len(problems)
+
     print()
     print(f"{checked} claimed value(s) re-derived, {unclaimed} named and not "
           f"measured, {failures} failed")
+    print(f"{seen} quotation(s) in {len(docs)} document(s) checked against them, "
+          f"{len(problems)} disagree")
     return 1 if failures else 0
 
 
@@ -298,8 +369,32 @@ def selftest() -> int:
         fails += 1
     else:
         print("  ok   the unmodified claims file passes")
+
+    # The document markers, against the three ways a quotation goes wrong and
+    # the one way it is right. Rule 13: each wrong case breaks a different
+    # condition, so a checker that caught all three with one test would still
+    # be caught here by the case that should pass.
+    v = float(c["value"])
+    right = f"{v:.2f}"
+    wrong = f"{v * 1.01:.2f}"
+    cases = [
+        ("a correct quotation", f"<!--xclaim {name}={right}-->**{right}×**", 0),
+        ("a marker that disagrees with claims.json",
+         f"<!--xclaim {name}={wrong}-->**{wrong}×**", 1),
+        ("a marker whose visible text was not updated",
+         f"<!--xclaim {name}={right}-->**{wrong}×**", 1),
+        ("a key claims.json does not have",
+         f"<!--xclaim no_such_claim={right}-->{right}", 1),
+    ]
+    for what, text, want in cases:
+        _, problems = check_doc_markers(doc["claims"], [("fixture.md", text)])
+        if len(problems) == want:
+            print(f"  ok   {what}: {len(problems)} problem(s)")
+        else:
+            print(f"  FAIL {what}: expected {want} problem(s), got {len(problems)}")
+            fails += 1
     print()
-    print(f"3 checks, {fails} failed")
+    print(f"{3 + len(cases)} checks, {fails} failed")
     return 1 if fails else 0
 
 
