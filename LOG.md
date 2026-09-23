@@ -5018,3 +5018,232 @@ the direction that mattered.** A repository's merge rate measures what its
 maintainers finish, not how fast they read — and those are different people's
 attention, on different days. Finding 4 is what the "slow" one sent back, and it
 was the one thing four days of preparation had got wrong.
+
+## 2026-09-23 · Day 15 · a census of what I had read, and a −1 for what I had written
+
+Week 12: the README, the threat scope and the limitations page. It is a writing
+week, and writing is the activity that produces claims fastest, so it was also
+the week the most claims got checked. Four findings. The second is the one I
+would talk about.
+
+---
+
+### 1. A −1, and an audit of the thing it was about
+
+**現象** `openbmc/spdm` 94773, patchset 1, Code-Review −1 from Patrick
+Williams, one of the repository's two owners, at 19:17 UTC on 2026-09-22:
+
+> I'm not interested in reviewing AI-generated documentation. There are bits
+> here that are potentially useful but I'm not merging something that is a
+> waste of human time to read.
+
+Marked resolved. A statement, not a question.
+
+**假設** Three, about what the objection actually is.
+
+1. **The tool.** The `Assisted-by:` trailer said an AI was involved, and that
+   alone decides it. Then only disclosure matters, and nothing about the text
+   could change the answer.
+2. **The reading cost.** 130 lines, most of which restate code a maintainer
+   already knows. Then the text is the problem, and a shorter, denser one
+   answers it.
+3. **The facts.** Something in the README is wrong, and "AI-generated" is
+   shorthand for "not checked".
+
+**先驗哪個、為什麼** (1) against (2) first, because they call for opposite
+responses, and the reviewer's own public record separates them for the price of
+two queries. On 80422 he refused a README for describing code that did not
+exist. On 89452, the AI-policy change, he argued against making attribution
+mandatory and wrote that he uses AI tools in his own work. So the objection is
+not to the tool. It is (2), in his own words: *a waste of human time to read.*
+
+Then (3), because (2) invites a shorter README and a shorter README is only
+better if what remains is right. I checked the file that was sent against every
+claim this project had made about it, and that is where the finding was.
+
+**根因** Three defects, all of which every earlier check had passed:
+
+| | defect |
+|:-:|---|
+| 1 | `README.md` was committed as **100755** — copied off `/mnt/c`, where DrvFs reports every file executable, into a tree with `core.filemode=true` |
+| 2 | ★ **the two findings the change existed for were not in the file.** `GCC` 0 times, `dbus-run-session` 0 times. `0002` §2 said *"Both are in the README"*, `docs/upstream/README.md` said it again, and the reply on the change called them *"the two build notes"* |
+| 3 | the commit message said three newcomer problems were "stated explicitly", and the file stated two |
+
+The checklist in `0002` §6 said *"Read the diff."* The diff was read. Reading it
+was not checking it: nobody compared a sentence *about* the file with the file.
+The record had been written from the plan for the file.
+
+**教訓** ★ **A record about an artifact is checked against the artifact, claim by
+claim, and the check is a `grep`, not a reading.** "The README contains X" is
+one command to verify and it was never run, for four days, through three
+documents that repeated it.
+
+And the one about the review, which is not technical: **the reviewer's time is
+the scarce resource, and text that is cheap to generate moves its cost onto the
+person reading it.** Patchset 2 is 59 lines, every command in it re-run that
+day, prepared without a sign-off because 89452 says an AI agent must not add
+one. What it is not is an argument: a −1 is dropped by any patchset that
+changes the file, read from the copy condition on 14 changes, so there was
+never anything to argue *about*. Whether it comes back is decided by the file.
+
+`check_upstream_commit.sh` now refuses an executable file without a `#!` line,
+and against the real patchset 1 it reports exactly that one failure.
+
+`TODO(me)` — what I think Patrick meant, in my own words, and whether I agree.
+
+---
+
+### 2. ★ A census of the captures I had chosen to decode
+
+**現象** Rewriting the README, I was reading the `meaning` of every claim in
+`bench/claims.json` to decide which numbers could go on the first screen. The
+one for `validator_baseline_failures` says four of the eight are
+*"KEY_EXCHANGE_RSP 'mut_auth_requested'"*. The draft I had just written said,
+three times, that no key exchange had ever reached the wire, and
+`docs/threat-scope.md` level 2 had said since 2026-09-20 that *no arm of any
+experiment here has ever established a secure session*.
+
+**假設** Three.
+
+1. **All of the suite's key exchanges aborted**, as `validator-report.md` §3
+   says of the default arm, so both statements are true.
+2. **The arm that clears `MUT_AUTH_CAP` completed them**, and the statement was
+   written about the wrong set of arms.
+3. **My evidence covered less than my claim** — the statement was checked
+   against something narrower than "any experiment".
+
+**先驗哪個、為什麼** (2), because it was free: the suite's own per-assertion
+results are committed, and a `FINISH_RSP` assertion cannot pass without a
+session. One query over `caps-no-mut-auth.assertions.json`: group 9 passes
+**135**, group 12 **22**, group 13 **49**, group 16 **22**. Sessions, then, in a
+committed run, established against this project's responder.
+
+That made (3) the real question, because (2) was a consequence of it: *why had
+nobody noticed?* The claim had been checked against the committed decodes. So
+I counted what the decodes covered.
+
+**根因** **132 of the 152 committed captures had a decode; 20 did not.** Two of
+those twenty hold completed sessions:
+
+| capture | what is in it |
+|---|---|
+| `w10-validator-…/caps-no-mut-auth.pcap` | 73 `KEY_EXCHANGE`, 4 `FINISH_RSP`, at SPDM 1.1 and 1.2, over ECDHE P-384 |
+| `healthcheck-pqc-20260811T052725Z/minimal.pcap` | ★ **the week-1 run the README cites as a counter-example**: one mutually authenticated **SPDM 1.4** session, then **552 encrypted records** |
+
+The second is the one worth the entry. The run that taught this project *the
+exit code is not the verdict* had, the whole time, been holding the evidence
+against seven documents that were written later, in a capture nobody had
+decoded. Why that run has no decode beside it I do not know, and it does not
+matter: nothing asked.
+
+And it went one level further than sessions. By the emulator's own source, a 1.4
+session with `--exe_session` at its default sends
+`GET_MEASUREMENT_EXTENSION_LOG` inside it — the request that reaches
+DMTF-2026-0002 — and the requester logged no error for it. The records are
+encrypted, so no census can show it. `docs/advisories.md` had said *no committed
+capture contains that request*. What is true is narrower: no capture shows it,
+and no `stable` responder, the affected one, has ever been asked it. (The
+verdicts all stand. The session ran on `pqc`, which has the fix. `GET_CSR`
+appears in no capture in cleartext, and the emulator sends it only under a
+connection flag the week-1 run did not set.)
+
+**教訓** ★★ **A claim about every capture is a claim about the captures that
+were read.** Standing rule 21. It is Day 13's finding 2 — *an intersection over
+a corpus that contains negative controls* — from the other side: that one
+counted captures that were supposed to disagree, and this one did not count
+captures at all.
+
+The mechanism, because a rule that only lives in a paragraph is the thing this
+project exists to replace: `harness/census.sh` decodes every committed capture
+that has no decode, into a provenance-stamped run, and lists all 152 with the
+counts the session and advisory claims rest on — 14 of them as *unreadable*,
+decided by zero decoded messages and not by an exit status, because `spdm_dump`
+answers an AF_MCTP link capture with its own usage text. `verify_repo.sh` fails
+when a capture arrives that nothing reads. `check_advisories.py` says "not in
+cleartext" and names the captures it cannot see into, instead of "never sent".
+Seven documents and one tool's verdict reason were corrected in place, with the
+date.
+
+★ What makes it worth telling rather than just fixing: **I had copied the false
+sentence into the new README four times before I found it.** The README was
+being rewritten to be more checkable, and the rewrite propagated the one claim
+nothing checked. The instinct to trust a sentence because it is already in the
+repository is exactly as strong when you are the one who wrote it.
+
+And the question the census leaves open, which is a better experiment than
+anything this week planned: the week-1 capture's mutually authenticated 1.4
+`FINISH` is exactly the message DMTF-2026-0003 is about. libspdm's source
+appends `OpaqueData` to the transcript before signing — 1.4.1's meaning — and
+verifying that one signature over both candidate transcripts would turn a
+reading of source into a measurement.
+
+---
+
+### 3. A rule the target's own history breaks
+
+**現象** Preparing patchset 2 without a sign-off meant the author adds it with
+`git commit --amend -s`, which puts `Signed-off-by` after `Change-Id`.
+`check_upstream_commit.sh --profile openbmc` required the `Change-Id` on the last
+line, so it would refuse the one command a person uses to sign.
+
+**假設** (a) the check is right and the command is wrong; (b) the check encodes
+a rule OpenBMC does not have.
+
+**先驗哪個、為什麼** (b), measured rather than argued, because it is the kind of
+question the target's history answers directly: the trailer order of the 15 most
+recent commits merged into `openbmc/spdm`.
+
+**根因** All 15 put `Signed-off-by` after `Change-Id`. The rule came from
+2026-09-18, when a trailer appended as a *new paragraph* made the hook add a
+second `Change-Id`; the check generalised it to "last line", which is stricter
+than what the hook reads. Old rule against the 15: fails 15. New rule, "in the
+last paragraph": passes 15.
+
+**教訓** **A rule learned from one failure is fitted to that failure, and the
+target's history is the cheapest test set there is.** The script's own header
+says a check that invents a rule the project does not have is worse than none;
+it had done exactly that, and the only reason it surfaced is that someone
+finally needed to sign a commit it had not signed itself.
+
+---
+
+### 4. Seven sentences in a README that were false before they were committed
+
+Not a debugging story, and recorded because the count is the point. The new
+README's first draft was checked sentence by sentence against the repository
+before it was committed, and seven were wrong:
+
+| the draft said | what is true |
+|---|---|
+| every commit carries the `Co-Authored-By:` trailer | 110 of 200. None before 2026-09-10, and 110 of 111 from then on |
+| FIPS 203 sizes are checked on the wire | no ML-KEM key exchange ever happened; FIPS 203 supplies a security category and nothing else |
+| the `rats` job fails if a tampered measurement is judged PASS | two tampered arms are *expected* to pass — the signature-only tamper, and the foreign chain |
+| both upstream changes were reviewed | one was |
+| the handshake walkthrough covers every field of every message | seven pairs, three still open, as its own §10 says |
+| "seventeen" control flags | the command-line header lists 17 and the old README said 18; the number was dropped for the diff that shows them |
+| no session was ever established | finding 2 |
+
+Two more were left out rather than corrected, because nothing here supports
+them: the plan's *"x86 with AVX2"* (no manifest records CPU flags) and the
+skeleton's *"~8 GB"* of memory (nothing records it).
+
+**教訓** **Writing for a reader with ninety seconds is not the same as writing
+fewer claims.** The shorter README makes more claims per line than the long one
+did, and every one of them is the kind a reader repeats. The xclaim marker
+exists so that the numbers among them cannot drift from `bench/claims.json`.
+The sentences have no marker, and the only check they get is the one I did
+today.
+
+---
+
+### Not done today, and the reason for each
+
+- **Pushing patchset 2.** The sign-off is a DCO certification and the push is
+  the author's; `0002` §11 has the three commands.
+- **The ninety-second test with somebody who does not know SPDM.** W12's
+  README test needs a person, and it is the only check of the first screen
+  that is not me.
+- **`c-drills`, D3, D4, D5 and D7 by hand.** Zero of eight are finished. The
+  repository now says in its README that this directory is written without an
+  assistant, which makes it the part of the project an interviewer can test
+  in the room.
