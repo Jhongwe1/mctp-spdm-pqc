@@ -2218,6 +2218,61 @@ else
 fi
 unset _adv
 
+step "every committed capture was read by something"
+# ★ 2026-09-23. Seven documents said no secure session had ever been
+# established here, and so did the reason check_advisories.py gave for one of
+# its verdicts. The evidence was every committed decode. But 20 of
+# the 152 committed captures had no decode, and two of those held completed
+# sessions — one of them the week-1 run the README cites by name. A census
+# over the decodes was a census over the captures somebody chose to decode.
+#
+# harness/census.sh decodes the rest and writes census.tsv. This step makes the
+# next undecoded capture a failure instead of a blind spot: every committed
+# .pcap needs a decode of the same name beside it, or a row in the newest
+# census.tsv — and the step first proves it can refuse, on a list with one
+# capture added that no census has seen.
+python3 - <<'PY'
+import csv, pathlib, subprocess, sys
+
+pcaps = subprocess.run(["git", "ls-files", "--", "bench/data/*.pcap"],
+                       capture_output=True, text=True, check=True).stdout.split()
+censuses = sorted(pathlib.Path("bench/data").glob("w12-census-*/census.tsv"))
+if not censuses:
+    print("  no census.tsv under bench/data/ — run: bash harness/census.sh")
+    sys.exit(1)
+latest = censuses[-1]
+with open(latest, encoding="utf-8", newline="") as fh:
+    rows = {r["capture"]: r for r in csv.DictReader(fh, delimiter="\t")}
+
+
+def unread(paths):
+    out = []
+    for p in paths:
+        beside = pathlib.Path(p[: -len(".pcap")] + ".decode.txt")
+        if not beside.exists() and p[len("bench/data/"):] not in rows:
+            out.append(p)
+    return out
+
+
+fake = "bench/data/w99-nobody-decoded-this/arm.pcap"
+if unread(pcaps + [fake]) != unread(pcaps) + [fake]:
+    print("  the check did not report a capture it was handed and nobody had read")
+    sys.exit(1)
+
+missing = unread(pcaps)
+unreadable = sum(1 for r in rows.values() if r["decode"] == "unreadable")
+sessions = [c for c, r in rows.items() if r["finish_rsp"] not in ("", "0")]
+print(f"  {len(pcaps)} committed capture(s); census {latest.parent.name} lists {len(rows)}, "
+      f"{unreadable} of them unreadable by spdm_dump")
+for c in sessions:
+    print(f"  a completed session is on the wire in {c}")
+for p in missing:
+    print(f"  NOT READ  {p}")
+sys.exit(1 if missing else 0)
+PY
+[ $? -eq 0 ] && good "every capture has a decode or a census row, and the check can still say no" \
+             || bad "a committed capture has been read by nothing — run bash harness/census.sh"
+
 step "private material is not tracked"
 # plan/ and archive/ hold the schedule this work is executed against; study/
 # holds a question bank and its answers, which is a record of what one person

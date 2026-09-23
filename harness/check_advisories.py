@@ -38,6 +38,7 @@ whether this repository's own pinned trees carry the fixes.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import pathlib
 import re
@@ -52,6 +53,12 @@ ADVISORIES = ["DMTF-2026-0001", "DMTF-2026-0002", "DMTF-2026-0003"]
 # The request each libspdm advisory is reached through. A capture that never
 # carries one is a capture the defect could not have touched, and that is
 # checkable rather than assertable.
+#
+# ★ Checkable IN CLEARTEXT. Corrected 2026-09-23: a request sent inside a
+# secure session is an encrypted record, and no decode here can read it. The
+# week-1 run that left --exe_session at its default holds such a session at
+# SPDM 1.4, and the emulator's source sends GET_MEASUREMENT_EXTENSION_LOG inside
+# it. So the note below says what it can see and names the captures it cannot.
 REACHED_BY = {
     "DMTF-2026-0001": "SPDM_GET_CSR",
     "DMTF-2026-0002": "SPDM_GET_MEASUREMENT_EXTENSION_LOG",
@@ -131,7 +138,14 @@ def captures_with_all(bits: tuple[str, ...]) -> tuple[int, int]:
 
 
 def messages_seen() -> set[str]:
-    """Every SPDM message code that appears in any committed decode."""
+    """Every SPDM message code that appears in any committed decode.
+
+    ★ Which, until 2026-09-23, was not every committed capture: 20 of 152 had
+    no decode, and two of them held sessions nothing here had counted. The
+    decodes harness/census.sh writes live under bench/data/w12-census-*/ and
+    match this glob, and verify_repo.sh now fails if a committed capture has
+    neither a decode beside it nor a row in the newest census.
+    """
     out: set[str] = set()
     for path in sorted(BENCH.glob("*/*.decode.txt")):
         try:
@@ -140,6 +154,21 @@ def messages_seen() -> set[str]:
             continue
         out.update(re.findall(r"SPDM_[A-Z0-9_]+", text))
     return out
+
+
+def encrypted_sessions() -> list[str]:
+    """Captures the newest census lists as carrying encrypted session records.
+
+    A decode shows such a record as `SecuredSPDM(...) <Unknown>`, so whatever
+    was asked inside it is invisible to messages_seen(). Naming the captures is
+    the difference between "no capture sent it" and "no capture shows it".
+    """
+    censuses = sorted(BENCH.glob("w12-census-*/census.tsv"))
+    if not censuses:
+        return []
+    with open(censuses[-1], encoding="utf-8", newline="") as fh:
+        return [r["capture"] for r in csv.DictReader(fh, delimiter="\t")
+                if (r.get("secured") or "0") != "0"]
 
 
 def read_exposure(run: pathlib.Path) -> dict:
@@ -195,13 +224,24 @@ def verdict_for(advisory: str, flavor: str, fl: dict,
     ev = fl.get("advisories", {}).get(advisory, {})
 
     if advisory == "DMTF-2026-0003":
+        # ★ Corrected 2026-09-23. The second reason used to be "nothing in this
+        # project has ever established a secure session", and two committed
+        # captures contradict it: the week-1 run that left --exe_session at its
+        # default holds a mutually authenticated SPDM 1.4 FINISH, and the
+        # conformance suite's no-mut-auth arm holds FINISH at 1.1 and 1.2. Both
+        # were invisible here because neither had been decoded — see
+        # harness/census.sh. The verdict survives on the first reason; the
+        # other two are what is actually true.
         return "NOT-APPLICABLE", [
-            "the affected product is DSP0274 1.4.0, a document, not a library",
-            "it is reached through the FINISH transcript, and nothing in this "
-            "project has ever established a secure session "
-            "(docs/threat-scope.md level 2)",
-            "so there is no transcript here to under-cover; "
-            "negative/test_transcript_coverage.c models the rule instead",
+            "the affected product is DSP0274 1.4.0, a document, not a library "
+            "version, so there is no fix commit to look for in either tree",
+            "a 1.4 FINISH with mutual authentication does occur, in one "
+            "committed capture (healthcheck-pqc-20260811T052725Z/minimal.pcap, "
+            "libspdm 4.0.0-rc at both ends). libspdm's requester appends the "
+            "header, OpaqueDataLength and OpaqueData to the transcript before "
+            "it signs, which is 1.4.1's meaning. That is read from "
+            "libspdm_req_finish.c and has NOT been checked against the capture",
+            "negative/test_transcript_coverage.c models the rule itself",
         ]
 
     state, notes = fix_state(ev)
@@ -254,9 +294,13 @@ def verdict_for(advisory: str, flavor: str, fl: dict,
     reached = REACHED_BY.get(advisory)
     if reached:
         pre.append(
-            f"{reached} in any committed capture: "
-            + ("yes" if reached in msgs else "no — no experiment here has "
-               "ever sent it"))
+            f"{reached} in cleartext in any committed capture: "
+            + ("yes" if reached in msgs else "no"))
+        hidden = encrypted_sessions()
+        if hidden:
+            pre.append(
+                f"{len(hidden)} committed capture(s) also carry encrypted "
+                f"session records this tool cannot read: {', '.join(hidden)}")
 
     if blocked:
         return "PRESENT-NOT-REACHABLE", pre + blocked

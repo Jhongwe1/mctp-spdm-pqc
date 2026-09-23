@@ -1,0 +1,6 @@
+tool=spdm-dump
+spdm-dump=9d91f21e21ad56f842affa30361b2807ea9c8e22
+spdm-dump-short=9d91f21
+libspdm=8a92317f9510543b1a31d849c80cadbc23a5593d
+libspdm-version=libspdm version 4.0.0 (release candidate)
+built-at=2026-08-11T05:46:07Z
