@@ -5257,3 +5257,148 @@ today.
   repository now says in its README that this directory is written without an
   assistant, which makes it the part of the project an interviewer can test
   in the room.
+
+## 2026-09-24 · Day 16 · patchset 3, and what each fact had been checked against
+
+The day was 94773. Patchset 2 went out at 15:59 UTC on 2026-09-23 and was
+answered in under six minutes; patchset 3 went out at 17:08 UTC, which is 01:08
+here, so the commits and this entry are dated the 24th. Four findings, and three
+of them have one shape: a fact that was true, checked against the wrong thing.
+The first is the one I would talk about.
+
+---
+
+### 1. ★ "Still nothing like any other instructions we have"
+
+**現象** Patchset 2, signed and pushed by me at 15:59:39 UTC, passed CI at
+16:01:09, and the −1 on patchset 1 was dropped by the copy rule. At 16:05:21
+Patrick Williams replied in his own thread on patchset 1, with no vote:
+
+> This is still nothing like any other instructions we have.
+
+**假設** Three, about what "instructions" means.
+
+1. **The instructions.** Patchset 2 told a reader to pin GCC 14, make a
+   virtualenv and wrap the tests in `dbus-run-session`. If no other OpenBMC
+   README does any of that, the sentence means those lines.
+2. **The file.** Length, headings, what the sections are for. Then the same
+   instructions in a shorter file would not answer it.
+3. **The source.** No README is wanted from me, and the sentence is the polite
+   form of that. Then no patchset answers it.
+
+**先驗哪個、為什麼** (1) and (2) together, and first, because both are
+measurable against the other repositories in an afternoon, and (3) is not
+measurable at all: only the reviewer can answer it, so it is what is left if
+the other two come back clean. The measurement was the `README.md` of 34
+OpenBMC repositories, counted by pattern.
+
+**根因** (1). What patchset 2 added appears in 0 (a GCC version), 0
+(`dbus-run-session`) and 1 (a virtualenv) of the 34. And the `dbus-run-session`
+line was not only unusual but unnecessary: OpenBMC's CI runs a repository's
+unit tests in a privileged container, under a `dbus-daemon` that
+`dbus-unit-test.py` starts with the system bus configuration, and in the job for
+patchset 3 `test_policy_manager` passes. The `AccessDenied` I documented is what
+running the tests outside the project's path looks like on my machine. The two
+findings that day 15 found missing from patchset 1, and that patchset 2 put
+back, were findings about my environment.
+
+**教訓** ★ **Measure the target's conventions before writing for it.** *What only
+the person who built it knows* was the argument for this change, and it was
+knowledge about my machine rather than about the project. The survey that showed
+it is one script and 34 READMEs. It could have been run before patchset 1 and
+was not, because *what do their READMEs say?* did not feel like a question. The
+same numbers answer (2) as well: patchset 3 is 28 lines against a median of
+91.5, under the most common build heading, in a layout taken from
+phosphor-post-code-manager.
+
+`TODO(me)` — what "instructions" meant to him, in my own words, once he says.
+
+---
+
+### 2. ★ A sentence true on the day and false on the merge
+
+**現象** Asked for one more pass before sending, I read the open changes as well
+as the tree: 37 on `openbmc/spdm`, this one included. A chain by this change's
+own reviewers — Ratan Gupta's 80264, Chinmay Shripad Hegde's 80267 *"spdmd: Add
+libspdm dependency and device secret lib"*, and others at patchsets 38 to 42,
+all updated that day — adds `dependency('libspdm')`. The README said *"It does
+not run the SPDM protocol itself; libspdm is not a dependency."*
+
+**假設** Either that is the only sentence the chain breaks, or the chain also
+moves what the README says about the service, the bus name, the paths,
+`--state-dir` or `policy.json` — in which case one deletion is not enough and
+the README should wait for the chain.
+
+**先驗哪個、為什麼** The second, because it decides between those two responses,
+and it is mechanical: the current patchset of each of the other 36, every added
+or removed line that names a fact the README states.
+
+**根因** Only 80267. The sentence was true of `32e9f8b` and had been checked
+against `32e9f8b` and nothing else. It was also a negative statement about a
+feature in flight — the mirror image of what 80422 was refused for: that README
+described code that did not exist yet, and this one would have denied code that
+was about to.
+
+**教訓** ★ **A document sent for review is checked against the tree it will merge
+into, not only the tree it was written from.** In a repository with 37 open
+changes, "true today" is the weaker claim. The sentence was deleted rather than
+reworded, so what remains is true before the chain lands and after it, only less
+complete after. There was no rebuild, because no build file reads `README.md`;
+the linters, which do, were re-run.
+
+---
+
+### 3. A `Tested:` line written before its command ran
+
+The first candidate for patchset 3 said that `ninja -C` on the build directory
+*"then reports no work to do"*. It had been written before it was run, and run,
+it failed: the directory had been configured with an in-tree `.venv` that was
+deleted when patchset 2 was finalised. Standing rule 19 — before sending a
+change, run its own commit message — caught it before the sign-off rather than
+after. The line now says what ran: GCC 14, a fresh build directory, 863 of 863
+targets, and no `FAILED:`, `error:` or `warning:` line in the log itself.
+
+It is a recurring mistake here, and it keeps having the same cause: the sentence
+describes what the command is for, and gets written while the command is still
+an intention.
+
+---
+
+### 4. Two reports that said more than they had measured
+
+- **A count without its method.** A working note summarised the survey as *"19
+  `meson setup build`, 18 `ninja -C build`"*. Those were the counts of two
+  regular expressions that match the whole family — `meson build`, `meson
+  builddir`, `meson <build directory>`. The literal lines are 5 and 8. Found
+  when a stricter probe disagreed, one step before the note's wording would have
+  gone into `0002` §12.
+- **A report from the previous run.** The first read-back after the push printed
+  *patchset 2*. The `detail` fetch had failed on DNS, WSL's first lookup after
+  idle, and `curl -o` leaves the previous file in place, so the summary read the
+  last run's bytes as fresh. `files`, fetched a second later, said 28 lines. The
+  helper, which is not in this repository, now deletes before it fetches and
+  keeps nothing from a failed fetch.
+
+**教訓** Standing rule 17, in two new places: **an instrument reports its own
+losses, or its output is not a measurement.** A number carries the method that
+produced it, and a report carries the age of its input. Both had lost theirs one
+step before being believed, and both looked like a result.
+
+---
+
+### Who pressed what
+
+The assistant's `git commit --amend` of the prepared candidate was refused by
+its own permission classifier, as a destructive git operation, and was not
+worked around. I applied the reviewed message and signed it in one command. The
+sign-off, the push and the decision not to reply were mine; the checks before
+each were not, and they are in `0002` §12.
+
+### Not done today, and the reason for each
+
+- **Replies to the three open threads.** My decision on the day: wait for the
+  reviewers' next move. The cost, recorded rather than argued: the notification
+  of patchset 3 carries no word of what changed, and Chinmay Shripad Hegde's two
+  threads, whose requests patchset 2 met, stay open. No ping before 2026-10-07.
+- **The ninety-second test, and `c-drills`.** Carried from day 15, for the same
+  reasons.
