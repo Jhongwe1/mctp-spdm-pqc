@@ -2,9 +2,10 @@
 
 **Target:** `openbmc/spdm` at `72e3ea9` (`main`, last merged 2026-07-31)
 **Pipeline:** Gerrit, `gerrit.openbmc.org`
-**State: SUBMITTED, 2026-09-22** — change
-[94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773), patchset 1.
-See §10.
+**State: IN REVIEW** — change
+[94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773). Patchset 1 sent
+2026-09-22 and given Code-Review −1 by an owner the same day; patchset 2
+prepared on 2026-09-23 and not yet pushed. See §10 and §11.
 **Prepared:** 2026-09-18
 **Local:** `~/spdm-lab/work/openbmc-spdm`, branch `readme`, commit `d3c84a1`
 
@@ -91,6 +92,17 @@ recalled. The ones that could have been wrong:
 The dependency list names exactly what `meson.build` names. Boost is not in it.
 
 ## 2. Two findings that came out of building it
+
+> ### ⚠ Corrected 2026-09-23: the next sentence was false about patchset 1
+>
+> Neither finding was in the README that was sent. `GCC` appears in it **0**
+> times and `dbus-run-session` **0** times; `test_policy_manager` appears once,
+> in a list of test names. The sentence below was written from the plan for the
+> file rather than from the file, and it survived four days of preparation, the
+> checklist in §6 — which says *"Read the diff"* — and a reply on the change
+> that called them *"the two build notes"*. Reading was not checking. Patchset
+> 2 carries both, and each was re-run on 2026-09-23 before it was written
+> down (§11).
 
 Both are in the README because a newcomer hits both, and neither is documented
 anywhere in the tree.
@@ -347,12 +359,18 @@ there being one.
                     assistant policy in openbmc/docs 89452 and align.
                     ANSWERED; the change already conforms.  See the
                     correction box in section 4.
-    Patchset 2 -> not pushed.  Deliberate: neither comment asks for a
-                  change, and Ratan Gupta and Patrick Williams had just
-                  been added and had not spoken.  One revision that
-                  answers everything beats two that answer half.
+    Patchset 1 -> Code-Review -1 from Patrick Williams, an owner,
+                  2026-09-22 19:17 UTC: "I'm not interested in reviewing
+                  AI-generated documentation.  There are bits here that
+                  are potentially useful but I'm not merging something
+                  that is a waste of human time to read."  Marked
+                  resolved: a statement, not a question.  Section 11.
+    Patchset 2 -> prepared 2026-09-23, fd3fa9b on branch readme-ps2,
+                  rebased onto 32e9f8b.  59 lines instead of 130, mode
+                  644, every command re-run that day.  Not pushed: the
+                  sign-off and the push are the author's.  Section 11.
 - What I learned from this review, specifically: TODO(me)
-- Outcome: open, status NEW, 2 unresolved threads
+- Outcome: open, status NEW, Code-Review -1 on patchset 1
 ```
 
 > ★ **The review arrived in 35 minutes, and it found the one thing the
@@ -385,3 +403,113 @@ there being one.
 `openbmc/spdm` now has **37** open changes rather than 34, and none of them is a
 README. The three arrivals do not affect this change and are recorded because
 "unchanged" is a measurement and it came back false.
+
+## 11. The −1 on patchset 1, and patchset 2 — 2026-09-23
+
+**What was said.** Patrick Williams, one of the two people in `OWNERS` with
+approval authority (the other is Manojkiran Eda; the remaining four are
+reviewers), voted Code-Review −1 at 19:17 UTC on 2026-09-22:
+
+> I'm not interested in reviewing AI-generated documentation. There are bits
+> here that are potentially useful but I'm not merging something that is a
+> waste of human time to read.
+
+He marked the comment resolved. It is a statement, not a question, and it is
+not answered with an argument.
+
+**What it is about.** The cost of reading. Patchset 1 was 130 lines, and most of
+them restated what the code does: the start-up sequence, the discovery
+internals, the list of policy properties, a file-by-file map. A maintainer
+already knows all of it, and a newcomer can read it in the code in about the
+same time. 80422 was refused for describing code that did not exist; this was
+refused for describing, at length, code that does.
+
+**What an audit of patchset 1 then found**, three defects that four days of
+preparation, thirteen mechanical checks, two linters and
+`harness/check_upstream_commit.sh` had all passed:
+
+| | defect | how it was found |
+|:-:|---|---|
+| 1 | `README.md` was added as **100755** | `git ls-tree HEAD README.md`. The file had been copied out of `/mnt/c`, where DrvFs reports every file as executable, into a tree with `core.filemode=true` |
+| 2 | **the two findings this change existed for were not in the file** | the correction box in §2. `GCC` appears 0 times and `dbus-run-session` 0 times in what was sent |
+| 3 | the commit message said three newcomer problems were "stated explicitly", and the file stated two | reading the file against its own message, line by line |
+
+So the "bits that are potentially useful" were largely the ones that never
+reached the file.
+
+**Two rules in `check_upstream_commit.sh` changed because of it.** It now
+refuses an executable file without a `#!` line, and run against the real
+patchset 1 it reports exactly one FAIL, that one. And its `Change-Id` rule was
+wrong in the other direction: it required the `Change-Id` on the last line, and
+the 15 most recent commits merged into `openbmc/spdm` all put `Signed-off-by`
+after it. It now requires the `Change-Id` in the last paragraph, which is where
+the `commit-msg` hook reads it.
+
+**How the vote behaves**, read from 14 changes on `openbmc/spdm` and
+`openbmc/bmcweb`, because it decides what a second patchset can do. Code-Review
+is copied to a new patchset only on
+`changekind:NO_CHANGE OR changekind:NO_CODE_CHANGE OR changekind:TRIVIAL_REBASE OR is:MIN`.
+A −1 is not the minimum, so a patchset that changes the file starts without it,
+and one that changes only the commit message keeps it. The vote is not
+something to argue away. Whether it comes back is decided by patchset 2.
+
+### Patchset 2, prepared
+
+`fd3fa9b` on branch `readme-ps2`, on top of `32e9f8b`. Upstream had moved by
+one commit, which added Chinmay Shripad Hegde to `OWNERS` as a reviewer.
+
+- **`README.md`, 59 lines, mode 100644.** What `spdmd` does today, the design
+  document, how to build it, how to run the tests off a BMC, and how it runs.
+  Everything that restated the code is gone.
+- **The commit message is 16 lines instead of 39.** The paragraph about 80422 is
+  gone, as promised on the change. `Assisted-by: Claude Code:claude-opus-5-5`
+  stays, because the text was drafted with an assistant and the disclosure goes
+  with it.
+- **It is prepared without `Signed-off-by`.** [89452](https://gerrit.openbmc.org/c/openbmc/docs/+/89452)
+  says *"AI agents MUST NOT add Signed-off-by tags"*, so the certification is
+  added by the author's own command below, and not by the tool that prepared the
+  commit.
+
+Every command the README gives was run on 2026-09-23 against `32e9f8b`, on
+Ubuntu 24.04, in a fresh virtualenv made the way the README says:
+
+| the README says | what running it gave |
+|---|---|
+| GCC 13.3 stops with an internal compiler error in `requester/utils/mapper.cpp` | `mapper.cpp:46:5: internal compiler error: in build_special_member_call, at cp/call.cc:11096` |
+| GCC 14.2 works | `CC=gcc-14 CXX=g++-14`: 863 of 863 targets |
+| the compiler is chosen when the build directory is created | `meson setup` again with GCC 14 on the GCC 13 directory: *"Directory already configured"*, still GCC 13.3 |
+| meson looks for `python3` on `PATH`, so activate the virtualenv | `Program python3 (inflection, yaml, mako) found: YES (/home/key/venv-spdm/bin/python3)` |
+| plain `meson test` fails off a BMC | `test_policy_manager` FAIL, `AccessDenied` thrown in `SetUp()` |
+| on a private bus it passes | 3 of 3 OK |
+| prettier and markdownlint | clean, prettier 3.3.3 and markdownlint-cli 0.41.0, configs fetched from `openbmc-build-scripts` at `8e613ad` that day |
+
+The first draft of the README failed its own read-through twice before any of
+that ran. It told the reader to create `.venv` inside the tree, which
+`.gitignore` does not cover. And it gave the GCC 14 command *after* the plain
+one, which sends a reader straight into the "already configured" trap in the
+table above. Both are fixed.
+
+`check_upstream_commit.sh --profile openbmc` against `fd3fa9b` reports four
+FAILs, all about the missing sign-off. Against a throwaway clone of it after
+`git commit --amend -s --no-edit` (the clone was deleted afterwards), it
+reports every rule satisfied.
+
+**To send it, three steps, all of them the author's:**
+
+```sh
+cd ~/spdm-lab/work/openbmc-spdm                       # on branch readme-ps2
+git commit --amend -s --no-edit                       # your DCO certification
+bash /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/check_upstream_commit.sh \
+    --profile openbmc .                               # expect: every rule satisfied
+git push gerrit HEAD:refs/for/main
+```
+
+Then one comment on the change, in the author's own words and at most four
+lines: what changed, that the file mode is fixed, and an offer to drop anything
+left that is not useful. Then `Done` on Chinmay Shripad Hegde's two threads.
+
+**What happens next, decided now rather than on the day.** A −1 with a concrete
+reason: fix it. A −1 because no README is wanted from this source: abandon with
+two lines of thanks, and the review is still the evidence. Silence: no ping for
+two weeks, which is what `CONTRIBUTING.md`'s "Pace of Review" asks, and then
+one.

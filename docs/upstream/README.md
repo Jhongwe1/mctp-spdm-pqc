@@ -29,7 +29,7 @@ needs a date attached to it.
 | Submission pipeline rehearsed end to end | **done** | 2026-08-05 | a `%private,wip` change, three patchsets, abandoned once verified |
 | git identity matches Gerrit in every environment | **done** | 2026-08-11 | legal name in both the WSL and the Windows git config |
 | Community channel joined, reading only | **`TODO`** | | |
-| OpenBMC's requirements read, from `openbmc/docs` `CONTRIBUTING.md` | **done** | 2026-09-18 | **no AI policy exists**: the word does not appear in the file, sha256 `e27c7768…`. Gerrit, a `Change-Id` from the commit-msg hook, a full real name in the sign-off, 50/72, and a CLA that is separate from the DCO. Encoded as `harness/check_upstream_commit.sh --profile openbmc`, with six cases it must refuse |
+| OpenBMC's requirements read, from `openbmc/docs` `CONTRIBUTING.md` | **done** | 2026-09-18 | **no AI policy exists**: the word does not appear in the file, sha256 `e27c7768…` — ★ *corrected 2026-09-22 by a reviewer: a policy is in review, `openbmc/docs` 89452, and a grep of the merged file could not see it.* Gerrit, a `Change-Id` from the commit-msg hook, a full real name in the sign-off, 50/72, and a CLA that is separate from the DCO. Encoded as `harness/check_upstream_commit.sh --profile openbmc`, with six cases it must refuse |
 | **This project's** target repository built locally | **attempted** | 2026-08-11 | five distinct blockers, below |
 | Second candidate found, evidence assembled | **done** | 2026-08-17 | `DMTF/spdm-emu` `--help` disagrees with its own defaults — see below |
 | Third and fourth candidates found, each with a capture | **done** | 2026-09-01 | `spdm-emu`: a discarded slot-0 read result, and a requester that never inspects `NO_AUTHORITY` — see below |
@@ -39,11 +39,13 @@ needs a date attached to it.
 | Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: `--cap` is parsed by the requester and never read; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
 | Eighteenth and nineteenth, from the official conformance suite | **done** | 2026-09-20 | `spdm-emu`: the validator sample's configuration array and the `SPDM-Responder-Validator` submodule it configures disagree **in both directions** — three implemented cases are never requested, including the only two that test SPDM 1.3, and one requested case does not exist and prints nothing. And `SPDM-Responder-Validator` itself: a case whose message mask omits `GET_CERTIFICATE` reports the device's **valid** signature as FAIL, because the case's own `libspdm_init_connection` freed the chain its setup fetched. **Proved**, not argued — `harness/challenge_verify.py` verifies the disputed signatures against the leaf key after calibrating on the ones the suite accepts. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
-| …submitted to the DMTF Feedback Portal | **`TODO(me)`** | | needs a portal account; deadline is 2026-08-31 |
+| …submitted to the DMTF Feedback Portal | **not recorded as submitted** | window closed 2026-08-31 | it needed a portal account, and nothing here records it being sent before the public review closed. Kept as a draft; the window is not coming back |
 | **This project's** first change **SENT** | **done** | prepared 2026-09-12, **sent 2026-09-22** | [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524) — `CoRimTool.py verify` does not verify. Rebased onto `16119ea` and every `Tested:` line re-asserted in the hour before the push; `patch-id` and blob came through unchanged. DCO check green. Reviewers assigned by CODEOWNERS: **jyao1**, **steven-bellock**. See [`0001-corim-verify.md`](0001-corim-verify.md) §8 |
 | **This project's** second change **SENT** | **done** | prepared 2026-09-18, **sent 2026-09-22** | [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773) — a first `README.md`, written against the review that killed the 2025 attempt. Upstream `main` had **not** moved; both linters had vanished from the machine and were reinstalled at their pinned versions and re-run clean. See [`0002-openbmc-readme.md`](0002-openbmc-readme.md) §10 |
 | **This project's** first change submitted | **done** | 2026-09-22 | scheduled W03 → slipped → prepared W06 → prepared W09, two of them → W10 re-verified both against an unchanged upstream → **both sent on the same day, each after its own freshness check, and one of those checks changed what was sent** (0001 was rebased; 0002's linters had to be reinstalled before they could agree) |
 | Reviewer response received | **done** | 2026-09-22, **35 minutes after the push** | `openbmc/spdm` 94773: CI `Verified+1`, then two inline comments from **Chinmay Shripad Hegde** — who was also a reviewer on the change this one supersedes. Neither is a change request; one supplies context on 80422 and adds its original author, the other points at an AI-assistant policy this project had concluded did not exist. Both answered the same day, every factual claim in the replies checked mechanically first. All six people in `OWNERS` are now on the change, **including Patrick Williams**, who rejected 80422. `DMTF/spdm-emu` #524: DCO green, no human response yet |
+| ★ **The first −1** | **received** | 2026-09-22, 19:17 UTC | Patrick Williams, one of the two owners with approval authority, on 94773 patchset 1: *"I'm not interested in reviewing AI-generated documentation. There are bits here that are potentially useful but I'm not merging something that is a waste of human time to read."* An audit then found three defects in patchset 1 that every earlier check had passed, including that the two findings the change existed for were **not in the file**. [`0002`](0002-openbmc-readme.md) §11 |
+| Patchset 2 | **prepared, not pushed** | 2026-09-23 | 59 lines instead of 130, mode 644, every command in it re-run that day against `32e9f8b`. Prepared **without** `Signed-off-by`, because 89452 says an AI agent must not add one; the sign-off and the push are the author's. [`0002`](0002-openbmc-readme.md) §11 has the three commands |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -51,6 +53,39 @@ needs a date attached to it.
 > path from `git commit -s` to a change sitting in Gerrit has been walked once
 > already, so what this project still owes upstream is a technical problem, not
 > an administrative one.
+
+## Candidates, and my judgement on each
+
+Nineteen candidates carry evidence. Two were sent. The judgement column is the
+part worth reading, because it records what was **not** sent and why, and that
+is a decision a reviewer never sees.
+
+| # | where | the candidate | evidence | judgement |
+|:-:|---|---|---|---|
+| 1 | `openbmc/spdm` | no `README.md`, and a newcomer hits five build and test blockers with nothing to say they are expected | five blockers reproduced on 2026-08-11 and 2026-09-18, and re-run on 2026-09-23 | **sent**, 94773. The review of the 2025 attempt was read first and treated as the specification. A minimum compiler version was deliberately **not** part of it: that is a policy change, and a first change should not start an argument |
+| 2 | `DMTF/spdm-emu` | `--help` omits three capabilities the defaults set | two source lines, and the `Flags` word on the wire | not sent: correct and small, but a text fix outranked by ② on usefulness, and a second change to a project before the first is answered is two conversations that do not happen |
+| 3 | `DMTF/spdm-emu` | a slot-0 certificate read whose failure is discarded | `w4-tamper` `t3_cert`: the only trace is `ProvisionedSlotMask` 0x13 → 0x12 | not sent: sample-code robustness, queued behind ② |
+| 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | not sent: the library reports it as a warning **by design**, so this is a question about what a sample should teach, not a defect, and it is argued as such or not at all |
+| 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | not sent: two lines of comment. Right for a first change to an unknown repository, overtaken by ② once ② existed |
+| 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
+| 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **sent**, #524. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | not sent, and not bundled: six fixes in a first pull request is how a first pull request does not land, and three of them need a maintainer's call on which form is canonical |
+| 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
+| 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch |
+| 14 | `DMTF/spdm-emu` | `--cap` is parsed by the requester and never read, and echoed as if it were | a `grep` of every reader of the variable | not sent: two lines either way, queued |
+| 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | not sent: mechanical, queued with 14 as one "argument handling" change |
+| 16 | `libspdm` / `spdm-emu` | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to requester-side signature verification | **not sent, and not sendable yet**: the root cause needs a Debug build this project has not made, and a report without one asks the maintainer to do the work |
+| 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | not sent: the most likely of the nineteen to be wanted. It is a feature, so it waits for the first two to be answered |
+| 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | not sent: belongs with 19 |
+| 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | **the next one to send.** The strongest here, because it comes with a proof rather than a reading, and it goes to a repository that has had no change from this project yet |
+
+**How the two were chosen**, in the order the criteria were applied: can a
+reviewer verify it from the change alone; would the next person to hit it be
+helped; is it one logical change; and is it likely to land from someone nobody
+there knows. #524 passed all four. 94773 passed the first three and was a
+calculated risk on the fourth, because the repository's owner had already
+rejected one README. The −1 on patchset 1 was about something else, and
+[`0002`](0002-openbmc-readme.md) §11 is what it taught.
 
 ## Two upstreams, two processes, and the paperwork does not carry over
 
@@ -63,7 +98,7 @@ differ in everything else.
 
 | | `openbmc/spdm` | `DMTF/spdm-emu` |
 |---|---|---|
-| submission | **Gerrit**, `git push …:refs/for/master` | **GitHub pull request** |
+| submission | **Gerrit**, `git push gerrit HEAD:refs/for/main` — `main` for `openbmc/spdm`, although most OpenBMC repositories use `master` | **GitHub pull request** |
 | `Change-Id` | required, from the `commit-msg` hook | not used |
 | **CLA** | **required.** Individual CLA to `manager@lfprojects.org`, one per person, covering every OpenBMC repository | **none. The word does not appear in `CONTRIBUTING.md`** |
 | DCO | required | required — DSP4014, real name, address you can be reached at, **matching the commit author** |
@@ -91,6 +126,10 @@ comfortable mistake: the paperwork *feels* done.
 > Only the DMTF profile is implemented. OpenBMC's arrives in week 9, when there
 > is a real commit to check it against; writing it now against nothing would be
 > a check whose failure mode has never fired.
+>
+> *(Both exist now. `--profile openbmc` arrived on 2026-09-18 with the change
+> it was written for, and on 2026-09-23 it gained a file-mode rule and lost a
+> `Change-Id` rule that every merged commit in its target broke.)*
 
 **What was actually missing.** The prepared commit carried a correct DCO
 sign-off and **no `Assisted-by:` trailer**, which rule 3 requires. Added
@@ -233,6 +272,11 @@ dbus-run-session -- sh -c \
 3 of 3 OK. Both findings are in the README, because a newcomer hits both and
 neither is written down anywhere in the tree. That is the whole argument for
 the change.
+
+> ⚠ **Corrected 2026-09-23: they were not, in the patchset that was sent.** The
+> README of patchset 1 contains neither finding, and this paragraph was written
+> from the plan for the file. Patchset 2 contains both.
+> [`0002`](0002-openbmc-readme.md) §2 and §11.
 
 **What was read before writing it, and what it changed.** The obvious framing —
 "there is no README, so write one" — is how change
