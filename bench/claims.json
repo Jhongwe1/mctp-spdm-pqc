@@ -32,7 +32,7 @@
   "runs": {
     "pqc_ab": "bench/data/w7-pqc-ab-20260914T073732Z",
     "matrix": "bench/data/w8-pqc-matrix-20260914T131557Z",
-    "dts_sweep": "bench/data/w8-dts-sweep-20260914T133120Z",
+    "dts_sweep": "bench/data/w8-dts-sweep-20260929T142215Z",
     "dts_sweep_rejected": "bench/data/w8-dts-sweep-20260914T132232Z",
     "tamper": "bench/data/w5-tamper-20260910T092621Z",
     "afmctp": "bench/data/w9-afmctp-20260917T194210Z",
@@ -398,7 +398,7 @@
         "kind": "delta",
         "minuend": {
           "tool": "pcapstat",
-          "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts4608",
+          "capture": "bench/data/w8-dts-sweep-20260929T142215Z/P2-dts4608",
           "path": "captured_bytes_total"
         },
         "subtrahend": {
@@ -418,7 +418,7 @@
         "kind": "delta",
         "minuend": {
           "tool": "pcapstat",
-          "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts4608",
+          "capture": "bench/data/w8-dts-sweep-20260929T142215Z/P2-dts4608",
           "path": "chunking.messages.SPDM_CHUNK_GET"
         },
         "subtrahend": {
@@ -438,12 +438,12 @@
         "kind": "ratio",
         "numerator": {
           "tool": "pcapstat",
-          "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts1024",
+          "capture": "bench/data/w8-dts-sweep-20260929T142215Z/P2-dts1024",
           "path": "captured_bytes_total"
         },
         "denominator": {
           "tool": "pcapstat",
-          "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts32768",
+          "capture": "bench/data/w8-dts-sweep-20260929T142215Z/P2-dts32768",
           "path": "captured_bytes_total"
         }
       }
@@ -458,7 +458,7 @@
         "kind": "value",
         "of": {
           "tool": "pcapstat",
-          "capture": "bench/data/w8-dts-sweep-20260914T133120Z/P2-dts1024",
+          "capture": "bench/data/w8-dts-sweep-20260929T142215Z/P2-dts1024",
           "path": "chunking.messages.SPDM_CHUNK_GET"
         }
       }

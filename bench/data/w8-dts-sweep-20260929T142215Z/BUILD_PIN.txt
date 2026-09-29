@@ -1,0 +1,23 @@
+flavor=pqc-dts
+spdm-emu=5f01d2f38931e7c75388a43932d6569b4743b7b8
+spdm-emu-short=5f01d2f
+spdm-emu-ref=4.0.0-rc
+libspdm=8a92317f9510543b1a31d849c80cadbc23a5593d
+libspdm-short=8a92317
+libspdm-ref=4.0.0-rc
+libspdm-pinned-by=spdm-emu submodule pointer
+libspdm-version=libspdm version 4.0.0 (release candidate)
+crypto=openssl
+crypto-openssl-vendored=67b5686b4419b4cb8caa502711c41815f5279751
+crypto-openssl-version=3.5.5
+arch=x64
+target=Release
+toolchain=GCC
+cflags=-DLIBSPDM_SENDER_BUFFER_SIZE=0x8080 -DLIBSPDM_RECEIVER_BUFFER_SIZE=0x8080
+flavor-patch=transport/data-transfer-size.patch
+flavor-patch-sha256=8b153a0415432a85a41022bcd47c6c828090c970de330e4a7d7ee42c46779a73
+cc=13.3.0
+cmake=3.28.3
+host=Ubuntu 24.04.4 LTS
+kernel=6.6.87.2-microsoft-standard-WSL2
+built-at=2026-09-14T13:47:25Z

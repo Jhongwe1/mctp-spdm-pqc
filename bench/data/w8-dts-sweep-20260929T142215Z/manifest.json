@@ -1,0 +1,573 @@
+{
+  "schema": "mctp-spdm-pqc/provenance/v1",
+  "run": {
+    "run_id": "w8-dts-sweep-20260929T142215Z",
+    "name": "w8-dts-sweep",
+    "flavor": "pqc-dts",
+    "started_at": "2026-09-29T14:22:15Z",
+    "host_os": "Ubuntu 24.04.4 LTS",
+    "host_kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "host_arch": "x86_64",
+    "host_nproc": "8",
+    "gcc": "13.3.0",
+    "python": "3.12.3",
+    "openssl_cli": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "repo_commit": "a1c98c6d95d8793275a25cec822b780ec0e36e98",
+    "repo_dirty": "false",
+    "device_patch_applied": "yes",
+    "flavor_patch_required": "transport/data-transfer-size.patch",
+    "flavor_patch_sha256": "8b153a0415432a85a41022bcd47c6c828090c970de330e4a7d7ee42c46779a73",
+    "crypto_backend": "openssl (vendored by libspdm, statically linked)",
+    "crypto_openssl_version": "3.5.5",
+    "crypto_openssl_commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "controlled_flags": "--ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE",
+    "arm_sets": "dts",
+    "arm_A0_dts1024_verdict": "as-declared",
+    "arm_A0_dts2048_verdict": "as-declared",
+    "arm_A0_dts4608_verdict": "as-declared",
+    "arm_A0_dts8192_verdict": "as-declared",
+    "arm_A0_dts16384_verdict": "as-declared",
+    "arm_A0_dts32768_verdict": "as-declared",
+    "arm_P2_dts1024_verdict": "as-declared",
+    "arm_P2_dts2048_verdict": "as-declared",
+    "arm_P2_dts4608_verdict": "as-declared",
+    "arm_P2_dts8192_verdict": "as-declared",
+    "arm_P2_dts16384_verdict": "as-declared",
+    "arm_P2_dts32768_verdict": "as-declared",
+    "finished_at": "2026-09-29T14:22:47Z"
+  },
+  "upstream": {
+    "flavor": "pqc-dts",
+    "spdm_emu": "5f01d2f38931e7c75388a43932d6569b4743b7b8",
+    "spdm_emu_short": "5f01d2f",
+    "spdm_emu_ref": "4.0.0-rc",
+    "libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "libspdm_short": "8a92317",
+    "libspdm_ref": "4.0.0-rc",
+    "libspdm_pinned_by": "spdm-emu submodule pointer",
+    "libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "crypto": "openssl",
+    "crypto_openssl_vendored": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "crypto_openssl_version": "3.5.5",
+    "arch": "x64",
+    "target": "Release",
+    "toolchain": "GCC",
+    "cflags": "-DLIBSPDM_SENDER_BUFFER_SIZE=0x8080 -DLIBSPDM_RECEIVER_BUFFER_SIZE=0x8080",
+    "flavor_patch": "transport/data-transfer-size.patch",
+    "flavor_patch_sha256": "8b153a0415432a85a41022bcd47c6c828090c970de330e4a7d7ee42c46779a73",
+    "cc": "13.3.0",
+    "cmake": "3.28.3",
+    "host": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "built_at": "2026-09-14T13:47:25Z",
+    "device_patch_patch": "device/meas-from-file.patch",
+    "device_patch_patch_sha256": "6c5d8519397c59e848fb2e376c3f6fe589f6bf144515c8ee148b7c1f965aba85",
+    "device_patch_module_c_sha256": "a36353f06a39b46aedfeb277b0155366bcc64a4383664fb0e4aa54c9eb07617d",
+    "device_patch_module_h_sha256": "3d7740a01269f6ab6a8c560a0f23964e85c4e721316945385edcbf06b0012651",
+    "device_patch_meas_c_pre_sha256": "74d38f39bed2e12ac03977ce09da8984ad182081b48e37144a0ea981bcac9304",
+    "device_patch_meas_c_post_sha256": "390b83f7f558056beb5aba9ef925cbc381f6253b770ec1c491ce3cc27c8dfaac",
+    "device_patch_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "device_patch_env_var": "SPDM_MEASUREMENTS_FILE",
+    "device_patch_applied_at": "2026-09-01T05:43:56Z",
+    "spdm_dump_tool": "spdm-dump",
+    "spdm_dump_spdm_dump": "9d91f21e21ad56f842affa30361b2807ea9c8e22",
+    "spdm_dump_spdm_dump_short": "9d91f21",
+    "spdm_dump_libspdm": "8a92317f9510543b1a31d849c80cadbc23a5593d",
+    "spdm_dump_libspdm_version": "libspdm version 4.0.0 (release candidate)",
+    "spdm_dump_built_at": "2026-08-11T05:46:07Z"
+  },
+  "commands": [
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 1024 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 1024 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts1024.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts1024.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts1024.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 2048 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 2048 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts2048.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts2048.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts2048.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 4608 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 4608 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts4608.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts4608.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts4608.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 8192 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 8192 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts8192.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts8192.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts8192.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 16384 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 16384 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts16384.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts16384.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts16384.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 32768 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 32768 --asym ECDSA_P384 --dhe SECP_384_R1 --pqc_asym NONE --kem NONE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts32768.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts32768.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/A0-dts32768.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 1024 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 1024 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts1024.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts1024.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts1024.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 2048 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 2048 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts2048.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts2048.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts2048.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 4608 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 4608 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts4608.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts4608.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts4608.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 8192 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 8192 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts8192.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts8192.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts8192.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 16384 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 16384 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts16384.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts16384.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts16384.pcap -x",
+    "./spdm_responder_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 32768 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE",
+    "./spdm_requester_emu --ver 1.4 --sec_ver 1.2 --hash SHA_384 --meas_hash SHA_384 --aead AES_256_GCM --other_param OPAQUE_FMT_1 --key_schedule HMAC_HASH --meas_att HASH --meas_sum ALL --slot_count 1 --slot_id 0 --exe_conn DIGEST\\,CERT\\,CHAL\\,MEAS --exe_session NO_END --basic_mut_auth NO --mut_auth NO --req_asym ECDSA_P384 --req_pqc_asym NONE --meas_op ALL --data_transfer_size 32768 --asym NONE --dhe NONE --pqc_asym ML_DSA_65 --kem ML_KEM_768 --pqc_first TRUE --pcap /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts32768.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts32768.pcap",
+    "/home/key/spdm-lab/work/spdm-dump/build/bin/spdm_dump -r /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/bench/data/w8-dts-sweep-20260929T142215Z/P2-dts32768.pcap -x"
+  ],
+  "artifacts": [
+    {
+      "path": "A0-dts1024.cmdline.txt",
+      "bytes": 1540,
+      "sha256": "dd5daffccc5dd5fd05c309a3d29167c1e4e75b309c78eaff872d093243a8b373"
+    },
+    {
+      "path": "A0-dts1024.decode.txt",
+      "bytes": 4993,
+      "sha256": "aaa66422dc32a1b6bd267577eb7eaac42cd41afd9d77fdb82dfd9ad92302266c"
+    },
+    {
+      "path": "A0-dts1024.fields.json",
+      "bytes": 18337,
+      "sha256": "c50c0eb50752f2a7f34e136fefd84ab8afab0b6ee2e7e6b2a55555783ae30343"
+    },
+    {
+      "path": "A0-dts1024.hex.txt",
+      "bytes": 44327,
+      "sha256": "97be55e3f995a65788c2f2050987e5676ec01311bdefb45b782f8dd21d6b853e"
+    },
+    {
+      "path": "A0-dts1024.pcap",
+      "bytes": 7334,
+      "sha256": "66ce3f79f6c224963f7a779a5bc162e7edac4ffb0d799a343008979d9dfdd81d"
+    },
+    {
+      "path": "A0-dts1024.req.log",
+      "bytes": 467,
+      "sha256": "e7818b4f7d73c2152943b36d43cc72f12c416fea21675183b9f2c1177f95b90f"
+    },
+    {
+      "path": "A0-dts1024.rsp.log",
+      "bytes": 465,
+      "sha256": "fc93efe07b95aaaa4705c7a56cd5f4cf98b797ae8e779dd4f5312ca38c7a469b"
+    },
+    {
+      "path": "A0-dts16384.cmdline.txt",
+      "bytes": 1545,
+      "sha256": "6a177a16c66dfc7261077487cf2e9e1db13e21fdb2195c15afa500dabe82d9ec"
+    },
+    {
+      "path": "A0-dts16384.decode.txt",
+      "bytes": 3229,
+      "sha256": "08f3071ab803949b7d35eb9895177be88cc762ed8a6e49f73595e34dac4ebd13"
+    },
+    {
+      "path": "A0-dts16384.fields.json",
+      "bytes": 17894,
+      "sha256": "cfbb233a04150b4c4483d85e55f49cbb5f433c96bd4ea8369b360da99587ddad"
+    },
+    {
+      "path": "A0-dts16384.hex.txt",
+      "bytes": 25088,
+      "sha256": "f7a20f5dad3e88ea1b0c80178c136f3338ce9a6b2926ec0fa7fb882032542831"
+    },
+    {
+      "path": "A0-dts16384.pcap",
+      "bytes": 6935,
+      "sha256": "0f548e5366ee5dacfe8fcf8a5b07df676276c9f34dab99d99fee3d09edc97972"
+    },
+    {
+      "path": "A0-dts16384.req.log",
+      "bytes": 467,
+      "sha256": "1b42e1fe021f2e4b97c034e3e49aea16f62e37592e93e1b329444e99115db7c7"
+    },
+    {
+      "path": "A0-dts16384.rsp.log",
+      "bytes": 465,
+      "sha256": "d2e74217217736b1cbb99cfff06dea5ee3d399b8347b13324dafb94112cf96ae"
+    },
+    {
+      "path": "A0-dts2048.cmdline.txt",
+      "bytes": 1540,
+      "sha256": "1639348446f8aa0275af5510aec4ab36af7e75cccbe8dc488e2935f345aa7343"
+    },
+    {
+      "path": "A0-dts2048.decode.txt",
+      "bytes": 3229,
+      "sha256": "0268f90388e3cc1da3a43335e0e55787bc776e24899d50e030dcd14abb882512"
+    },
+    {
+      "path": "A0-dts2048.fields.json",
+      "bytes": 17890,
+      "sha256": "9587643368521fb540b078b87272ecbf1e2e077cde3d62193ee5caf32b9a6d69"
+    },
+    {
+      "path": "A0-dts2048.hex.txt",
+      "bytes": 25088,
+      "sha256": "38194b139fe740efc911f91134e4fc6d6252aec27c8e73fe900c09f51a376b58"
+    },
+    {
+      "path": "A0-dts2048.pcap",
+      "bytes": 6935,
+      "sha256": "7b445c464bf9407c240007c7447d2f895c71e2acc1d4ba528317ac8cacdd100b"
+    },
+    {
+      "path": "A0-dts2048.req.log",
+      "bytes": 467,
+      "sha256": "8fb3b93d8efb19eb825d3a2453004ca404c2637c887ec48b6233db2baca1b781"
+    },
+    {
+      "path": "A0-dts2048.rsp.log",
+      "bytes": 465,
+      "sha256": "06496abbdadbaddd05989210fe5a27d7b36eccb275faef64354f7420567a03b8"
+    },
+    {
+      "path": "A0-dts32768.cmdline.txt",
+      "bytes": 1545,
+      "sha256": "802aca4d5d50c39157ba6698264ccf2b6cefca12792b02cda287dde40d0abafa"
+    },
+    {
+      "path": "A0-dts32768.decode.txt",
+      "bytes": 3229,
+      "sha256": "e226edbed4692bfd913ca5c8e619e4c57af1c7815aa60cbdabf404710242edc3"
+    },
+    {
+      "path": "A0-dts32768.fields.json",
+      "bytes": 17894,
+      "sha256": "0dfc3ae4ea6484fb85ab409a97bc431551041f96e2593b97a81230bd547504fc"
+    },
+    {
+      "path": "A0-dts32768.hex.txt",
+      "bytes": 25088,
+      "sha256": "bc1c043be5b88f6032c5a538355941d52abaeed360253ddaa2c7c3c9900bc0fa"
+    },
+    {
+      "path": "A0-dts32768.pcap",
+      "bytes": 6935,
+      "sha256": "f9515c0e250681e4c313883c72311e98e0bd895a722c0ee49462b15f3c7f536b"
+    },
+    {
+      "path": "A0-dts32768.req.log",
+      "bytes": 467,
+      "sha256": "da73ed7ed72195c6b41b3742489840a81b51c92eaefa01e9bffbcc05632d2acf"
+    },
+    {
+      "path": "A0-dts32768.rsp.log",
+      "bytes": 465,
+      "sha256": "77b4b3943f9b6fd64c7c58e561ad7db197f8255957de294d57404756217f642f"
+    },
+    {
+      "path": "A0-dts4608.cmdline.txt",
+      "bytes": 1540,
+      "sha256": "2a5f37f3367e8b862345157234d78310b00445475862e95eb2cd8ed74c2dbc06"
+    },
+    {
+      "path": "A0-dts4608.decode.txt",
+      "bytes": 3229,
+      "sha256": "e5b01fa7babe6c56fd8419b594f2c0bd98ed379d95dbb996b4639f27980c9c6e"
+    },
+    {
+      "path": "A0-dts4608.fields.json",
+      "bytes": 17890,
+      "sha256": "82ea6c4b691956b58d73d4278199d1c46e1fbe27204eb3671b102acd69a22938"
+    },
+    {
+      "path": "A0-dts4608.hex.txt",
+      "bytes": 25088,
+      "sha256": "2a6a16aa0f7062f312c91fb18edabef5d99212f60fd8fb36633ed6a77706977e"
+    },
+    {
+      "path": "A0-dts4608.pcap",
+      "bytes": 6935,
+      "sha256": "0ce5b8cbdc37c850d10ff7e978ccbdea90ac148bfebca4e336101892799756ed"
+    },
+    {
+      "path": "A0-dts4608.req.log",
+      "bytes": 467,
+      "sha256": "ae645cc77f71222d9685652876486a3ecac1eef3869564ffb2769869937a30f4"
+    },
+    {
+      "path": "A0-dts4608.rsp.log",
+      "bytes": 465,
+      "sha256": "6652e712308100368577b4286a29020d55499f079bf8cb6d9f49eefeaf315658"
+    },
+    {
+      "path": "A0-dts8192.cmdline.txt",
+      "bytes": 1540,
+      "sha256": "67d65d4d3bb83c7d8de305baf867fb33aa8610b0f6038f89b0c6450f9294c33f"
+    },
+    {
+      "path": "A0-dts8192.decode.txt",
+      "bytes": 3229,
+      "sha256": "3ec32bd6a9c125a3e2787ba20b7202c22a9ca5ae7585faba683831d020a452d0"
+    },
+    {
+      "path": "A0-dts8192.fields.json",
+      "bytes": 17890,
+      "sha256": "4c9254a6b22728da7ed8974a3b6821626aaa8a99654b55da68f2cec18d9e8f55"
+    },
+    {
+      "path": "A0-dts8192.hex.txt",
+      "bytes": 25088,
+      "sha256": "31eba7dc3b1e4c559c9444cf0cc65fc27f3e87ee3f280c805e54451c1528a7cf"
+    },
+    {
+      "path": "A0-dts8192.pcap",
+      "bytes": 6935,
+      "sha256": "b9a53840e9dbdd19b6f05dc6cfb6dfffb0b6ec71ff8446794c0fdf891a67b546"
+    },
+    {
+      "path": "A0-dts8192.req.log",
+      "bytes": 467,
+      "sha256": "14626b6259d83be1178d09637c6af5ca30afc6e2bbf13298983451ce60964cdb"
+    },
+    {
+      "path": "A0-dts8192.rsp.log",
+      "bytes": 465,
+      "sha256": "26c176fc588ee1d1ece07fec74f47b95f283d4e1c805baab2a3aae91463c6250"
+    },
+    {
+      "path": "BUILD_PIN.spdm-dump.txt",
+      "bytes": 227,
+      "sha256": "215d83f718731633df540ab58a5938a159d12b23519c0fb7855c6e7d978e3bfa"
+    },
+    {
+      "path": "BUILD_PIN.txt",
+      "bytes": 783,
+      "sha256": "a8796a4baf421e3e0aa1520fb204d3fd400ec3d17827daa2501e6eb32decd679"
+    },
+    {
+      "path": "DEVICE_PATCH.txt",
+      "bytes": 612,
+      "sha256": "2a99e12ba3671325b1cea603acbc1d7eecf7eee946e7fddbd43c15fb4521856e"
+    },
+    {
+      "path": "P2-dts1024.cmdline.txt",
+      "bytes": 1568,
+      "sha256": "54b3c695a7d9a3f77182b7af45b6ed191e4561fedda4342d16044c7afe791d55"
+    },
+    {
+      "path": "P2-dts1024.decode.txt",
+      "bytes": 6070,
+      "sha256": "56fb63138abc7229a7401f417cf2bd7f438dc2cb362f2063d85cf70b4aa29e67"
+    },
+    {
+      "path": "P2-dts1024.fields.json",
+      "bytes": 7510,
+      "sha256": "20cd6c61408e3512cfb6183646b6e14be1f04d972f96439e694f33d173c4c611"
+    },
+    {
+      "path": "P2-dts1024.hex.txt",
+      "bytes": 62589,
+      "sha256": "5abce2e2d006d4856b457ceb7542b20651d54f1f82f4691de0a92594404dfe24"
+    },
+    {
+      "path": "P2-dts1024.pcap",
+      "bytes": 62658,
+      "sha256": "52e645f5fe129cc00e065127b3b6e833a99cbe67cbddc13fbe1585b129d952bb"
+    },
+    {
+      "path": "P2-dts1024.req.log",
+      "bytes": 484,
+      "sha256": "ecb262644201ad46f4a6c04e81c583e40b993c48a48f31b3abd0fe6d7d0e3f8e"
+    },
+    {
+      "path": "P2-dts1024.rsp.log",
+      "bytes": 482,
+      "sha256": "cf6aeffbd1905dc25bb5316ade06ab72b4eebddbb940f042e48b11e20c198d53"
+    },
+    {
+      "path": "P2-dts16384.cmdline.txt",
+      "bytes": 1573,
+      "sha256": "4f07cb0866a75b5ec1945502633f0d88f2ff1d38b1ee21d4a371978e23740fd1"
+    },
+    {
+      "path": "P2-dts16384.decode.txt",
+      "bytes": 2440,
+      "sha256": "b9d3452c7d7e9dbf088fed39c2244fb9c02fc5b76fd2dc92cc7bf04c219d36a4"
+    },
+    {
+      "path": "P2-dts16384.fields.json",
+      "bytes": 7510,
+      "sha256": "db84f7f17b83ed00667819391c8272addbffab00469d76786b9ae836ac72a7a2"
+    },
+    {
+      "path": "P2-dts16384.hex.txt",
+      "bytes": 57969,
+      "sha256": "58471a479d9958ed1a6ec44d2d1eaab12029beb91725cd184ab53cc2120c5998"
+    },
+    {
+      "path": "P2-dts16384.pcap",
+      "bytes": 59354,
+      "sha256": "f88fa154337c7c8ab5b89bb7c58b45f432399fd5388b71a9d371ad4ab4f29dec"
+    },
+    {
+      "path": "P2-dts16384.req.log",
+      "bytes": 484,
+      "sha256": "787a9f5e52942ce1f918c76f3c8e18205ea87dff77558553b08dabf3980f91df"
+    },
+    {
+      "path": "P2-dts16384.rsp.log",
+      "bytes": 482,
+      "sha256": "849225a65db534a79afd856933f34041f1690d85208b5be3260d69c446da8249"
+    },
+    {
+      "path": "P2-dts2048.cmdline.txt",
+      "bytes": 1568,
+      "sha256": "8067079407068ea10eb8995c09a1ddf88b08c1d532de1e281d6ac33832df7670"
+    },
+    {
+      "path": "P2-dts2048.decode.txt",
+      "bytes": 4134,
+      "sha256": "a405ed8a2726cd76ebca60aed03e631b1e6ad0e9268b2f1869403c541bdacb4d"
+    },
+    {
+      "path": "P2-dts2048.fields.json",
+      "bytes": 7505,
+      "sha256": "fa5eb33c001bd8776f1ed543669afde61db8e033c1621c65b0bf17ba89c725c3"
+    },
+    {
+      "path": "P2-dts2048.hex.txt",
+      "bytes": 60125,
+      "sha256": "051e15cdcb5098c4965d2dd9ae0b725430bf51916f6a90881d993f4cebdc9268"
+    },
+    {
+      "path": "P2-dts2048.pcap",
+      "bytes": 60922,
+      "sha256": "9e804f7828702452de041a6c98c72a3f198c9b223f78ca5fbac2c02db5f49e32"
+    },
+    {
+      "path": "P2-dts2048.req.log",
+      "bytes": 484,
+      "sha256": "94764207a52ec3c9c25e626a9467fafa95867534fc22c509b533fa3644e20c73"
+    },
+    {
+      "path": "P2-dts2048.rsp.log",
+      "bytes": 482,
+      "sha256": "d7c3cd9822adbc3758a826349a523e937fac37693bf435397cf5844c22ce87b0"
+    },
+    {
+      "path": "P2-dts32768.cmdline.txt",
+      "bytes": 1573,
+      "sha256": "3b16523456f239d424be371294698678631596e85fd76cd46d8e30295936e92d"
+    },
+    {
+      "path": "P2-dts32768.decode.txt",
+      "bytes": 1852,
+      "sha256": "12231bc7c100bd867dcd81a53fad68c1152d73bc8960dc87712f5abff53ad611"
+    },
+    {
+      "path": "P2-dts32768.fields.json",
+      "bytes": 7251,
+      "sha256": "a8be82471d1eca6b14b3dda9fc786eca84cd39064a29e2f8acc73267aabc6ab6"
+    },
+    {
+      "path": "P2-dts32768.hex.txt",
+      "bytes": 2952,
+      "sha256": "a77c2602df641a7c9d3d9f5f93c43ecc6bc9aa42613aa19ef46c56776bcf1110"
+    },
+    {
+      "path": "P2-dts32768.pcap",
+      "bytes": 58955,
+      "sha256": "4346dcc11a089c82a6007e27436a3f68a3f03982830831c94d5f2236c6a5f0e5"
+    },
+    {
+      "path": "P2-dts32768.req.log",
+      "bytes": 484,
+      "sha256": "bbeb9c48cf75f1c0108cce2498facd448f5d715784213bd2012aa4a2eecef87c"
+    },
+    {
+      "path": "P2-dts32768.rsp.log",
+      "bytes": 482,
+      "sha256": "31169c64edace001a16807a87095de9d065e6df4030f57cb8062e234132d49b3"
+    },
+    {
+      "path": "P2-dts4608.cmdline.txt",
+      "bytes": 1568,
+      "sha256": "8ba3fbdc4ffc7d17562867b3de7fe1c02eada671913210c58d8fa56a4d99da8a"
+    },
+    {
+      "path": "P2-dts4608.decode.txt",
+      "bytes": 2924,
+      "sha256": "e1906a03a23519802e5c5afe3199c39a651c9d276225d74dc1b150eab38c0aa0"
+    },
+    {
+      "path": "P2-dts4608.fields.json",
+      "bytes": 7505,
+      "sha256": "91b328113f1d850d0f0c3a9460caa203ce59d49c989da65aabedde339acbcb65"
+    },
+    {
+      "path": "P2-dts4608.hex.txt",
+      "bytes": 50105,
+      "sha256": "25f2c636df15cd61b3f8bb2684a81c486f1214f3421156a6678975627d1ddf02"
+    },
+    {
+      "path": "P2-dts4608.pcap",
+      "bytes": 59726,
+      "sha256": "407bb0a3bca31ab33a58873bc18288e2d40426744f785db88ed264bacc2dfb14"
+    },
+    {
+      "path": "P2-dts4608.req.log",
+      "bytes": 484,
+      "sha256": "5958a6a62b65222774918faf9bb9fc224a676e1331441559dfd4fc743e4a2432"
+    },
+    {
+      "path": "P2-dts4608.rsp.log",
+      "bytes": 482,
+      "sha256": "8b3fe9776fc14b79fd0a3dd6099f8790b040721b70fdd4a58abf887fac7c5264"
+    },
+    {
+      "path": "P2-dts8192.cmdline.txt",
+      "bytes": 1568,
+      "sha256": "295343cfbbda9e0d25f919b724f87fc4430fe09b53434c05fd3a3a1e0664fe6a"
+    },
+    {
+      "path": "P2-dts8192.decode.txt",
+      "bytes": 2682,
+      "sha256": "32466b5c37463626e134e9819940dec246ae8006c02437686fed2b32b666a56a"
+    },
+    {
+      "path": "P2-dts8192.fields.json",
+      "bytes": 7505,
+      "sha256": "e10aef3fdcafb62630ce67df94a5b086412faf9d5e2713b655e7c23945600808"
+    },
+    {
+      "path": "P2-dts8192.hex.txt",
+      "bytes": 58277,
+      "sha256": "335180caa7493d732b23a8d69973eb5454629cfaae9ef6a8c9b6a2ee03bba1e1"
+    },
+    {
+      "path": "P2-dts8192.pcap",
+      "bytes": 59540,
+      "sha256": "e51e02714516b57b47441e8661f1d396764c21553d9a697d94520a9733fd11bf"
+    },
+    {
+      "path": "P2-dts8192.req.log",
+      "bytes": 484,
+      "sha256": "09ebe13a3df4252265b22acf329f80d314e656feda46d7b0342ffc626f644ae3"
+    },
+    {
+      "path": "P2-dts8192.rsp.log",
+      "bytes": 482,
+      "sha256": "ca2ca7a96baadce3b57dadcf5f714cc760a0e28b1c77b4fb17ae24228a7f2a4f"
+    },
+    {
+      "path": "arms.tsv",
+      "bytes": 2891,
+      "sha256": "13f3358418358f8d90ee759f127d37cde61ab565162a7d78a38bfdd548b3db0f"
+    }
+  ],
+  "artifact_count": 88,
+  "artifact_bytes": 1093338
+}
