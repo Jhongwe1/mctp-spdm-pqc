@@ -86,6 +86,40 @@ def _box(x, y, w, h, *, stroke=LINE, fill="#ffffff", width=1.4) -> str:
             f'fill="{fill}" stroke="{stroke}" stroke-width="{width}"/>')
 
 
+def _provenance(run: Path, what: str) -> tuple[str, str]:
+    """The two caption lines every figure owes its reader, from the run itself.
+
+    Six facts: the build flavor, both upstream commits, the SPDM version, the
+    algorithm, and where the full command lines are. Until 2026-09-29 no figure
+    carried the first three, and the week-13 caption audit is what noticed; the
+    same audit found the run behind Figure 3 could not have supplied them,
+    because its manifest said its build pin was MISSING. So this reads the
+    manifest and refuses to draw rather than print a caption it cannot back.
+    `what` is the part only the figure knows: which capture, which version,
+    which algorithm, each already read off the wire by the caller.
+    """
+    man = run / "manifest.json"
+    if not man.exists():
+        raise Missing(f"{run.name} has no manifest.json")
+    up = json.loads(man.read_text(encoding="utf-8")).get("upstream", {})
+    need = ("flavor", "spdm_emu_short", "libspdm_short", "libspdm_ref")
+    if (any(not up.get(k) for k in need)
+            or any(str(v).startswith("MISSING") for v in up.values())):
+        raise Missing(f"{run.name}'s manifest does not name the build it ran on")
+    flavor = up["flavor"]
+    if up.get("flavor_patch"):
+        flavor += f" (+ {up['flavor_patch']})"
+    return (f"bench/data/{run.name} · {what}",
+            f"flavor {flavor} · spdm-emu {up['spdm_emu_short']} · libspdm "
+            f"{up['libspdm_short']} ({up['libspdm_ref']}) · commands and hashes: "
+            f"manifest.json")
+
+
+def _caption(out: list[str], lines: tuple[str, str], y: float) -> None:
+    for i, line in enumerate(lines):
+        out.append(_text(24, y + 16 * i, line, size=9, fill=FAINT, family=MONO))
+
+
 # ─────────────────────────────────────────── figure 1 ────────────────────────
 
 
@@ -135,8 +169,13 @@ def figure_1() -> tuple[str, list[str]]:
     reassembled = slots[0]["chain_bytes"]
     roundtrips = stats["summary"]["certificates"]["roundtrips"]
     hash_bytes = stats["summary"]["certificates"]["root_hash_bytes"]
+    negotiated = stats["summary"]["algorithms"]
+    caption = _provenance(run, (
+        f"t0_clean · SPDM {negotiated['spdm_version']} · "
+        f"{'/'.join(negotiated['negotiated']['Asym'])} with "
+        f"{'/'.join(negotiated['negotiated']['Hash'])}, read back from ALGORITHMS"))
 
-    W, H = 780, 560
+    W, H = 780, 584
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
            f'viewBox="0 0 {W} {H}" role="img" '
            f'aria-label="The three-layer certificate chain and its size on the wire">',
@@ -223,6 +262,7 @@ def figure_1() -> tuple[str, list[str]]:
                          weight="700", fill=ACCENT, anchor="end"))
         tx += 236
 
+    _caption(out, caption, H - 30)
     out.append("</svg>")
     return "\n".join(out) + "\n", sources
 
@@ -326,7 +366,16 @@ def _arm_breakdown(run: Path, arm: str) -> dict:
         "chain_bytes": next((x["chain_bytes"] for x in s["certificates"]["slots"]
                              if x.get("closes")), None),
         "complete": bool(bt.get("SPDM_MEASUREMENTS")) or carried["measure"] > 0,
+        "spdm_version": s["algorithms"].get("spdm_version"),
     }
+
+
+def _one_version(arms: list[dict]) -> str:
+    """The SPDM version every arm negotiated, or a refusal to summarise it."""
+    versions = {a["spdm_version"] for a in arms}
+    if len(versions) != 1 or None in versions:
+        raise Missing(f"the arms negotiated {sorted(map(str, versions))}, not one version")
+    return versions.pop()
 
 
 def figure_2() -> tuple[str, list[str]]:
@@ -341,12 +390,20 @@ def figure_2() -> tuple[str, list[str]]:
 
     max_bytes = max(a["total"] for a in arms)
     max_rt = max(a["roundtrips_plain"] + a["roundtrips_chunk"] for a in arms)
+    caption = _provenance(run, (
+        f"<arm>-all.pcap · SPDM {_one_version(arms)} in every arm · "
+        f"algorithms read back from ALGORITHMS"))
 
-    W, H = 900, 520
-    LEFT, ROW_H, GAP = 210, 38, 14
-    BAR_W, RT_W = 380, 150
+    # Layout checked by rendering, not by reading coordinates: on 2026-09-29 a
+    # headless render showed the S1 label running into its bar, S1's chunk
+    # count and its "did not complete" note drawn on top of each other past the
+    # right edge, and the axis labels printed over the subtitle. None of the
+    # three was visible in the SVG source.
+    W, H = 900, 500
+    LEFT, ROW_H, GAP = 250, 38, 14
+    BAR_W, RT_W = 350, 150
     RT_X = LEFT + BAR_W + 60
-    TOP = 108
+    TOP = 124
 
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
            f'viewBox="0 0 {W} {H}" role="img" '
@@ -366,13 +423,13 @@ def figure_2() -> tuple[str, list[str]]:
     # legend
     lx = 24
     for key, colour, label in PHASES:
-        out.append(f'<rect x="{lx}" y="{TOP - 26}" width="10" height="10" '
+        out.append(f'<rect x="{lx}" y="{TOP - 36}" width="10" height="10" '
                    f'fill="{colour}"/>')
-        out.append(_text(lx + 15, TOP - 17, label, size=10, fill=MUTED))
+        out.append(_text(lx + 15, TOP - 27, label, size=10, fill=MUTED))
         lx += 18 + 7 * len(label)
 
-    out.append(_text(LEFT, TOP - 40, "bytes", size=10, fill=FAINT, family=MONO))
-    out.append(_text(RT_X, TOP - 40, "round trips", size=10, fill=FAINT,
+    out.append(_text(LEFT, TOP - 7, "bytes", size=10, fill=FAINT, family=MONO))
+    out.append(_text(RT_X, TOP - 7, "round trips", size=10, fill=FAINT,
                      family=MONO))
 
     y = TOP
@@ -407,8 +464,8 @@ def figure_2() -> tuple[str, list[str]]:
                              f"({a['roundtrips_chunk']} chunk)", size=9,
                              fill=MUTED))
         if not a["complete"]:
-            out.append(_text(RT_X + RT_W + 34, y + 15,
-                             "handshake did not complete", size=9, fill="#c53030"))
+            out.append(_text(LEFT, y + 31, "handshake did not complete",
+                             size=9, fill="#c53030"))
         y += ROW_H
 
     y += GAP
@@ -435,10 +492,11 @@ def figure_2() -> tuple[str, list[str]]:
         out.append(_text(24, y, line, size=11, fill=MUTED))
         y += 17
 
-    out.append(_text(24, H - 14,
-                     f"{run.name} · orange is SPDM chunking, which costs a round "
-                     f"trip per chunk · every number read from the capture",
+    out.append(_text(24, H - 46,
+                     "orange is SPDM chunking, which costs a round trip per "
+                     "chunk · every number read from the capture",
                      size=9, fill=FAINT, family=MONO))
+    _caption(out, caption, H - 30)
     out.append("</svg>")
     return "\n".join(out) + "\n", sources
 
@@ -463,6 +521,7 @@ def figure_3() -> tuple[str, list[str]]:
     sources = [f"bench/pcapstat.py, from {run.name}/*.pcap"]
 
     series: dict[str, list[tuple[int, int, int]]] = {"A0": [], "P2": []}
+    seen_versions: list[dict] = []
     for cap in sorted(run.glob("*.pcap")):
         group = cap.stem.split("-")[0]
         if group not in series:
@@ -473,20 +532,29 @@ def figure_3() -> tuple[str, list[str]]:
             raise Missing(f"{cap.stem}: no CAPABILITIES to read a DataTransferSize from")
         series[group].append((dts, s["captured_bytes_total"],
                               s["chunking"]["messages"].get("SPDM_CHUNK_GET", 0)))
+        seen_versions.append({"spdm_version": s["algorithms"].get("spdm_version")})
     for g in series:
         series[g].sort()
     if not all(series.values()):
         raise Missing("the sweep run is missing one of its two groups")
+    caption = _provenance(run, (
+        f"{len(seen_versions)} arms · SPDM {_one_version(seen_versions)} in every arm · "
+        f"algorithms and DataTransferSize read back off the wire"))
 
     xs = [d for d, _, _ in series["P2"]]
     max_rt = max(r for _, _, r in series["P2"] + series["A0"]) or 1
     max_b = max(b for _, b, _ in series["P2"] + series["A0"])
     bytes_top = 70000 if max_b < 70000 else max_b
 
-    W, H = 880, 560
+    # Rendered and looked at on 2026-09-29, which the coordinates alone had
+    # never been: the legend sat on top of the subtitle, the top panel's title
+    # on top of its own first point, and the third line of prose ran off the
+    # right edge. Each is fixed by moving it, and the run's name, which the
+    # subtitle used to carry, is now in the caption with the build it ran on.
+    W, H = 880, 648
     L, R = 104, 716
-    T1, B1 = 104, 252
-    T2, B2 = 322, 432
+    T1, B1 = 140, 288
+    T2, B2 = 358, 468
 
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
            f'viewBox="0 0 {W} {H}" role="img" '
@@ -497,7 +565,7 @@ def figure_3() -> tuple[str, list[str]]:
     out.append(_text(24, 55,
                      "one build, DataTransferSize the only thing that moves, "
                      "read back off the wire in every arm", size=12, fill=MUTED))
-    out.append(_text(24, 74, f"{run.name}  -  both y axes start at zero",
+    out.append(_text(24, 74, "both y axes start at zero",
                      size=11, fill=FAINT, family=MONO))
 
     def xpos(dts: int) -> float:
@@ -509,7 +577,7 @@ def figure_3() -> tuple[str, list[str]]:
                    f'stroke="{LINE}" stroke-width="1.2"/>')
         out.append(f'<line x1="{L}" y1="{bottom}" x2="{R}" y2="{bottom}" '
                    f'stroke="{LINE}" stroke-width="1.2"/>')
-        out.append(_text(L, top - 14, title, size=11, weight="600"))
+        out.append(_text(L, top - 26, title, size=11, weight="600"))
         for v in ticks:
             y = bottom - (bottom - top) * v / ymax
             out.append(f'<line x1="{L - 4}" y1="{y:.1f}" x2="{L}" y2="{y:.1f}" '
@@ -571,9 +639,9 @@ def figure_3() -> tuple[str, list[str]]:
 
     lx = 24
     for group, (colour, _, label) in STYLE.items():
-        out.append(f'<rect x="{lx}" y="{T1 - 36}" width="14" height="3" '
+        out.append(f'<rect x="{lx}" y="{T1 - 55}" width="14" height="3" '
                    f'fill="{colour}"/>')
-        out.append(_text(lx + 20, T1 - 30, label, size=10, fill=MUTED))
+        out.append(_text(lx + 20, T1 - 49, label, size=10, fill=MUTED))
         lx += 34 + 6 * len(label)
 
     y = B2 + 68
@@ -588,20 +656,21 @@ def figure_3() -> tuple[str, list[str]]:
         "is one bus RTT, which on SMBus at 100 kHz is the expensive half of the "
         "cost.",
         (f"The classical arm chunks only at {a0_chunks_at[0]:,} bytes, where its "
-         f"1,655-byte chain stops fitting - the dashed line. "
-         if a0_chunks_at else "The classical arm never chunks. ")
-        + "The 4,608-byte point reproduces the unpatched build\u2019s capture "
-          "exactly, which is what makes the other five comparable to it.",
+         f"1,655-byte chain stops fitting - the dashed line."
+         if a0_chunks_at else "The classical arm never chunks."),
+        "The 4,608-byte point reproduces the unpatched build\u2019s capture "
+        "exactly, which is what makes the other five comparable to it.",
     ]
     for line in lines:
         out.append(_text(24, y, line, size=11, fill=MUTED))
         y += 17
 
-    out.append(_text(24, H - 14,
+    out.append(_text(24, H - 46,
                      "DataTransferSize has no upstream flag; it is "
                      "LIBSPDM_RECEIVER_BUFFER_SIZE minus transport overhead. "
                      "transport/data-transfer-size.patch makes it settable.",
                      size=9, fill=FAINT, family=MONO))
+    _caption(out, caption, H - 30)
     out.append("</svg>")
     return "\n".join(out) + "\n", sources
 
