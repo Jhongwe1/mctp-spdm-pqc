@@ -83,8 +83,8 @@ COMMON=(
     # So it is pinned rather than removed, to the SAME classical value in every
     # arm. Nothing signs with it — no encapsulated exchange happens — and the
     # only thing it puts on the wire is one 4-byte AlgStructure entry that is
-    # byte-identical in every arm. Reported as upstream candidate 6 in
-    # docs/upstream/README.md.
+    # byte-identical in every arm. Upstream candidate 13 in
+    # docs/upstream/README.md (an earlier version of this line said 6).
     --req_asym       ECDSA_P384
     --req_pqc_asym   NONE
 )

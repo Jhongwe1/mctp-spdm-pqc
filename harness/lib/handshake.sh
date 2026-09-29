@@ -87,10 +87,13 @@ HS_REQUESTER_EXTRA=()
 # by the tool rather than chosen. Two things about `--cap`, both read out of
 # spdm_emu at the commit in third_party/spdm-emu-pqc.pin on 2026-09-14:
 #
-#   1. It is RESPONDER-ONLY IN EFFECT. The parser stores it in
-#      m_use_capability_flags, and only spdm_responder_spdm.c:174 reads that
-#      variable back. spdm_requester_spdm.c never mentions it. So the requester
-#      parses --cap, prints `cap - 0x...` as confirmation, and ignores it.
+#   1. ~~It is RESPONDER-ONLY IN EFFECT~~ — ★ FALSE, corrected 2026-09-29.
+#      spdm_requester_spdm.c:179-180 applies m_use_capability_flags, and has
+#      since spdm-emu ef556a0 (2022-12-21). Measured on the pqc build: the
+#      requester's GET_CAPABILITIES carries Flags 0x0002f7c6 by default and
+#      0x00000006 with --cap CERT,CHAL. The claim came from a grep output that
+#      had been shortened by hand; docs/upstream/README.md candidate 14 has
+#      the whole story. Point 2 is what actually keeps --cap on this side.
 #
 #   2. Its value names are validated against a DIFFERENT TABLE per program —
 #      m_spdm_requester_capabilities_string_table for one binary and
@@ -103,8 +106,8 @@ HS_REQUESTER_EXTRA=()
 # ★ And rejects it by `print_usage(); exit(0)`, so a mistake here leaves a
 # process that exited SUCCESSFULLY without speaking SPDM. What catches it is
 # hs_wait_for_responder returning 91 and the caller finding no capture — not the
-# exit status, which is the same 0 a good run gives. Upstream candidates 14 and
-# 15 in docs/upstream/README.md.
+# exit status, which is the same 0 a good run gives. Upstream candidate 15 in
+# docs/upstream/README.md.
 #
 # Only sides that genuinely cannot share a flag belong here. Anything that both
 # ends must agree on — an algorithm, a version, a flow — must stay in the shared

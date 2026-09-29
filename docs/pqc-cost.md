@@ -527,12 +527,18 @@ Two honest limits on that finding:
   because chunking requires it at both ends. The arm asserts `Chunk=off` against
   the capture, so "we removed it and it chunked anyway" cannot pass silently.
 
-`--cap` had to go to the responder alone for a reason worth recording: it is
-**responder-only in effect** in this build (the parser stores it in
-`m_use_capability_flags`, which only `spdm_responder_spdm.c:174` reads back),
-and its value names are validated against a different table per program, so a
-responder capability list handed to the requester is *rejected* — by
-`print_usage(); exit(0)`. Upstream candidates 14 and 15.
+`--cap` had to go to the responder alone for a reason worth recording: its value
+names are validated against a different table per program, so a responder
+capability list handed to the requester is *rejected* — by `print_usage();
+exit(0)`. Upstream candidate 15.
+
+> ★ **Corrected 2026-09-29.** This paragraph also said `--cap` was
+> *responder-only in effect*, read by `spdm_responder_spdm.c:174` alone. That
+> was false at the pinned commit: `spdm_requester_spdm.c:179` applies it too,
+> and on the `pqc` build `--cap CERT,CHAL` puts `Flags 0x00000006` on the
+> requester's side of the wire. The arm is unaffected — the responder's list
+> is still one the requester cannot parse — and upstream candidate 14, which
+> rested on the same misreading, is withdrawn.
 
 ---
 

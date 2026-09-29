@@ -3771,6 +3771,13 @@ effect:
   own capability table, echoed back as `cap - 0x8882f7c6`, stored in
   `m_use_capability_flags` — and only `spdm_responder_spdm.c:174` ever reads that
   variable. The requester ignores it, and tells you it accepted it.
+
+  > ★ **False, corrected 2026-09-29.** `spdm_requester_spdm.c:179` reads it too,
+  > and has since 2022; on the pinned build `--cap CERT,CHAL` puts
+  > `Flags 0x00000006` on the wire. The `grep` behind this bullet had been
+  > shortened by hand and the shortening dropped the requester's two lines. So
+  > the shape this entry describes appeared twice that day, not three times,
+  > and the two that remain stand. `LOG.md` for 2026-09-29 has how it was found.
 - **Every invalid argument in `spdm-emu`** ends `print_usage(); exit(0)`. A typo
   in a flag produces a process that exited *successfully* without speaking SPDM.
   I have now seen this exact shape in DMTF's `CoRimTool.py verify` too, which on
