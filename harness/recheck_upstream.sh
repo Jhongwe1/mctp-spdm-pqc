@@ -246,7 +246,7 @@ CHECKS = [
      "open, head 60748b7, 0 comment(s), 0 review comment(s), reviews none, labels none"),
     ("DMTF/spdm-emu #527", "0004, --data_transfer_size", lambda: pr(527),
      "open, head 367414a, 0 comment(s), 0 review comment(s), reviews none, labels none"),
-    ("DMTF/spdm-emu #496", "the maintainer's own, on 6 of #527's 8 files; whichever merges second rebases",
+    ("DMTF/spdm-emu #496", "the maintainer's own, on 6 of #527's 8 files, itself in conflict with main",
      lambda: pr_watched(496), "open, head 34f40fd, updated 2026-06-27T12:48:42"),
     ("DMTF/spdm-emu #358", "candidate 20's issue, assigned to its reporter; ask there before a fix",
      lambda: issue(358), "open, 1 comment(s), assigned arugan02, updated 2024-07-29T14:13:05"),
