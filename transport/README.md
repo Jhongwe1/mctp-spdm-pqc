@@ -23,14 +23,45 @@ digest so a capture can name it.
 
 What it bought: [`../docs/pqc-cost.md`](../docs/pqc-cost.md) §9 — a 32x sweep
 showing that the parameter moves the byte total 3.1% and the round trips from 59
-to zero. It is upstream candidate 17.
+to zero. It is upstream candidate 17, prepared for `DMTF/spdm-emu` as
+[`../docs/upstream/0004-data-transfer-size.md`](../docs/upstream/0004-data-transfer-size.md).
+
+### Two defects in this patch, found on 2026-09-29, and why the evidence stands
+
+Rebuilding it on upstream's `4.0.0-rc2` to send it meant reading every line
+again, and two were wrong. **This file is left exactly as it is**, because it is
+what the `pqc-dts` captures were made with and its digest is in their pin:
+
+1. **With `CHUNK_CAP` cleared, it advertises a `MaxSPDMmsgSize` larger than its
+   `DataTransferSize`.** DSP0274 1.4.1 requires the two to be equal for an
+   endpoint without the Large SPDM message transfer mechanism, and libspdm's
+   requester enforces it. Measured on this flavor's own build: a responder
+   without `CHUNK_CAP` at `--data_transfer_size 1024` advertises `1024/32768`,
+   and the requester stops at `CAPABILITIES` with `0x80010005`.
+2. **On `--trans NONE`, it advertises 128 bytes more than it is asked for.**
+   NONE registers no transport header or tail, and the macro above subtracts
+   the 64 + 64 the other transports register. The comment in the patch admitted
+   it and relied on the harness to notice.
+
+Neither reaches a published number. Every arm of the sweep runs over the
+MCTP-framed socket with `CHUNK_CAP` on both sides, and each arm's
+`DataTransferSize` is read back out of both `CAPABILITIES` messages and
+compared with what was asked. The upstream version fixes both, and the sender
+buffer has to follow as well: 0004 has the reasons and the measurements.
 
 ## Real transports
 
-Carrying SPDM over something that is not a TCP socket arrives in **G5 (week 9)**.
-Two candidate paths, both of which this development machine currently blocks (recorded in `../docs/env-baseline.md`): a QEMU device
-exposing an SPDM port, and Linux `AF_MCTP` — which needs `CONFIG_MCTP`, and
-the WSL2 kernel is built without it.
+Both programs here are Gate 5's, and both run inside a QEMU guest whose kernel
+has what this host's lacks. [`../docs/transports.md`](../docs/transports.md)
+has the results.
 
-If both stay blocked, that is written down as two things tried and where each
-stopped, and any derived figure is labelled as computed rather than observed.
+- `mctp_bridge.c` carries the unmodified emulators' handshake across a real
+  Linux `AF_MCTP` link between two network namespaces — endpoint IDs, a route
+  table, kernel-allocated tags and 64-byte packetisation.
+  `harness/run_afmctp.sh` runs it.
+- `doe_probe.c` drives a PCIe DOE mailbox from guest userspace on a QEMU NVMe
+  device, and got one SPDM `GET_VERSION` across it and answered.
+  `harness/run_doe.sh` runs it.
+
+`make check` compiles both again under `-Werror` with AddressSanitizer and
+UBSan. There is no `make test` here, and the Makefile says why.
