@@ -1774,9 +1774,8 @@ step "the upstream recheck can still say CHANGED, and can still say NO DATA"
 # project depends on moved. The plan's version was `curl -s ... | grep`, and
 # that shape turns a network failure into a line that reads "nothing changed".
 # It happened twice here — a Gerrit summary on 2026-09-23, the weekly CI step on
-# 2026-09-28 — and on 2026-09-29 a search engine's cached job listing showed
-# the same thing in another costume: stale data that looks current. The real
-# run needs the network and does not belong here. Its judge does: eight fabricated
+# 2026-09-28. The real run needs the network and does not belong here. Its
+# judge does: eight fabricated
 # fetch directories, each built to produce one answer, including an HTTP 200
 # with an empty body and a 403 where a 404 would have meant "does not exist".
 if out="$(bash harness/recheck_upstream.sh --selftest 2>&1)"; then
