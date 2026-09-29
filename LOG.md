@@ -5782,3 +5782,164 @@ manifest names a patch and both buffers.
   the story at four lengths (plan §6, Sunday). Mine.
 - **`c-drills`.** Eight drills, no implementations. Mine, always.
 - Day 17's `TODO(me)`. Mine.
+
+## 2026-09-30 · Day 19 · re-read at the owner, and searched for
+
+A second sitting the same night, from 03:10 here, for one question asked in
+three parts: are the remaining upstream candidates still there, are #526 and
+#527 all right — both checked "the newest way" — and why are they not all sent
+at once. The first two answers were yes. Everything the checking found wrong
+was this project's own. Three findings are worth the five parts.
+
+---
+
+### 1. ★ An instrument that could not see the event it was written for
+
+**現象** `harness/recheck_upstream.sh`, written the day before so that week 14
+would know whether anything had moved, printed `same` for #526 and #527:
+open, 0 comments, 0 review comments. Reading the reviews, the timeline and the
+check runs by hand agreed. The agreement was luck: its rows compared two
+counters, and a maintainer's decision need not move either.
+
+**假設** (1) an approval without a comment moves `comments` or
+`review_comments`, so the tool would have seen it; (2) it moves neither, so the
+tool prints `same` for an approved pull request; (3) it moves only
+`updated_at`, which the tool does not compare either.
+
+**先驗哪個、為什麼** (2), because it is the one in which the tool is silently
+wrong, and because it can be measured on somebody else's pull request instead
+of waited for on mine: five recently closed `libspdm` pull requests, their
+reviews listed, their counters read. #3987: `APPROVED` by a
+maintainer, an empty body, `comments` 0, `review_comments` 0.
+
+**根因** (2). The rows were written from what a reply looks like — a comment —
+and not from what a maintainer's decision looks like: a review, a label (#524
+was labelled `bug` two minutes before it merged), a merge.
+
+**教訓** ★ **An instrument that watches for an event is tested against the
+event, not against its most common symptom.** The rows now carry the reviews,
+the labels and the head, three more sources are read (#496, #358 and the
+conformance suite's own `main`), and the self-test contains an approval with
+no comment at all: fifteen cases, a baseline and fourteen mutations, and each
+mutation first shows that it changed its input. That a request for changes behaves the same way is
+inferred, not measured, and the script's header says so.
+
+---
+
+### 2. A merge ref three months old
+
+**現象** `git ls-remote` listed `refs/pull/496/merge`, which on GitHub is the
+test merge of a pull request into its base. A trial merge of #496 onto today's
+`main`, in a throwaway clone, conflicted in three files.
+
+**假設** (1) GitHub recomputes the merge ref whenever the base moves; (2) it
+computes it when the head is pushed and leaves it; (3) `ls-remote` showed a
+stale copy of something current.
+
+**先驗哪個、為什麼** the one the objects answer without asking GitHub
+anything: the merge commit's parents and date. `bcec6fa`, 2026-06-27, first
+parent `2f053dc`, 33 commits behind today's `main`. That rules out (1) and
+(3) in one command.
+
+**根因** (2), as far as this pull request shows. For #526 and #527 I had
+checked that the merge ref's first parent is today's `main`, which is why
+theirs mean something; for #496, its existence alone would have read as
+"mergeable".
+
+**教訓** A derived artefact carries the date it was derived on. Check its
+inputs, not its existence: a merge ref proves nothing until its first parent
+is today's `main`. It is candidate ⑲'s submodule pointer again — the
+consumer's copy of an answer, read as if it were the answer.
+
+---
+
+### 3. Two citations of my own, copied rather than pasted
+
+**現象** To re-read candidate 4 at the head I listed every
+`libspdm_get_certificate` call in `spdm_emu`: none is in
+`spdm_requester_spdm.c`, the file `docs/upstream/README.md` names; the
+requester's four are in `spdm_requester_authentication.c`. To re-read ①, I
+printed `requirements.txt`: six lines, where the page quoted four.
+
+**假設** (1) upstream moved the code after 09-01 and the file after 09-12; (2)
+the citations were wrong from the day they were written; (3) a file was
+renamed.
+
+**先驗哪個、為什麼** (1) and (3) together, because one command answers both:
+the same four line numbers, 63, 71, 78 and 107, at the pin `5f01d2f` and at
+`eff07cf`, and the same `requirements.txt` blob, `fabca0ad`, at both. So (2).
+
+**根因** (2). Both were written by hand: a file name from memory of where the
+requester lives, a package list shortened onto one row. Neither changed a
+conclusion — every call site tests `IS_ERROR` only, and no line of the six has
+an upper bound — and both were public for weeks.
+
+**教訓** Candidate ⑭'s lesson, *evidence is the command's output, pasted*,
+covers the parts of a record that look like metadata as well: the file name
+and the quoted file are evidence. Re-reading a claim at the head means
+regenerating its citation, not re-reading the sentence.
+
+---
+
+### Smaller things, each checked
+
+- **Upstream, 19:14–19:39 UTC on the 29th** (03:14–03:39 here). The three
+  owners' heads unchanged: `spdm-emu` `eff07cf`, `libspdm` `a6994ee`, and the
+  suite's own `main` `7acde98`, read from the suite. #526 and #527: the
+  trees behind `refs/pull/N/head` are the tested trees, the merge refs sit on
+  today's `main`, no review, comment or label, upstream CI 45 of 45. Their
+  `Tested:` runs were repeated on the bytes GitHub serves: 0003's four lines,
+  and the repro block taken from the body GitHub returns, run as it stands in
+  a fresh virtualenv, `exit 0` before and `exit 1` after; 0004's runs, 25 of
+  25 rows identical to the send session's, and `--trans NONE` without
+  `CHUNK_CAP` decoded message by message as far as `MEASUREMENTS` rather than
+  judged by its `rc=0`. 0004's build was not repeated.
+- **All thirteen unsent candidates are still present**, each at the head of
+  the repository that owns it, and **29 searches found none reported
+  upstream** — the first search for any of them; until tonight the rule that
+  turned ⑳ into #358 had been applied only to what was sent.
+- **Two facts that order what goes next**: #358 is assigned to its reporter,
+  so ⑳ starts with a question there; and all 91 of ⑮'s `exit(0)` are in
+  `process_args()`, where #527 adds 25 lines and #496 54, so ⑮ goes last.
+- **`libspdm` #3996**, opened on the 29th, changes the value written into the
+  TCP binding's `PayloadLen`, not the header's size. Nothing #527 states
+  depends on it.
+- **DMTF-2026-0004's record drifted**: its credits gained a finder and its
+  `updated_at` did not move, so the hash caught what the timestamp did not.
+  Read, not re-pinned: its assessment is week 14's first task, and the re-pin
+  belongs with it. Until then the recheck reports it as `CHANGED`, which is
+  correct.
+- **`harness/check_upstream_commit.sh` refused a linked worktree**, the way I
+  had pointed it at the two pull requests' refs. It now asks git for the top
+  of the tree; three self-test cases, one it must accept and two it must
+  refuse.
+- **My own, tonight, all caught before they were pushed**: a count read from a
+  hunk header, `+818,60`, where the diff has 54 added lines; four sentences in
+  the first draft of the upstream section that said more than the outputs
+  behind them — a checker that is not committed, a build that was not
+  repeated, a trial merge called `merge-tree`, and two issues described before
+  they were read; and a commit subject of 51 characters, committed past a
+  check that had printed 51. Amended before the push, and every commit after
+  it was gated on the check instead of shown it.
+- **The clean clone, before the documentation commits**, at `0a61035`:
+  `verify_repo.sh`, all checks passed; `rats/appraise.py matrix --check`, ok;
+  `c-drills` builds; the demo ended `ok` on `spdm-emu`'s sample chain; the
+  three build trees' `BUILD_PIN.txt` match the pins.
+
+### Decisions
+
+- **Mine: everything found tonight is fixed tonight**, offered with a
+  recommendation, rather than left for week 14.
+- **The order of what is sent next is by event, not by list**: ⑱'s two lines
+  and candidate 5 once either pull request is answered, since neither touches
+  a file #496 or #527 does; ⑳ after #527 merges and a question on #358;
+  candidate 2 after #527 and #496, which both edit `print_usage()`; 4 and ⑬
+  as issues first; ⑮ last; ⑯ not before a Debug build has a root cause.
+
+### Not done, and the reason for each
+
+- **Re-pinning DMTF-2026-0004.** With its assessment, week 14.
+- **Committing the script that checked candidate 2** against the program's
+  own tables. Scratch tonight; it becomes evidence if candidate 2 is sent.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`.** Mine, as before. Week 13 stays open.
