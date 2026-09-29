@@ -170,6 +170,7 @@ git push fork corim-exit-status
 | Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
 | Review round trips | 0 so far |
 | Outcome | open |
+| Re-read | 2026-09-29, 19:39 UTC: head, tree and merge ref as sent, no review, CI 45 of 45; the four `Tested:` lines and §4's repro block, taken from the body GitHub serves, re-run on the bytes GitHub serves, with the same results ([README](README.md#every-candidate-re-read-and-searched-for--2026-09-30)) |
 
 **What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:
 

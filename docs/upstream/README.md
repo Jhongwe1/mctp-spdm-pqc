@@ -52,7 +52,8 @@ needs a date attached to it.
 | Every unsent candidate, re-read at upstream's head | **done** | 2026-09-29 | ⑲ had been **fixed upstream five days before this project found it**; ⑱ is half fixed; ⑭ was **never true** and is withdrawn; ⑬ and ⑯ persist on 4.0.0-rc2. And ⑳, found while testing 0004, turned out to be **upstream issue #358, open since 2024** — found by the duplicate search, before it was written up as new. [§ Merged, and every candidate re-read at the head](#merged-and-every-candidate-re-read-at-the-head--2026-09-29) |
 | Two more changes prepared | **prepared** | 2026-09-29 | ⑤ as [`0003`](0003-corim-exit-status.md), the follow-up #524's own description offered; ⑰ as [`0004`](0004-data-transfer-size.md), rebuilt and re-tested on 4.0.0-rc2, where porting it found two defects in this project's own version of the patch. Prepared unsigned: the sign-off and the push are the author's |
 | ★ **Both SENT** | **done** | 2026-09-29, 15:14 UTC | [`DMTF/spdm-emu` #526](https://github.com/DMTF/spdm-emu/pull/526) (0003) and [#527](https://github.com/DMTF/spdm-emu/pull/527) (0004), the same evening, each after its freshness checks and its `Tested:` lines were re-run in the hour before. DCO green; upstream CI 45 of 45 on both, including the two VS2019 builds 0004 had never met. [§ Two more sent](#two-more-sent--2026-09-29) |
-| `openbmc/spdm` 94773 | **in review, no movement** | checked 2026-09-29, 16:40 UTC | patchset 3 still current, CI `Verified+1`, no vote, three threads unresolved, last activity 2026-09-23 17:10 UTC. No ping before 2026-10-07, as decided |
+| `openbmc/spdm` 94773 | **in review, no movement** | checked 2026-09-29, 19:14 UTC | patchset 3 still current, CI `Verified+1`, no vote, three threads unresolved, last activity 2026-09-23 17:10 UTC, and no open change in the project has moved since. No ping before 2026-10-07, as decided |
+| Every unsent candidate re-read at its owner's head, **and searched for upstream** | **done** | 2026-09-30 | 19:14–19:39 UTC on the 29th. All thirteen still present; 29 searches, the first for any of them, and **none reported**; #526 and #527 unchanged and unreviewed, the runs behind their `Tested:` lines repeated on the bytes GitHub serves. Two of this file's citations were wrong and are corrected, and two of this project's tools could not see what the check needed; both fixed that day. [§ Every candidate re-read, and searched for](#every-candidate-re-read-and-searched-for--2026-09-30) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -70,7 +71,9 @@ and is withdrawn, and one, ⑳, had been reported upstream two years earlier. Th
 records what was **not** sent and why, and that is a decision a reviewer never
 sees. *Every row was re-read against upstream `main` on 2026-09-29, not against
 the pinned tree it was found in; the section after "Both sent" says why that
-distinction turned out to matter.*
+distinction turned out to matter. And again on 2026-09-30, when each unsent
+row was also searched for upstream, which until then had been done only for
+the rows that were sent ([§](#every-candidate-re-read-and-searched-for--2026-09-30)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
@@ -85,12 +88,12 @@ distinction turned out to matter.*
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
-| 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | not sent: mechanical, and 78 sites at the pin have become 91 at `eff07cf`. It bit this project's own testing of 0004 twice on 2026-09-29: `--pcap` with `--trans NONE` or `TCP` prints the usage and exits 0 |
+| 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | not sent: mechanical, and 78 sites at the pin have become 91 at `eff07cf`. It bit this project's own testing of 0004 twice on 2026-09-29: `--pcap` with `--trans NONE` or `TCP` prints the usage and exits 0. *2026-09-30: all 91 are in `process_args()`, where #527 adds 25 lines and the maintainer's #496 adds 54, so it goes after both* |
 | 16 | `libspdm` / `spdm-emu` | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to requester-side signature verification | **not sent, and not sendable yet**: the root cause needs a Debug build this project has not made, and a report without one asks the maintainer to do the work. *Re-run on 4.0.0-rc2, 2026-09-29: S1 still exits 1, P1 exits 0* |
 | 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | **sent** as [#527](https://github.com/DMTF/spdm-emu/pull/527) ([`0004`](0004-data-transfer-size.md)), rebuilt on 4.0.0-rc2. Porting it found two defects in this project's version, neither of which the sweep could reach: with `CHUNK_CAP` cleared it advertised a `MaxSPDMmsgSize` larger than its `DataTransferSize`, which the peer rejects (`0x80010005`, measured on the `pqc-dts` build), and on `--trans NONE` it advertised 128 bytes more than asked |
 | 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | **half fixed upstream**, without this project: `eff07cf`, 2026-09-29, registers both `SUCCESS_13` cases, which were the half that mattered. `CERTIFICATE_SIZE_REQ` is still not registered and `CERTIFICATE_SPDM_X509_CERTIFICATE` is still registered and not implemented — `--audit-config`, 83 implemented, 83 registered. Two lines remain |
 | 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | ★ **fixed upstream before this project found it.** `65bcccc` and `ad6db5c`, authored 2026-09-07 and 09-14, on the suite's `main` on 2026-09-15; this row was written on 2026-09-20, against the submodule pointer `c27bb1c`. Not sendable. The fix's own commit message names the mechanism this entry derived, and repairs it the way this entry preferred |
-| 20 | `DMTF/spdm-emu` | `--trans NONE` with `CHUNK_CAP` cleared cannot start | unpatched `eff07cf`: the responder exits 1 before listening and prints nothing, where MCTP with the same capabilities completes. `MaxSPDMmsgSize` is computed from a 128-byte transport overhead NONE does not register, so `DataTransferSize` (4,736) exceeds it, and libspdm's context check requires the opposite. Setting the two equal with 0004's flag, and changing nothing else, makes it start | ★ **already reported upstream**: [#358](https://github.com/DMTF/spdm-emu/issues/358), opened 2024-07-28 by `arugan02`, labelled `bug`, open, with the same error text and the same diagnosis. The reporter offered a pull request and a maintainer answered *"that seems reasonable"*; none arrived. Found by the duplicate search before this row was written as a new finding. What this project adds is narrower: re-confirmed on 4.0.0-rc2, and since the maximum message size with chunking became `0x28000` it reproduces only with `CHUNK_CAP` cleared. 0004 is a workaround, not the fix; the fix is one line once 0004's helper exists, and would go as its own change referencing #358 |
+| 20 | `DMTF/spdm-emu` | `--trans NONE` with `CHUNK_CAP` cleared cannot start | unpatched `eff07cf`: the responder exits 1 before listening and prints nothing, where MCTP with the same capabilities completes. `MaxSPDMmsgSize` is computed from a 128-byte transport overhead NONE does not register, so `DataTransferSize` (4,736) exceeds it, and libspdm's context check requires the opposite. Setting the two equal with 0004's flag, and changing nothing else, makes it start | ★ **already reported upstream**: [#358](https://github.com/DMTF/spdm-emu/issues/358), opened 2024-07-28 by `arugan02`, labelled `bug`, open, with the same error text and the same diagnosis. The reporter offered a pull request and a maintainer answered *"that seems reasonable"*; none arrived. Found by the duplicate search before this row was written as a new finding. What this project adds is narrower: re-confirmed on 4.0.0-rc2, and since the maximum message size with chunking became `0x28000` it reproduces only with `CHUNK_CAP` cleared. 0004 is a workaround, not the fix; the fix is one line once 0004's helper exists, and would go as its own change referencing #358. *2026-09-30: #358 is assigned to its reporter, so the first step is a question there, not a pull request* |
 
 **How the two were chosen**, in the order the criteria were applied: can a
 reviewer verify it from the change alone; would the next person to hit it be
@@ -1388,6 +1391,81 @@ trace was decoded message by message until it showed a `MEASUREMENTS`.
 written by one of the two reviewers, touches six of 0004's eight files.
 Nothing to do about it before merging, and a reason not to read a rebase
 request as a rejection.
+
+## Every candidate re-read, and searched for — 2026-09-30
+
+Read between 19:14 and 19:39 UTC on 2026-09-29, which was 03:14–03:39 on the
+30th here, with every method the fortnight had taught, because the question
+asked was whether anything on this page had stopped being true.
+
+**Nothing upstream had moved.** `spdm-emu` `main` `eff07cf`, `libspdm` `main`
+`a6994ee`, and `SPDM-Responder-Validator`'s own `main` `7acde98` — the last read
+from the suite, not from `spdm-emu`'s pointer to it, although today the two
+agree.
+
+| | [#526](https://github.com/DMTF/spdm-emu/pull/526) · 0003 | [#527](https://github.com/DMTF/spdm-emu/pull/527) · 0004 |
+|---|---|---|
+| the head GitHub serves, the fork's branch and the signed commit | `60748b7`, all three | `367414a`, all three |
+| its tree, against the tree that was tested | `b3dcd4b…`, the same | `84896f1…`, the same; the binaries tested on the 29th were built from these eight blobs, 8 of 8 |
+| `refs/pull/N/merge` | present, first parent today's `main` | the same |
+| reviews, comments, labels | none | none |
+| upstream CI | 45 of 45 | 45 of 45 |
+| `Tested:` re-run on GitHub's bytes | all four lines, and the repro block taken from the body GitHub serves and run as it stands in a fresh virtualenv: `exit 0` before, `exit 1` after | every run in 0004 §3, with the binaries built on the 29th: 25 of 25 rows identical to the send session's output, and `--trans NONE` without `CHUNK_CAP` decoded message by message as far as `MEASUREMENTS`. The build itself, the first `Tested:` line, was not repeated |
+
+**All thirteen unsent candidates are still present** at the head that owns
+them: 2, 3, 4, 5, ①, ③, ④, ⑥, ⑬, ⑮, ⑯ (S1 still exits 1 on the unpatched
+4.0.0-rc2 build, P1 0), ⑱'s two lines (83 implemented and 83 registered,
+against the suite's own `main`) and ⑳. Candidate 2 was checked by a script
+this time rather than read (a scratch script, not committed): the defaults in
+`key.c` mapped to names through each program's own string table and compared
+with its `--help` — the requester's omits `CHUNK` and `EP_INFO_SIG`, the
+responder's `MEL`, `CHUNK` and `EP_INFO_SIG`, at the pin and at `main`.
+
+**And each was searched for upstream**: 29 issue and pull-request searches,
+each on the repository that owns the code, every one answered. None has been
+reported. Three hits needed reading: #408 quotes candidate 5's comment but asks
+for DSP0287's TCP binding, and was closed by #416 — not a duplicate, and some
+evidence that the comment is read literally; #120 is a 2022 typo fix in a
+`rego` command in a readme; and of the twelve `SLH-DSA` results in `libspdm`,
+ten are features and tests, #3246 is a build that could not find OpenSSL's
+internal headers, and #3696 asks when 4.0.0 ships. None reports a signature
+that fails to verify, which is ⑯. The rule that turned ⑳ into #358 had been
+applied only to the candidates that were sent.
+
+**What it found wrong was all this project's own:**
+
+- two citations on this page, corrected above with the date: candidate 4's
+  calls are in `spdm_requester_authentication.c`, and ①'s quote lacked two of
+  the file's six lines;
+- [`harness/recheck_upstream.sh`](../../harness/recheck_upstream.sh) could not
+  see an approval. Its pull-request rows compared two counters that a review
+  without an inline comment does not move — measured on `libspdm` #3987,
+  approved by a maintainer with both at 0 — and it did not watch #496, #358 or
+  the suite's own `main`. Fixed the same day;
+- [`harness/check_upstream_commit.sh`](../../harness/check_upstream_commit.sh)
+  refused a linked worktree, the natural way to check the commit a pull
+  request's ref holds. Fixed the same day.
+
+**Two facts that decide the order of what is sent next:**
+
+- **#496 conflicts with `main` itself**, in `doc/spdm_emu.md`, `spdm_emu.c`
+  and `spdm_emu.h` (a trial merge onto today's `main`, in a throwaway clone),
+  while GitHub still advertises a `refs/pull/496/merge` — computed on
+  2026-06-27, against a `main` 33 commits older. ★ **A merge ref proves
+  nothing until its first parent is today's `main`**; for #526 and #527 it is.
+  So #496 has to be rebased before it can merge at all, and #527, if it merges
+  second, probably has to be as well; that second half is a prediction, not a
+  measurement.
+- **#358 is assigned to its reporter**, `arugan02`, so a fix for ⑳ starts with
+  a question there. And all 91 of ⑮'s `exit(0)` are in `process_args()`, where
+  #527 adds 25 lines and #496 adds 54: ⑮ goes last.
+
+Why they are not all sent at once was asked the same night. The short answer
+is already in candidate 2's row — *a second change to a project before the
+first is answered is two conversations that do not happen* — and this section
+is the long one: two maintainers review everything, the candidates overlap
+each other and the maintainer's own work, and every row had to be re-verified
+on the day it would be sent.
 
 ## Three identity traps, all of which are silent until they are not
 

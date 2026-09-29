@@ -279,6 +279,7 @@ git push fork data-transfer-size-flag
 | Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
 | Review round trips | 0 so far |
 | Outcome | open |
+| Re-read | 2026-09-29, 19:39 UTC: head, tree and merge ref as sent, no review, CI 45 of 45; every run behind §3 repeated with the binaries built from these bytes, 25 of 25 rows identical; the build was not repeated. #496 now conflicts with `main` itself, so it has to be rebased before it can merge, and this change probably will be too if it merges second — a prediction ([README](README.md#every-candidate-re-read-and-searched-for--2026-09-30)) |
 
 **What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:
 
