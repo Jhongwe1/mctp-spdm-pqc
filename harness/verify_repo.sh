@@ -2042,6 +2042,29 @@ else
     bad "a figure no longer matches the data it was rendered from"
 fi
 
+step "the one-page summary still renders from the evidence it quotes"
+# docs/one-pager.svg is the one artefact here that leaves the building: it is
+# printed, handed across a desk and kept. It carries Table 1, Figure 2 and the
+# numbers of the cost paragraph, read by harness/mkonepager.py from the same
+# captures, verdicts, manifests and claims as the README, so it is held the
+# same way the figures are: re-rendered and required to be identical.
+#
+# Two further ways for this step to go red, both on purpose. The prose under
+# Table 1 states things only the data can make true — rows 2a and 2b print one
+# status, RATS fails 2a and passes 2b — and the generator checks them before
+# printing them (exit 2). And a page that no longer fits A4 inside a printable
+# margin is refused rather than drawn off the edge. The first draft of this
+# page did both: it measured where its last paragraph began instead of where it
+# ended, and it said the verifier cannot see an attacker's higher version
+# number, which docs/rats-pipeline.md says in as many words is not a hole.
+if out="$(python3 harness/mkonepager.py --check 2>&1)"; then
+    printf '%s\n' "$out" | sed 's/^/  /'
+    good "the committed one-pager is what the evidence renders to"
+else
+    printf '%s\n' "$out" | sed 's/^/  /'
+    bad "docs/one-pager.svg no longer matches, or no longer fits, its evidence"
+fi
+
 step "the drills track reports itself"
 # The project track has spent five weeks generating work for a track that has
 # completed nothing, and until now that was a sentence in LOG.md rather than a

@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 794 1123" role="img" aria-label="SPDM 裝置證明實驗室 一頁摘要">
+<rect width="794" height="1123" fill="#ffffff"/>
+<text x="40" y="62" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="28" font-weight="700" fill="#1f2933" text-anchor="start">SPDM 裝置證明實驗室</text>
+<text x="754" y="48" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="13" font-weight="600" fill="#1f2933" text-anchor="end">Chung-Wei Lan</text>
+<text x="754" y="66" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="11" font-weight="normal" fill="#52606d" text-anchor="end">github.com/Jhongwe1/mctp-spdm-pqc</text>
+<rect x="40" y="80" width="714" height="34" rx="4" fill="#fff4f2" stroke="#b42318" stroke-width="1.2"/>
+<text x="54" y="102" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="14" font-weight="700" fill="#b42318" text-anchor="start">範圍：我做的是協定流程層級的正確性驗證，不是安全性評估。</text>
+<text x="40" y="136" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="normal" fill="#52606d" text-anchor="start">用 DMTF 的參考實作（libspdm / spdm-emu）跑完整的 SPDM 裝置證明握手，把三個問題變成可重算的數字：改一個位元組，誰會發現？</text>
+<text x="40" y="153" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="normal" fill="#52606d" text-anchor="start">拿到量測值之後要跟什麼比？後量子簽章在線上要付多少？</text>
+<text x="40" y="179" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="15" font-weight="700" fill="#1f2933" text-anchor="start">表 1　改一個位元組，誰會發現</text>
+<rect x="40" y="188" width="714" height="22" fill="#eef2f6"/>
+<text x="46" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">#</text>
+<text x="72" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">改了什麼</text>
+<text x="242" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">誰會發現</text>
+<text x="360" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">SPDM 的結果</text>
+<text x="496" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">狀態碼</text>
+<text x="622" y="203" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="start">RATS 判定</text>
+<text x="46" y="225" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">—</text>
+<text x="72" y="225" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">沒改（對照組）</text>
+<text x="242" y="225" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">—</text>
+<text x="360" y="225" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">握手完成</text>
+<text x="496" y="225" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">—</text>
+<text x="622" y="225" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#276749" text-anchor="start">PASS</text>
+<line x1="40" y1="232" x2="754" y2="232" stroke="#cbd2d9"/>
+<rect x="40" y="232" width="714" height="22" fill="#f6f8fa"/>
+<text x="46" y="247" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="600" fill="#1f2933" text-anchor="start">1</text>
+<text x="72" y="247" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">裝置上的量測值，在簽章之前</text>
+<text x="242" y="247" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">只有 RATS 驗證者</text>
+<text x="360" y="247" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">握手完成</text>
+<text x="496" y="247" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">—</text>
+<text x="622" y="247" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#b42318" text-anchor="start">FAIL（HASH_CHECK）</text>
+<line x1="40" y1="254" x2="754" y2="254" stroke="#cbd2d9"/>
+<rect x="40" y="254" width="714" height="22" fill="#f6f8fa"/>
+<text x="46" y="269" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="600" fill="#1f2933" text-anchor="start">2a</text>
+<text x="72" y="269" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">量測紀錄，在傳輸中</text>
+<text x="242" y="269" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">量測簽章</text>
+<text x="360" y="269" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">MEASUREMENTS 後拒絕</text>
+<text x="496" y="269" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">80020001 VERIF_FAIL</text>
+<text x="622" y="269" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#b42318" text-anchor="start">FAIL（HASH_CHECK）</text>
+<line x1="40" y1="276" x2="754" y2="276" stroke="#cbd2d9"/>
+<rect x="40" y="276" width="714" height="22" fill="#f6f8fa"/>
+<text x="46" y="291" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="600" fill="#1f2933" text-anchor="start">2b</text>
+<text x="72" y="291" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">簽章本身，在傳輸中</text>
+<text x="242" y="291" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">量測簽章</text>
+<text x="360" y="291" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">MEASUREMENTS 後拒絕</text>
+<text x="496" y="291" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">80020001 VERIF_FAIL</text>
+<text x="622" y="291" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#276749" text-anchor="start">PASS</text>
+<line x1="40" y1="298" x2="754" y2="298" stroke="#cbd2d9"/>
+<text x="46" y="313" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">3</text>
+<text x="72" y="313" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">裝置送出的憑證</text>
+<text x="242" y="313" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">裝置自己</text>
+<text x="360" y="313" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">從未送出 CERTIFICATE</text>
+<text x="496" y="313" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">8001000a ERROR_PEER</text>
+<text x="622" y="313" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">沒有量測可比</text>
+<line x1="40" y1="320" x2="754" y2="320" stroke="#cbd2d9"/>
+<text x="46" y="335" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">3b</text>
+<text x="72" y="335" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">換成別人的憑證鏈（位元組沒壞）</text>
+<text x="242" y="335" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">requester 的權威檢查</text>
+<text x="360" y="335" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">握手完成（只有警告）</text>
+<text x="496" y="335" font-family="Consolas,Menlo,'DejaVu Sans Mono',monospace" font-size="10" font-weight="normal" fill="#1f2933" text-anchor="start">—</text>
+<text x="622" y="335" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="10" font-weight="normal" fill="#276749" text-anchor="start">PASS</text>
+<line x1="40" y1="342" x2="754" y2="342" stroke="#cbd2d9"/>
+<text x="40" y="358" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">2a 與 2b 在 requester 印出同一個狀態碼，原因卻相反；RATS 的判定把兩者分開——2a 的紀錄被改了（FAIL），2b 的紀錄完好、壞的是線路</text>
+<text x="40" y="374" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">（PASS）。第 1 列 SPDM 全數通過：SPDM 證明「是誰說的、途中沒被改」，不證明「說的對不對」，所以才需要驗證者。</text>
+<text x="40" y="391" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="9.5" font-weight="normal" fill="#7b8794" text-anchor="start">來源：bench/data/w5-tamper-20260910T092621Z（cases.tsv、每個 arm 的 capture 與 manifest）與 rats/out/*.verdict.json。SPDM 1.4、</text>
+<text x="40" y="404" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="9.5" font-weight="normal" fill="#7b8794" text-anchor="start">ECDSA_P384、雜湊 SHA_384、量測雜湊 SHA_512，由 ALGORITHMS 讀回。</text>
+<text x="40" y="428" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="15" font-weight="700" fill="#1f2933" text-anchor="start">圖 2　後量子驗證的成本在哪裡</text>
+<svg x="40" y="436" width="714" height="284" viewBox="0 0 900 358">
+<rect width="900" height="500" fill="#fbfcfd"/>
+<text x="24" y="34" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#1f2933" text-anchor="start">What post-quantum authentication costs, and where</text>
+<text x="24" y="55" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#52606d" text-anchor="start">captured bytes by protocol phase (left) and request/response round trips (right)</text>
+<text x="24" y="74" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#9aa5b1" text-anchor="start">one build, eighteen control variables pinned, --meas_op ALL, algorithms read back off the wire</text>
+<rect x="24" y="88" width="10" height="10" fill="#94a3b8"/>
+<text x="39" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">GET_VERSION … ALGORITHMS</text>
+<rect x="210" y="88" width="10" height="10" fill="#a8b3c4"/>
+<text x="225" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">GET_DIGESTS / DIGESTS</text>
+<rect x="375" y="88" width="10" height="10" fill="#2b6cb0"/>
+<text x="390" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">certificate chain</text>
+<rect x="512" y="88" width="10" height="10" fill="#38a169"/>
+<text x="527" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">CHALLENGE_AUTH</text>
+<rect x="628" y="88" width="10" height="10" fill="#805ad5"/>
+<text x="643" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">MEASUREMENTS</text>
+<rect x="730" y="88" width="10" height="10" fill="#cbd5e1"/>
+<text x="745" y="97" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" fill="#52606d" text-anchor="start">chunking + MCTP framing</text>
+<text x="250" y="117" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="start">bytes</text>
+<text x="660" y="117" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="start">round trips</text>
+<text x="24" y="139" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">A0</text>
+<text x="48" y="139" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ECDSA P-384 / ECDHE P-384</text>
+<text x="242" y="139" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L3</text>
+<rect x="250.0" y="124" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="124" width="1.4" height="20" fill="#a8b3c4"/>
+<rect x="252.0" y="124" width="22.3" height="20" fill="#2b6cb0"/>
+<rect x="274.3" y="124" width="1.2" height="20" fill="#38a169"/>
+<rect x="275.6" y="124" width="2.8" height="20" fill="#805ad5"/>
+<rect x="278.4" y="124" width="0.5" height="20" fill="#cbd5e1"/>
+<text x="608" y="139" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">6,559</text>
+<rect x="660" y="128" width="50.0" height="12" fill="#276749"/>
+<text x="818" y="139" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">11</text>
+<text x="24" y="177" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">A1</text>
+<text x="48" y="177" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ECDSA P-521 / ECDHE P-521</text>
+<text x="242" y="177" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L5</text>
+<rect x="250.0" y="162" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="162" width="1.4" height="20" fill="#a8b3c4"/>
+<rect x="252.0" y="162" width="25.2" height="20" fill="#2b6cb0"/>
+<rect x="277.2" y="162" width="1.4" height="20" fill="#38a169"/>
+<rect x="278.6" y="162" width="3.0" height="20" fill="#805ad5"/>
+<rect x="281.6" y="162" width="0.5" height="20" fill="#cbd5e1"/>
+<text x="608" y="177" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">7,292</text>
+<rect x="660" y="166" width="50.0" height="12" fill="#276749"/>
+<text x="818" y="177" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">11</text>
+<text x="24" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P1</text>
+<text x="48" y="215" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-44 / ML-KEM-512</text>
+<text x="242" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L2</text>
+<rect x="250.0" y="200" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="200" width="1.4" height="20" fill="#a8b3c4"/>
+<rect x="252.0" y="200" width="162.4" height="20" fill="#2b6cb0"/>
+<rect x="414.4" y="200" width="11.5" height="20" fill="#38a169"/>
+<rect x="425.9" y="200" width="13.0" height="20" fill="#805ad5"/>
+<rect x="438.9" y="200" width="1.8" height="20" fill="#cbd5e1"/>
+<text x="608" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">43,337</text>
+<rect x="660" y="204" width="50.0" height="12" fill="#276749"/>
+<rect x="710.0" y="204" width="40.9" height="12" fill="#f6ad55"/>
+<text x="818" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">20</text>
+<text x="844" y="215" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(9 chunk)</text>
+<text x="24" y="253" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P2</text>
+<text x="48" y="253" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-65 / ML-KEM-768</text>
+<text x="242" y="253" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L3</text>
+<rect x="250.0" y="238" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="238" width="1.4" height="20" fill="#a8b3c4"/>
+<rect x="252.0" y="238" width="222.9" height="20" fill="#2b6cb0"/>
+<rect x="474.9" y="238" width="15.4" height="20" fill="#38a169"/>
+<rect x="490.3" y="238" width="16.9" height="20" fill="#805ad5"/>
+<rect x="507.3" y="238" width="2.2" height="20" fill="#cbd5e1"/>
+<text x="608" y="253" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">58,966</text>
+<rect x="660" y="242" width="50.0" height="12" fill="#276749"/>
+<rect x="710.0" y="242" width="54.5" height="12" fill="#f6ad55"/>
+<text x="818" y="253" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">23</text>
+<text x="844" y="253" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(12 chunk)</text>
+<text x="24" y="291" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">P3</text>
+<text x="48" y="291" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">ML-DSA-87 / ML-KEM-1024</text>
+<text x="242" y="291" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L5</text>
+<rect x="250.0" y="276" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="276" width="1.4" height="20" fill="#a8b3c4"/>
+<rect x="252.0" y="276" width="300.4" height="20" fill="#2b6cb0"/>
+<rect x="552.5" y="276" width="21.2" height="20" fill="#38a169"/>
+<rect x="573.7" y="276" width="22.7" height="20" fill="#805ad5"/>
+<rect x="596.4" y="276" width="3.6" height="20" fill="#cbd5e1"/>
+<text x="608" y="291" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">79,542</text>
+<rect x="660" y="280" width="50.0" height="12" fill="#276749"/>
+<rect x="710.0" y="280" width="100.0" height="12" fill="#f6ad55"/>
+<text x="818" y="291" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">33</text>
+<text x="844" y="291" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(22 chunk)</text>
+<text x="24" y="329" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2933" text-anchor="start">S1</text>
+<text x="48" y="329" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">SLH-DSA-SHA2-128s / ML-KEM-512</text>
+<text x="242" y="329" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="10" font-weight="normal" fill="#9aa5b1" text-anchor="end">L1</text>
+<rect x="250.0" y="314" width="0.7" height="20" fill="#94a3b8"/>
+<rect x="250.7" y="314" width="0.5" height="20" fill="#a8b3c4"/>
+<rect x="251.1" y="314" width="218.4" height="20" fill="#2b6cb0"/>
+<rect x="469.5" y="314" width="35.4" height="20" fill="#38a169"/>
+<rect x="504.9" y="314" width="2.3" height="20" fill="#cbd5e1"/>
+<text x="608" y="329" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">58,446</text>
+<rect x="660" y="318" width="31.8" height="12" fill="#276749"/>
+<rect x="691.8" y="318" width="63.6" height="12" fill="#f6ad55"/>
+<text x="818" y="329" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">21</text>
+<text x="844" y="329" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#52606d" text-anchor="start">(14 chunk)</text>
+<text x="250" y="345" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" font-weight="normal" fill="#c53030" text-anchor="start">handshake did not complete</text>
+<line x1="24" y1="366" x2="876" y2="366" stroke="#9aa5b1" stroke-width="1"/>
+<text x="24" y="386" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">Version-Capabilities-Algorithms is 152 SPDM bytes in every one of the six arms. Nothing post-quantum costs anything to negotiate.</text>
+<text x="24" y="403" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">At matched NIST level 3 the bytes go x8.99 and the round trips x2.09; at level 5, x10.91 and x3.00.</text>
+<text x="24" y="420" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#52606d" text-anchor="start">The certificate chain is 86% of the post-quantum arm and the MEASUREMENTS response 7%. This flow fetches the chain three times.</text>
+<text x="24" y="454" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="normal" fill="#9aa5b1" text-anchor="start">orange is SPDM chunking, which costs a round trip per chunk · every number read from the capture</text>
+<text x="24" y="470" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="normal" fill="#9aa5b1" text-anchor="start">bench/data/w8-pqc-matrix-20260914T131557Z · &lt;arm&gt;-all.pcap · SPDM 1.4 in every arm · algorithms read back from ALGORITHMS</text>
+<text x="24" y="486" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="9" font-weight="normal" fill="#9aa5b1" text-anchor="start">flavor pqc · spdm-emu 5f01d2f · libspdm 8a92317 (4.0.0-rc) · commands and hashes: manifest.json</text>
+</svg>
+<rect x="40" y="436" width="714" height="284" fill="none" stroke="#cbd2d9"/>
+<text x="40" y="738" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="700" fill="#2b6cb0" text-anchor="start">做了什麼</text>
+<text x="140" y="738" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">我做的：tamper harness 與在傳輸中改一個位元組的 proxy、pcap 分析器（pcapstat、fields、pcapcount）、RATS</text>
+<text x="140" y="754" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">流水線（COSE 簽署的 CoRIM 參考值 → OPA 政策 → 判定）、把三類 2026 advisory 寫成會失敗的負面測試、上游變更。</text>
+<text x="140" y="770" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">不是我做的：SPDM 協定、chunking、後量子演算法（libspdm 4.0.0-rc 與 OpenSSL 3.5.5）、DMTF 的一致性測試套件。</text>
+<text x="40" y="791" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="700" fill="#2b6cb0" text-anchor="start">最難的一題</text>
+<text x="140" y="791" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">拿到量測值之後要跟什麼比？那不在 SPDM 的範圍，是 RATS（RFC 9334）。我把範例政策的 SVN 檢查從「相等」改成</text>
+<text x="140" y="807" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">「不低於參考值」：合法升級通過、降到參考值以下被拒。代價寫在旁邊：沒有降到參考值以下的降版（9 降回 7，參考值是 7）</text>
+<text x="140" y="823" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">它看不見——無狀態的比對不知道裝置以前是幾版。</text>
+<text x="40" y="844" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="700" fill="#2b6cb0" text-anchor="start">後量子的真成本</text>
+<text x="140" y="844" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">位元組：NIST 第 3 級 ×8.99、第 5 級 ×10.91。但 GET_CERTIFICATE 的來回兩邊都是 3 次；多出來的是 chunk 層的</text>
+<text x="140" y="860" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">12 次來回（古典 0 次）。DataTransferSize 放大 32 倍，位元組只動 3.1%，chunk 來回卻從 59 降到 0。平台成本 ≈ 來</text>
+<text x="140" y="876" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">回次數 × 匯流排 RTT × endpoint 數；RTT 與驗簽時間沒有量。</text>
+<text x="40" y="897" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="700" fill="#2b6cb0" text-anchor="start">第三方背書</text>
+<text x="140" y="897" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">DMTF/spdm-emu #524 已合併（2026-09-28，b015187，含於 4.0.0-rc2）：CoRimTool 的 verify 連正確的簽章都拒絕，</text>
+<text x="140" y="913" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">而它的驗證結果又被丟棄——兩個缺陷互相掩蓋，只修一個會變成全部接受。#526（同一工具的結束碼）與 #527（執行期設定</text>
+<text x="140" y="929" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">DataTransferSize）已送出、待審；openbmc/spdm 94773 審查中（patchset 3）。</text>
+<text x="40" y="950" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="700" fill="#2b6cb0" text-anchor="start">沒做什麼</text>
+<text x="140" y="950" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">沒有真裝置（emulator 與 QEMU）、沒有 HSM、沒有側通道或故障注入、沒有形式化分析、沒有量測任何 secure session、</text>
+<text x="140" y="966" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11" font-weight="normal" fill="#1f2933" text-anchor="start">沒有公布任何延遲數字——兩個本機行程量到的是排程，不是密碼學。</text>
+<line x1="40" y1="988" x2="754" y2="988" stroke="#1f2933" stroke-width="1.2"/>
+<text x="40" y="1008" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="600" fill="#1f2933" text-anchor="start">▸</text>
+<text x="54" y="1008" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="600" fill="#1f2933" text-anchor="start">本頁的量測數字都由程式從 committed 的證據讀出；CI 從 pcap 重算每個公布的比值與計數（容差 0）、重跑每個 RATS 判定，並重</text>
+<text x="54" y="1025" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="600" fill="#1f2933" text-anchor="start">新產生本頁、要求逐位元組相同。</text>
+<text x="40" y="1044" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="600" fill="#1f2933" text-anchor="start">▸</text>
+<text x="54" y="1044" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="11.5" font-weight="600" fill="#1f2933" text-anchor="start">CI 要求被篡改過的量測被判 FAIL：10 個 arm 各有其必須得到的判定，任何一個變了，build 就變紅。</text>
+<text x="40" y="1065" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="9.5" font-weight="normal" fill="#7b8794" text-anchor="start">版本：表 1 與圖 2 為 pqc flavor（spdm-emu 5f01d2f / libspdm 8a92317，4.0.0-rc）；DataTransferSize 掃描為 pqc-dts flavor（同兩個 commit，加一個</text>
+<text x="40" y="1078" font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC','Noto Sans CJK TC','Source Han Sans TC','Heiti TC',sans-serif" font-size="9.5" font-weight="normal" fill="#7b8794" text-anchor="start">patch）。每個量測數字都對應一份 capture 與其 manifest.json。本頁由 harness/mkonepager.py 產生，資料截至 2026-09-29。</text>
+<!-- the last line ends at y=1080 of 1123; the margin allows 1085 -->
+</svg>
