@@ -5611,3 +5611,174 @@ requests existed, not before.
   (`docs/advisories.md` §5).
 - `TODO(me)` — one sentence, in my own words, on what the hour before the send
   changed about how I check a claim.
+
+## 2026-09-30 · Day 18 · negative tests that tested something else
+
+Week 13's close, in one sitting after midnight, straight after day 17's. Not a
+new week: what was left of it was mine to do — record the demo, print the page
+— and a list to tick, and I asked for every tick to be measured rather than
+remembered. The demo's dry run passed. The recording and the printing are
+still not done, so week 13 is not closed. Three findings are worth the five
+parts, and the first two are one shape: a negative test that injected a fault,
+just not the fault it was written to catch.
+
+---
+
+### 1. ★ A fix tested on the marker, not on the sentence
+
+**現象** On 2026-09-29 `docs/tamper.md`'s caption said the measurement hash was
+`SHA_384`; it is `SHA_512`. The fix, `71b5f24`, put
+`<!--claim algorithms.negotiated.MeasHash=SHA_512-->` in front of the word in
+both captions, and was tested on a copy whose *marker* said `SHA_384`: rc 1.
+Re-checking the captions today, I changed the *word* instead and left the
+marker alone. `harness/fields.py --check` passed it, 56 of 56.
+
+**假設** (1) the checker reads the text beside a marker and normalises it too
+loosely; (2) it reads only the marker; (3) the copy was not the copy I thought
+it was.
+
+**先驗哪個、為什麼** (3) first: it is the cheapest, and it would void the other
+two — the copy differed from `docs/tamper.md` in exactly one line. Then (2)
+over (1), because the code answers it in sixteen lines (`fields.py`
+1879–1894); and then measured anyway, because reading says what should happen,
+not what does. Word changed: rc 0. Marker changed: rc 1, `FAIL line 51`.
+
+**根因** (2). A `claim` marker binds a key to the capture, and nothing binds the
+marker to the word a reader reads. `harness/check_claims.py` does bind them
+for `xclaim` — *a marker whose visible text was not updated* is one of its
+self-test cases — so the difference was never a decision: the two checkers
+were written five weeks apart, `fields.py --check` on 2026-08-17 and the
+visible-text check on 09-23. The fix of the 29th closed the fault injected into
+it, not the fault that had happened.
+
+**教訓** ★ **A negative test injects the fault that happened, not the neighbour
+that is easier to write.** And then a count, before saying anything about the
+present: all 271 `claim` markers in tracked Markdown, code examples aside,
+were read with the text beside them. 228 are followed by their value, 32 by the
+value in another notation (a hash's first sixteen characters, bytes with
+spaces, a list, a word for a number), and 4 carry an empty value before prose.
+The other 7 were read by hand — *yes*, *set*, *they match*, *absent*, *no*, a
+value on the next line, a root named by description — and agree too. Nothing
+published is wrong; what is missing is the mechanism that would say so next
+time.
+
+---
+
+### 2. ★ A self-test that passed a mutation it never made
+
+**現象** The caption re-check has a self-test: each fact is broken once, and
+the audit must then fail. It printed `ok` for every case, three runs in a row —
+including a mutation of Table 1's flavor whose target string contained a line
+break the README does not have, so the text was never changed.
+
+**假設** (1) the audit cannot see the flavor; (2) the mutation never reached the
+audit; (3) the self-test's verdict cannot tell a caught mutation from findings
+that were already there.
+
+**先驗哪個、為什麼** (2), because it is one comparison — the mutated text
+against the original — and until it is answered, (1) cannot be judged at all.
+
+**根因** (2) and (3) together. The target was typed from memory of the README's
+line breaks. And the self-test asked "did the audit report anything?" while
+the unmutated audit was itself reporting one to four findings — its own first
+bugs, and §3's label — so a mutation that did nothing still counted as caught.
+
+**教訓** A negative control is vacuous in two ways: the fault never arrives, or
+the verdict cannot tell it from the background. Both are checked now — every
+mutation must change its input and must add findings over the unmutated run —
+and against a clean baseline it is 13 of 13. Standing rule 11, applied to the
+instrument that applies it.
+
+---
+
+### 3. Two sentences that were true, and said less than they seemed to
+
+**現象** Both passed every check. `docs/pqc-cost.md`'s Table 2 named arm S1
+`SLH-DSA-128s`: the pinned `spdm.h` defines two algorithms by that name,
+SHA2 at `0x08` and SHAKE at `0x10`. And the one-pager's footer said the
+DataTransferSize sweep ran on *the same two commits plus one patch*: its
+manifest also raises both message buffers, sender and receiver, to `0x8080`,
+which is what lets the sweep go above the default 4,608 bytes at all.
+
+**假設** (1) harmless shorthand, since only one variant was ever run; (2)
+written from memory; (3) every check read only the part of each sentence that
+was there.
+
+**先驗哪個、為什麼** (3), because it is the only one that predicts whether the
+next such sentence is caught, and it is answered by asking what reads each:
+nothing reads the table's row labels — its markers are below the table — and
+the generator compared the sweep's commits and nothing after them.
+
+**根因** (3), with (2) as how they came to be written. Each was compared, where
+it was compared at all, with the part it stated — never with the thing that
+lists the whole.
+
+**教訓** An incomplete statement is found by resolving it against what
+enumerates the whole: the pinned header for a name, the manifest for a list of
+differences. Other prose can share the gap. The row now says
+`SLH-DSA-SHA2-128s`, and the generator refuses to render unless the sweep's
+manifest names a patch and both buffers.
+
+---
+
+### Smaller things, each checked
+
+- **Upstream, at 17:38 UTC on the 29th** (01:38 here): #526 and #527 open, no
+  comments, no reviews, upstream CI 45 of 45 on heads that have not moved, both
+  mergeable and still based on `spdm-emu` `main` `eff07cf`, so no rebase. #496,
+  which overlaps #527 (`docs/upstream/0004-data-transfer-size.md`), has not
+  moved since June. 94773 has not moved since 09-23 17:10 UTC: patchset 3,
+  Verified +1, no Code-Review vote. The first read of the CI results returned
+  403 — the anonymous rate limit, 0 of 60 left — and was taken as no data, not
+  as unchanged, and read again after the reset.
+- **The demo's dry run passed**: `bash harness/demo.sh`, exit 0, last line
+  `ok`, 12.7 s without pauses, and every segment printed what RUNBOOK §11.12
+  says to point at. Run again in a clean clone without private keys, below.
+- **The captions were re-checked by a script, not by eye**: the four tables and
+  figures at six sites, and the one-pager's footer — 142 checks. Flavor and both
+  commits against each run's `manifest.json`, its `BUILD_PIN.txt`, the pin and
+  `flavor_emu_ref()`; SPDM version and algorithms read from the raw
+  `ALGORITHMS` bytes of every capture cited, at offsets taken that day from
+  the pinned `spdm.h`, and compared with `fields.json`, a second route to the
+  same bytes; the command-line files against the manifest's hashes. It found
+  §3's label. The script is not committed: what recurs is already in CI — the
+  markers, and the figures' captions through `mkfigures.py --check` — and what
+  it adds beyond them is §1's gap, which wants a mechanism rather than a
+  one-off.
+- **The printable PDF of the one-pager had lost 73 of its 252 digits** — from
+  its text layer, not from the paper: `pdftotext` read the tamper run's name as
+  `w -tamper- T Z`, and `patchset 3）` as `patchset ）`. It had been printed from
+  HTML that embedded the SVG as an `<img>`, and that route reproduces the text
+  layer line for line; inline SVG, or printing the SVG itself as RUNBOOK §11.12
+  says, keeps all 252. Replaced. Paper was never affected; anything that copies
+  or searches the PDF's text would have been. (The first draft of this entry
+  said *almost all* the digits. It was 73, re-counted before committing.)
+- **`docs/roadmap.md`'s G4 row said 182 bytes** where four other places say
+  152. Both are right — 182 captured, 152 of them SPDM, six 5-byte MCTP headers
+  between them — and the row now says which.
+- **The clean clone, before the status commits** (RUNBOOK §12.1), at `925ff32`,
+  with no private keys, no `study/` and no `plan/`: `verify_repo.sh`, all checks
+  passed; `rats/appraise.py matrix --check`, ok; `c-drills` builds, and its test
+  target runs nothing, because no drill is marked done; the demo ran on
+  `spdm-emu`'s sample chain, said so on screen, and ended `ok`; and the three
+  build trees' `BUILD_PIN.txt` match the committed pins.
+
+### Decisions, both mine
+
+- **The demo video will not be published** once it is recorded: not uploaded,
+  not linked from this repository, shown on request. `harness/demo.sh` is what
+  the repository holds of the demo.
+- **Week 13 stays open** until the recording and the printing are done. Not
+  tonight.
+
+### Not done, and the reason for each
+
+- **Recording the demo, and printing the page.** Mine; not tonight.
+- **A check that binds a `claim` marker to the text beside it**, as
+  `check_claims.py` already does for `xclaim`. Not built: a mechanism over 271
+  markers in five notations wants its own tests and its own day, not the last
+  hour of a week. First in week 14.
+- **Saying it aloud** — three numbers at random and how each was measured, and
+  the story at four lengths (plan §6, Sunday). Mine.
+- **`c-drills`.** Eight drills, no implementations. Mine, always.
+- Day 17's `TODO(me)`. Mine.
