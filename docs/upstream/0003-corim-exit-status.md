@@ -2,14 +2,17 @@
 
 - **Repo:** `DMTF/spdm-emu` (GitHub pull request)
 - **File:** `spdm_emu/spdm_device_verifier_tool/CoRimTool.py`, two lines
-- **Status: PREPARED, NOT SENT, 2026-09-29.** The commit is unsigned; the
-  sign-off and the push are the author's (§6).
+- **Status: SENT, 2026-09-29 —
+  [#526](https://github.com/DMTF/spdm-emu/pull/526).** Signed off and pushed
+  by the author at 15:14 UTC, after the checks in §7 were re-run that hour.
+  DCO green, upstream CI 45 of 45; no review yet.
 - **Found:** 2026-09-12, as ⑤ of the seven findings in the same directory
   ([`README.md`](README.md)), and offered as a follow-up in the description of
   [#524](https://github.com/DMTF/spdm-emu/pull/524), which merged on 2026-09-28
   without anyone answering the offer.
 - **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `corim-exit-status`, commit
-  `1a396c2`, on upstream `main` at `eff07cf` (the `4.0.0-rc2` tag).
+  `1a396c2` as prepared and **`60748b7`** as signed and sent, on upstream `main`
+  at `eff07cf` (the `4.0.0-rc2` tag).
 
 ## 0. Why this one next, and why alone
 
@@ -158,10 +161,26 @@ git push fork corim-exit-status
 
 ## 7. After it is sent
 
-```
-- URL:
-- Opened:
-- Commit:
-- Review round trips:
-- Outcome:
-```
+| | |
+|---|---|
+| URL | <https://github.com/DMTF/spdm-emu/pull/526> |
+| Opened | 2026-09-29 15:14:37 UTC, from `Jhongwe1:corim-exit-status`, title and body §4 byte for byte (checked against the API) |
+| Commit | **`60748b7`**: the prepared `1a396c2` plus the author's `Signed-off-by`. The tree, `b3dcd4b…`, is the same object before and after the sign-off, so the bytes sent are the bytes tested |
+| Checks | DCO success; **45 of 45** check runs success at 16:55 UTC; `mergeable_state` clean |
+| Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
+| Review round trips | 0 so far |
+| Outcome | open |
+
+**What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:
+
+- upstream `main` still `eff07cf`, the commit the branch sits on; both bare
+  `exit()` calls still at lines 181 and 216
+- duplicate search (`CoRimTool`, `exit status`, `exit()`, `cbor2`): only #524
+- all four `Tested:` lines, against `git archive` of `main` and of the branch —
+  the committed file, not a re-applied edit: rc 0/0/0/1 before, 0/1/1/1 after
+- ★ **§4's repro, verbatim, in a fresh virtualenv**, because it is the first
+  thing a reviewer will type: `exit 0` before, `exit 1` after, a good
+  signature still `passed` and 996 bytes. And the sentence about `cbor2`
+  checked the same way: unpinned, `requirements.txt` resolves `cbor2` 6.1.4 and
+  `verify` fails on a good signature
+- `check_upstream_commit.sh`: every rule satisfied once signed

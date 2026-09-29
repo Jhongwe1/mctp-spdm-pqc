@@ -4,14 +4,19 @@
 - **Files:** eight — `spdm_emu_common/{spdm_emu.c,spdm_emu.h,key.c}`, the
   requester and responder `*_spdm.c`, the validator and attester samples'
   `*_spdm.c`, and `doc/spdm_emu.md`. `+78 −7`.
-- **Status: PREPARED, NOT SENT, 2026-09-29.** The commit is unsigned; the
-  sign-off and the push are the author's (§7).
+- **Status: SENT, 2026-09-29 —
+  [#527](https://github.com/DMTF/spdm-emu/pull/527).** Signed off and pushed
+  by the author at 15:14 UTC, seven seconds after 0003, once every `Tested:`
+  line had been re-run that hour (§8). DCO green, upstream CI 45 of 45 —
+  including the two VS2019 builds §5 said this change had never met.
 - **Found:** 2026-09-14, building the DataTransferSize sweep behind Figure 3
   ([`README.md`](README.md) ⑰, [`../pqc-cost.md`](../pqc-cost.md) §9).
 - **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `data-transfer-size-flag`, commit
-  `eb294e4`, on upstream `main` at `eff07cf` (the `4.0.0-rc2` tag). Built and
-  tested in `$LAB_DIR/work/spdm-emu-upstream`; the committed diff has the same
-  `patch-id` as the tested one, `04cda517f2d84454`.
+  `eb294e4` as prepared and **`367414a`** as signed and sent, on upstream `main`
+  at `eff07cf` (the `4.0.0-rc2` tag). Built and tested in
+  `$LAB_DIR/work/spdm-emu-upstream`; the committed diff has the same `patch-id`
+  as the tested one, `04cda517f2d84454` — which ignores whitespace, so the
+  byte-for-byte comparison is the blob hashes in §8.
 
 ## 0. Why it is worth a maintainer's time
 
@@ -153,6 +158,12 @@ from the emulator's own `-v` trace for TCP and NONE, which it cannot capture.
   print `invalid --data_transfer_size …` and the usage. They exit 0, like every
   other invalid option in `process_args()` (candidate 15), deliberately: one
   change should not also change the file's convention.
+  ⚠️ **Corrected on the day of sending.** The run behind the sentence above
+  measured `$(… | head -1); rc=$?` — the exit status of `head`, not of the
+  emulator. Re-measured before the push with the process's own status, on the
+  requester and the responder: 0 for all six, and `42` and `4608` accepted.
+  The sentence was right and its measurement was not; it goes into the pull
+  request only because the second measurement exists.
 
 **Twice in these runs an exit status of 0 was a run that never happened.**
 `--pcap` with `--trans NONE` or `--trans TCP` is refused with the usage and
@@ -259,10 +270,35 @@ git push fork data-transfer-size-flag
 
 ## 8. After it is sent
 
-```
-- URL:
-- Opened:
-- Commit:
-- Review round trips:
-- Outcome:
-```
+| | |
+|---|---|
+| URL | <https://github.com/DMTF/spdm-emu/pull/527> |
+| Opened | 2026-09-29 15:14:44 UTC, from `Jhongwe1:data-transfer-size-flag`, title and body §6 byte for byte (checked against the API) |
+| Commit | **`367414a`**: the prepared `eb294e4` plus the author's `Signed-off-by`; tree `84896f1…` unchanged by the sign-off |
+| Checks | DCO success; **45 of 45** check runs success at 16:55 UTC, `VS2019_mbedtls_build` and `VS2019_openssl_build` among them; `mergeable_state` clean |
+| Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
+| Review round trips | 0 so far |
+| Outcome | open |
+
+**What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:
+
+- ★ **the tested tree is the committed tree, byte for byte.** The first
+  comparison of the two was a `patch-id`, and `git patch-id` ignores whitespace,
+  so it cannot say that. The eight changed files' blob hashes in the commit and
+  in the built working tree were compared instead: 8 of 8 identical, the
+  binaries newer than the newest source edit, the build flags `-Wall -Werror`,
+  and the four "warnings" in its log `lto-wrapper` notices that the unpatched
+  build prints too
+- every run in §3 repeated with those binaries: every byte, packet and
+  `CHUNK_GET` count the same as the first time
+- the invalid-value exit status measured properly (§3, the correction above)
+- ★ **the pull request's last paragraph had no `Tested:` line behind it** —
+  that `--trans NONE` without `CHUNK_CAP` starts once the option is set. NONE
+  cannot be captured, so the requester's `-v` trace was decoded instead:
+  `CAPABILITIES` 1024/1024, six `GET_CERTIFICATE`, `CHALLENGE_AUTH`, and a
+  `MEASUREMENTS` at the end. Without the option it still fails as #358 says
+- duplicate search (`data_transfer_size`, `DataTransferSize`): #358, #329 and
+  #458 only, as in §4. ★ The in-flight scan found **#496** (`jyao1`,
+  `SLOT_MANAGEMENT`, open since 2026-06-04) touching six of this change's eight
+  files. Whichever merges second rebases; that is expected, not a conflict to
+  argue
