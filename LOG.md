@@ -5409,3 +5409,205 @@ each were not, and they are in `0002` §12.
   threads, whose requests patchset 2 met, stay open. No ping before 2026-10-07.
 - **The ninety-second test, and `c-drills`.** Carried from day 15, for the same
   reasons.
+
+## 2026-09-29 · Day 17 · checked against the owner, the evidence and the bytes
+
+Week 13 in one day, in two sittings: the first from 21:00 to 22:45 here, the
+second from 22:45 past midnight, so the last commits are dated the 30th. G7
+closed — #524 was merged on the 28th — and two more changes went out. Most of
+the day's findings have the shape day 16 named: a fact checked against
+something other than the thing it is about. Four are worth the five parts; the
+rest are a list.
+
+---
+
+### 1. ★ A defect fixed five days before I found it
+
+**現象** Re-reading every unsent upstream candidate at upstream's head, ⑲ —
+`SPDM-Responder-Validator` reporting a valid signature as FAIL in four
+`CHALLENGE_AUTH` cases — turned out to be fixed on the suite's own `main`:
+`65bcccc` and `ad6db5c`, authored 2026-09-07 and 09-14, merged 09-15. I wrote it
+up on 09-20, and every freshness check after that said it was still there.
+
+**假設** (1) the fix sat on a branch and had not reached `main`; (2) it landed
+after my last check; (3) my checks read something other than the suite's
+`main`.
+
+**先驗哪個、為什麼** (3), because it is the only one that says something about my
+checks rather than about upstream, and it is settled in a minute from my own
+scripts: which URL did each freshness check fetch?
+
+**根因** (3). Every check read `spdm-emu`'s submodule pointer to the suite,
+`c27bb1c` — unchanged, true, and the wrong question. A submodule pointer is the
+consumer's decision about when to update, and it lags by design: `c27bb1c` was
+seven weeks old on the day I wrote ⑲ up.
+
+**教訓** ★ **Standing rule 22: a defect in a dependency is checked at the head of
+the repository that owns the code, not at the pointer of the one that consumes
+it.** The duplicate search belongs to the owner too. It is what turned ⑳, found
+while testing 0004, from a new finding into upstream #358, open since 2024.
+
+---
+
+### 2. ★ A one-page summary with two false sentences
+
+**現象** `harness/mkonepager.py` renders `docs/one-pager.svg`, and its draft had
+been left overflowing A4 by 7 px. Before trimming it I read every sentence
+against the repository. Two were false: *the verifier cannot see an attacker's
+higher version number* — `docs/rats-pipeline.md` says in as many words that it
+is not a hole, because the digest rule is AND-ed with the version rule — and
+*every number on this page is read from the evidence*, when #524, the dates and
+the hashes are typed by hand. Three more said more than they had:
+*reproduced three 2026 advisories* (the tests encode the classes), a footer
+naming one build flavor where the sweep ran on `pqc-dts`, and *down to 0* typed
+as a literal. And the overflow guard compared the page with where the last
+paragraph began, not where it ended, with a 5 mm margin no printer keeps.
+
+**假設** (1) carelessness in these sentences only; (2) prose that restates data
+drifts from it because nothing binds the two; (3) the numbers were right and
+only the words were wrong.
+
+**先驗哪個、為什麼** (2), because it predicts where the next error will be — any
+sentence the generator prints without reading anything — and that is checkable:
+every such sentence was listed, and each was traced to a file.
+
+**根因** (2). The false sentences were written from a memory of documents rather
+than from the documents, and the generator had no way to refuse them. The
+DataTransferSize range on the page came from the flags that asked for it, not
+from `CAPABILITIES`: red line 1, on a page this time, though all twelve arms
+agree.
+
+**教訓** ★ **Prose that restates evidence is checked against the evidence before
+it is printed.** The generator now refuses to render (exit 2) when the data
+stops supporting a sentence in it, reads the range back off the captures, and
+measures where the ink ends. And the render is the check the coordinates cannot
+be: the first one showed four Chinese line breaks the width arithmetic could not
+see — a full stop alone on a line, two lines opening with a comma, one ending
+with an opening quote.
+
+---
+
+### 3. ★ The hour before the keystroke
+
+**現象** I asked for the steps to sign and send 0003 and 0004. Before they were
+given, every claim either change made was re-run against the committed
+branches rather than the trees they were prepared in. Three things did not hold
+as recorded, though none changed a result.
+
+**假設** For each recorded fact, one of three: still true; true but never
+measured; false.
+
+**先驗哪個、為什麼** What a reviewer will reproduce first — the pull requests' own
+commands and sentences — because an error there costs the most; then the
+`Tested:` lines; then whether what was built is what would be sent.
+
+**根因**
+- 0004's record said the committed diff had the tested diff's `patch-id`.
+  `git patch-id` ignores whitespace, so it cannot say *byte for byte*. The
+  eight files' blob hashes can, and they matched.
+- 0004 §3's *invalid values exit 0* had been measured as `$(… | head -1);
+  rc=$?` — the exit status of `head`. Measured on the emulator itself it is 0,
+  for all six values, on both programs. Right by accident.
+- The body of #527 said `--trans NONE` without `CHUNK_CAP` starts once the
+  option is set, and no `Tested:` line covered it. NONE cannot be captured, so
+  the requester's `-v` trace was decoded message by message until it reached a
+  `MEASUREMENTS`.
+
+**教訓** Standing rule 19 — run a change's own commit message before sending it —
+reaches further than the commit message: to the pull request's body, and to the
+evidence the record cites for itself. Each of the three was a sentence with no
+instrument behind it, and only one kind of check finds that: running, on the
+day, what the sentence says.
+
+---
+
+### 4. A demo that failed twice before anyone recorded it
+
+**現象** `harness/demo.sh` runs the video's six segments live and checks each
+against the published tables. Its first dry run failed segment 3 with *"no
+MEASUREMENTS response carried a record"*, about a handshake that had completed.
+Fixed, it then failed in the clean-clone re-run with exit 2: *could not stage
+certs/out*.
+
+**假設** For the first: the capture, the decode, or the appraisal's input. For
+the second: the build tree, the chain, or the clone.
+
+**先驗哪個、為什麼** The appraisal's input first, because a completed handshake had
+been appraised as having no evidence, so the capture was fine and the question
+was what the appraisal reads. And the clone second, because the demo passed in
+the tree that wrote it and failed only where nothing uncommitted exists.
+
+**根因** The appraisal reads the record's bytes from `spdm_dump -x` output beside
+the decode — `harness/fields.py` derives the name — and only the decode had been
+made. And a fresh clone has this project's certificates and not their private
+keys, which `.gitignore` keeps out on purpose.
+
+**教訓** A script that checks what it shows turns a dry run into a test, and the
+clean clone finds the failure the author's tree cannot show — the same shape as
+2026-09-12's generated key. The better fix was a question, not a key: which of
+the demo's claims depends on whose chain signs? None — and that was measured, not
+argued: a keyless clone on `spdm-emu`'s sample chain produced every status and
+every verdict the keyed tree did.
+
+---
+
+### Smaller things, each checked
+
+- **⑭ was never true.** Its evidence was a `grep` shortened by hand — twelve
+  lines to six, three cut to `...` — and the cut removed
+  `spdm_requester_spdm.c:179`, the line that disproved it. Measured:
+  `--cap CERT,CHAL` gives `Flags` `0x00000006` against `0x0002f7c6`. Evidence is
+  the command's output, pasted, or it is a paraphrase.
+- **The weekly CI run of 2026-09-28 failed** at the advisory fetch and skipped
+  the libspdm build, while the README's badge still said passing. The rewritten
+  step retries, and says NO DATA (exit 2) or NEW (exit 3) rather than nothing.
+- **The run behind Figure 3 did not name its build**: it ran before its pin was
+  written. `verify_repo.sh` now requires every run behind a published number to
+  name one, and the sweep was re-run on the pinned build, 12 of 12 arms identical.
+- **The figures had never been rendered.** Six overlaps, found by looking.
+  `docs/tamper.md` said the measurement hash was SHA-384; it is SHA-512.
+- **Porting ⑰ to 4.0.0-rc2 found two defects** in this project's own `pqc-dts`
+  patch that the sweep could not reach, and a third rule the first port missed
+  (`docs/upstream/README.md`).
+- **Twice an `exit(0)` made a run that never happened look passed**: `--pcap`
+  with `--trans NONE` or `TCP` prints the usage and exits 0.
+- **libspdm 4.0.0-rc2, 3.8.3 and DMTF-2026-0004** were all published on the 29th.
+  Not re-pinned; that is W14's, and `harness/recheck_upstream.sh` starts it.
+- **The stale-sentence grep** found `docs/limitations.md` still saying *two changes
+  sent, neither merged*. It also found 0002 calling `openbmc/docs` 89452 *in
+  review*; Gerrit says it still is, so that sentence stays.
+- Two passages pointed at private notes in `study/`; both were cut.
+- A commit message was taken from a file that a refused write had left in its
+  earlier state. Amended before the push; the tree unchanged.
+
+### Deviations from the plan
+
+| plan/W13 | what was done | why |
+|---|---|---|
+| the one-pager made in Word, Docs or LaTeX | generated from the evidence, checked byte for byte by CI | a page edited by hand drifts from the numbers it quotes |
+| text on figures in English (CLAUDE.md) | the one-pager is in Chinese | my decision: the people it is handed to read Chinese first. The figure inside it stays English |
+| the plan's wording for the project summary: a full handshake over PCIe DOE, the conformance suite "passed", the post-quantum cost as `GET_CERTIFICATE` round trips, ML-DSA "with ML-KEM" | not used | this repository contradicts all four: DOE carried one `GET_VERSION`; the suite reported eight failures; `GET_CERTIFICATE` is 3 and 3; ML-KEM was negotiated and never used |
+| the demo typed live in three terminals | one scripted terminal that checks itself | a failed command is the most expensive thing in a recording, and a self-checking script makes the dry run a test |
+| `verify.sh`, a list of `curl -s … \| grep` | `harness/recheck_upstream.sh`, three answers | an outage prints nothing, and nothing reads as unchanged |
+| the third timed C round | skipped | my decision: none of the three has been sat, so there is no trend to extend; W14 raises fundamentals to ten hours instead |
+| `LOG.md` at 58 entries | 19, this one included | an entry here is a day with several findings; the count was never the point |
+| 120 commits | 230 | — |
+
+### Who pressed what
+
+I signed off both commits with `git commit --amend -s`, pushed them to my fork
+and opened both pull requests. Each step waited until the assistant had
+verified the one before: the trees unchanged by the sign-off, the fork's refs
+equal to the signed commits, and each pull request's head, title and body read
+back from the API. The one-pager's upstream line was written after the pull
+requests existed, not before.
+
+### Not done, and the reason for each
+
+- **The demo recording and printing the one-pager.** Mine, next.
+- **`c-drills`.** Eight drills, no implementations, and no timed round sat: the
+  largest gap in this repository, and one only I can close.
+- **DMTF-2026-0004's assessment and the re-pin to 4.0.0-rc2.** W14
+  (`docs/advisories.md` §5).
+- `TODO(me)` — one sentence, in my own words, on what the hour before the send
+  changed about how I check a claim.
