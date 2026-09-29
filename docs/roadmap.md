@@ -224,6 +224,20 @@ it does.
     file written from the plan for the file: 0002 said two findings were in a
     README that did not contain them.
 
+22. **A defect in a dependency is checked at the head of the repository that
+    owns the code, not at the pointer of the repository that consumes it.**
+    Upstream candidate ⑲ — a conformance case that reports a valid signature
+    as FAIL — was written up on 2026-09-20, and every freshness check after it
+    confirmed that `spdm-emu`'s submodule pointer, `c27bb1c`, had not moved.
+    That was true and it was the wrong question: the suite's own `main` had
+    fixed the case on 2026-09-15, five days before this project found it. A
+    submodule pointer is the consumer's decision about when to update, and it
+    lags by design. So a candidate is re-read at its owner's head before it is
+    sent (`docs/upstream/README.md`, "Every candidate, re-read at the head"),
+    `harness/recheck_upstream.sh` reads `libspdm`'s own `main` beside
+    `spdm-emu`'s, and the duplicate search runs against the owner too — it is
+    what turned ⑳ from a new finding into upstream's #358.
+
 ## External dates that do not wait
 
 | Date | Event | Affects |
