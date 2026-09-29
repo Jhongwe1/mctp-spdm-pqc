@@ -4,13 +4,18 @@
     python3 harness/check_advisories.py --exposure RUNDIR     print the verdicts
     python3 harness/check_advisories.py --check DOC           verify a document's verdicts
     python3 harness/check_advisories.py --selftest            rule 11: can it still say yes
-    python3 harness/check_advisories.py --refresh             re-fetch the advisories (network)
+    python3 harness/check_advisories.py --refresh             re-fetch the advisories (network):
+                                                              exit 0 read, 2 no data, 3 a new one
 
 WHY A TOOL AND NOT A PARAGRAPH
 ------------------------------
-Three advisories were published against libspdm and DSP0274 in 2026. Two name
-version ranges, and this repository pins two libspdm commits. The tempting
-answer is to compare version strings, and it is wrong in both directions:
+Three advisories were published against libspdm and DSP0274 in 2026 before
+week 11 pinned them, and these three are the ones assessed here. A fourth,
+DMTF-2026-0004, followed on 2026-09-29: it is pinned, --refresh watches it, and
+it is NOT assessed, so --exposure and --check say nothing about it. Two of the
+three name version ranges, and this repository pins two libspdm commits. The
+tempting answer is to compare version strings, and it is wrong in both
+directions:
 
   * a pinned commit is not a release. 4.0.0-rc is not "4.0", and whether the
     fix for a 4.0 advisory is in it is a question about ancestry.
@@ -465,31 +470,107 @@ def cmd_selftest() -> int:
     if len(seen) < 5:
         print("  a selftest that cannot reach every verdict is not a selftest")
         failures += 1
+    print()
+    failures += refresh_selftest()
     return 1 if failures else 0
 
 
-def cmd_refresh() -> int:
-    """Re-fetch the three advisories and report any drift from the pins.
+ADVISORY_API = "https://api.github.com/repos/DMTF/libspdm/security-advisories"
+
+# --refresh exit statuses. Three outcomes, reported as three, because standing
+# rule 20 is that a lookup which did not happen is not a result of any kind.
+REFRESH_READ = 0          # read; drift in a pinned advisory is printed as news
+REFRESH_NO_DATA = 2       # the list could not be read; nothing is concluded
+REFRESH_UNPINNED = 3      # read, and an advisory newer than the pins has no pin
+
+
+class LookupFailed(Exception):
+    """The advisory list could not be read. Not a drift, and not news."""
+
+
+def pinned_advisories() -> list[str]:
+    """Every advisory with a pin, assessed or not: third_party/dmtf-*.pin.
+
+    ADVISORIES above is the ASSESSED set, the one --exposure and --check decide
+    verdicts for. The refresh watches a wider set, because pinning an advisory
+    the day it is published and assessing it are two different acts, and the
+    first should not wait for the second.
+    """
+    return sorted(p.stem.upper() for p in THIRD_PARTY.glob("dmtf-*.pin"))
+
+
+def fetch_advisories(attempts: int = 3, pause: float = 10.0) -> list:
+    """The repository's published advisories, or LookupFailed.
+
+    Retried, because a weekly job that fails on one bad minute of the network
+    teaches everyone to stop reading it. A token is used when the environment
+    offers one: an anonymous GitHub-hosted runner shares its rate limit with
+    everyone else on its address. The list is public, so a refused token is
+    dropped rather than trusted.
+    """
+    import os
+    import time
+    import urllib.error
+    import urllib.request
+
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    last = "no attempt was made"
+    for attempt in range(attempts):
+        headers = {"Accept": "application/vnd.github+json",
+                   "User-Agent": "mctp-spdm-pqc check_advisories"}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        req = urllib.request.Request(ADVISORY_API + "?per_page=100", headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=60) as fh:   # noqa: S310
+                data = json.load(fh)
+            if isinstance(data, list):
+                return data
+            last = f"the response is a {type(data).__name__}, not a list of advisories"
+        except urllib.error.HTTPError as exc:
+            last = f"HTTP {exc.code} {exc.reason}"
+            if exc.code in (401, 403) and token:
+                token = None
+        except (urllib.error.URLError, OSError, ValueError) as exc:
+            last = f"{type(exc).__name__}: {exc}"
+        if attempt + 1 < attempts:
+            time.sleep(pause * (attempt + 1))
+    raise LookupFailed(f"{last} (after {attempts} attempts)")
+
+
+def cmd_refresh(fetch=None) -> int:
+    """Re-fetch the advisories: drift in the pinned ones, and any that are new.
 
     Deliberately not part of `verify`. A pull request should not go red because
     somebody else edited a web page; the weekly `upstream` job runs this, which
     is where a change in the outside world belongs.
+
+    ★ The first version of this could only see the advisories it had pins for,
+    so it could not have noticed the one that mattered most: DMTF-2026-0004,
+    published 2026-09-29, was in the response it fetched every week and was
+    never looked at. And it let a failed fetch escape as a traceback, which on
+    2026-09-28 failed the weekly job in a way that read like drift.
     """
     import hashlib
-    import urllib.request
 
-    url = "https://api.github.com/repos/DMTF/libspdm/security-advisories"
-    req = urllib.request.Request(url, headers={
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "mctp-spdm-pqc check_advisories",
-    })
-    with urllib.request.urlopen(req, timeout=60) as fh:   # noqa: S310
-        records = json.load(fh)
+    fetch = fetch or fetch_advisories
+    try:
+        records = fetch()
+    except LookupFailed as exc:
+        print(f"  NO DATA  the advisory list could not be read: {exc}")
+        print("           a failed lookup is not a drift; nothing is concluded")
+        return REFRESH_NO_DATA
 
+    pinned = pinned_advisories()
+    known: set[str] = set()
+    oldest_pin = None
     drift = 0
-    for name in ADVISORIES:
+    for name in pinned:
         pin = read_pin(name.lower())
         ghsa = pin["ghsa-id"]
+        known.add(ghsa)
+        taken = pin.get("retrieved-at", "")
+        oldest_pin = taken if oldest_pin is None or taken < oldest_pin else oldest_pin
         rec = next((r for r in records if r.get("ghsa_id") == ghsa), None)
         if rec is None:
             print(f"  GONE    {name}: {ghsa} is no longer in the response")
@@ -510,8 +591,68 @@ def cmd_refresh() -> int:
             if was != now:
                 print(f"            {field}: {was} -> {now}")
         drift += 1
-    print(f"\n  {len(ADVISORIES) - drift} unchanged, {drift} drifted")
-    return 0    # drift is news, not a failure
+
+    # Unpinned advisories. One that was already published when the oldest pin
+    # was taken was seen then and left out on purpose (the two from 2023 affect
+    # libspdm 2.3.x). One published since then has not been looked at by anyone.
+    unpinned = [r for r in records if r.get("ghsa_id") not in known]
+    older = [r for r in unpinned if (r.get("published_at") or "") < (oldest_pin or "")]
+    newer = [r for r in unpinned if r not in older]
+    for r in sorted(newer, key=lambda r: r.get("published_at") or ""):
+        print(f"  NEW     {r.get('ghsa_id')}  published {r.get('published_at')}  "
+              f"{r.get('summary')}")
+    if newer:
+        print("          pin it as third_party/dmtf-YYYY-NNNN.pin; assessing it is a "
+              "separate step")
+    print(f"\n  {len(pinned) - drift} unchanged, {drift} drifted, {len(newer)} new "
+          f"and unpinned, {len(older)} older and deliberately unpinned")
+    return REFRESH_UNPINNED if newer else REFRESH_READ    # drift is news, not a failure
+
+
+def refresh_selftest() -> int:
+    """Rule 11 for --refresh, offline: every outcome it can report, provoked.
+
+    The weekly job is the only thing that runs --refresh against the network,
+    and it cannot be exercised from here. So the outcomes are provoked with
+    fabricated responses instead, and each one must come back as itself.
+    """
+    import contextlib
+    import io
+
+    pins = {n: read_pin(n.lower()) for n in pinned_advisories()}
+    real = [{"ghsa_id": p["ghsa-id"], "summary": "as pinned, fields elided",
+             "published_at": p.get("published-at"), "updated_at": p.get("updated-at"),
+             "cve_id": None, "severity": p.get("severity")} for p in pins.values()]
+    one = next(iter(pins.values()))
+
+    def failed():
+        raise LookupFailed("fabricated: HTTP 403 rate limit exceeded (after 3 attempts)")
+
+    cases = [
+        ("the list cannot be read", failed, REFRESH_NO_DATA, "NO DATA"),
+        ("every pin present, content edited", lambda: real, REFRESH_READ, "DRIFT"),
+        ("one pinned advisory missing from the response",
+         lambda: [r for r in real if r["ghsa_id"] != one["ghsa-id"]], REFRESH_READ, "GONE"),
+        ("an advisory published after every pin",
+         lambda: real + [{"ghsa_id": "GHSA-fake-fake-fake", "summary": "fabricated",
+                          "published_at": "2099-01-01T00:00:00Z"}],
+         REFRESH_UNPINNED, "NEW"),
+        ("an advisory older than every pin",
+         lambda: real + [{"ghsa_id": "GHSA-old0-old0-old0", "summary": "fabricated",
+                          "published_at": "2001-01-01T00:00:00Z"}],
+         REFRESH_READ, "1 older and deliberately unpinned"),
+    ]
+    failures = 0
+    for name, fetch, want_rc, want_text in cases:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = cmd_refresh(fetch)
+        ok = rc == want_rc and want_text in out.getvalue()
+        print(f"  {'ok  ' if ok else 'FAIL'}  refresh exit {want_rc}  {name}")
+        if not ok:
+            print(f"        got exit {rc}; wanted the text {want_text!r}")
+            failures += 1
+    return failures
 
 
 def main() -> int:

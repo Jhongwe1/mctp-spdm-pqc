@@ -32,8 +32,9 @@ name: CI
 #                      declared defect variants, and the two runs that assert
 #                      what AddressSanitizer does and does not see
 #   weekly   upstream  the pins still name what they say, libspdm builds from
-#                      the pinned commit and passes its own unit tests, and the
-#                      three advisories have not been edited under us
+#                      the pinned commit and passes its own unit tests, the
+#                      pinned advisories have not been edited under us, and no
+#                      new one has been published without a pin
 #
 # Why `upstream` is weekly and not on every push
 # ----------------------------------------------
@@ -318,12 +319,6 @@ jobs:
           done
           exit $fail
 
-      - name: The three advisories have not been edited under their pins
-        # Drift is news rather than a failure, so this does not gate the build.
-        # What it must not do is go unnoticed, which is the whole reason it runs
-        # somewhere rather than nowhere.
-        run: python3 harness/check_advisories.py --refresh
-
       - name: Clone libspdm at the commit third_party/spdm-emu-pqc.pin names
         run: |
           sha="$(awk -F= '/^libspdm=/{print $2}' third_party/spdm-emu-pqc.pin)"
@@ -358,6 +353,30 @@ jobs:
             fi
           done
 
+      - name: The pinned advisories have not been edited, and none is new
+        # AFTER the build, and run even if the build failed. Until 2026-09-29 it
+        # ran before it, and on 2026-09-28 a fetch that failed ended this step
+        # with a traceback, so the three build steps were skipped and nobody
+        # learned that week whether libspdm still built. The comment above it
+        # said "this does not gate the build". It did.
+        #
+        # Exit 0: the list was read; an edited advisory is printed as news.
+        # Exit 2: the list could not be read. A failed lookup, said as one.
+        # Exit 3: an advisory newer than every pin has no pin. That fails the
+        #         job on purpose: it is the one outcome that means this
+        #         repository's evidence has a gap, and a failed scheduled run is
+        #         what sends somebody a notification. It did not change the
+        #         README badge when it happened on 2026-09-28; the badge was
+        #         fetched and read afterwards, rather than assumed.
+        #
+        # The token only buys a rate limit. The advisory list is public, and
+        # an anonymous runner shares its allowance with everyone else on its
+        # address; the tool drops the token if it is refused.
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 harness/check_advisories.py --refresh
+
       - name: Report
         if: always()
         run: |
@@ -371,8 +390,8 @@ jobs:
             echo "   commits the pins record"
             echo "2. does libspdm still build at that commit, with the flags the"
             echo "   pin says its captures were taken with"
-            echo "3. have the three 2026 advisories been edited since they were"
-            echo "   pinned"
+            echo "3. have the pinned advisories been edited since they were"
+            echo "   pinned, and has a new one been published"
             echo
             echo "1 and 2 are the precondition for sending anything upstream."
             echo "3 is the only thing in this pipeline that can change without"
