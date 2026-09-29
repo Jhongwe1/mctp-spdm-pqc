@@ -36,7 +36,7 @@ needs a date attached to it.
 | Fifth candidate found while writing a proxy | **done** | 2026-09-10 | `spdm-emu`: `command.h` documents the socket payload as starting at the SPDM header when a transport byte precedes it — see below |
 | Sixth through twelfth found by running the published example | **done** | 2026-09-12 | `spdm-emu`'s `spdm_device_verifier_tool` does not work: **seven** findings, and the two that matter are in one function and mask each other — `verify` has never verified a signature, and would accept any signature if only the first were fixed. See below |
 | Thirteenth found while pinning an A/B's control variables | **done** | 2026-09-14 | `spdm-emu`: `--req_asym NONE --req_pqc_asym NONE` parses, echoes back, and then makes the handshake impossible — the responder requires exactly one requester signature algorithm whenever `MUT_AUTH_CAP` is supported, and `--mut_auth NO` does not clear that capability bit. Six packets and a bare status code. See below |
-| Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: `--cap` is parsed by the requester and never read; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
+| Fourteenth through seventeenth, from measuring across the transport | **done** | 2026-09-14 | `spdm-emu`: ~~`--cap` is parsed by the requester and never read~~ *(withdrawn 2026-09-29: never true)*; every invalid argument exits **0**; **no signed operation completes with SLH-DSA** on a default build that ships its sample certificates; and `DataTransferSize` — the parameter that decides round trips — has no flag, for which a 55-line patch with a control exists. See below |
 | Eighteenth and nineteenth, from the official conformance suite | **done** | 2026-09-20 | `spdm-emu`: the validator sample's configuration array and the `SPDM-Responder-Validator` submodule it configures disagree **in both directions** — three implemented cases are never requested, including the only two that test SPDM 1.3, and one requested case does not exist and prints nothing. And `SPDM-Responder-Validator` itself: a case whose message mask omits `GET_CERTIFICATE` reports the device's **valid** signature as FAIL, because the case's own `libspdm_init_connection` freed the chain its setup fetched. **Proved**, not argued — `harness/challenge_verify.py` verifies the disputed signatures against the leaf key after calibrating on the ones the suite accepts. See below |
 | SPDM 1.5 hybrid-PQC public review read, feedback drafted | **done** | 2026-08-31 | [`spdm15-hybrid-feedback.md`](spdm15-hybrid-feedback.md); the WIP itself, 8 pages, `sha256 3e5366a3…` |
 | …submitted to the DMTF Feedback Portal | **not recorded as submitted** | window closed 2026-08-31 | it needed a portal account, and nothing here records it being sent before the public review closed. Kept as a draft; the window is not coming back |
@@ -48,6 +48,10 @@ needs a date attached to it.
 | Patchset 2 | **pushed** | 2026-09-23, 15:59 UTC | 59 lines instead of 130, mode 644, every command in it re-run that day against `32e9f8b`. Prepared **without** `Signed-off-by`, because 89452 says an AI agent must not add one; signed and pushed by the author. The −1 dropped by the copy rule, CI `Verified+1`. [`0002`](0002-openbmc-readme.md) §11–§12 |
 | A second comment from the same owner | **received** | 2026-09-23, 16:05 UTC, under six minutes after the push | Patrick Williams, no vote: *"This is still nothing like any other instructions we have."* Measured against 34 other OpenBMC READMEs: what patchset 2 added — a GCC version, `dbus-run-session`, a virtualenv — appears in 0, 0 and 1 of them, and OpenBMC's CI starts its own `dbus-daemon`, under which the test patchset 2 documented passes. [`0002`](0002-openbmc-readme.md) §12 |
 | Patchset 3 | **sent** | 2026-09-23, 17:08 UTC | 28 lines in the layout the other repositories use; CI `Verified+1`. Caught in the hour before it: a `Tested:` line written before its command ran, and a README sentence the reviewers' own open chain (80267, *"Add libspdm dependency"*) would have made false on merge. Replies to the three open threads **not sent**, by the author's decision on the day. [`0002`](0002-openbmc-readme.md) §12 |
+| ★★ **The first change MERGED** | **done** | 2026-09-28, 14:43 UTC | [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524), merged by **Jiewen Yao** (`jyao1`) six days after it was opened. Two minutes earlier **Steven Bellock** (`steven-bellock`) labelled it `bug` and removed his own review request. Those two are the maintainers `CODEOWNERS` adds to every pull request. No comment and no review from either: the whole exchange is a label and a merge. It landed as **`b015187`**, rebased onto `16119ea`, with tree and message byte-identical to `d7ceeaa` and `CoRimTool.py` at blob `a5762c04…`, the bytes that were tested. It is in the `4.0.0-rc2` tag cut the next day. [`0001`](0001-corim-verify.md) §8 |
+| Every unsent candidate, re-read at upstream's head | **done** | 2026-09-29 | ⑲ had been **fixed upstream five days before this project found it**; ⑱ is half fixed; ⑭ was **never true** and is withdrawn; ⑬ and ⑯ persist on 4.0.0-rc2. And ⑳, found while testing 0004, turned out to be **upstream issue #358, open since 2024** — found by the duplicate search, before it was written up as new. [§ Merged, and every candidate re-read at the head](#merged-and-every-candidate-re-read-at-the-head--2026-09-29) |
+| Two more changes prepared | **prepared, not sent** | 2026-09-29 | ⑤ as [`0003`](0003-corim-exit-status.md), the follow-up #524's own description offered; ⑰ as [`0004`](0004-data-transfer-size.md), rebuilt and re-tested on 4.0.0-rc2, where porting it found two defects in this project's own version of the patch. Both commits are unsigned: the sign-off and the push are the author's |
+| `openbmc/spdm` 94773 | **in review, no movement** | checked 2026-09-29, 13:03 UTC | patchset 3 still current, CI `Verified+1`, no vote, three threads unresolved, last activity 2026-09-23 17:10 UTC. No ping before 2026-10-07, as decided |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -58,9 +62,14 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Nineteen candidates carry evidence. Two were sent. The judgement column is the
-part worth reading, because it records what was **not** sent and why, and that
-is a decision a reviewer never sees.
+Twenty candidates have been recorded. Two were sent and one of those is merged;
+two more are prepared. Two were fixed upstream by the maintainer without this
+project, one of them before this project had found it. One, ⑭, was never true
+and is withdrawn, and one, ⑳, had been reported upstream two years earlier. The judgement column is the part worth reading, because it
+records what was **not** sent and why, and that is a decision a reviewer never
+sees. *Every row was re-read against upstream `main` on 2026-09-29, not against
+the pinned tree it was found in; the section after "Both sent" says why that
+distinction turned out to matter.*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
@@ -70,16 +79,17 @@ is a decision a reviewer never sees.
 | 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | not sent: the library reports it as a warning **by design**, so this is a question about what a sample should teach, not a defect, and it is argued as such or not at all |
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | not sent: two lines of comment. Right for a first change to an unknown repository, overtaken by ② once ② existed |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
-| 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **sent**, #524. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
-| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | not sent, and not bundled: six fixes in a first pull request is how a first pull request does not land, and three of them need a maintainer's call on which form is canonical |
+| 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **prepared** as [`0003`](0003-corim-exit-status.md), 2026-09-29: #524's description had offered it, and at `eff07cf` a forged signature still exits 0. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical |
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
-| 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch |
-| 14 | `DMTF/spdm-emu` | `--cap` is parsed by the requester and never read, and echoed as if it were | a `grep` of every reader of the variable | not sent: two lines either way, queued |
-| 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | not sent: mechanical, queued with 14 as one "argument handling" change |
-| 16 | `libspdm` / `spdm-emu` | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to requester-side signature verification | **not sent, and not sendable yet**: the root cause needs a Debug build this project has not made, and a report without one asks the maintainer to do the work |
-| 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | not sent: the most likely of the nineteen to be wanted. It is a feature, so it waits for the first two to be answered |
-| 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | not sent: belongs with 19 |
-| 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | **the next one to send.** The strongest here, because it comes with a proof rather than a reading, and it goes to a repository that has had no change from this project yet |
+| 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
+| 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
+| 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | not sent: mechanical, and 78 sites at the pin have become 91 at `eff07cf`. It bit this project's own testing of 0004 twice on 2026-09-29: `--pcap` with `--trans NONE` or `TCP` prints the usage and exits 0 |
+| 16 | `libspdm` / `spdm-emu` | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to requester-side signature verification | **not sent, and not sendable yet**: the root cause needs a Debug build this project has not made, and a report without one asks the maintainer to do the work. *Re-run on 4.0.0-rc2, 2026-09-29: S1 still exits 1, P1 exits 0* |
+| 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | **prepared** as [`0004`](0004-data-transfer-size.md), rebuilt on 4.0.0-rc2. Porting it found two defects in this project's version, neither of which the sweep could reach: with `CHUNK_CAP` cleared it advertised a `MaxSPDMmsgSize` larger than its `DataTransferSize`, which the peer rejects (`0x80010005`, measured on the `pqc-dts` build), and on `--trans NONE` it advertised 128 bytes more than asked |
+| 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | **half fixed upstream**, without this project: `eff07cf`, 2026-09-29, registers both `SUCCESS_13` cases, which were the half that mattered. `CERTIFICATE_SIZE_REQ` is still not registered and `CERTIFICATE_SPDM_X509_CERTIFICATE` is still registered and not implemented — `--audit-config`, 83 implemented, 83 registered. Two lines remain |
+| 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | ★ **fixed upstream before this project found it.** `65bcccc` and `ad6db5c`, authored 2026-09-07 and 09-14, on the suite's `main` on 2026-09-15; this row was written on 2026-09-20, against the submodule pointer `c27bb1c`. Not sendable. The fix's own commit message names the mechanism this entry derived, and repairs it the way this entry preferred |
+| 20 | `DMTF/spdm-emu` | `--trans NONE` with `CHUNK_CAP` cleared cannot start | unpatched `eff07cf`: the responder exits 1 before listening and prints nothing, where MCTP with the same capabilities completes. `MaxSPDMmsgSize` is computed from a 128-byte transport overhead NONE does not register, so `DataTransferSize` (4,736) exceeds it, and libspdm's context check requires the opposite. Setting the two equal with 0004's flag, and changing nothing else, makes it start | ★ **already reported upstream**: [#358](https://github.com/DMTF/spdm-emu/issues/358), opened 2024-07-28 by `arugan02`, labelled `bug`, open, with the same error text and the same diagnosis. The reporter offered a pull request and a maintainer answered *"that seems reasonable"*; none arrived. Found by the duplicate search before this row was written as a new finding. What this project adds is narrower: re-confirmed on 4.0.0-rc2, and since the maximum message size with chunking became `0x28000` it reproduces only with `CHUNK_CAP` cleared. 0004 is a workaround, not the fix; the fix is one line once 0004's helper exists, and would go as its own change referencing #358 |
 
 **How the two were chosen**, in the order the criteria were applied: can a
 reviewer verify it from the change alone; would the next person to hit it be
@@ -821,6 +831,39 @@ does not work, and one is a missing knob with a patch attached.
 
 ### ⑭ `--cap` is parsed by the requester and then never read
 
+> ★ **WITHDRAWN 2026-09-29. This section was never true, and it is kept so that
+> what was wrong with it stays visible.**
+>
+> At the pinned commit `5f01d2f`, `spdm_requester_spdm.c` has, at lines 179–180:
+>
+> ```c
+> if (m_use_capability_flags != 0) {
+>     m_use_requester_capability_flags = m_use_capability_flags;
+> }
+> ```
+>
+> They arrived in `ef556a0`, *"Fix issue that the input CAP param is not
+> saved."*, on 2022-12-21. Measured on the pinned `pqc` build rather than read:
+> the requester's `GET_CAPABILITIES` carries `Flags 0x0002f7c6` by default and
+> `0x00000006` with `--cap CERT,CHAL`, and the handshake completes either way.
+>
+> **What went wrong is visible below.** The `grep` output in this section is not
+> the output of a `grep`. Run at `5f01d2f` it returns twelve lines; the block
+> below has six, three of them cut to `...`, and the requester's two lines are
+> among the six that are missing. It was abbreviated by hand, and the sentence
+> after it —
+> *"`spdm_requester_spdm.c` never mentions it"* — was written from the
+> abbreviation. The same claim was then copied into `LOG.md` for 2026-09-14 as
+> one of three instances of a design rule, into `docs/pqc-cost.md` §10 and into
+> a comment in `harness/lib/handshake.sh`, and all three are corrected in place
+> with this date. It was found on 2026-09-29 only because a freshness check
+> re-read every candidate at upstream's head and the line was there.
+>
+> What is still true, and was always the operative reason the week-8 arms pass
+> `--cap` to the responder alone: the two programs validate the names against
+> different tables, so the responder's list is *rejected* by the requester,
+> through `print_usage(); exit(0)` — candidate 15.
+
 `spdm_emu_common/spdm_emu.c:859` parses `--cap` into `m_use_capability_flags`,
 validates every name against a per-program table, and prints the result back:
 
@@ -1019,7 +1062,32 @@ submodule bump produces rather than anyone's mistake.
 **Not submitted.** `DMTF/spdm-emu` takes GitHub pull requests; change ⑲ below
 is on the same repository and should go first or with it.
 
+> **2026-09-29: half of it fixed upstream, without this project.** `eff07cf`,
+> *"Sync latest case from validator."*, the commit the `4.0.0-rc2` tag points
+> at, registers both `SUCCESS_13` cases — the half that mattered, because they
+> were the only SPDM 1.3 coverage — along with ten cases the suite gained since.
+> Re-running `--audit-config` on that tree: 83 implemented, 83 registered, and
+> two lines left, `CERTIFICATE_SIZE_REQ` still unregistered and
+> `CERTIFICATE_SPDM_X509_CERTIFICATE` still registered and not implemented.
+
 ### ⑲ ★ A conformance case reports FAIL for an input it discarded itself
+
+> ★ **2026-09-29: fixed upstream five days before this section was written.**
+> `SPDM-Responder-Validator` `65bcccc`, *"Fix CHALLENGE_AUTH signature verify
+> for A1B2C1/A1B3C1 cases"* (authored 2026-09-07), and `ad6db5c`, the same for
+> the A2 cases (2026-09-14), were on the suite's `main` on 2026-09-15. This
+> section was written on 2026-09-20 against the suite at the commit `spdm-emu`
+> pinned it to, `c27bb1c`, and every freshness check since read that pointer
+> rather than the suite's own `main`. `spdm-emu` picked the fix up on
+> 2026-09-29 (`f1c37e0`, in the `4.0.0-rc2` tag).
+>
+> The fix's commit message states the mechanism below in one sentence —
+> *"libspdm_verify_challenge_auth_signature() needs the peer cert chain cached
+> in spdm_context, but these cases skip GET_CERTIFICATE on the fresh
+> re-initialized connection"* — and it repairs it the way option (1) below
+> proposes: the chain captured during setup is put back into the context. So
+> the diagnosis was right and was not first. It is kept as evidence of the
+> first, and it is not sendable.
 
 `SPDM-Responder-Validator`,
 `library/spdm_responder_conformance_test_lib/spdm_responder_test_6_challenge_auth.c`.
@@ -1164,6 +1232,98 @@ The PR page says `1 commit`, `1 file changed`, `+3 −2`, and shows lines 206–
 rather than the whole file — the same claim, reached by somebody else along a
 different path. `docs/roadmap.md` standing rule 12 was written about two
 implementations of CoRIM; it applies to this.
+
+## Merged, and every candidate re-read at the head — 2026-09-29
+
+### #524, as it landed
+
+Read from the GitHub API at 13:03–13:08 UTC, not from the notification:
+
+| | sent | landed |
+|---|---|---|
+| commit | `d7ceeaa` | **`b015187`**, on `main` |
+| parent | `16119ea` | `16119ea` |
+| author / committer | Chung-Wei Lan / Chung-Wei Lan | Chung-Wei Lan / **Jiewen Yao**, 2026-09-28 14:43:19 UTC |
+| tree | `b618c153…` | `b618c153…` |
+| message | — | byte-identical, `Signed-off-by` and `Assisted-by` included |
+| `CoRimTool.py` blob | `a5762c04…`, the bytes `rats/interop.sh` tested | `a5762c04…`, and the blob upstream `main` serves today |
+| tag | — | in `4.0.0-rc2` (`eff07cf`, 2026-09-29), which is three commits ahead of it and none behind |
+
+What the review consisted of: at 14:41:46 UTC Steven Bellock removed his own
+review request, at 14:41:54 he added the label `bug`, and at 14:43:20 Jiewen Yao
+merged. No comment, no review, no requested change. So this record can say what
+was accepted and cannot say why. The one reading it supports is that a change
+carrying its own reproduction and its own negative test did not need a
+conversation; that is an inference, and it is labelled as one. The description
+also offered two follow-ups, the exit status and the `cbor2` bound, and nobody
+answered that either. The first is now prepared as
+[`0003`](0003-corim-exit-status.md).
+
+### Every candidate, re-read at the head of the repository that owns it
+
+The freshness checks of 2026-09-20 and 09-22 read `DMTF/spdm-emu`'s `main`. For
+`SPDM-Responder-Validator` and `libspdm` they read the commit `spdm-emu` pinned
+them to, never their own `main`. That difference decided ⑲. So every unsent
+candidate was re-read today at the head of the repository that owns its code,
+and where a build could answer, on a build of that head (`spdm-emu` `eff07cf`
+with `libspdm` `a6994ee` and the suite at `7acde98` — the `4.0.0-rc2` tags).
+
+| # | at the pin | at the head, 2026-09-29 | now |
+|:-:|---|---|---|
+| 2 | help omits `CHUNK`, `EP_INFO_SIG` (and `MEL` for the responder) | help text and defaults unchanged | live |
+| 3 | slot-0 read result discarded | `res` still overwritten by the slot 1 and slot 4 reads before it is tested | live |
+| 4 | `NO_AUTHORITY` never inspected | connection path unchanged | a design question |
+| 5 | `command.h`: "starting from SPDM_HEADER" | unchanged | live |
+| 6, 8–11 | the verifier tool | `CoRimTool.py` changed only by #524; `requirements.txt` still unbounded; the sample policy still Rego v0 | ⑤ prepared as 0003 |
+| 13 | the exactly-one requester signature rule | the same rule in libspdm 4.0.0-rc2 | live |
+| 14 | "the requester never reads `--cap`" | it has read it since 2022 | **withdrawn** |
+| 15 | 78 `exit(0)` | 91 | live |
+| 16 | SLH-DSA S1 exits 1 | exits 1 on 4.0.0-rc2 as well | live, not sendable |
+| 17 | no `DataTransferSize` flag | none | prepared as 0004 |
+| 18 | four mismatches | two | half fixed upstream |
+| 19 | the suite at `c27bb1c` | fixed on the suite's `main` on 2026-09-15 | **fixed before found** |
+| 20 | — | NONE without `CHUNK_CAP` cannot start | **not new**: upstream #358, open since 2024-07-28 |
+
+★ **What ⑲ teaches: a defect in a dependency is checked at the head of the
+repository that owns the code, not at the pointer of the repository that
+consumes it.** A submodule pointer is the consumer's decision about when to
+update, and it lags by design: `c27bb1c` was seven weeks old on the day ⑲ was
+written, and the fix had been on the suite's `main` for five of those days. Every freshness check this
+project ran on ⑲ confirmed that `spdm-emu` had not moved its pointer. That was
+true, and it was the wrong question.
+
+★ **What ⑭ teaches, which is older than this week and should have been caught
+before it: evidence is the command's output, pasted, or it is a paraphrase.** The
+`grep` in § ⑭ was shortened by hand, the shortening dropped the two lines that
+disproved the sentence under it, and three other files repeated that sentence
+for fifteen days.
+
+### Porting ⑰ found two defects in this project's own patch
+
+`transport/data-transfer-size.patch` is what produced the `pqc-dts` flavor and
+Figure 3, and it was written against `5f01d2f`. Rebuilding it on `eff07cf` meant
+reading every line again, and two were wrong:
+
+1. **Without `CHUNK_CAP` it advertised a `MaxSPDMmsgSize` larger than its
+   `DataTransferSize`.** DSP0274 1.4.1 requires the two to be equal when an
+   endpoint does not support the Large SPDM message transfer mechanism, and
+   libspdm's requester refuses the `CAPABILITIES` that breaks it. Measured on
+   the `pqc-dts` build: responder without `CHUNK_CAP` at 1024 advertises
+   `1024/32768`, and the requester stops with `0x80010005`.
+2. **On `--trans NONE` it advertised 128 bytes more than it was asked for**,
+   because NONE registers no transport header or tail. The patch's own comment
+   admitted this and relied on the harness to catch it.
+
+Neither reaches the published evidence: every arm of the sweep runs over the
+MCTP-framed socket with `CHUNK_CAP` on both sides, and each arm's
+`DataTransferSize` is read back off the wire and compared. They are recorded in
+[`../../transport/README.md`](../../transport/README.md) beside the patch, which
+is left as it is because it is what the evidence was made with. The version in
+0004 fixes both, and fixing the first surfaced a third rule the old patch never
+met: libspdm also requires `MaxSPDMmsgSize` to be at least the sender's data
+transfer size, so without chunking the sender buffer has to follow as well.
+The first build of 0004 missed that too, and its responder exited silently until
+the sender buffer followed.
 
 ## Three identity traps, all of which are silent until they are not
 

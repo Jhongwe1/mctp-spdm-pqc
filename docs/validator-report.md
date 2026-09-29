@@ -172,7 +172,9 @@ cases; it ran 70 and one of them is imaginary.
 ★ **So a clean conformance report from this sample says nothing about the
 responder's behaviour above SPDM 1.2 — and not because the suite cannot reach
 it. Three lines of a configuration array are the difference.** This is
-[upstream candidate 18](upstream/README.md).
+[upstream candidate 18](upstream/README.md). *(2026-09-29: the maintainer
+registered both `SUCCESS_13` cases in `eff07cf`, the `4.0.0-rc2` tag, without
+this project; `--audit-config` on that tree finds two of the four lines left.)*
 
 `harness/validator_report.py --audit-config` reads both files and recomputes
 that table, so it is a check rather than a paragraph.
@@ -415,6 +417,12 @@ signatures over those shorter transcripts are good.
 > [upstream candidate 19](upstream/README.md), and it is the strongest one this
 > project has: a conformance suite reporting a conforming device as
 > non-conforming, with the proof attached.
+>
+> *2026-09-29: the suite's maintainer had already fixed it, on its `main` on
+> 2026-09-15 — five days before this section was written against the older
+> commit `spdm-emu` pins. The fix's commit message names the same mechanism, so
+> the diagnosis stands and the priority does not; the upstream record has the
+> commits and what the late discovery taught.*
 
 ### 5.3 The classification, which is the point of the exercise
 

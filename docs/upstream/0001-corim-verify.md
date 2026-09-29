@@ -3,8 +3,9 @@
 - **Repo:** `DMTF/spdm-emu` (GitHub pull request)
 - **File:** `spdm_emu/spdm_device_verifier_tool/CoRimTool.py`, two lines in one
   function
-- **Status: SUBMITTED, 2026-09-22** —
-  <https://github.com/DMTF/spdm-emu/pull/524>. See §8.
+- **Status: MERGED, 2026-09-28** —
+  <https://github.com/DMTF/spdm-emu/pull/524>, as `b015187` on `main`, and in
+  the `4.0.0-rc2` tag. Sent 2026-09-22. See §8.
 - **Found:** 2026-09-12, by running the tool's own published example verbatim
   before connecting anything of this project's to it.
 - **Branch:** `$LAB_DIR/work/spdm-emu-pr`, `corim-verify-public-key`, **rebased
@@ -348,11 +349,25 @@ a week later is a URL nobody can attach to a reviewer's first comment.
              jyao1 and steven-bellock
 - CI result: DCO  completed  success.  No other check ran against a
              Python-only change; the combined status stayed pending.
-- Review round trips:
-    Patchset 1 -> TODO(me)
+- Review round trips: none.  2026-09-28 14:41:46 UTC steven-bellock
+             removed his own review request; 14:41:54 labelled it `bug`;
+             14:43:20 jyao1 merged.  No comment and no review, before or
+             after.
+- Landed:   b015187 on main, parent 16119ea, committer Jiewen Yao.
+            Tree b618c153, message and CoRimTool.py blob a5762c04
+            byte-identical to what was sent.  In tag 4.0.0-rc2 (eff07cf),
+            cut 2026-09-29.
 - What I learned from this review, specifically: TODO(me)
-- Outcome: open
+- Outcome: MERGED, 2026-09-28, six days after it was opened.
 ```
+
+Checked on 2026-09-29 from the GitHub API, not from the notification: the
+merged commit's tree, message and file blob against the sent commit's, and the
+tag's ancestry against the merge. `README.md` in this directory has the table.
+
+The follow-up this pull request's description offered — *`verify` calls bare
+`exit()` on failure* — was still true at `eff07cf`, and is prepared as
+[`0003`](0003-corim-exit-status.md).
 
 ### What GitHub said back, checked rather than assumed
 
