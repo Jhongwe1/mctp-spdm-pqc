@@ -391,6 +391,65 @@ else
     bad "a run directory has no manifest.json (see docs/decisions/0003)"
 fi
 
+step "every run a published number is derived from names its build"
+# The step above asks whether a manifest exists. It never asked what the
+# manifest SAID, and on 2026-09-29 one said "upstream.pin = MISSING — results
+# depending on pqc-dts cannot be attributed": the DataTransferSize sweep behind
+# Figure 3 and five claims ran sixteen minutes before that flavor's pin was
+# written, so prov_pin had nothing to copy and recorded the gap honestly. For
+# fifteen days a check that reads the file's existence passed a file whose own
+# text refused attribution.
+#
+# So: every run a claim derives a number from, and every run a figure is drawn
+# from, must carry upstream commits and no MISSING value. A run nothing derives
+# from may say MISSING (the rejected sweep does, and is kept as the evidence
+# that its check rejects); it is listed, not failed.
+python3 - <<'PY'
+import json, pathlib, re, sys
+
+claims = json.loads(pathlib.Path("bench/claims.json").read_text(encoding="utf-8"))
+used = set()
+def walk(o):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if k == "capture" and isinstance(v, str):
+                m = re.match(r"bench/data/([^/]+)/", v)
+                if m:
+                    used.add(m.group(1))
+            walk(v)
+    elif isinstance(o, list):
+        for v in o:
+            walk(v)
+walk(claims.get("claims", {}))
+# The figures draw from the newest run matching these, harness/mkfigures.py.
+for pattern in ("*-tamper-*", "w8-pqc-matrix-*", "w8-dts-sweep-*"):
+    runs = sorted(pathlib.Path("bench/data").glob(pattern))
+    if runs:
+        used.add(runs[-1].name)
+
+problems, listed = [], []
+for man in sorted(pathlib.Path("bench/data").glob("*/manifest.json")):
+    run = man.parent.name
+    d = json.loads(man.read_text(encoding="utf-8"))
+    up = d.get("upstream", {})
+    bad = [f"{k}={v[:48]}" for k, v in up.items() if isinstance(v, str) and v.startswith("MISSING")]
+    if not bad and not (up.get("spdm_emu") and up.get("libspdm")) and run in used:
+        bad.append("no upstream spdm_emu / libspdm commit")
+    if bad and run in used:
+        problems.append(f"{run}: {'; '.join(bad)}")
+    elif bad:
+        listed.append(run)
+for p in problems:
+    print("  UNNAMED BUILD  " + p)
+for r in listed:
+    print(f"  (not derived from, so not failed) {r}")
+print(f"  {len(used)} run(s) a published number or figure is derived from, "
+      f"{len(problems)} without a named build")
+sys.exit(1 if problems else 0)
+PY
+[ $? -eq 0 ] && good "every run behind a published number names the build that produced it" \
+             || bad "a published number rests on a run whose manifest cannot name its build"
+
 step "every artifact still hashes to what its manifest signed for"
 # A manifest lists each artifact with its SHA-256. Three things can break that
 # promise, and only the first one is obvious:
