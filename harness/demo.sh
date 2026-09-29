@@ -199,9 +199,23 @@ if segment 1 "scope" "0:00-0:20"; then
 fi
 
 # The chain and the clean fixture are needed by 2 and 3.
+#
+# This project's own chain when it can be staged — which is the chain Table 1
+# was measured on. A fresh clone cannot stage it: the certificates are
+# committed and the private keys are not (.gitignore excludes *.key, and
+# certs/stage_chain.sh says why). The clean-clone re-run of 2026-09-29 found
+# this script exiting 2 there. No claim below depends on whose chain signs —
+# the two statuses come from a flipped byte, the record digests from the
+# fixture, and the verdicts compare measurement records, not certificates — so
+# instead of generating keys into someone's checkout, it runs on spdm-emu's own
+# sample chain and says so on screen.
 if [ -z "$ONLY" ] || [ "$ONLY" = 2 ] || [ "$ONLY" = 3 ]; then
-    CLEAN_DIR="$(bash "${REPO_ROOT}/certs/stage_chain.sh" "$FLAVOR" 2>/dev/null)" \
-        || { printf 'demo: could not stage certs/out (see certs/stage_chain.sh)\n' >&2; exit 2; }
+    if CLEAN_DIR="$(bash "${REPO_ROOT}/certs/stage_chain.sh" "$FLAVOR" 2>/dev/null)"; then
+        CHAIN_NOTE="this project's own three-level chain (certs/out)"
+    else
+        CLEAN_DIR="$BIN"
+        CHAIN_NOTE="spdm-emu's sample chain — this checkout has no private keys for certs/out"
+    fi
     python3 "${REPO_ROOT}/device/gen_measurements.py" --out "${S}/clean.measurements.bin" \
         > "${S}/clean.fixture.txt" 2>&1 || { printf 'demo: could not write the fixture\n' >&2; exit 2; }
 fi
@@ -210,6 +224,7 @@ if segment 2 "one byte, in flight" "0:20-1:30"; then
     gap
     say "The requester asks the device for its measurements; the device signs them."
     say "A proxy on the link can change one byte of the answer."
+    dim "  chain: ${CHAIN_NOTE}"
     gap
     show "requester → proxy → responder, nothing changed"
     handshake control "$CLEAN_DIR" "${S}/clean.measurements.bin" --passthrough
