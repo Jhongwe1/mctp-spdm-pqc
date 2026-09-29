@@ -1,0 +1,65 @@
+advisory=DMTF-2026-0004
+ghsa-id=GHSA-7vfm-9mfh-j8p5
+cve-id=NONE
+summary=libspdm_x509_verify_cert_chain() does not verify CA nameConstraints / pathLenConstraint
+cwe=CWE-295 Improper Certificate Validation
+severity=medium
+cvss-version=3.1
+cvss-score=4.4
+cvss-vector=CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:C/C:L/I:L/A:N
+published-at=2026-09-29T07:51:49Z
+updated-at=2026-09-29T07:53:28Z
+url=https://github.com/DMTF/libspdm/security/advisories/GHSA-7vfm-9mfh-j8p5
+api=https://api.github.com/repos/DMTF/libspdm/security-advisories
+in-global-advisory-database=no
+affected=libspdm, all versions up to 3.8.2
+patched=libspdm 3.8.3 and 4.0
+patch-pr-4.0=https://github.com/DMTF/libspdm/pull/3902
+patch-commit-4.0=7e7909db8cd034be8bc8e04f98204e32688377b1
+patch-pr-3.8.3=https://github.com/DMTF/libspdm/pull/3914
+patch-commit-3.8.3=8d405afc200ab63a075fce4a085c211091494053
+site=os_stub/cryptlib_openssl/pk/x509.c and os_stub/cryptlib_mbedtls/pk/x509.c, libspdm_x509_verify_cert_chain()
+precondition-1=a name- or path-constrained multi-tier PKI under the pinned root
+precondition-2=an attacker holding a valid issuer credential under the constrained node
+precondition-3=a measurement policy that identity impersonation alone satisfies
+assessed=no
+sha256=72394624740aa31b98063ac646b178c40d1db2eaa678739339f92fd054259005
+bytes=4896
+retrieved-at=2026-09-29T13:56:16Z
+quoted-in=docs/advisories.md
+consumed-by=harness/check_advisories.py
+# ★ PINNED, NOT ASSESSED.
+#
+# Published 2026-09-29, eight days after the other three were pinned and on the
+# day this project's week-13 summary was being written. It is pinned the same
+# day so that the weekly job watches it for drift like the others, and so that
+# "three advisories" stops being a sentence about all of them.
+#
+# What is NOT here, on purpose: a verdict. The other three were each decided
+# five ways (harness/run_exposure.sh) and the verdicts are asserted by
+# check_advisories.py --check against docs/advisories.md. This one has had two
+# of those five, read by hand on the day:
+#
+#   ANCESTRY  the fix for 4.0 is PR #3902, merged 2026-09-22 as 7e7909d. The
+#             `pqc` flavor pins libspdm 8a92317, the 4.0.0-rc tag of
+#             2026-08-04, which is older than the fix; `stable` pins 3.8.0,
+#             and the fix for that line arrived in 3.8.3. Neither pinned tree
+#             carries it.
+#   CHAIN     this project's own chain (certs/out/) has CA:TRUE on the root and
+#             the intermediate and NO pathLenConstraint and NO nameConstraints
+#             on either — precondition 1 does not hold for any capture made with
+#             it. DMTF's sample chains, which the matrix arms use, are a
+#             separate question and were not read.
+#
+# Two observations are not a verdict, and a document that printed one from them
+# would be doing exactly what standing rule 21 is about. The assessment is
+# week 14's first task.
+#
+# THE ADVISORY'S OWN LIMIT, worth repeating wherever it is cited: the mbedtls
+# back end is not fully mitigated even in the patched releases, because mbedtls
+# does not enforce nameConstraints (Mbed-TLS/mbedtls#8759). This project links
+# the OpenSSL back end.
+#
+# NOT IN GITHUB'S GLOBAL ADVISORY DATABASE; https://github.com/advisories/
+# GHSA-7vfm-9mfh-j8p5 returned 404 on 2026-09-29. url= above is the one that
+# resolves. Not vendored, for third_party/dmtf-2026-0002.pin's reason.

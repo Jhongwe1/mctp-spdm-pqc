@@ -5,6 +5,9 @@
 > advisories are published, and all three are fixed upstream. What is new here
 > is the checking: what the identifiers actually resolve to, and whether the
 > two trees this repository pins carry the fixes.
+>
+> *A fourth, DMTF-2026-0004, was published on 2026-09-29. It is pinned and it
+> is not assessed; §5 says what is known and what is not.*
 
 <!-- exposure: bench/data/w11-exposure-20260921T190638Z -->
 
@@ -322,4 +325,51 @@ specification instead.
 - **Not automatic.** `--refresh` re-fetches the advisories and reports drift
   against the pins, and it runs in the weekly `upstream` job rather than in
   `verify`, because a pull request should not go red because somebody else
-  edited a web page.
+  edited a web page. *(2026-09-29: it now also reports an advisory that has no
+  pin, which the first version could not see at all — §5.)*
+
+---
+
+## 5. A fourth advisory, pinned on the day and not assessed — 2026-09-29
+
+**DMTF-2026-0004**, [GHSA-7vfm-9mfh-j8p5](https://github.com/DMTF/libspdm/security/advisories/GHSA-7vfm-9mfh-j8p5):
+*`libspdm_x509_verify_cert_chain()` does not verify CA `nameConstraints` /
+`pathLenConstraint`.* Published 07:51 UTC on 2026-09-29, eight days after the
+three above were pinned, and alongside `libspdm` 3.8.3 and 4.0.0-rc2, both of
+which carry the fix. Pinned the same day as
+[`third_party/dmtf-2026-0004.pin`](../third_party/dmtf-2026-0004.pin),
+retrieval digest
+`72394624740aa31b98063ac646b178c40d1db2eaa678739339f92fd054259005`.
+
+| | |
+|---|---|
+| affected / patched | all versions up to 3.8.2 / 3.8.3 and 4.0 — fix [#3902](https://github.com/DMTF/libspdm/pull/3902) on `main` (2026-09-22) and [#3914](https://github.com/DMTF/libspdm/pull/3914) on `release-3.8` |
+| score | CVSS 3.1 **4.4**, `AV:N/AC:H/PR:H/UI:N/S:C/C:L/I:L/A:N`, CWE-295, medium, **no CVE** |
+| GitHub's global advisory database | 404, like the other three |
+| its own preconditions | a name- or path-constrained multi-tier PKI under the pinned root; an attacker holding a valid issuer credential below the constrained node; a measurement policy that identity impersonation alone satisfies |
+| its own limit | the mbedtls back end stays unmitigated even when patched, because mbedtls does not enforce `nameConstraints` |
+
+**What is known about this project's builds, and it is not a verdict.** Two of
+the five observations `harness/run_exposure.sh` makes, read by hand:
+
+- **Ancestry.** `pqc` pins `libspdm` `8a92317`, the 4.0.0-rc tag of
+  2026-08-04; the fix merged on 2026-09-22. `stable` pins 3.8.0; the fix
+  reached that line in 3.8.3. Neither pinned tree carries it.
+- **This project's chain.** `certs/out/` has `CA:TRUE` on the root and the
+  intermediate and no `pathLenConstraint` and no `nameConstraints` anywhere, so
+  the first precondition is absent from every capture made with it. DMTF's
+  sample chains, which the week-8 matrix uses, were not read.
+
+A verdict from two observations would be exactly what standing rule 21 exists
+to stop. The assessment is week 14's, and the experiment worth doing is the
+one this project is built for: a chain whose intermediate carries
+`pathLenConstraint=0` and still issues a CA, served to the `pqc` build and to a
+4.0.0-rc2 build, and the two verdicts compared off the wire.
+
+★ **Why the weekly job never mentioned it.** `--refresh` fetched the whole
+advisory list every week and then looked only at the three records it had pins
+for. DMTF-2026-0004 was in the response and nothing read it. It now reports any
+advisory newer than the oldest pin as `NEW` and fails the weekly job until one
+is added. The same run also found that the job itself had failed the day before
+— a fetch that raised a traceback, which skipped the libspdm build that week —
+and `LOG.md` for 2026-09-29 has both.
