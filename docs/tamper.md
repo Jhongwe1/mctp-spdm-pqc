@@ -42,11 +42,18 @@ differs is named in the row and nothing else.
 | **3** | a certificate the **device serves** | before it is sent | **the device itself** | no `CERTIFICATE` was ever sent | `8001000a` `ERROR_PEER` |
 | 3b | *whose* chain it is, not its bytes | before it is sent | the requester's authority check | **handshake completed** | none — it is a **warning** |
 
-**Caption.** `spdm-emu` `5f01d2f` / `libspdm` `8a92317` (`4.0.0-rc`), plus
-[`device/meas-from-file.patch`](../device/meas-from-file.patch); SPDM **1.4**;
-`ECDSA_ECC_NIST_P384` with `SECP_384_R1`, read back from the `ALGORITHMS`
-response rather than from the flags; measurement hash `SHA_384`, also read
-back. Every arm:
+**Caption.** Flavor `pqc`: `spdm-emu` `5f01d2f` / `libspdm` `8a92317`
+(`4.0.0-rc`), plus [`device/meas-from-file.patch`](../device/meas-from-file.patch);
+SPDM **1.4**; <!--claim algorithms.negotiated.Asym=ECDSA_P384-->`ECDSA_ECC_NIST_P384`
+with <!--claim algorithms.negotiated.DHE=SECP_384_R1-->`SECP_384_R1` and base
+hash <!--claim algorithms.negotiated.Hash=SHA_384-->`SHA_384`, read back from
+the `ALGORITHMS` response rather than from the flags; measurement hash
+<!--claim algorithms.negotiated.MeasHash=SHA_512-->**`SHA_512`**, also read
+back, and now re-derived from the capture by the same check as every other
+number on this page. *(Corrected 2026-09-29: this
+said `SHA_384`, which is the base hash. `README.md`'s copy of this caption was
+corrected on 2026-09-23 and this one was not.)* Every arm's full command line
+is in the run's `manifest.json`; in outline:
 
 ```
 spdm_responder_emu --exe_conn DIGEST,CERT,CHAL,MEAS --exe_session NO_END \

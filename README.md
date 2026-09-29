@@ -32,13 +32,17 @@ both open. The full record, including a −1 and what it changed, is in
 | 3 | a certificate the device serves | the device itself | no `CERTIFICATE` is ever sent | `8001000a` `ERROR_PEER` |
 | 3b | whose chain it is, not its bytes | the requester's authority check | handshake completes | only a warning |
 
+<!-- capture: bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt -->
 _Table 1, condensed from [`docs/tamper.md`](docs/tamper.md). Rows 2a and 2b
 print the same status for opposite reasons, and row 1 is invisible to SPDM by
-design, which is why the verifier exists. SPDM 1.4, ECDSA P-384 with SHA-384,
-measurements hashed with SHA-512 — read back from `ALGORITHMS` in the control
-capture rather than from the flags.
-`spdm-emu` `5f01d2f` and `libspdm` `8a92317` (4.0.0-rc) with this project's
-measurement-source patch. Captures and manifests:
+design, which is why the verifier exists. SPDM 1.4,
+<!--claim algorithms.negotiated.Asym=ECDSA_P384-->ECDSA P-384 with
+<!--claim algorithms.negotiated.Hash=SHA_384-->SHA-384, measurements hashed with
+<!--claim algorithms.negotiated.MeasHash=SHA_512-->SHA-512 — read back from
+`ALGORITHMS` in the control capture rather than from the flags.
+The `pqc` flavor, `spdm-emu` `5f01d2f` and `libspdm` `8a92317` (4.0.0-rc), with
+this project's measurement-source patch. Captures, and every command line in
+the run's manifest:
 [`bench/data/w5-tamper-20260910T092621Z/`](bench/data/w5-tamper-20260910T092621Z/)._
 
 ## Check it in five minutes
@@ -272,6 +276,11 @@ algorithm read back from the capture of every arm:
 |---|--:|--:|
 | NIST category 3: ML-DSA-65 ÷ ECDSA P-384 | <!--xclaim pqc_handshake_ratio_level3_meas_op_all=8.99-->8.99× | <!--xclaim pqc_handshake_ratio_level3_meas_op_one_by_one=6.01-->6.01× |
 | NIST category 5: ML-DSA-87 ÷ ECDSA P-521 | <!--xclaim pqc_handshake_ratio_level5_meas_op_all=10.91-->10.91× | <!--xclaim pqc_handshake_ratio_level5_meas_op_one_by_one=7.55-->7.55× |
+
+_Table 2. The `pqc` flavor, `spdm-emu` `5f01d2f` and `libspdm` `8a92317`
+(4.0.0-rc), one build for every arm; SPDM 1.4; each arm's algorithms read back
+from `ALGORITHMS`. Every arm's full command line is its `<arm>.cmdline.txt` in
+[`bench/data/w8-pqc-matrix-20260914T131557Z/`](bench/data/w8-pqc-matrix-20260914T131557Z/)._
 
 Each signature length is the difference between two message sizes, and every
 one lands exactly on its FIPS 204, FIPS 205 or SEC 1 size. The certificate chain

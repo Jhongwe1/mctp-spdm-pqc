@@ -51,11 +51,12 @@ answer neither question.
 ## 2. Table 2 — the measured cost
 
 Run [`bench/data/w8-pqc-matrix-20260914T131557Z`](../bench/data/w8-pqc-matrix-20260914T131557Z),
-2026-09-14. `spdm-emu` 4.0.0-rc `5f01d2f` / libspdm `8a92317`, **OpenSSL 3.5.5
-vendored and statically linked** (`third_party/spdm-emu-pqc.pin`), SPDM 1.4,
-`--meas_op ALL`, eighteen control variables pinned, twelve negotiated algorithm
-groups read back off the wire and asserted per arm. Every cell comes from
-`bench/pcapstat.py` reading the capture named in the run directory.
+2026-09-14. Flavor `pqc`: `spdm-emu` 4.0.0-rc `5f01d2f` / libspdm `8a92317`,
+**OpenSSL 3.5.5 vendored and statically linked** (`third_party/spdm-emu-pqc.pin`),
+SPDM 1.4, `--meas_op ALL`, eighteen control variables pinned, twelve negotiated
+algorithm groups read back off the wire and asserted per arm. Every cell comes
+from `bench/pcapstat.py` reading the capture named in the run directory, and
+every arm's full command line is the `<arm>.cmdline.txt` beside it.
 
 | arm | chain bytes | signature bytes | CHALLENGE_AUTH | MEASUREMENTS | total bytes | round trips | of which chunk | VCA bytes |
 |:--|--:|--:|--:|--:|--:|--:|--:|--:|
