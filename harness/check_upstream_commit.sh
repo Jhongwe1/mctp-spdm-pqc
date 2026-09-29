@@ -581,6 +581,36 @@ Change-Id: I0123456789abcdef0123456789abcdef01234567}"
     mode_case "a script added as 100755, with #!" 0 run.sh '#!/bin/sh\nexit 0\n' 755
     mode_case "a README added as 100644" 0 NOTES.md '# notes\n' 644
 
+    # ── the entry gate, through the script itself ─────────────────────────
+    #
+    # One input it must accept and two it must refuse. The outputs are
+    # captured rather than piped into grep -q, so that a SIGPIPE under
+    # pipefail cannot turn a match into a miss.
+    gate_case() {   # gate_case <name> <dir> <accept|refuse>
+        local out refused=no
+        cases=$((cases + 1))
+        out="$(bash "$0" "$2" 2>&1)"
+        case "$out" in *"is not a git repository"*|*"is not its top level"*) refused=yes ;; esac
+        if { [ "$3" = accept ] && [ "$refused" = no ]; } || { [ "$3" = refuse ] && [ "$refused" = yes ]; }; then
+            printf '    ok   %-42s %s\n' "$1" "$([ "$refused" = yes ] && echo refused || echo accepted)"
+        else
+            printf '    FAIL %-42s expected to %s it\n' "$1" "$3"
+            fails=$((fails + 1))
+        fi
+    }
+    git -C "$t" worktree add -q --detach "$t.wt" HEAD 2>/dev/null
+    if [ -f "$t.wt/.git" ]; then     # the input really is a linked worktree
+        gate_case "a linked worktree (.git is a file)" "$t.wt" accept
+    else
+        cases=$((cases + 1)); fails=$((fails + 1))
+        printf '    FAIL %-42s could not build the input\n' "a linked worktree (.git is a file)"
+    fi
+    mkdir -p "$t.plain" "$t/sub"
+    gate_case "a directory outside any repository" "$t.plain" refuse
+    gate_case "a subdirectory of a repository" "$t/sub" refuse
+    git -C "$t" worktree remove --force "$t.wt" 2>/dev/null
+    rm -rf "$t.wt" "$t.plain"
+
     rm -rf "$t"
     printf '\n  %s case(s), %s failed\n' "$cases" "$fails"
     return "$fails"
@@ -613,7 +643,16 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "${DIR:-}" ] || { sed -n '2,90p' "$0"; exit 0; }
-[ -d "$DIR/.git" ] || die "$DIR is not a git repository"
+# ★ 2026-09-30. This was `[ -d "$DIR/.git" ]`, and it refused a linked
+# worktree, whose .git is a FILE naming the real git directory. A detached
+# worktree at `refs/pull/N/head` is the natural way to check the commit GitHub
+# holds without touching the branch, and it is how this was found. So git is
+# asked instead of the filesystem, and the directory must be the top of the
+# tree, because the rules read CONTRIBUTING.md from it.
+top="$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null)" \
+    || die "$DIR is not a git repository"
+[ "$top" = "$(cd "$DIR" && pwd -P)" ] \
+    || die "$DIR is inside a git repository but is not its top level ($top)"
 
 hdr "the commit about to be sent to $(git -C "$DIR" remote get-url origin 2>/dev/null)"
 printf '  profile %s\n\n' "$PROFILE"
