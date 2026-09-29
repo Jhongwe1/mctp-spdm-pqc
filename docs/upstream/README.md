@@ -404,10 +404,20 @@ one fails. Small, local, no behaviour change on the working path.
 
 ### The requester never asks whether the chain it accepted was authoritative
 
-`spdm_emu/spdm_requester_emu/spdm_requester_spdm.c` calls
-`libspdm_get_certificate()`, the form that discards the `trust_anchor`
-out-parameters, and tests `LIBSPDM_STATUS_IS_ERROR`. `grep -rn 'NO_AUTHORITY\|
-trust_anchor' spdm_emu` returns nothing.
+`spdm_emu/spdm_requester_emu/spdm_requester_authentication.c` calls
+`libspdm_get_certificate()` four times, the form that discards the
+`trust_anchor` out-parameters, and tests `LIBSPDM_STATUS_IS_ERROR` after
+each. `grep -rn 'NO_AUTHORITY\|trust_anchor' spdm_emu` returns nothing.
+
+> ★ *Corrected 2026-09-30.* This paragraph named `spdm_requester_spdm.c`,
+> which has no `libspdm_get_certificate` call at the pin or at `main`. The
+> four are in `spdm_requester_authentication.c`, at lines 63, 71, 78 and 107
+> in both `5f01d2f` and `eff07cf`. The requester's fifth call, in
+> `spdm_requester_session.c`, and the attester sample's loop over slots 1
+> to 7 use `libspdm_get_certificate_ex` and pass `NULL, 0` for the trust
+> anchor, and every one of them tests `IS_ERROR` only, so the finding holds
+> at every call site. Found by listing the call sites at upstream's head
+> rather than re-reading this sentence.
 
 libspdm does the work and reports it as a warning, which is the correct
 division of labour:
@@ -514,8 +524,19 @@ are current.
 ### ① `requirements.txt` has no upper bounds, and the ceiling has arrived
 
 ```
-cbor>=1.0.0     pycose>=0.1.2     cose>=0.9.dev8     cryptography>=2.3
+cbor>=1.0.0
+pycose>=0.1.2
+cose>=0.9.dev8
+jose>=1.0.0
+python_jose>=3.1.0
+cryptography>=2.3
 ```
+
+> ★ *Corrected 2026-09-30.* The block above used to show four of these six
+> lines, on one row; `jose` and `python_jose` were missing. It is now the
+> file, blob `fabca0ad`, the same at the pin and at `main`. Neither missing
+> line has an upper bound either, so the heading was right and the quote was
+> not the file: candidate ⑭'s shape, a hand-shortened copy of the evidence.
 
 `pip install -r requirements.txt` today resolves `cbor2` to 6.1.4 through
 `pycose`. cbor2 ≥ 6.0 decodes the contents of a `CBORTag` as **immutable**
