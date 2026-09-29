@@ -10,7 +10,9 @@ file shows the move.
 it calls "in progress" or "not started" may have moved since. What is true now
 is in the [README](../README.md), [`roadmap.md`](roadmap.md) and
 [`RUNBOOK.md`](../RUNBOOK.md), and the day-by-day record, including every
-mistake, is [`LOG.md`](../LOG.md).
+mistake, is [`LOG.md`](../LOG.md). The one exception is the section on weeks
+12 and 13 under "Current status", added on 2026-09-29 in the same form, because
+the README's status table sends a reader here for what each week established.
 
 ---
 
@@ -69,6 +71,55 @@ exists today, not what is planned. Planned work is in
 
 Nothing in this repository reports a measurement that has not been made. A
 table that does not exist yet is absent rather than sketched.
+
+### What weeks 12 and 13 established
+
+*Added 2026-09-29. The table above is still week 11's.*
+
+**Week 12 was the README, and the README found a false sentence in seven
+documents.** The README was rewritten around a five-minute first screen, with
+every cross-capture number on it checked against `bench/claims.json`;
+`docs/threat-scope.md` and `docs/limitations.md` were finished. Writing them
+found that "no secure session was ever established here" had been checked
+against the captures somebody had decoded — 132 of 152 — and two of the other
+20 hold sessions. Standing rule 21, and `harness/census.sh`. The same week, the
+OpenBMC README change took a −1, and patchsets 2 and 3.
+
+**Week 13 closed G7 and put G8's deliverables on one page and one terminal.**
+
+- **Upstream.** [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524)
+  was merged on 2026-09-28, as sent, without a comment. Two more followed on
+  2026-09-29: [#526](https://github.com/DMTF/spdm-emu/pull/526), `CoRimTool.py`'s
+  exit status, and [#527](https://github.com/DMTF/spdm-emu/pull/527), a run-time
+  `--data_transfer_size`. The author signed, pushed and opened both; every
+  check ran in the hour before, and it found that `patch-id` cannot show byte
+  identity, that one claim in the pull request had been measured on `head`'s
+  exit status, and that the pull request's last paragraph had no `Tested:` line
+  behind it. Both have DCO and upstream CI green, 45 of 45.
+- **The one-pager**, [`docs/one-pager.svg`](one-pager.svg): Table 1, Figure 2
+  and what was and was not done, generated from the evidence and held
+  byte-identical by CI. Its prose is checked against the data before it is
+  printed. Auditing the draft found two false sentences and a page-fit guard
+  that measured the wrong end of a paragraph; rendering it found four Chinese
+  line breaks no coordinate could.
+- **The demo**, [`harness/demo.sh`](../harness/demo.sh): six segments, every
+  handshake live, every segment checked against the published tables, so its
+  dry run is a test. The first dry run caught the demo's own bug; the
+  clean-clone re-run caught a second, in a checkout without private keys.
+- **The recheck**, [`harness/recheck_upstream.sh`](../harness/recheck_upstream.sh):
+  sixteen upstream questions for week 14, each answered `same`, `CHANGED` or
+  `NO DATA`, and never an outage reported as `same`.
+- **What auditing week 12 found.** Upstream candidate ⑲ had been fixed on the
+  suite's own `main` five days before this project wrote it up, because every
+  freshness check read the consumer's submodule pointer (standing rule 22).
+  Candidate ⑭ was never true: its evidence was a `grep` shortened by hand. The
+  weekly CI run of 2026-09-28 had failed while the badge said passing. The run
+  behind Figure 3 did not name its build, and `verify_repo.sh` now requires every
+  run behind a published number to. Six figure overlaps were found by rendering
+  the figures for the first time.
+- **Not done.** The recording is the author's. The third timed C round was
+  skipped, and no timed round has been sat; the eight drills have tests and no
+  implementations yet.
 
 ### What week 11 established
 

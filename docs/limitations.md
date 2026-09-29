@@ -82,7 +82,7 @@ read the index, not the caveats.
 | | |
 |---|---|
 | **upstream's, entirely** | the SPDM handshake, chunking, the post-quantum algorithm support, the responder validator, the fuzz targets, `libspdm`, `spdm-emu`, `spdm-dump` |
-| **this project's** | the tamper harness and proxy, the analysers (`pcapstat.py`, `fields.py`, `pcapcount.py`, `challenge_verify.py`), the reference-value → policy → verdict pipeline in `rats/`, the negative suite in `negative/`, the CI that turns red when a tampered measurement stops being rejected, the exposure analysis in `docs/advisories.md`, the census of every capture, and two upstream changes |
+| **this project's** | the tamper harness and proxy, the analysers (`pcapstat.py`, `fields.py`, `pcapcount.py`, `challenge_verify.py`), the reference-value → policy → verdict pipeline in `rats/`, the negative suite in `negative/`, the CI that turns red when a tampered measurement stops being rejected, the exposure analysis in `docs/advisories.md`, the census of every capture, and four upstream changes, one of them merged |
 
 The wording that follows from it, and it is exact: **"I quantified it"** and
 **"I connected it up"**, never *"I implemented SPDM"* or *"I added post-quantum
@@ -234,21 +234,25 @@ work:
 
 ## 6. Upstream
 
-- **Limit. Two changes sent, neither merged.** `DMTF/spdm-emu` #524 had no human
-  response as of 2026-09-23. `openbmc/spdm` 94773 received a −1 from an owner on
-  patchset 1, for reading as AI-generated documentation that costs a reviewer
-  more than it saves. The same owner said of patchset 2 that its instructions
-  were unlike any other OpenBMC repository's, and patchset 3 was sent on
-  2026-09-23 in their layout
+- **Limit. One change merged, three in review.** `DMTF/spdm-emu` #524 was
+  merged on 2026-09-28 as sent, with a label and no comment, so the record
+  shows what was accepted and not why. #526 and #527, sent on 2026-09-29, have
+  no review yet. `openbmc/spdm` 94773 received a −1 from an owner on patchset
+  1, for reading as AI-generated documentation that costs a reviewer more than
+  it saves. The same owner said of patchset 2 that its instructions were
+  unlike any other OpenBMC repository's, and patchset 3 was sent on 2026-09-23
+  in their layout
   ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
-- **Not done. Seventeen of the nineteen candidates were not sent.** Each is recorded
-  with its evidence and the reason it was held back
+- **Not done. Most of the twenty candidates were not sent.** Four were; one was
+  withdrawn as never true, one had been fixed upstream before this project
+  found it, and one had been reported upstream since 2024. Each of the rest is
+  recorded with its evidence and the reason it was held back
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
 - **Limit. Each change is against one upstream commit.** #524 against
-  `spdm-emu` `16119ea`, and 94773 patchset 3 against `openbmc/spdm` `32e9f8b`.
-  Upstream moves, and a gap either change addresses may be closed by someone
-  else first.
+  `spdm-emu` `16119ea`, #526 and #527 against `eff07cf`, and 94773 patchset 3
+  against `openbmc/spdm` `32e9f8b`. Upstream moves, and a gap any of them
+  addresses may be closed by someone else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not
   recorded as submitted.** The window closed on 2026-08-31
   ([`upstream/spdm15-hybrid-feedback.md`](upstream/spdm15-hybrid-feedback.md)).

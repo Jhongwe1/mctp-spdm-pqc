@@ -105,9 +105,9 @@ second time, the only variable left is whether it was actually learned.
 |---|---|---|---:|---|
 | 1st pass | W01–W08 | D1–D8, one per week | | |
 | full rewrite | W10 | all eight, paper only | | |
-| timed round 1 | W08 | [`mock/round1.md`](mock/round1.md) — two unseen problems, 45 min | | **paper set 2026-09-14, not yet sat** |
-| timed round 2 | W11 | two problems, 45 min | | |
-| timed round 3 | W13 | two problems, 45 min | | |
+| timed round 1 | W08 | [`mock/round1.md`](mock/round1.md) — two unseen problems, 45 min | | **paper set 2026-09-14; not sat** as of 2026-09-29 |
+| timed round 2 | W11 | two problems, 45 min | | **not set, not sat** |
+| timed round 3 | W13 | two problems, 45 min | | **skipped, by the author's decision of 2026-09-29.** No timed round has ever been sat, so there is no trend for a third one to extend. The plan's own fallback for a missed round applies in W14 instead: fundamentals raised to ten hours, two problems a day |
 
 ### Timed round 1, per problem
 
