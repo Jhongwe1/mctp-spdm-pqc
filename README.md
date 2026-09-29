@@ -467,10 +467,11 @@ is in [`docs/progress.md`](docs/progress.md).
 ## How this was built
 
 Much of the code and prose here was written with an AI coding assistant, Claude
-Code, in sessions I directed. Commits from 2026-09-10 on say so in a
-`Co-Authored-By:` trailer. The 107 commits before that date do not carry it,
-and its absence there is not a claim that no assistant was involved. Three
-things do not depend on trusting either of us:
+Code, in sessions I directed. From 2026-09-10 on, a commit the assistant took
+part in says so in a `Co-Authored-By:` trailer, and one of them, `010ba83`,
+is missing it. The 89 commits before that date do not carry it, and its
+absence there is not a claim that no assistant was involved. Three things do
+not depend on trusting either of us:
 
 - Every number is re-derived by CI from the committed captures, and every
   capture's `manifest.json` records the commands and upstream commits that made
