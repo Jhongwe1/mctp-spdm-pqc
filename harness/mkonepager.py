@@ -276,6 +276,15 @@ def render() -> str:
                       "the footer says Table 1 and Figure 2 share a build")
     if any(bs[k] != bt[k] for k in ("spdm_emu_short", "libspdm_short")):
         raise Missing(f"{sweep.name} is on other upstream commits; the footer says it is not")
+    # And it says what else differs: one patch, and both buffers raised. The
+    # first version said only "one patch", which left out the half of the
+    # build that makes the sweep's upper range reachable at all.
+    if not bs.get("flavor_patch"):
+        raise Missing(f"{sweep.name}/manifest.json names no flavor patch; the footer says one")
+    if not all(f"-DLIBSPDM_{side}_BUFFER_SIZE=" in (bs.get("cflags") or "")
+               for side in ("SENDER", "RECEIVER")):
+        raise Missing(f"{sweep.name}/manifest.json does not raise both buffer sizes; "
+                      "the footer says it does")
     pin = (REPO / "third_party" / f"spdm-emu-{bt['flavor']}.pin").read_text(encoding="utf-8")
     openssl = re.search(r"^crypto-openssl-version=(\S+)", pin, re.M)
     if not openssl:
@@ -421,7 +430,7 @@ def render() -> str:
     _, last = para(out, X0, y + 2,
                    f"版本：表 1 與圖 2 為 {bt['flavor']} flavor（spdm-emu {bt['spdm_emu_short']} / "
                    f"libspdm {bt['libspdm_short']}，{bt['libspdm_ref']}）；DataTransferSize 掃描為 "
-                   f"{bs['flavor']} flavor（同兩個 commit，加一個 patch）。每個量測數字都對應一份 capture "
+                   f"{bs['flavor']} flavor（同兩個 commit，加一個 patch 並放大收發緩衝區）。每個量測數字都對應一份 capture "
                    f"與其 manifest.json。本頁由 harness/mkonepager.py 產生，資料截至 {AS_OF}。",
                    size=9.5, fill=FAINT, lh=13)
     ink_ends = last + round(9.5 * 0.25)
