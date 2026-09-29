@@ -65,7 +65,7 @@ every arm's full command line is the `<arm>.cmdline.txt` beside it.
 | **P1** ML-DSA-44 | 12,266 | 2,420 | 2,562 | 2,918 | 43,337 | 20 | 9 | 152 |
 | **P2** ML-DSA-65 | 16,853 | 3,309 | 3,451 | 3,807 | 58,966 | 23 | 12 | 152 |
 | **P3** ML-DSA-87 | 22,727 | 4,627 | 4,769 | 5,125 | 79,542 | 33 | 22 | 152 |
-| **S1** SLH-DSA-128s | 24,782 | 7,856 | 7,998 | — | 58,446 | 21 | 14 | 152 |
+| **S1** SLH-DSA-SHA2-128s | 24,782 | 7,856 | 7,998 | — | 58,446 | 21 | 14 | 152 |
 
 **S1 did not complete.** Its certificate chain is retrieved and verified and its
 `CHALLENGE_AUTH` arrives with a correctly sized signature, and then the
