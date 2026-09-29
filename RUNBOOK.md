@@ -2294,13 +2294,24 @@ spdm-emu 自己的範例鏈,**而且第 2 段開頭會印出用的是哪一條**
 #### 給 W14:一鍵查上游有沒有動
 
 ```bash
-bash harness/recheck_upstream.sh              # 16 項,跟 2026-09-29 那天比
+bash harness/recheck_upstream.sh              # 19 項,跟 2026-09-29 那天比
 bash harness/recheck_upstream.sh --selftest   # 不用網路;verify_repo.sh 也會跑它
 ```
 
 libspdm 出正式 4.0.0 了沒、有沒有新的 advisory、DSP0274 有沒有新版、`openbmc/spdm` 有沒有
 README、#526/#527/94773 有沒有動靜、`meas.c` 還在不在(device patch 改的就是它)……
 每一項都只會有三種答案:
+
+> **09-30 從 16 項加到 19 項,因為舊版看不到「核准」。**它只比 PR 的兩個留言計數;維護者
+> 按 Approve 但一個字都沒寫,兩個計數都是 0(在 libspdm #3987 實測過),它就會印 `same`。
+> 現在 #526/#527 那兩列會讀 review 本身、label、head commit;另外多看三樣:#496(維護者自己
+> 的 PR,碰到 #527 八個檔裡的六個;而且它自己現在就跟 main 衝突三個檔,所以兩個之中**後合併
+> 的那個要 rebase**)、#358(候選 ⑳ 要引用的 issue,指派給原報告者)、驗證套件**自己的**
+> `main`(候選 ⑲ 的教訓)。
+>
+> ⚠️ **GitHub 上有 `refs/pull/N/merge` 不代表現在能合併。**#496 的那個是 6 月 27 日對當時的
+> main 算的,比現在落後 33 個 commit。要看它的 first parent 是不是**今天的** main:
+> `git log -1 --format=%P refs/pull/N/merge`(先 `git fetch origin refs/pull/N/merge`)。
 
 | 答案 | 意思 |
 |---|---|

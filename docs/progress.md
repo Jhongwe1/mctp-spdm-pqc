@@ -108,7 +108,9 @@ OpenBMC README change took a −1, and patchsets 2 and 3.
   clean-clone re-run caught a second, in a checkout without private keys.
 - **The recheck**, [`harness/recheck_upstream.sh`](../harness/recheck_upstream.sh):
   sixteen upstream questions for week 14, each answered `same`, `CHANGED` or
-  `NO DATA`, and never an outage reported as `same`.
+  `NO DATA`, and never an outage reported as `same`. Nineteen since
+  2026-09-30, when it turned out that an approval without a comment did not
+  move either counter its pull-request rows compared.
 - **What auditing week 12 found.** Upstream candidate ⑲ had been fixed on the
   suite's own `main` five days before this project wrote it up, because every
   freshness check read the consumer's submodule pointer (standing rule 22).
