@@ -5943,3 +5943,147 @@ regenerating its citation, not re-reading the sentence.
   own tables. Scratch tonight; it becomes evidence if candidate 2 is sent.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`.** Mine, as before. Week 13 stays open.
+
+## 2026-10-04 · Day 20 · a reviewer was right, and two more were sent
+
+One sitting from 02:00 here, for four questions: was the reviewer on #527
+right, was candidate 4 still worth an issue, was candidate 5 still worth a pull
+request, and which candidate was waiting for #496. Yes, yes, yes, and ⑮ —
+though #496 is no longer what it waits for. Every answer was measured on the
+head on the day it was sent, and the author pressed every key that left the
+machine. Three findings are worth the five parts.
+
+---
+
+### 1. ★ "Nothing changed" was evidence only after the library said something had
+
+**現象** With the requester's slot-0 trust anchor swapped for a stock root that
+never signed the responder's chain, the capture was the stock arm's, message
+for message: 578 messages in the same order, exit 0, and the same four lines
+of output.
+
+**假設** (1) libspdm returned `VERIF_NO_AUTHORITY` and the requester ignored it,
+which is the finding; (2) the swap was never read — another algorithm's
+directory, or a trust anchor loaded from somewhere else; (3) the authority
+check did not run at all.
+
+**先驗哪個、為什麼** (2) and (3), because either would make the identical capture
+mean nothing, and one measurement separates all three: the value the library
+returns at the call. `gdb`, with a `FinishBreakpoint` on
+`libspdm_get_certificate_ex`, on the binary as built — no rebuild, so what was
+measured is upstream's program and not a copy with a `printf` in it. Stock
+files: `0x00000000`, three times. Swapped: `0x40020003`, three times.
+
+**根因** (1). The library noticed, and said so in a status whose severity
+`LIBSPDM_STATUS_IS_ERROR` does not count, and the requester tests nothing else.
+
+**教訓** ★ **An unchanged outcome is evidence of indifference only beside a
+measurement that shows the input was read.** It is 2026-09-30's rule, that a
+mutation must be shown to land, met from the other side: there a self-test
+proved each mutation changed its input; here a return value proved the swap
+reached the code that should have reacted. And the instrument that reaches the
+unmodified program comes before the one that needs a rebuild.
+
+---
+
+### 2. A reproduction that passed by luck
+
+**現象** The block written for the issue — the responder started with `&`, the
+requester straight after — was run verbatim, and both sides exited 0.
+
+**假設** (1) the requester retries its `connect()` until the responder listens;
+(2) the responder was simply first, and a slower machine reverses the order;
+(3) something in the shell makes the order fixed.
+
+**先驗哪個、為什麼** (1), because if it holds the block is safe everywhere and
+nothing else matters, and reading `init_client()` and its caller at the head
+answers it.
+
+**根因** (2). `init_client()` calls `connect()` once and returns `false` after
+printing `Connect Error`; `platform_client_routine()` returns on that, and
+nothing loops. The block worked because the responder won a race.
+
+**教訓** A reproduction written for someone else is a claim about their
+machine. A clean run on mine cannot test it; reading the code path that would
+make it deterministic can. The issue says two terminals.
+
+---
+
+### 3. A table cell shortened into another claim
+
+**現象** The issue's draft said the requester prints nothing about the status.
+README Table 1, under the column "status the requester printed", said for 3b:
+"only a warning".
+
+**假設** (1) on 4.0.0-rc, on 2026-09-01, the requester did print a warning,
+and no longer does; (2) the cell was shortened from a source that said
+something else; (3) a debug build printed one.
+
+**先驗哪個、為什麼** (1), because it is the one that would make the issue wrong.
+`t3b_foreign.req.log` against `t0_clean.req.log` from 2026-09-01, with the hex
+masked: the same six lines, so nothing was printed then either. Then the
+source: `docs/tamper.md` says "none — it is a warning".
+
+**根因** (2). In week 12's rewrite of the README (`0b1e467`, 2026-09-23), "none
+— it is a warning" became "only a warning" under a column that makes it a
+printed message. The cell carries no claim marker, so no check could see it.
+
+**教訓** A table cell's claim is its header and its text together, and
+shortening the text under a header can turn it into a different claim. Prose
+copied from a source is checked against the source after it is shortened, not
+only before. Fixed in `ef0fb88`.
+
+---
+
+### Smaller things, each checked
+
+- **Upstream, 18:12–20:00 UTC on the 3rd** (02:12–04:00 here). `spdm-emu`
+  `main` unmoved at `eff07cf`; `libspdm` at `319fd96`, 38 commits on, none in
+  the certificate path. #526 approved by `steven-bellock`, with no comment.
+  #527 reviewed and approved by `LeonLinAtAMI`, whose #531 carries #527's
+  commit byte for byte. #532 is candidate 3, filed by someone else. #496
+  unmoved. 94773 unmoved since 2026-09-23.
+- **The reviewer's sentence was checked, not taken on trust**: without
+  `CHUNK_CAP`, both `*_spdm.c` set `max_spdm_msg_size` to the given value, and
+  0004 §3 measured `1024/1024`. The author acknowledged it with a reaction.
+  Nothing waits on a written reply: `main` has no ruleset, and #527 reports
+  `clean` with the thread open.
+- **The first run for candidate 4 could not be used**: with the requester's
+  default flow both arms ended 141 and 124, and both captures stopped at
+  exactly 163,840 bytes. The stock arm failing in the same way assigned it to
+  the setup, and naming the flow removed it. Where the default flow breaks was
+  not traced; nothing here depends on it.
+- **Candidate 5 was re-measured on four transports**: the comment is right for
+  NONE only, and PCI_DOE's first payloads are not SPDM at all. Prepared
+  unsigned, compiled under four targets' own flags with a negative control,
+  then signed and pushed by the author as `d1ec185`, the tree unchanged.
+  Upstream CI 45 of 45, DCO among them, the last check at 20:08 UTC.
+- **#531's default path on NONE reads as #358's fix**, and #531 does not cite
+  #358. Not built here, so not said there.
+- **Mine, caught before anything left**: an "is it unpatched?" check that
+  grepped for a word libspdm's own error message contains; a width check
+  aimed at a whole file whose licence line is already 112 characters; and
+  "nothing is printed" in the issue's draft.
+- **No clean clone today**: only documentation changed. `verify_repo.sh` passed
+  on the tree of each commit.
+
+### Decisions
+
+- **The author's**: a reaction to #527's suggestion rather than a reply; the
+  issue submitted after he asked for a second look at whether it was needed,
+  which found it not necessary but worth sending — its one real cost is the
+  change it offers if the answer is yes.
+- **Mine**: #527's commit left alone, because #531 is built on it and already
+  says the sentence; `MCTP_KERNEL` added to the issue's sentence about real
+  responders, which made an inference checkable; the two sends recorded in
+  `docs/upstream/README.md` rather than in new numbered files, because
+  neither needs more than its section.
+
+### Not done, and the reason for each
+
+- **Building #531** to see whether it fixes #358. Not this project's change;
+  one build, when there is a reason to say it there.
+- **The one-page summary** stays as it is: it says its data stops at
+  2026-09-29, and its upstream line is still true of that day.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`.** The author's, as before. Week 13 stays open.
