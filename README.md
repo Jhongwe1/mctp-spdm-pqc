@@ -37,7 +37,7 @@ still render to what is committed.
 | 2a | the measurement record, in flight | the measurement signature | refused after `MEASUREMENTS` | `80020001` `VERIF_FAIL` |
 | 2b | the signature, in flight | the measurement signature | refused after `MEASUREMENTS` | `80020001` `VERIF_FAIL` |
 | 3 | a certificate the device serves | the device itself | no `CERTIFICATE` is ever sent | `8001000a` `ERROR_PEER` |
-| 3b | whose chain it is, not its bytes | the requester's authority check | handshake completes | only a warning |
+| 3b | whose chain it is, not its bytes | the requester's authority check | handshake completes | none — it is a warning |
 
 <!-- capture: bench/data/w5-tamper-20260910T092621Z/t0_clean.decode.txt -->
 _Table 1, condensed from [`docs/tamper.md`](docs/tamper.md). Rows 2a and 2b
