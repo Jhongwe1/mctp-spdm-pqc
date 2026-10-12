@@ -168,8 +168,9 @@ git push fork corim-exit-status
 | Commit | **`60748b7`**: the prepared `1a396c2` plus the author's `Signed-off-by`. The tree, `b3dcd4b…`, is the same object before and after the sign-off, so the bytes sent are the bytes tested |
 | Checks | DCO success; **45 of 45** check runs success at 16:55 UTC; `mergeable_state` clean |
 | Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
-| Review round trips | 0 so far |
-| Outcome | open |
+| Review round trips | 0. Approved by `steven-bellock` on 2026-09-29 at 23:36 UTC, eight hours after it was opened, without a comment |
+| Landed | **`532f667`** on `main`, parent `13edd65` (#534), committer Steven Bellock. The commit message and `CoRimTool.py`'s blob, `4d52a312…`, are byte-identical to `60748b7`'s, so the `Tested:` lines describe the merged bytes. Read from the API on 2026-10-12 |
+| Outcome | **MERGED**, 2026-10-05 20:49 UTC, by `steven-bellock`, six days after it was opened |
 | Re-read | 2026-09-29, 19:39 UTC: head, tree and merge ref as sent, no review, CI 45 of 45; the four `Tested:` lines and §4's repro block, taken from the body GitHub serves, re-run on the bytes GitHub serves, with the same results ([README](README.md#every-candidate-re-read-and-searched-for--2026-09-30)) |
 
 **What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:

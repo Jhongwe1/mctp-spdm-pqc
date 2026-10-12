@@ -277,8 +277,9 @@ git push fork data-transfer-size-flag
 | Commit | **`367414a`**: the prepared `eb294e4` plus the author's `Signed-off-by`; tree `84896f1…` unchanged by the sign-off |
 | Checks | DCO success; **45 of 45** check runs success at 16:55 UTC, `VS2019_mbedtls_build` and `VS2019_openssl_build` among them; `mergeable_state` clean |
 | Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
-| Review round trips | 0 so far |
-| Outcome | open |
+| Review round trips | one, from a contributor: `LeonLinAtAMI` commented and approved on 2026-09-30, with one inline suggestion that was correct and was acknowledged without amending the commit ([README](README.md#527s-suggestion-was-right-and-the-commit-stayed-as-it-was)). No maintainer reviewed it before the merge |
+| Landed | **`fd75485`** on `main`, parent `9975786`, committer Jiewen Yao. `main` had moved three commits past `eff07cf` — #534, #526, and a contributor's fix to a non-ASCII character in `command.h` — and the rebase applied without a conflict. The commit message and all eight blobs are byte-identical to `367414a`'s. #496 has not merged, so the rebase it was expected to force did not happen. Read from the API on 2026-10-12 |
+| Outcome | **MERGED**, 2026-10-12 14:43 UTC, by `jyao1`, thirteen days after it was opened |
 | Re-read | 2026-09-29, 19:39 UTC: head, tree and merge ref as sent, no review, CI 45 of 45; every run behind §3 repeated with the binaries built from these bytes, 25 of 25 rows identical; the build was not repeated. #496 now conflicts with `main` itself, so it has to be rebased before it can merge, and this change probably will be too if it merges second — a prediction ([README](README.md#every-candidate-re-read-and-searched-for--2026-09-30)) |
 
 **What was re-run in the hour before the keystroke**, 14:48–15:02 UTC:
