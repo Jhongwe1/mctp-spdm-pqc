@@ -65,6 +65,7 @@ needs a date attached to it.
 | `openbmc/spdm` 94773 | **in review, no movement** | checked 2026-10-12 | unchanged since 2026-09-23 17:10 UTC. Gerrit's attention set holds the author and neither owner, and three threads are unresolved, so to an owner the change is waiting on its author. **The author's decision, 2026-10-12: wait one more week** |
 | Every unsent candidate re-read at `spdm-emu` `8f36665` | **done** | 2026-10-12 | all still present. ④ turned out to need no maintainer's call, and ⑥ and ④ are the two worth sending; 2 and ⑮ wait for the four open pull requests that edit the same two functions. [§](#four-of-four-merged-and-the-rest-re-read--2026-10-12) |
 | Candidate ⑥ prepared | **prepared** | 2026-10-13 | *SpdmSamplePolicy: parse on OPA 1.0 and later*: `5800c37` on `8f36665`, unsigned, every `Tested:` line run against the committed bytes. The sign-off, the push and the pull request are the author's. [§](#the-sample-policy-on-opa-1x-prepared--2026-10-13) |
+| ★ Candidate ⑥ **SENT** | **done** | 2026-10-12, 16:52 UTC | [`DMTF/spdm-emu` #536](https://github.com/DMTF/spdm-emu/pull/536), after a second look the author asked for, which found the message claiming more about old OPA releases than had been run: measured on 0.58.0, 0.59.0 and 0.70.0, corrected, re-signed as `09557d7` with the tree unchanged. Body byte-identical to the draft; reviewers by CODEOWNERS. [§](#the-sample-policy-on-opa-1x-prepared--2026-10-13) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -75,8 +76,8 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Twenty candidates have been recorded. Five went as changes — #524, #534, #526
-and #527 are merged, and 94773 is in review — and one, candidate 4, went as a
+Twenty candidates have been recorded. Six went as changes — #524, #534, #526
+and #527 are merged, and 94773 and #536 are in review — and one, candidate 4, went as a
 question, issue #533, which a maintainer answered and assigned to a
 contributor. Two were fixed upstream by the maintainer
 without this project, one of them before this project had found it, and one,
@@ -101,7 +102,7 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
 | 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
-| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared as `5800c37`, unsigned ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13))* |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared, then sent as [#536](https://github.com/DMTF/spdm-emu/pull/536) ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13))* |
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
@@ -1762,6 +1763,7 @@ Every `Tested:` line was run against the committed bytes — `git show` and
 | claim | result |
 |---|---|
 | `opa check`, opa 1.20.2 | before: 11 `rego_parse_error`, exit 1; after: none. Both clean under `--v0-compatible` |
+| older OPA, official binaries checked against the release's own sha256 (added after the second look below) | 0.70.0 and 0.59.0: both files check clean and give the same `data.spdm` on the sample input. 0.58.0: the old file checks clean, the new one fails with three `rego_parse_error` |
 | the readme's flow, on the shipped samples | `json_to_cbor` 996 bytes, `cbor_to_json` 4312, `OpaTool.py` 5779 — #524's numbers — then the readme's `opa eval`: exit 2 before, exit 0 after, with `error_code` 0 and both checks true |
 | nothing else changes | all ten rules in `data.spdm` equal, the old policy under `--v0-compatible` against the new one with and without it, on the shipped input and on two copies with one digest or one svn changed; both copies give `error_code` 1 |
 
@@ -1772,12 +1774,42 @@ command exited 1 before the change. `opa eval` exits 2 on a parse error; it is
 exited 1 — the check script itself had a bug, and its stderr was not
 captured — so nothing was concluded from it.
 
+### The second look, before the pull request was opened
+
+After the author had signed and pushed it, and before he opened the pull
+request, he asked once more whether this was a real problem. Re-asked as five
+questions, four held: the binary that gave the eleven errors is OPA's own
+1.20.2 static build, from the URL in `third_party/opa.pin`; OPA 1.0's release
+notes (2024-12-20) say `if` and `contains` are now mandatory; the release a
+new user downloads today is 1.21.2, published that day; and the readme's other
+path, the Rego Playground, was not checked, so the change claims only the
+command line.
+
+The fifth did not hold. The message said `import rego.v1` "keeps the file valid
+where v0 is still the default" — every 0.x release — and what had been run was
+1.20.2 under `--v0-compatible`. Official 0.58.0, 0.59.0 and 0.70.0 binaries,
+each checked against its release's sha256:
+
+| OPA, as measured | the policy on `main` | the change |
+|---|---|---|
+| 0.58.0 | parses | **three `rego_parse_error`** |
+| 0.59.0 (2023-11-30) and 0.70.0 | parses | parses; `data.spdm` the same |
+| 1.20.2 — v1 has been the default since 1.0, 2024-12-20 | **eleven `rego_parse_error`** | parses |
+
+Read from those versions and from OPA's release notes, the change trades the
+releases before 0.59.0 for every release since, which is the right trade — and
+the text now says it is a trade. The corrected
+message was signed by the author as **`09557d7`** — the tree still `89010fc`,
+one sign-off — and force-pushed over his own branch before any pull request
+pointed at it. Why 0.58.0 reports a missing `if` on lines that have one was not
+investigated.
+
 `rats/interop.sh` asserts that the sample does **not** parse as Rego v1. It
 reads the pinned 4.0.0-rc tree, so nothing changes until a re-pin; if this has
 merged by then, that assertion fails as expected, and its message — that OPA's
 default has changed — will be the wrong explanation.
 
-The title is the commit's subject. The body:
+The title is the commit's subject. The body, as sent:
 
 > OPA 1.0 made Rego v1 the default, and `SpdmSamplePolicy.rego` is written in
 > v0. On a current OPA (1.20.2 here), the command the readme gives,
@@ -1790,8 +1822,9 @@ The title is the commit's subject. The body:
 > for #524.
 >
 > This adds `contains` to the four partial set rules and `if` to the seven
-> rule bodies, plus `import rego.v1`, which keeps the file valid where v0 is
-> still the default. Nothing else changes.
+> rule bodies, plus `import rego.v1`, so that OPA 0.59.0 and the later 0.x
+> releases, where v0 is still the default, read it too. Releases before
+> 0.59.0 (November 2023) do not; 0.58.0 rejects it. Nothing else changes.
 >
 > On the shipped samples (`SpdmSampleCoMid.json` through `json_to_cbor` and
 > `cbor_to_json`, then `OpaTool.py` with `SpdmSampleMeasurement.json`), all
@@ -1819,6 +1852,24 @@ bash /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/check_upstream_commit.sh .
 git push fork sample-policy-rego-v1
 # then open the pull request with the title and body above
 ```
+
+The second look added two steps between the push and the pull request:
+`git commit --amend -s -F ~/spdm-lab/work/sample-policy-rego-v1.commit-msg.txt`
+and `git push --force-with-lease fork sample-policy-rego-v1`. The first signed
+version, `adbaa8b`, carried the overclaim, and it was replaced before anything
+pointed at it.
+
+### Sent — 2026-10-12, 16:52 UTC
+
+| | |
+|---|---|
+| URL | <https://github.com/DMTF/spdm-emu/pull/536> |
+| Opened | 2026-10-12 16:52:16 UTC by the author, from `Jhongwe1:sample-policy-rego-v1`. Title as above; body byte-identical to the file, 1245 bytes, read back from the API |
+| Commit | **`09557d7`**: tree `89010fc`, the bytes tested; parent `8f36665`, still `main` when it was opened; one sign-off, the author's; `check_upstream_commit.sh` satisfied |
+| Before opening | the second look above; the duplicate search repeated, and no open pull request touches the policy |
+| Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
+| Checks | DCO success; **45 of 45** check runs success, every VS2019 build among them, the last at 17:15:37 UTC; `mergeable_state` clean. Read from the API |
+| Outcome | open |
 
 ## Three identity traps, all of which are silent until they are not
 

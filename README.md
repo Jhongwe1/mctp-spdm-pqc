@@ -22,9 +22,11 @@ what was sent — [#524](https://github.com/DMTF/spdm-emu/pull/524) on
 [#526](https://github.com/DMTF/spdm-emu/pull/526) on 10-05 and
 [#527](https://github.com/DMTF/spdm-emu/pull/527) on 10-12. One design question,
 issue [#533](https://github.com/DMTF/spdm-emu/issues/533), answered by a
-maintainer and assigned to a contributor.
-[`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773) is in
-review. The full record, including a −1 and what it changed, is in
+maintainer and assigned to a contributor. In review:
+[`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773), and
+[#536](https://github.com/DMTF/spdm-emu/pull/536), which makes the verifier
+tool's sample policy parse on OPA 1.x. The full record, including a −1 and
+what it changed, is in
 [`docs/upstream/`](docs/upstream/README.md).
 
 **On one page:** [`docs/one-pager.svg`](docs/one-pager.svg), Table 1, Figure 2
@@ -254,7 +256,7 @@ signature; the host's own is 3.0.13 and has no ML-DSA.
 | the RATS pipeline: reference values, policy, verdict (`rats/`) | the responder validator and the fuzz targets |
 | the negative suite: three advisory classes, 21 deliberately wrong implementations | `libspdm`, `spdm-emu` and `spdm-dump` themselves |
 | the CI that goes red when a tampered measurement is accepted | |
-| five upstream changes (four merged, one in review) and one issue | |
+| six upstream changes (four merged, two in review) and one issue | |
 
 The accurate verbs are "I measured it" and "I connected it up". I did not
 implement SPDM, and I did not add post-quantum support.
@@ -481,7 +483,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — four changes merged (#524, #534, #526, #527), one in review through three patchsets and a −1 (94773), and one design question asked as an issue and answered (#533) ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — four changes merged (#524, #534, #526, #527), two in review — 94773, through three patchsets and a −1, and #536 — and one design question asked as an issue and answered (#533) ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built

@@ -82,7 +82,7 @@ read the index, not the caveats.
 | | |
 |---|---|
 | **upstream's, entirely** | the SPDM handshake, chunking, the post-quantum algorithm support, the responder validator, the fuzz targets, `libspdm`, `spdm-emu`, `spdm-dump` |
-| **this project's** | the tamper harness and proxy, the analysers (`pcapstat.py`, `fields.py`, `pcapcount.py`, `challenge_verify.py`), the reference-value → policy → verdict pipeline in `rats/`, the negative suite in `negative/`, the CI that turns red when a tampered measurement stops being rejected, the exposure analysis in `docs/advisories.md`, the census of every capture, and five upstream changes, one of them merged, and one issue |
+| **this project's** | the tamper harness and proxy, the analysers (`pcapstat.py`, `fields.py`, `pcapcount.py`, `challenge_verify.py`), the reference-value → policy → verdict pipeline in `rats/`, the negative suite in `negative/`, the CI that turns red when a tampered measurement stops being rejected, the exposure analysis in `docs/advisories.md`, the census of every capture, and six upstream changes, four of them merged, and one issue |
 
 The wording that follows from it, and it is exact: **"I quantified it"** and
 **"I connected it up"**, never *"I implemented SPDM"* or *"I added post-quantum
@@ -246,7 +246,8 @@ work:
   ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
   It has had no review since, and its three threads are still open: on
   2026-10-12 the author chose to wait another week rather than answer them.
-- **Not done. Most of the twenty candidates were not sent.** Five went as
+  #536, sent the same day, has no review yet.
+- **Not done. Most of the twenty candidates were not sent.** Six went as
   changes and one, candidate 4, as a question (issue #533, answered on
   2026-10-12 and assigned to a contributor); one was withdrawn
   as never true, one had been fixed upstream before this project found it, one
@@ -259,7 +260,7 @@ work:
   `spdm-emu` `16119ea`, and #526, #527 and #534 against `eff07cf`. #524 and
   #534 landed on exactly those commits. #526 and #527 landed by rebase on later
   ones, `13edd65` and `9975786`, with their bytes unchanged, and their
-  `Tested:` runs were not repeated there. 94773
+  `Tested:` runs were not repeated there. #536 is against `8f36665`. 94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not
