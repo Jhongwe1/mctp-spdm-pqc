@@ -6087,3 +6087,134 @@ only before. Fixed in `ef0fb88`.
   2026-09-29, and its upstream line is still true of that day.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`.** The author's, as before. Week 13 stays open.
+
+## 2026-10-12 · Day 21 · a step that had never run, and four of four merged
+
+One sitting from 23:00 here, into the 13th, for three questions: what had
+merged, why CI was red, and which of the remaining candidates are worth
+sending. All four pull requests sent to `DMTF/spdm-emu` are merged; CI was
+red for a reason of this repository's own; and of the rest, two are worth
+sending and none is necessary. Two findings are worth the five parts.
+
+---
+
+### 1. ★ A scheduled step's first run was its first test
+
+**現象** The weekly `upstream` job failed on 2026-10-05 and 2026-10-12, exit
+134 in "Its own unit tests": `test_spdm_requester` aborted in
+`req_get_digests_case24`, at `get_digests.c:1488`, `Assertion 'false'
+failed`. The libspdm commit is pinned, so the code under test was the same
+on the day the step was written, 2026-09-22, as on the days it failed. The
+step had never passed: on 2026-09-28, the first scheduled run, an earlier
+step had stopped the job.
+
+**假設** (1) the runner image moved — a new compiler or library under a
+pinned source; (2) libspdm `8a92317` fails its own unit tests in a Release
+build, an upstream defect of exactly the kind this job is there to notice;
+(3) the step runs the tests in a way upstream does not.
+
+**先驗哪個、為什麼** (3), because the line number chooses between them for
+free: 1488 is the `assert(false)` after
+`libspdm_read_responder_public_certificate_chain()` returns false — a file
+read. (1) was weak already: the two failures ran on different runner images,
+20260927 and 20261004, and failed identically. (2) was contradicted twice:
+libspdm's own workflow at that commit runs `make copy_sample_key`, then
+`cd build/bin`, before every test; and this repository's `w10-coverage` run,
+which does the same in a Debug build, records `test_spdm_requester ok`. Then
+one build of a clean clone with the job's exact commands, and four arms: as
+the job ran it, `cd bin` only, keys only, and both.
+
+**根因** (3). The tests open their keys by relative path; the step copied no
+keys and ran from `build/`. Either half alone fails at the same assertion,
+with the responder at 40 groups failed; both together pass — requester 52
+groups, responder 45, `test_crypt`, and the three other binaries libspdm's
+workflow runs for this configuration. Fixed in `0451fac`, which also runs
+every binary before failing: under `bash -e` the old loop stopped at the
+first, so on both red runs only the requester ran.
+
+**教訓** ★ **A check that has never run is a claim, not a check — and a
+scheduled one runs for the first time unattended, in public.** This step was
+written on 2026-09-22 and first executed on 2026-10-05, and its first result
+landed on the README's badge. The repository already held a working
+invocation of the same tests, `harness/run_coverage.sh`; the step was written
+fresh instead of derived from it. So a job that only runs on a schedule is
+dispatched by hand on the day it is written, and a new invocation of an
+upstream tool starts from the one that already works — week 1's rule, read
+the source before writing the flags, applied to the CI file.
+
+---
+
+### 2. A badge read that answered a different question
+
+**現象** `ci.yml` said a failure in the weekly job had not changed the
+README's badge on 2026-09-28, "fetched and read afterwards". On 2026-10-12
+the badge said failing, and the last push run was green.
+
+**假設** (1) GitHub changed how an unfiltered badge picks its run; (2) the
+earlier read came after a later run had passed; (3) a cached image.
+
+**先驗哪個、為什麼** None of them can be tested now: the earlier read left no
+record but its sentence. What can be measured is the present, and the
+present decides what to do. At 15:21 UTC, with no run after the failed one:
+unfiltered `failing`, `?branch=main` `failing`, `?event=schedule` `failing`,
+`?event=push` `passing`.
+
+**根因** Not established. Whatever the earlier read saw, the unfiltered badge
+follows scheduled runs now, which is the opposite of what `ci.yml`'s own
+argument for a weekly job assumed.
+
+**教訓** A sentence that records what something did *not* do needs the
+conditions it was read under, or it reads as a property of the system. The
+badge now asks for `event=push` (`614bc7c`), which makes the assumption true
+by construction rather than by one observation, and the `ci.yml` sentence is
+corrected in place rather than deleted.
+
+---
+
+### Smaller things, each checked
+
+- **Merged**: #534 on 2026-10-04 by `steven-bellock`, seven hours after it was
+  opened; #526 on 10-05, by him; #527 on 10-12, by `jyao1`. Each by rebase,
+  with its message and every changed blob byte-identical to what was sent
+  (1, 1 and 8 blobs), read from the API rather than from the notification.
+- **#533 answered**: option 1, assigned to `LeonLinAtAMI`. Not sent from here.
+- **`9975786` is not ours**: Leon's fix for an em dash in `command.h` that
+  broke MSVC under code page 950. None of the three patches adds a byte
+  outside ASCII — checked, because #534 edited that file.
+- **The advisory step's four `DRIFT` lines** are GitHub adding a `comments`
+  count to the advisory API. With that key removed, 0001–0003 hash to their
+  pins byte for byte; 0004 also carries the credit change already known, and
+  no `updated_at` moved. A hash of the whole record cannot tell a publisher's
+  edit from a schema change; W14's re-pin decides what to hash.
+- **`recheck_upstream.sh` said `NO DATA` ten times**, the anonymous allowance
+  spent, and called none of them unchanged. Each was read by hand.
+- **④ re-judged**: the tables it should consult were in the file all along, so
+  it needs no maintainer's call. ⑥ is eleven parse errors on OPA 1.20.2. Both
+  are outside every open pull request; 2 and ⑮ are inside four.
+- **Mine, caught before committing**: "all four landed on later commits", in
+  `docs/limitations.md`. #524 and #534 landed on exactly the commits they were
+  tested against.
+- **No clean clone today**: the one code change is a CI step a clean clone
+  does not run; its body was extracted from `ci.yml` and run directly, with
+  two mutations. `verify_repo.sh` passed.
+
+### Decisions
+
+- **The author's**: 94773 waits one more week, after being shown that Gerrit's
+  attention set holds him and three threads are open; which of ⑥ and ④ to
+  send, if either, is his to choose from the list in `docs/upstream/README.md`.
+- **Mine, delegated**: the badge counts push runs only, because the job that
+  turned it red builds other people's code, which is `ci.yml`'s own argument;
+  and the fix and this record are pushed tonight. Dispatching the weekly job
+  by hand is a write to GitHub, so it is his keystroke; if he does not, the
+  scheduled run on 2026-10-19 tests the fix.
+
+### Not done, and the reason for each
+
+- **The fixed step has not run on GitHub.** Only a dispatch or 2026-10-19's
+  schedule can run it there.
+- **The one-page summary** still says 2026-09-29, and its upstream line is
+  true of that day. It is worth updating before it is printed, and it has not
+  been printed.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`.** The author's, as before. Week 13 stays open.
