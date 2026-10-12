@@ -64,6 +64,7 @@ needs a date attached to it.
 | #532, candidate 3's issue | **a maintainer's** | 2026-10-12, 14:45 UTC | assigned to `jyao1`, who wrote: *"Since we deprecate SLOT_COUNT in libspdm, we can deprecate slot_count parameter."* |
 | `openbmc/spdm` 94773 | **in review, no movement** | checked 2026-10-12 | unchanged since 2026-09-23 17:10 UTC. Gerrit's attention set holds the author and neither owner, and three threads are unresolved, so to an owner the change is waiting on its author. **The author's decision, 2026-10-12: wait one more week** |
 | Every unsent candidate re-read at `spdm-emu` `8f36665` | **done** | 2026-10-12 | all still present. ④ turned out to need no maintainer's call, and ⑥ and ④ are the two worth sending; 2 and ⑮ wait for the four open pull requests that edit the same two functions. [§](#four-of-four-merged-and-the-rest-re-read--2026-10-12) |
+| Candidate ⑥ prepared | **prepared** | 2026-10-13 | *SpdmSamplePolicy: parse on OPA 1.0 and later*: `5800c37` on `8f36665`, unsigned, every `Tested:` line run against the committed bytes. The sign-off, the push and the pull request are the author's. [§](#the-sample-policy-on-opa-1x-prepared--2026-10-13) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -100,7 +101,7 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
 | 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
-| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first* |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared as `5800c37`, unsigned ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13))* |
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
@@ -1740,6 +1741,84 @@ badge with it. Not upstream's doing: the job's unit-test step had never
 passed. libspdm's own workflow copies the sample keys and runs every test from
 `build/bin`; the step did neither. Fixed in `0451fac`, and the badge counts
 push runs only since `614bc7c`. `LOG.md`, 2026-10-12, has the reproduction.
+
+## The sample policy on OPA 1.x, prepared — 2026-10-13
+
+Candidate ⑥, chosen from the two above as the one a reviewer can check most
+completely from the change alone. Prepared on `8f36665` as **`5800c37`**,
+unsigned, on branch `sample-policy-rego-v1` in the worktree
+`work/spdm-emu-rego` of `work/spdm-emu-pr`. Nine lines in, seven out:
+`import rego.v1`, `contains` on the four partial set rules, and `if` on all
+seven rule heads. The file's
+LF endings and its missing final newline are kept, so the diff is those lines
+and nothing else. A duplicate search first (`rego`, `OPA`, `SpdmSamplePolicy`,
+`v0-compatible`, `rego.v1`, `OpaTool`) found nothing but #120, a readme typo
+fixed in 2022, and #524's own mention of `--v0-compatible`. The file was last
+changed on 2022-08-01.
+
+Every `Tested:` line was run against the committed bytes — `git show` and
+`git archive` of the commit, not the working tree:
+
+| claim | result |
+|---|---|
+| `opa check`, opa 1.20.2 | before: 11 `rego_parse_error`, exit 1; after: none. Both clean under `--v0-compatible` |
+| the readme's flow, on the shipped samples | `json_to_cbor` 996 bytes, `cbor_to_json` 4312, `OpaTool.py` 5779 — #524's numbers — then the readme's `opa eval`: exit 2 before, exit 0 after, with `error_code` 0 and both checks true |
+| nothing else changes | all ten rules in `data.spdm` equal, the old policy under `--v0-compatible` against the new one with and without it, on the shipped input and on two copies with one digest or one svn changed; both copies give `error_code` 1 |
+
+The run found the first draft of the message wrong once: it said the readme's
+command exited 1 before the change. `opa eval` exits 2 on a parse error; it is
+`opa check` that exits 1. Corrected before anything was signed, and the tree,
+`89010fc`, did not change. The run before that printed nothing at all and
+exited 1 — the check script itself had a bug, and its stderr was not
+captured — so nothing was concluded from it.
+
+`rats/interop.sh` asserts that the sample does **not** parse as Rego v1. It
+reads the pinned 4.0.0-rc tree, so nothing changes until a re-pin; if this has
+merged by then, that assertion fails as expected, and its message — that OPA's
+default has changed — will be the wrong explanation.
+
+The title is the commit's subject. The body:
+
+> OPA 1.0 made Rego v1 the default, and `SpdmSamplePolicy.rego` is written in
+> v0. On a current OPA (1.20.2 here), the command the readme gives,
+>
+>     opa eval -i <OPA input file> -d <spdm policy rego file> "data.spdm"
+>
+> stops with eleven `rego_parse_error`s (`` `if` keyword is required before
+> rule body``, `` `contains` keyword is required for partial set rules``), so
+> the sample flow only completes with `--v0-compatible`, which is how I ran it
+> for #524.
+>
+> This adds `contains` to the four partial set rules and `if` to the seven
+> rule bodies, plus `import rego.v1`, which keeps the file valid where v0 is
+> still the default. Nothing else changes.
+>
+> On the shipped samples (`SpdmSampleCoMid.json` through `json_to_cbor` and
+> `cbor_to_json`, then `OpaTool.py` with `SpdmSampleMeasurement.json`), all
+> ten rules in `data.spdm` have the same value before (under
+> `--v0-compatible`) and after, on that input and on two copies with one
+> digest or one svn changed:
+>
+> | input | `error_code` | `SPDM_HASH_CHECK` | `SPDM_SVN_CHECK` |
+> |---|---|---|---|
+> | as shipped | 0 | true | true |
+> | one digest changed | 1 | false | true |
+> | one svn changed | 1 | true | false |
+
+The text to paste is `~/spdm-lab/work/sample-policy-rego-v1.pr-body.md`: the
+same words, with each paragraph on one line.
+
+Sending it, the author's:
+
+```bash
+cd ~/spdm-lab/work/spdm-emu-rego
+git fetch origin && git log --oneline -1 origin/main   # still 8f36665? if not, stop: re-run the checks first
+git show HEAD                                         # read it once
+git commit --amend -s --no-edit                       # the DCO sign-off: yours
+bash /mnt/c/Users/Key20/Desktop/mctp-spdm-pqc/harness/check_upstream_commit.sh .   # expect no FAIL
+git push fork sample-policy-rego-v1
+# then open the pull request with the title and body above
+```
 
 ## Three identity traps, all of which are silent until they are not
 
