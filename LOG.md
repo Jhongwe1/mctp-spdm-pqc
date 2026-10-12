@@ -6213,8 +6213,30 @@ corrected in place rather than deleted.
 
 - **The fixed step has not run on GitHub.** Only a dispatch or 2026-10-19's
   schedule can run it there.
+- **Candidate ⑥ is prepared, not sent** — see below.
 - **The one-page summary** still says 2026-09-29, and its upstream line is
   true of that day. It is worth updating before it is printed, and it has not
   been printed.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`.** The author's, as before. Week 13 stays open.
+
+### After midnight: candidate ⑥, prepared
+
+- **The author asked me to choose** among ⑥, ④ and a question about ⑮. ⑥:
+  a reviewer can check all of it from the change alone, it touches nothing
+  any open pull request touches, and it sits where #524 and #526 landed.
+  Prepared on `8f36665` as `5800c37`, unsigned, after a duplicate search that
+  found nothing; `docs/upstream/README.md` has the steps that send it.
+- **The first run of its checks printed nothing and exited 1.** The check
+  script had a bug, and its stderr was not captured, so the run looked like a
+  quiet failure of the change. Nothing was concluded from it. A check that
+  prints nothing has not checked anything: stderr goes where stdout goes.
+- **The run then found the commit message wrong**: it said the readme's
+  command exited 1 before the change. `opa eval` exits 2 on a parse error,
+  and `opa check` exits 1. Corrected before signing; the tree, `89010fc`, did
+  not change. Week 1's lesson, that an exit status is not a verdict, met from
+  a new direction: two commands of one program report the same failure with
+  different statuses.
+- **After ⑥, eight of the twenty candidates are unsent and still true**: ④,
+  sendable now; ⑮, ③ and 2, later and question-first; 13 and 16, which need
+  work before they are sendable; ① and 18, which will not be sent.
