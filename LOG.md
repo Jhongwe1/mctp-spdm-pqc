@@ -6094,7 +6094,8 @@ One sitting from 23:00 here, into the 13th, for three questions: what had
 merged, why CI was red, and which of the remaining candidates are worth
 sending. All four pull requests sent to `DMTF/spdm-emu` are merged; CI was
 red for a reason of this repository's own; and of the rest, two are worth
-sending and none is necessary. Two findings are worth the five parts.
+sending and none is necessary. Three findings are worth the five parts; the
+third came after midnight, from a question the author asked.
 
 ---
 
@@ -6213,7 +6214,8 @@ corrected in place rather than deleted.
 
 - **The fixed step has not run on GitHub.** Only a dispatch or 2026-10-19's
   schedule can run it there.
-- **Candidate ⑥ is prepared, not sent** — see below.
+- **#536 is in review** — see below. Nothing there is the author's to do
+  until someone answers.
 - **The one-page summary** still says 2026-09-29, and its upstream line is
   true of that day. It is worth updating before it is printed, and it has not
   been printed.
@@ -6240,3 +6242,34 @@ corrected in place rather than deleted.
 - **After ⑥, eight of the twenty candidates are unsent and still true**: ④,
   sendable now; ⑮, ③ and 2, later and question-first; 13 and 16, which need
   work before they are sendable; ① and 18, which will not be sent.
+- **Sent as #536**, 16:52 UTC, by the author, after the second look below:
+  head `09557d7`, tree `89010fc` as tested, body byte-identical to the draft
+  (1245 bytes, read back from the API), reviewers by CODEOWNERS. Checks:
+  45 of 45, DCO among them, the last at 17:15 UTC.
+
+### 3. ★ A compatibility claim measured on the wrong binary
+
+**現象** The prepared message said `import rego.v1` "keeps the file valid where
+v0 is still the default" — every 0.x release. The author had signed and
+pushed it, and before opening the pull request asked once more whether the
+change was needed at all.
+
+**假設** (1) the claim holds for every 0.x release; (2) it holds only from the
+release that introduced `import rego.v1`; (3) 1.20.2 under `--v0-compatible`
+parses as an old release does, so the check already made covers the claim.
+
+**先驗哪個、為什麼** (3), because it was what the sentence had silently rested
+on, and testing it cost three downloads: OPA's official 0.58.0, 0.59.0 and
+0.70.0 static binaries, each checked against its release's sha256 first.
+
+**根因** (2). 0.58.0 rejects the change with three `rego_parse_error`; 0.59.0
+and 0.70.0 read it and give the same `data.spdm` as the old file. And (3) was
+wrong as a method: a new binary in compatibility mode is not an old binary.
+The change trades the releases before 0.59.0 for every release since, which
+is the right trade, and the message now says it is one — corrected and
+re-signed by the author as `09557d7` before any pull request pointed at it.
+
+**教訓** ★ **A compatibility claim is a claim about versions, so it is
+measured on those versions or not written.** The other checks of the night
+had all passed when the question was asked; it found the one sentence that
+had generalised past its measurement, and that is what asking again is for.
