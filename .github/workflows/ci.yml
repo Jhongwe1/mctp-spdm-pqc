@@ -344,14 +344,39 @@ jobs:
           # fuzz targets live in the same directory and answer "file error" to
           # being run with no argument, which an earlier version of
           # harness/run_coverage.sh counted as six broken unit tests.
-          for t in test_spdm_requester test_spdm_responder test_crypt; do
-            if [ -x "bin/$t" ]; then
+          #
+          # ★ The tests open their keys and certificates by RELATIVE path
+          # (ecp256/bundle_responder.certchain.der and so on), and those files
+          # are not part of the build. libspdm's own workflow runs
+          # `make copy_sample_key` and then `cd build/bin` before every test,
+          # and so does harness/run_coverage.sh. This step did neither, and the
+          # first two times it ran, 2026-10-05 and 2026-10-12, it failed on
+          # exactly that: test_spdm_requester aborted in req_get_digests_case24,
+          # on the assert(false) that follows a failed file read. Measured in a
+          # clean clone on 2026-10-12: copying the keys alone, or changing
+          # directory alone, fails the same way; both together pass.
+          #
+          # The list is the one libspdm's workflow runs for this
+          # configuration. It runs test_spdm_fips only under
+          # LIBSPDM_FIPS_MODE, and in this build that binary fails.
+          #
+          # Every binary runs and the step fails at the end, so one failure
+          # cannot hide the others' results. Under `bash -e` the first version
+          # stopped at the first, and on both red runs the responder and
+          # test_crypt never ran.
+          cmake --build . --target copy_sample_key
+          cd bin
+          fail=0
+          for t in test_spdm_requester test_spdm_responder test_spdm_common \
+                   test_spdm_crypt test_crypt test_spdm_secured_message; do
+            if [ -x "$t" ]; then
               echo "--- $t ---"
-              "./bin/$t"
+              "./$t" || { echo "--- $t exited $? ---"; fail=1; }
             else
               echo "--- $t is not in this build ---"
             fi
           done
+          exit "$fail"
 
       - name: The pinned advisories have not been edited, and none is new
         # AFTER the build, and run even if the build failed. Until 2026-09-29 it
