@@ -390,9 +390,13 @@ jobs:
         # Exit 3: an advisory newer than every pin has no pin. That fails the
         #         job on purpose: it is the one outcome that means this
         #         repository's evidence has a gap, and a failed scheduled run is
-        #         what sends somebody a notification. It did not change the
-        #         README badge when it happened on 2026-09-28; the badge was
-        #         fetched and read afterwards, rather than assumed.
+        #         what sends somebody a notification. ★ 2026-10-12: this used
+        #         to add that a failure here does not change the README
+        #         badge, from a read on 2026-09-29. Read again with no run
+        #         after the failed one, the unfiltered badge said failing,
+        #         `?event=schedule` failing and `?event=push` passing: it
+        #         follows scheduled runs, whatever the earlier read saw. The
+        #         README's badge asks for event=push from that day.
         #
         # The token only buys a rate limit. The advisory list is public, and
         # an anonymous runner shares its allowance with everyone else on its

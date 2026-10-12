@@ -14,7 +14,7 @@ post-quantum signatures on the wire.
 > not claimed is in [`docs/threat-scope.md`](docs/threat-scope.md); what I did
 > not do is in [`docs/limitations.md`](docs/limitations.md).
 
-![CI](https://github.com/Jhongwe1/mctp-spdm-pqc/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Jhongwe1/mctp-spdm-pqc/actions/workflows/ci.yml/badge.svg?event=push)
 
 **Upstream:** [`DMTF/spdm-emu` #524](https://github.com/DMTF/spdm-emu/pull/524)
 merged on 2026-09-28; [#526](https://github.com/DMTF/spdm-emu/pull/526)
@@ -58,7 +58,7 @@ the run's manifest:
 
 | to check that | time | how |
 |---|---|---|
-| the code runs | 10 s | the badge above. Each CI job states what it protects, and what it does not, in [`ci.yml`](.github/workflows/ci.yml) |
+| the code runs | 10 s | the badge above, which counts the runs a push starts. The weekly `upstream` job builds other people's code and reports by notification, not on the badge. Each CI job states what it protects, and what it does not, in [`ci.yml`](.github/workflows/ci.yml) |
 | the numbers are real | 90 s | `bash harness/verify_repo.sh` re-derives every published number from the committed captures, with zero tolerance. That includes the numbers on this page, which carry markers the same run checks |
 | the packets are real | 60 s | the `.pcap` files under [`bench/data/`](bench/data/) are the raw captures, and each run directory has a `manifest.json` with its commands, upstream commits and file hashes |
 | a tamper is still caught | 10 s | `python3 rats/appraise.py matrix --check`: ten arms, each with the verdict it must get. The `rats` CI job fails if any of them changes, row 1 of the table above included |
