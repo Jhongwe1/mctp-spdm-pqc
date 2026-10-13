@@ -6273,3 +6273,174 @@ re-signed by the author as `09557d7` before any pull request pointed at it.
 measured on those versions or not written.** The other checks of the night
 had all passed when the question was asked; it found the one sentence that
 had generalised past its measurement, and that is what asking again is for.
+
+## 2026-10-13 · Day 22 · a change asked for, and five of five merged
+
+Two sittings. From 01:45 here, #533's assignee having asked this project to
+send the change itself, stacked on his #530, it was prepared and tested; from
+21:00 the author reviewed it, and the freshness check before his sign-off found
+that the ground under it had moved. Sent as #537 at 21:19. #536 had merged in
+between, so all five pull requests sent to `DMTF/spdm-emu` before it are
+merged. Three
+findings are worth the five parts, and two of them are about the instruments
+rather than the thing measured.
+
+---
+
+### 1. ★ A sample that had never connected, and the first suspect was ours
+
+**現象** The attester sample, run against the shipped responder to exercise its
+two new lines, stopped after four messages: `GET_CAPABILITIES` answered with
+`ERROR(InvalidRequest)`, `libspdm_init_connection - 0x8001000a`, exit status 0.
+Run with `--ver` from 1.0 to 1.4, it sent the same four messages each time.
+
+**假設** (1) this change, or #530 under it, broke it; (2) #527 — the author's
+own, merged hours earlier — broke it, since it changed how the emulators size
+their buffers and `GET_CAPABILITIES` carries those sizes; (3) the sample's own
+configuration breaks a rule the responder enforces, and always has.
+
+**先驗哪個、為什麼** (1) was already excluded by the design of the test: the
+build without the change failed identically. Of the other two, (2) first,
+because it is the one whose cost lands on this project if it is true — a merged
+change of ours breaking a shipped sample — and because the 4.0.0-rc2 build,
+from before #527, was already on disk: one run, and a byte comparison of the two
+requests. The five identical `--ver` runs were read as a symptom as well: five
+inputs, one output, so the option never reached the context — and the source
+agreed, because the sample never sets the SPDM version.
+
+**根因** (3). At `eff07cf` the request is byte-identical: `Flags` `0x000072c6`,
+no `CHUNK_CAP`, `DataTransferSize` 4,608, `MaxSPDMmsgSize` 163,840. libspdm
+requires the two sizes to be equal without `CHUNK_CAP`
+(`libspdm_rsp_capabilities.c` 239–244), and the requester emulator, with the
+same two sizes, passes because it sets `CHUNK_CAP`. `--cap` cannot rescue the
+sample: `process_args()` accepts it only from the requester and the responder.
+Since #531, `--max_spdm_msg_size 4608` can — the request then carries 4,608
+twice and the sample runs to the end — which was found only when this entry's
+own sentences were audited. No workflow runs the sample, so nothing had
+noticed. It is candidate 21, and
+since #531 the sample tells the new size helpers that it chunks while not
+saying so on the wire.
+
+**教訓** ★ **When one of the suspects is your own merged work, test that one
+first — not because it is the likeliest, but because being wrong about it costs
+you, and someone else is already relying on it.** And a sample that is built
+but never run is not tested by being built: CI compiling the attester said
+nothing about whether it works. Five different inputs giving one output is the
+instrument saying that the input never arrived.
+
+---
+
+### 2. ★ A comparator that could not say "different"
+
+**現象** The first before-and-after comparison reported the same message order,
+by hash, for the stock and the swapped anchors and for the builds without and
+with the change: every pair the same.
+
+**假設** (1) the orders really are the same, which is what the issue had found
+with a full decode; (2) the comparator reads something that is the same in
+every record, so it would call anything the same.
+
+**先驗哪個、為什麼** Neither was tested at the time, and that is the finding: (1)
+was what was expected, so the result was not questioned. It was caught by
+accident, when the attester's raw records were printed to diagnose finding 1
+and every one of them began `00 00 00 c0`.
+
+**根因** (2). Each record in these captures starts with four bytes of MCTP
+header, and the comparator took the message type from byte 0. Every item was
+`00`, so it was comparing lengths, and any two flows of equal length hashed
+alike. Fixed to read byte 4, and it now prints how many distinct items a
+sequence holds — 24 for the requester's flows — so a sequence with one is
+visibly broken. The comparison was re-run before anything was written down.
+
+**教訓** ★ **"Same" from an instrument means something only after it has shown
+that it can say "different".** The repository already holds that rule for its
+tamper arms, where a mutation must change its input before its verdict counts;
+here it applied to the measuring tool itself. A positive control can cost one
+line: print what the comparator saw.
+
+---
+
+### 3. The freshness check that moved the commit
+
+**現象** The change was prepared at 18:36 UTC on the 12th, on #530's head
+`92034e5`. When the author had reviewed it, eighteen hours later, `main` had
+two new commits and #530's head was `9517beb`.
+
+**假設** (1) #530's change itself had been revised in review; (2) a rebase only,
+its lines unchanged; (3) the commits now under it change what the tests
+measure, even if #530 did not.
+
+**先驗哪個、為什麼** (1) and (2) together, with one `range-diff`, because it is
+cheap and decides whether what the author had reviewed was still the thing to
+be sent. Then (3), by re-running everything, because one of the new commits,
+#531, had changed the attester's size setup and the buffer sizes, and the
+commit message states those sizes.
+
+**根因** (2), and not (3): #531 merged, #530 was rebased onto it with its added
+and removed lines identical, and every measurement came out the same. But one
+sentence in the message was no longer true — "on #530's head (92034e5)" — and
+#530's patch-id had changed although its lines had not, because patch-id
+hashes the surrounding context as well.
+
+**教訓** **A hash in a commit message is a claim with an expiry date: the next
+rebase of the change below it.** The base belongs in the record, where it can
+be dated, and the message now says "on top of #530". And a stacked change
+cannot rely on its base keeping its patch-id; when #530 lands, the way this
+branch is rebased has to allow for that.
+
+---
+
+### Smaller things, each checked
+
+- **#536 merged**, 06:45 UTC, by `jyao1`, with no review and no comment; it
+  landed as `1229103` on `c1bdbe0`, with message, author and blob
+  byte-identical to `09557d7`. Five of five.
+- **Leon's responder-side paragraph**, addressed to `steven-bellock`, read
+  against libspdm `98caf80`: it holds — `IS_ERROR` only at line 611, and the
+  status overwritten at 723. Not this project's question, and left alone.
+- **The slot-1 line nobody predicted**, in the attester variant with one root,
+  was explained by the root hash at the head of each saved chain — slot 1
+  chains to `ca1.cert.der` — and not by assumption.
+- **The throwaway patch's first version provisioned before negotiation** and
+  loaded no root; its own `printf` said so, which is why it had one.
+- **The pull request's body first compared as different**, because the reviewed
+  files had been read through `wsl -- cat` from Git Bash into two zero-byte
+  files. Both comparisons failing at once, and two sizes of zero, said the
+  check was broken rather than the body; re-run inside WSL, byte-identical.
+- **Reviewers**: the API gives the author `pull` on `DMTF/spdm-emu`, so Leon,
+  who offered to review, is mentioned in the body instead.
+- **#537's checks**: 45 of 45, DCO and all eighteen VS2019 builds among them,
+  the last at 13:41:55 UTC — the MSVC builds being the one place this change
+  could not be compiled here.
+- **Clean clone at `42eeff1`**, before this entry: `verify_repo.sh`,
+  `rats/appraise.py matrix --check` and `make -C c-drills` all exit 0, and the
+  libspdm pin matches for all three flavours.
+- **Mine, caught before committing**, by reading every new sentence against
+  what was measured: "with at most a label or an approval" in
+  `docs/limitations.md` — #534 had both; a "now" in the README for a change
+  still in review; "every pull request sent is merged", written while #537
+  was open; "four open pull requests edit `spdm_emu.h`", one of which had
+  merged; "the responder hashed the same in every build", true only within
+  each stack; and "no command line gets past it" for candidate 21, which
+  `--max_spdm_msg_size 4608` measurably does since #531.
+
+### Decisions
+
+- **The author's**: I write the C, he reviews and signs; no separate reply on
+  #533, the pull request being the reply; record tonight and push.
+- **Mine, delegated**: stacked on #530 now, as a normal pull request rather
+  than a draft, because the assignee asked for exactly that and a draft does
+  not notify the code owners; `EMU_INFO`, inline, no new macro; the attester
+  tested through a local patch rather than not at all, and the patch not sent.
+
+### Not done, and the reason for each
+
+- **Candidate 21 is not sent.** Which of its two fixes is right is the
+  maintainers' call, so it is a question, and the author's to ask when he
+  chooses.
+- **Candidate 20 is not re-measured**, although #531, which may close #358, has
+  merged. One build and one run; not part of this change.
+- **The fixed weekly CI step has not run on GitHub**, and **the one-page
+  summary** still says 2026-09-29: as on Day 21.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`.** The author's. Week 13 stays open.
