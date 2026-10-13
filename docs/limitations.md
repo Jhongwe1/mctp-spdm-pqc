@@ -234,11 +234,12 @@ work:
 
 ## 6. Upstream
 
-- **Limit. Four changes merged, and none drew a maintainer's comment.**
-  `DMTF/spdm-emu` #524, #534, #526 and #527 were merged between 2026-09-28 and
-  2026-10-12, each as sent, with approvals and labels and no comment from a
-  maintainer, so the record shows what was accepted and not why. #527's only
-  review was a contributor's. `openbmc/spdm` 94773 received a −1 from an owner
+- **Limit. Five changes merged, and none drew a maintainer's comment.**
+  `DMTF/spdm-emu` #524, #534, #526, #527 and #536 were merged between
+  2026-09-28 and 2026-10-13, each as sent, and without a comment from a
+  maintainer — at most a label and an approval — so the record shows what was
+  accepted and not why. #527's only review was a contributor's, and #536 had none.
+  `openbmc/spdm` 94773 received a −1 from an owner
   on patchset 1, for reading as AI-generated documentation that costs a
   reviewer more than it saves. The same owner said of patchset 2 that its
   instructions were unlike any other OpenBMC repository's, and patchset 3 was
@@ -246,10 +247,10 @@ work:
   ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
   It has had no review since, and its three threads are still open: on
   2026-10-12 the author chose to wait another week rather than answer them.
-  #536, sent the same day, has no review yet.
-- **Not done. Most of the twenty candidates were not sent.** Six went as
-  changes and one, candidate 4, as a question (issue #533, answered on
-  2026-10-12 and assigned to a contributor); one was withdrawn
+  #537, sent on 2026-10-13, has no review yet.
+- **Not done. Most of the twenty-one candidates were not sent.** Seven went as
+  changes, one of them, candidate 4, first as a question (issue #533, answered
+  on 2026-10-12; its assignee then asked for the change, sent as #537); one was withdrawn
   as never true, one had been fixed upstream before this project found it, one
   had been reported upstream since 2024, and one was reported by someone else
   on 2026-10-02. Each of the rest is
@@ -257,10 +258,11 @@ work:
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
 - **Limit. Each change was tested against one upstream commit.** #524 against
-  `spdm-emu` `16119ea`, and #526, #527 and #534 against `eff07cf`. #524 and
-  #534 landed on exactly those commits. #526 and #527 landed by rebase on later
-  ones, `13edd65` and `9975786`, with their bytes unchanged, and their
-  `Tested:` runs were not repeated there. #536 is against `8f36665`. 94773
+  `spdm-emu` `16119ea`, #526, #527 and #534 against `eff07cf`, and #536
+  against `8f36665`. #524 and #534 landed on exactly those commits. #526, #527
+  and #536 landed by rebase on later ones, `13edd65`, `9975786` and
+  `c1bdbe0`, with their bytes unchanged, and their `Tested:` runs were not
+  repeated there. #537 is against #530's `9517beb`, on `1229103`. 94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not

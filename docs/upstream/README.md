@@ -66,6 +66,10 @@ needs a date attached to it.
 | Every unsent candidate re-read at `spdm-emu` `8f36665` | **done** | 2026-10-12 | all still present. ④ turned out to need no maintainer's call, and ⑥ and ④ are the two worth sending; 2 and ⑮ wait for the four open pull requests that edit the same two functions. [§](#four-of-four-merged-and-the-rest-re-read--2026-10-12) |
 | Candidate ⑥ prepared | **prepared** | 2026-10-13 | *SpdmSamplePolicy: parse on OPA 1.0 and later*: `5800c37` on `8f36665`, unsigned, every `Tested:` line run against the committed bytes. The sign-off, the push and the pull request are the author's. [§](#the-sample-policy-on-opa-1x-prepared--2026-10-13) |
 | ★ Candidate ⑥ **SENT** | **done** | 2026-10-12, 16:52 UTC | [`DMTF/spdm-emu` #536](https://github.com/DMTF/spdm-emu/pull/536), after a second look the author asked for, which found the message claiming more about old OPA releases than had been run: measured on 0.58.0, 0.59.0 and 0.70.0, corrected, re-signed as `09557d7` with the tree unchanged. Body byte-identical to the draft; reviewers by CODEOWNERS. [§](#the-sample-policy-on-opa-1x-prepared--2026-10-13) |
+| ★★ #536 **MERGED: five of five** | **done** | 2026-10-13, 06:45 UTC | by **Jiewen Yao** (`jyao1`), fourteen hours after it was opened, with no review and no comment. Landed by rebase as **`1229103`**, on `c1bdbe0` — #531, merged two minutes earlier — with the commit message, the author and the policy file's blob (`4956c74d`) byte-identical to `09557d7`. All five pull requests this project had sent to `DMTF/spdm-emu` by then are merged. [§](#candidate-4s-change-sent-as-537--2026-10-13) |
+| #533: the change asked of this project | **asked** | 2026-10-12, 17:29 UTC | by the assignee, `LeonLinAtAMI`: *"Please go ahead and base your PR on #530, since it touches the same call sites."* Every `get_certificate` call, the attester sample's included. This supersedes the 14:47 row's "none is sent from here". [§](#candidate-4s-change-sent-as-537--2026-10-13) |
+| ★ Candidate 4's change **SENT** | **done** | 2026-10-13, 13:19 UTC | [`DMTF/spdm-emu` #537](https://github.com/DMTF/spdm-emu/pull/537), stacked on #530: a line naming the slot after each of seven calls, every `Tested:` claim measured against a build without the change. The freshness check before the sign-off found #530 rebased, and #536 and #531 merged, in the eighteen hours since it was prepared; the commit was moved, every run repeated with the same results, and one `Tested:` sentence that had become false rewritten. Signed by the author as `5195934`; body byte-identical to the reviewed file. [§](#candidate-4s-change-sent-as-537--2026-10-13) |
+| Candidate 21, found while testing it | **recorded, not sent** | 2026-10-13 | `spdm_device_attester_sample` cannot connect to `spdm_responder_emu`: its `GET_CAPABILITIES` sets no `CHUNK_CAP` while `DataTransferSize` (4,608) differs from `MaxSPDMmsgSize` (163,840), so the responder answers `InvalidRequest`. Identical at `eff07cf`, so neither #527 nor #531 caused it; the program exits 0 regardless, and no workflow runs it. Since #531, `--max_spdm_msg_size 4608` gets it through |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -76,10 +80,10 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Twenty candidates have been recorded. Six went as changes — #524, #534, #526
-and #527 are merged, and 94773 and #536 are in review — and one, candidate 4, went as a
-question, issue #533, which a maintainer answered and assigned to a
-contributor. Two were fixed upstream by the maintainer
+Twenty-one candidates have been recorded. Seven went as changes — #524, #534,
+#526, #527 and #536 are merged, and 94773 and #537 are in review — and one of
+the seven, candidate 4, went first as a question, issue #533, whose assignee
+then asked this project for the change. Two were fixed upstream by the maintainer
 without this project, one of them before this project had found it, and one,
 candidate 3, was reported by someone else on 2026-10-02. One, ⑭, was never true
 and is withdrawn, and one, ⑳, had been reported upstream two years earlier. The judgement column is the part worth reading, because it
@@ -91,18 +95,19 @@ row was also searched for upstream, which until then had been done only for
 the rows that were sent ([§](#every-candidate-re-read-and-searched-for--2026-09-30)).
 Rows 3, 4, 5, 17 and 20 changed on 2026-10-04 ([§](#two-more-sent-one-of-them-a-question--2026-10-04)),
 and rows 2–5, 8–11, 15, 17, 18 and 20 on 2026-10-12, when every unsent row was
-re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12)).*
+re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12)).
+Rows 4 and 8–11 changed, and row 21 was added, on 2026-10-13 ([§](#candidate-4s-change-sent-as-537--2026-10-13)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
 | 1 | `openbmc/spdm` | no `README.md`, and a newcomer hits five build and test blockers with nothing to say they are expected | five blockers reproduced on 2026-08-11 and 2026-09-18, and re-run on 2026-09-23 | **sent**, 94773. The review of the 2025 attempt was read first and treated as the specification. A minimum compiler version was deliberately **not** part of it: that is a policy change, and a first change should not start an argument |
 | 2 | `DMTF/spdm-emu` | `--help` omits three capabilities the defaults set | two source lines, and the `Flags` word on the wire | not sent: correct and small, but a text fix outranked by ② on usefulness, and a second change to a project before the first is answered is two conversations that do not happen. *2026-10-12: unchanged at `8f36665` — the defaults still set `CHUNK` and `EP_INFO_SIG`, and the responder's `MEL`, and the `By default` lines still omit them. Four open pull requests edit `print_usage()`, so it waits for them* |
 | 3 | `DMTF/spdm-emu` | a slot-0 certificate read whose failure is discarded | `w4-tamper` `t3_cert`: the only trace is `ProvisionedSlotMask` 0x13 → 0x12 | not sent: sample-code robustness, queued behind ②. *2026-10-04: reported by someone else, [#532](https://github.com/DMTF/spdm-emu/issues/532) (`annamdi`, 2026-10-02), found while deploying the responder and filed with a `--slot_count` question; its author offers the fix. Not sent from here. 2026-10-12: the maintainer proposes deprecating `--slot_count` instead* |
-| 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | **asked, and answered**: issue [#533](https://github.com/DMTF/spdm-emu/issues/533), 2026-10-03. The library reports it as a warning **by design** — libspdm #1773 and #1774 made it one in 2023, so that the integrator decides — so it went as a question about what a sample should teach, not as a defect. Re-measured on the head first: `0x40020003` returned three times and ignored, and the same 578 messages as with the stock trust anchor. *2026-10-12: `steven-bellock` chose option 1 — a line naming the slot, and carry on — and assigned the issue to `LeonLinAtAMI`, whose #530 changes the same calls. Not sent from here; the issue's reproduction is what this project can offer the change* |
+| 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | **sent**, as [#537](https://github.com/DMTF/spdm-emu/pull/537) on 2026-10-13, after it was asked as issue [#533](https://github.com/DMTF/spdm-emu/issues/533) on 2026-10-03. The library reports it as a warning **by design** — libspdm #1773 and #1774 made it one in 2023, so that the integrator decides — so it went as a question about what a sample should teach, not as a defect. Re-measured on the head first: `0x40020003` returned three times and ignored, and the same 578 messages as with the stock trust anchor. *2026-10-12: `steven-bellock` chose option 1 — a line naming the slot, and carry on — and assigned the issue to `LeonLinAtAMI`, whose #530 changes the same calls. Not sent from here; the issue's reproduction is what this project can offer the change. The same evening the assignee asked for the change itself, on top of #530 and covering every call; sent on 2026-10-13 as #537, after each of the seven calls had been made to print ([§](#candidate-4s-change-sent-as-537--2026-10-13))* |
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
 | 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
-| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared, then sent as [#536](https://github.com/DMTF/spdm-emu/pull/536) ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13))* |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared, then sent as [#536](https://github.com/DMTF/spdm-emu/pull/536) ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13)), and merged on 2026-10-13 at 06:45 UTC as `1229103`, byte-identical* |
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
@@ -111,7 +116,8 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 | 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | **merged**: sent as [#527](https://github.com/DMTF/spdm-emu/pull/527) ([`0004`](0004-data-transfer-size.md)), rebuilt on 4.0.0-rc2, and merged on 2026-10-12 as `fd75485`. Porting it found two defects in this project's version, neither of which the sweep could reach: with `CHUNK_CAP` cleared it advertised a `MaxSPDMmsgSize` larger than its `DataTransferSize`, which the peer rejects (`0x80010005`, measured on the `pqc-dts` build), and on `--trans NONE` it advertised 128 bytes more than asked. *2026-10-04: reviewed and approved by a contributor, `LeonLinAtAMI`, whose [#531](https://github.com/DMTF/spdm-emu/pull/531) is built on its commit, unchanged* |
 | 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | **half fixed upstream**, without this project: `eff07cf`, 2026-09-29, registers both `SUCCESS_13` cases, which were the half that mattered. `CERTIFICATE_SIZE_REQ` is still not registered and `CERTIFICATE_SPDM_X509_CERTIFICATE` is still registered and not implemented — `--audit-config`, 83 implemented, 83 registered. Two lines remain. *2026-10-12: the same two, at `8f36665` with the suite at `7acde98`. Not sent: the maintainer re-syncs this array himself* |
 | 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | ★ **fixed upstream before this project found it.** `65bcccc` and `ad6db5c`, authored 2026-09-07 and 09-14, on the suite's `main` on 2026-09-15; this row was written on 2026-09-20, against the submodule pointer `c27bb1c`. Not sendable. The fix's own commit message names the mechanism this entry derived, and repairs it the way this entry preferred |
-| 20 | `DMTF/spdm-emu` | `--trans NONE` with `CHUNK_CAP` cleared cannot start | unpatched `eff07cf`: the responder exits 1 before listening and prints nothing, where MCTP with the same capabilities completes. `MaxSPDMmsgSize` is computed from a 128-byte transport overhead NONE does not register, so `DataTransferSize` (4,736) exceeds it, and libspdm's context check requires the opposite. Setting the two equal with 0004's flag, and changing nothing else, makes it start | ★ **already reported upstream**: [#358](https://github.com/DMTF/spdm-emu/issues/358), opened 2024-07-28 by `arugan02`, labelled `bug`, open, with the same error text and the same diagnosis. The reporter offered a pull request and a maintainer answered *"that seems reasonable"*; none arrived. Found by the duplicate search before this row was written as a new finding. What this project adds is narrower: re-confirmed on 4.0.0-rc2, and since the maximum message size with chunking became `0x28000` it reproduces only with `CHUNK_CAP` cleared. 0004 is a workaround, not the fix; the fix is one line once 0004's helper exists, and would go as its own change referencing #358. *2026-09-30: #358 is assigned to its reporter, so the first step is a question there, not a pull request. 2026-10-04: [#531](https://github.com/DMTF/spdm-emu/pull/531) changes the default path on `--trans NONE` so that `MaxSPDMmsgSize` follows `DataTransferSize`, which reads as the fix for #358. It does not cite #358, and no build here has checked it. 2026-10-12: #531 has to resolve a conflict with the merged #527 first; after that, one build measures whether it closes #358* |
+| 20 | `DMTF/spdm-emu` | `--trans NONE` with `CHUNK_CAP` cleared cannot start | unpatched `eff07cf`: the responder exits 1 before listening and prints nothing, where MCTP with the same capabilities completes. `MaxSPDMmsgSize` is computed from a 128-byte transport overhead NONE does not register, so `DataTransferSize` (4,736) exceeds it, and libspdm's context check requires the opposite. Setting the two equal with 0004's flag, and changing nothing else, makes it start | ★ **already reported upstream**: [#358](https://github.com/DMTF/spdm-emu/issues/358), opened 2024-07-28 by `arugan02`, labelled `bug`, open, with the same error text and the same diagnosis. The reporter offered a pull request and a maintainer answered *"that seems reasonable"*; none arrived. Found by the duplicate search before this row was written as a new finding. What this project adds is narrower: re-confirmed on 4.0.0-rc2, and since the maximum message size with chunking became `0x28000` it reproduces only with `CHUNK_CAP` cleared. 0004 is a workaround, not the fix; the fix is one line once 0004's helper exists, and would go as its own change referencing #358. *2026-09-30: #358 is assigned to its reporter, so the first step is a question there, not a pull request. 2026-10-04: [#531](https://github.com/DMTF/spdm-emu/pull/531) changes the default path on `--trans NONE` so that `MaxSPDMmsgSize` follows `DataTransferSize`, which reads as the fix for #358. It does not cite #358, and no build here has checked it. 2026-10-12: #531 has to resolve a conflict with the merged #527 first; after that, one build measures whether it closes #358. 2026-10-13: #531 merged as `c1bdbe0`; that build has not been run* |
+| 21 | `DMTF/spdm-emu` | `spdm_device_attester_sample` cannot connect to the responder it ships with | its `GET_CAPABILITIES`, read off the wire at `eff07cf`, and again on `1229103` under #530, which does not touch the sample: `Flags` `0x000072c6`, no `CHUNK_CAP`, `DataTransferSize` 4,608, `MaxSPDMmsgSize` 163,840. libspdm requires the two sizes to be equal without `CHUNK_CAP` (`libspdm_rsp_capabilities.c` 239–244 at `a6994ee`), so the responder answers `ERROR(InvalidRequest)`, `libspdm_init_connection` returns `0x8001000a`, and the program exits 0 | not sent. Found on 2026-10-13 while testing #537, whose attester half had to be run with a local patch because of it. Before #531 no option got past it: the sample never sets the SPDM version, so `--ver` changes nothing (measured from 1.0 to 1.4), and `process_args()` accepts `--cap` only from the requester and the responder. Since #531, `--max_spdm_msg_size 4608` does: the request then carries 4,608 twice, and the sample collects its chains and its measurement — measured, and found only when this row's first wording, "no command line gets past it", was audited. The sample also passes `chunk_cap = true` to #531's size helpers without setting `CHUNK_CAP`, so by the rule above one word or one flag would fix the default — inferred, not built. A question first, because which of the two is upstream's call |
 
 **How the two were chosen**, in the order the criteria were applied: can a
 reviewer verify it from the change alone; would the next person to hit it be
@@ -1869,6 +1875,143 @@ pointed at it.
 | Before opening | the second look above; the duplicate search repeated, and no open pull request touches the policy |
 | Reviewers | `jyao1`, `steven-bellock`, added by CODEOWNERS |
 | Checks | DCO success; **45 of 45** check runs success, every VS2019 build among them, the last at 17:15:37 UTC; `mergeable_state` clean. Read from the API |
+| Outcome | **merged**, 2026-10-13 06:45 UTC, by `jyao1`, without a review or a comment, as `1229103`, byte-identical ([§](#candidate-4s-change-sent-as-537--2026-10-13)) |
+
+## Candidate 4's change, sent as #537 — 2026-10-13
+
+Read on 2026-10-12 at 17:45 UTC, sixteen minutes after #533's assignee,
+`LeonLinAtAMI`, answered: *"Please go ahead and base your PR on #530, since
+it touches the same call sites. I have no strong preference on how the
+warning is printed. It would be nice to cover all `get_certificate` call
+sites, including `spdm_device_attester_sample`."* The issue had offered to
+base the change on #530 "if it lands first". It had not landed, so the change
+is stacked on it, the way his #531 was stacked on #527.
+
+The same comment asked `steven-bellock` about the responder's side: in the
+encapsulated flow for mutual authentication the certificate step's warning is
+checked with `LIBSPDM_STATUS_IS_ERROR` only and then overwritten by the flow
+handler's call, so an Integrator cannot see it (`libspdm_rsp_encap_response.c`
+598–611 and 723 at libspdm `98caf80`, its `main` that day — read here, and it
+says what he says). The question was not this project's, and it was left
+alone.
+
+### Seven calls, and two that cannot print
+
+| file, at #530's head | line | reads | the issue's reproduction reaches it |
+|---|:-:|---|---|
+| `spdm_requester_authentication.c` | 63 | slot 0 | yes |
+| `spdm_requester_authentication.c` | 72 | the other slot, 4 there | yes |
+| `spdm_requester_authentication.c` | 80 | `--slot_id` other than 0 | no |
+| `spdm_requester_authentication.c` | 110 | the same slot, again | yes |
+| `spdm_requester_session.c` | 87 | inside the session | no: `CERT` is in the default `--exe_session`, and the reproduction's `KEY_EX` leaves it out |
+| `spdm_device_attester_collection.c` | 25 | slot 0 | no |
+| `spdm_device_attester_collection.c` | 69 | slots 1–7, inside the session | no |
+
+Two things the answer did not say, measured before anything was written. The
+attester sample provisions **no root**: only the requester and the responder
+set `LIBSPDM_DATA_PEER_PUBLIC_ROOT_CERT`, and with none provisioned libspdm
+passes the authority check (`libspdm_com_crypto_service.c` 798–804 at
+`a6994ee`: *"When there is no root_cert in local_context, the return is true
+too"*). In the sample as shipped the warning cannot occur, and the line is for
+the copy of it that adds a root. And #533's reproduction reaches three of the
+requester's five calls; the other two need their own flags.
+
+### The change
+
+After each call's `LIBSPDM_STATUS_IS_ERROR` block, the same four lines:
+
+```c
+if (status == LIBSPDM_STATUS_VERIF_NO_AUTHORITY) {
+    EMU_INFO("Slot %d: certificate chain matches no provisioned root "
+             "(LIBSPDM_STATUS_VERIF_NO_AUTHORITY), continuing\n", slot_id);
+}
+```
+
+`EMU_INFO`, because the macros' own comment keeps `EMU_ERR` for error
+conditions, it prefixes `ERROR:`, and this flow carries on; the newest
+non-fatal notice in the requester, `8f36665`'s *"--meas_att NEW is ignored"*,
+is an `EMU_INFO` too. `printf` in the attester, whose fifteen other outputs are
+all `printf`. No new macro, and `spdm_emu.h` untouched: #529, #530 and #496 edit
+it, and #531 did until it merged. Inline at each call rather than in a helper, because the sample is
+what people read to learn the API, and the check reads best beside the call.
++30 −1 in three files, the −1 being the attester file's copyright year, and
+ASCII only, which `9975786` made the first thing to check there.
+
+### Tested, twice
+
+Release, `CRYPTO=openssl`, a build without the change against a build with it,
+every run against the same unmodified responder, whose binary hashed the same
+with and without the change. "Swapped" is #533's reproduction: the requester's slot-0
+anchor replaced by the stock slot-1 root.
+
+| requester | stock anchors, either build | swapped, without the change | swapped, with it |
+|---|---|---|---|
+| `--exe_conn DIGEST,CERT,CHAL,MEAS --exe_session KEY_EX` | no line | no line | slots 0, 4, 0 |
+| the same, and `--slot_id 4` | no line | no line | slots 4, 4 |
+| `--exe_conn DIGEST,CERT,CHAL,MEAS --exe_session KEY_EX,CERT` | no line | no line | slots 0, 4, 0, 0, 4 |
+
+In all six pairs the exit status (0), the other output lines and the order of
+the messages in the capture — 578, 576 and 582 — are the same without the
+change as with it.
+
+The attester could not be tested as shipped — candidate 21, in the table
+above — so its calls were run with a local patch, never sent, that adds
+`CHUNK_CAP` and, once the connection is negotiated, provisions one root the
+way the requester does. The patch prints the size of the root it loaded, 472
+bytes for `ca.cert.der` and 473 for `ca1.cert.der`, so every run shows that
+it took effect. Its first version provisioned the root before negotiation,
+when the algorithm it picks the file by is still 0; its own check reported
+that no root had been read, and it was moved. Since #531,
+`--max_spdm_msg_size 4608` would have done what the patch's `CHUNK_CAP` did;
+that was found afterwards, and the root is needed either way.
+
+| attester, with the local patch | root `ca.cert.der` | root `ca1.cert.der` |
+|---|---|---|
+| without the change | no line | no line |
+| with it | slot 1 | slots 0 and 4 |
+
+The slot-1 line was not expected, and it was not explained away: the root hash
+at the head of each chain the attester saved says that slots 0 and 4 chain to
+`ca.cert.der` and slot 1 to `ca1.cert.der`, so each line is true — the patch
+provisions one root where the requester provisions two. The saved chains are
+byte-identical without and with the change. After both variants the tree was
+returned to the commit and rebuilt, and the binaries hashed as before, which is
+how the commit is known to be the bytes that were tested.
+
+### What the eighteen hours before the sign-off changed
+
+Prepared on 2026-10-12 at 18:36 UTC as `028c986`, on #530's `92034e5`. When
+the author had reviewed it, at 13:02 UTC on the 13th, the freshness check found
+#536 and #531 merged and #530 rebased onto them as `9517beb`. Its added and
+removed lines were unchanged and its patch-id was not — the context around
+them had moved — so the commit was rebased onto it (`range-diff`: `=`; its own
+patch-id unchanged), both builds were redone, and everything above was
+repeated: every number the same. #531 had changed the attester's size setup,
+so its numbers were read off the wire again rather than assumed: still
+`0x000072c6`, 4,608 and 163,840.
+
+One sentence had become false, "on #530's head (92034e5)". It now says "on top
+of #530": a hash in a commit message expires at the next rebase of the change
+below it, so the hashes are kept here instead.
+
+The run also caught a tool of mine. The script comparing the order of messages
+read each record's first byte, and every record starts with four bytes of MCTP
+header, so its first "same order" compared strings of `00`. Found while reading
+raw bytes for another reason, and fixed before any comparison was written down;
+it now prints how many distinct items it saw, so a comparison that cannot tell
+two messages apart says so.
+
+### Sent — 2026-10-13, 13:19 UTC
+
+| | |
+|---|---|
+| URL | <https://github.com/DMTF/spdm-emu/pull/537> |
+| Opened | 2026-10-13 13:19:41 UTC by the author, from `Jhongwe1:cert-no-authority-warning`. Title the commit's subject; body byte-identical to the reviewed file, 1998 bytes, read back from the API |
+| Commits | `9517beb` (#530, `LeonLinAtAMI`) and **`5195934`**: tree `c6e2c94`, the bytes tested; one sign-off, the author's; `check_upstream_commit.sh` satisfied. The body's first line asks for #530 to be merged first |
+| Before opening | the freshness check repeated at 13:16 UTC; no open pull request touches the lines it changes, and no issue or pull request mentions `NO_AUTHORITY` |
+| Reviewers | `jyao1` and `steven-bellock`, added by CODEOWNERS. `LeonLinAtAMI` offered to review; the API gives the author `pull` on the repository, which cannot request a reviewer, so the body mentions him |
+| Linked | #533's timeline shows the reference; `Fixes #533` closes it on merge |
+| Checks | DCO success; **45 of 45** check runs success, all eighteen VS2019 builds among them, the last at 13:41:55 UTC. Read from the API |
 | Outcome | open |
 
 ## Three identity traps, all of which are silent until they are not
