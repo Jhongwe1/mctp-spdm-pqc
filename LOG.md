@@ -6444,3 +6444,214 @@ branch is rebased has to allow for that.
   summary** still says 2026-09-29: as on Day 21.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`.** The author's. Week 13 stays open.
+
+## 2026-10-15 · Day 23 · an approval that came with a rule
+
+One sitting, from 20:30 here. #537 had been approved, with a request to rebase
+it onto `main` rather than onto the unapproved #530 beneath it. It was rebased,
+every run repeated, sent back by the author and merged by the maintainer at
+22:07 here, and candidate ④, the CoRIM names, went as #542. Four findings are
+worth the five parts: the second is a sentence of this repository's that its
+own evidence had contradicted for a month, and the fourth is the author's
+question about a red check.
+
+---
+
+### 1. ★ A conflict that was not ours
+
+**現象** GitHub showed #537 as conflicting once `main` had taken six commits on
+10-14 and 10-15, and the maintainer, approving its commit, asked for it on
+`main`:
+*"In general please do not rely on unapproved branch, that will cause
+dependency issue unnecessarily."*
+
+**假設** (1) `main`'s new commits touch #537's own lines; (2) the conflict is
+#530's, the commit underneath; (3) both.
+
+**先驗哪個、為什麼** (2), by merging each commit onto `main` with
+`git merge-tree --write-tree`, which needs no working tree and answers (1) and
+(2) at once: if #537's commit alone merges clean, the rebase has nothing of its
+own to resolve. `jyao1` had written *"conflict again..."* on #530's page the
+day before, which made (2) the likelier, but a likelier answer is not a
+measured one.
+
+**根因** (2). `9517beb` conflicts with `main` in `doc/spdm_emu.md`, `key.c`,
+`spdm_emu.c` and `spdm_emu.h`, which #529, #538 and #540 also edit; #537's
+commit alone merges clean, and the rebase had nothing to resolve. Stacked on
+#530, the change had taken on #530's conflicts as its own.
+
+**教訓** ★ **Stack on what is merged, not on what is promised.** A dependency
+on an open change belongs in the description, where it costs nothing, not in
+the commit graph, where every conflict and every rebase of the change below
+becomes yours. Day 22 records the stack as my decision, made because the
+assignee asked for it. The person who merges decides the order; when the two
+differ, ask the one who merges before building on the other's word.
+
+---
+
+### 2. ★ A sentence about silence, contradicted by its own log
+
+**現象** #529's new help text: *"A Responder using slow algorithms, such as
+SLH_DSA, needs a large value to give the Requester enough time."* Candidate 16
+— no signed operation completes with SLH-DSA — had been put down to signature
+verification by elimination, and `docs/upstream/README.md` and
+`docs/pqc-cost.md` both said that the requester exits 1 having printed nothing.
+
+**假設** (1) a timeout: a CTExponent of 0 leaves no time for a slow signer,
+and verification was never reached; (2) verification, as written; (3)
+something else, which the silence had hidden.
+
+**先驗哪個、為什麼** None of them by a new run. The arm's requester log was
+already in the repository and costs nothing to read, and the hypotheses predict
+different things in it: a timeout and a failed verification end in different
+statuses, if the requester printed any.
+
+**根因** It had printed one. `S1-all.req.log` and `S1-obo.req.log` begin
+`ERROR: do_authentication_via_spdm - 80020001` — `LIBSPDM_STATUS_VERIF_FAIL`,
+*"verification of the provided signature digest, signature, or AEAD tag
+failed"* — written by `EMU_ERR` to stderr. (2) holds and (1) is out. And
+"printed nothing" was false on the day it was written: the logs and both
+sentences were committed on 2026-09-14.
+
+**教訓** ★ **"Printed nothing" is a universal claim about a file, and it gets
+the check that "every capture" and "never" get: the whole file, read, before
+the sentence is written.** A hint from upstream is a hypothesis, tested against
+the evidence already on disk before anything is rewritten; here the evidence
+had held the answer for a month. And the status says what the old sentence
+hid: a correctly sized SLH-DSA signature from the shipped responder gets the
+status Table 1 shows for a signature altered in flight.
+
+---
+
+### 3. A fact recorded three times, and not read
+
+**現象** The script that applies ④ stopped before editing anything: `STOP: CR
+in file`.
+
+**假設** (1) the checkout converted the line endings; (2) the file is CRLF
+upstream; (3) the script wrote the CR itself.
+
+**先驗哪個、為什麼** (1) and (2) together, with `git ls-files --eol`, which
+reports the index and the working tree side by side, before reading any of the
+script.
+
+**根因** (2): `i/crlf w/crlf`. `CoRimTool.py` is stored with CRLF, all 392
+lines, where `OpaTool.py`, `SpdmMeasurement.py` and the policy beside it are LF.
+This repository knew: `docs/upstream/0001-corim-verify.md` and
+`0003-corim-exit-status.md` record "392 CRLF, 0 bare LF" for #524 and #526,
+and `docs/upstream/README.md` records it again for #524's rebase. I wrote the
+edit script without reading them. Its guard, written for this repository's own
+rule — LF everywhere — stopped it, and the script was changed to keep the
+file's endings and to count them before and after the edit.
+
+**教訓** **The third time a file needs the same care, the care belongs in the
+tool, not in a record somebody has to remember to read.** A guard that refuses
+an unexpected byte did here what the record could not: it turned a 392-line
+diff, in which a reviewer would have had to find three lines, into the three
+lines.
+
+---
+
+### 4. ★ A red check, minutes after the merge
+
+**現象** Minutes after #537 merged, `DMTF/spdm-emu`'s front page showed *"Some
+checks were not successful"* for `main`, and the author asked whether his
+change had caused it.
+
+**假設** (1) the change breaks the MSVC build with OpenSSL, which nothing here
+can compile; (2) the merge produced a tree other than the one the pull request
+tested; (3) the CI's own infrastructure.
+
+**先驗哪個、為什麼** (2) first, because it is one API call and it settles (1)
+as well: if `main`'s tree is the tree that passed all 45 checks on the pull
+request, the code cannot have changed between green and red. Then the failing
+job's list of steps, because a step's name says what was being done when it
+failed, before a line of log is read.
+
+**根因** (3). `423ba4e`'s tree is `216ee85`, the pull request's, and its
+message is byte-identical. The one failure, `VS2019_openssl_build`, stopped in
+its second step, `actions/checkout`, with *"unable to access
+'https://github.com/google/boringssl.git/': Empty reply from server"*, fetching
+a submodule five levels down; its build and test steps were skipped. The other
+43 checks of the same commit, seventeen VS2019 builds among them, passed.
+
+**教訓** ★ **A red check is a statement about a step, not about a commit.**
+Read which step failed, and compare the tree with the one that passed, before
+asking whose change it was; the last thing merged is a suspect, not a cause.
+It is CLAUDE.md's second red line — an exit status is not a verdict — at the
+size of a CI page.
+
+---
+
+### Smaller things, each checked
+
+- **The runs on `main`**: 578, 576 and 582 messages, in the orders of
+  2026-10-13; slots 0, 4, 0 / 4, 4 / 0, 4, 0, 0, 4 with the anchors swapped and
+  none with the stock ones; the attester with the throwaway root patch, slot 1
+  or slots 0 and 4, its eight chains and measurement identical without and with
+  the change. The responder's binary is the same in both builds, and a clean
+  rebuild of the commit reproduces the tested binaries.
+- **The libspdm sync** could not be checked out with `git submodule update`:
+  this clone's submodules come from a local mirror, and a commit no ref reaches
+  is re-fetched from there over a `file` transport that git refuses. Fetched
+  from GitHub by hash and given a ref. The nested Mbed TLS pointer had moved
+  too; synced, and a rebuild compiled nothing.
+- **My own blind guard**: the matrix script refused to start a run if a
+  responder was already running, with `pgrep -x spdm_responder_emu`, and
+  `pgrep` never matches a process name longer than fifteen characters. It could
+  not fire. The runs stand on other evidence: the script waited for each
+  responder to exit, and every one exited 0 after saying it had stopped, so
+  none was left for the next run. The later scripts use `pgrep -f`.
+- **My own record went stale in five minutes.** The record of the rebase was
+  committed at 14:12 UTC calling #537 in review; it had merged at 14:07:58,
+  after my last read at 14:03. Caught because the author asked about the red
+  check, before anything was pushed, and recorded in the commit after it. The
+  freshness check belongs immediately before the commit that states the
+  state, not before the writing of it.
+- **Candidate 3**: tonight's first account to the author filed it as resolved,
+  on #532's closed state alone. Reading the responder at `8674afe` corrected
+  that before anything was written down: the shared `res` is still there.
+- **⑳**: #358's case no longer fails at `8674afe`. Not bisected to #531, and
+  #358 is someone else's issue, so nothing was said there.
+- **The rebased commit's sign-off** was stripped before the author reviewed
+  it, so that his sign-off on `9fdfdf1` is a statement about the bytes that
+  were rebased and re-tested, not one carried over from `5195934`.
+- **The reply on #537** is the author's draft, reviewed before posting; three
+  changes were suggested and taken — a causal "so", "against main", and a
+  sentence acknowledging the request — and he posted it at 13:41 UTC.
+- **Checks**: 45 of 45 on #537's `9fdfdf1`, all eighteen VS2019 builds among
+  them — the one compiler the change never met here; 45 of 45 on #542's
+  `0bdb70b`, the last at 14:08:55 UTC.
+- **Clean clones at `7eaddc9` and at `8484226`**, before this entry:
+  `verify_repo.sh`, `rats/appraise.py matrix --check` and `make -C c-drills`
+  all exit 0 in both, and the libspdm pin matches for all three flavours.
+- **Mine, caught before committing**, by reading every new sentence against
+  what was measured: "the one file in that directory stored with CRLF" — its
+  `readme.md` is CRLF too; "the same" for the runs with the requester's
+  `CHUNK_CAP` cleared, which were read from their logs, without a trace; and
+  "which this file recorded", for a fact recorded in `0001` and `0003`. After
+  the merge, before the push, two more in `docs/limitations.md` that #537 had
+  made false: that no merged change drew a maintainer's comment, and that each
+  change was tested against one upstream commit.
+
+### Decisions
+
+- **The author's**: one more change tonight; the reply's wording; record and
+  push tonight.
+- **Mine, delegated**: ④ as that change, the one sendable row that needs no
+  maintainer's call; the approved diff kept exactly, so the copyright year that
+  #530 had carried in `spdm_requester_authentication.c` was not added back; the
+  sign-off stripped from the rebased commit.
+
+### Not done, and the reason for each
+
+- **Candidate 3 is not raised again.** A maintainer closed the issue, and its
+  reporter had offered a fix; whether, and where, is the author's question.
+- **Candidate 21 is not sent**, as on Day 22: a question, and the author's to
+  ask.
+- **#358 gets no line from here**: someone else's issue, and the author's if he
+  wants one.
+- **Candidate 16's Debug build** is not this session's.
+- **The weekly CI step and the one-page summary**: as on Day 22. **Recording
+  the demo, printing the page, saying it aloud, `c-drills`, Day 17's
+  `TODO(me)`**: the author's. Week 13 stays open.
