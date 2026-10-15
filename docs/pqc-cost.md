@@ -629,10 +629,16 @@ the control:
   chunks, and is 7,998 bytes — exactly 142 + 7,856 (§4). The responder produced
   a correctly sized SLH-DSA signature.
 
-**What is left is SPDM-signature verification on the requester.** The specific
-libspdm status is not recoverable: this is a `Release` build and libspdm compiles
-`LIBSPDM_DEBUG` out, so the requester exits 1 having printed nothing. A `Debug`
-build is the next step and is not this week's.
+**What is left is SPDM-signature verification on the requester**, and the
+requester's log says so in its first line: `ERROR: do_authentication_via_spdm -
+80020001`, `LIBSPDM_STATUS_VERIF_FAIL`. This is a `Release` build and libspdm
+compiles `LIBSPDM_DEBUG` out, so which check inside the verification fails is
+not printed. A `Debug` build is the next step and is not this week's.
+
+*Corrected 2026-10-15: this paragraph used to say that the specific status was
+not recoverable and that the requester exits 1 having printed nothing. The line
+above was in the arm's log, `S1-all.req.log`, from the start
+([`upstream/README.md`](upstream/README.md), candidate 16).*
 
 Reported as upstream candidate 16, with the bisection above as its evidence:
 DMTF ships SLH-DSA sample certificates for twelve parameter sets and advertises

@@ -247,13 +247,16 @@ work:
   ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
   It has had no review since, and its three threads are still open: on
   2026-10-12 the author chose to wait another week rather than answer them.
-  #537, sent on 2026-10-13, has no review yet.
-- **Not done. Most of the twenty-one candidates were not sent.** Seven went as
+  #537, sent on 2026-10-13, was approved by `jyao1` on 2026-10-15 with a request
+  to rebase it onto `main`, which was met the same day; #542, sent that day, has
+  no review yet.
+- **Not done. Most of the twenty-one candidates were not sent.** Eight went as
   changes, one of them, candidate 4, first as a question (issue #533, answered
   on 2026-10-12; its assignee then asked for the change, sent as #537); one was withdrawn
   as never true, one had been fixed upstream before this project found it, one
-  had been reported upstream since 2024, and one was reported by someone else
-  on 2026-10-02. Each of the rest is
+  had been reported upstream since 2024 and no longer reproduces, and one was
+  reported by someone else on 2026-10-02, in an issue closed on 2026-10-15 with
+  the defect still in place. Each of the rest is
   recorded with its evidence and the reason it was held back
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
@@ -262,7 +265,8 @@ work:
   against `8f36665`. #524 and #534 landed on exactly those commits. #526, #527
   and #536 landed by rebase on later ones, `13edd65`, `9975786` and
   `c1bdbe0`, with their bytes unchanged, and their `Tested:` runs were not
-  repeated there. #537 is against #530's `9517beb`, on `1229103`. 94773
+  repeated there. #537 was tested against #530's `9517beb` on `1229103`, and
+  again, rebased, against `8674afe`, as #542 was. 94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not
