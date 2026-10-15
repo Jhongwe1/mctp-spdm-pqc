@@ -76,6 +76,7 @@ needs a date attached to it.
 | ★ Candidate ④ **SENT** | **done** | 2026-10-15, 13:44 UTC | [`DMTF/spdm-emu` #542](https://github.com/DMTF/spdm-emu/pull/542), *CoRimTool: encode every hash and role name*: `0bdb70b` on `8674afe`, +3 −3, signed by the author; body byte-identical to the reviewed file; reviewers by CODEOWNERS. [§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15) |
 | Candidate 20 at `8674afe` | **does not reproduce** | 2026-10-15 | `--trans NONE` with `CHUNK_CAP` cleared starts, and `CAPABILITIES` carries `DataTransferSize` = `MaxSPDMmsgSize` = 4,736. #358 is still open, and still not this project's |
 | Candidate 16's sentence about silence | **corrected** | 2026-10-15 | this file and [`../pqc-cost.md`](../pqc-cost.md) said the SLH-DSA requester exits 1 "having printed nothing". Both signed arms' logs begin `ERROR: do_authentication_via_spdm - 80020001`, `LIBSPDM_STATUS_VERIF_FAIL`, and had since the day the sentence was written |
+| ★★ #537 **MERGED** | **done** | 2026-10-15, 14:07 UTC | by **Jiewen Yao** (`jyao1`), by rebase, as **`423ba4e`** on `8674afe`, with the tree and the message of `9fdfdf1`, the author's: 52 minutes after the rebase was pushed, 27 after the reply. #533 closed with it. Six of the seven pull requests this project has sent to `DMTF/spdm-emu` are merged. One check on `main` failed afterwards, in `actions/checkout`, fetching a third-party submodule, before anything was compiled. [§](#merged-and-the-red-check-after-it) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -87,7 +88,7 @@ needs a date attached to it.
 ## Candidates, and my judgement on each
 
 Twenty-one candidates have been recorded. Eight went as changes — #524, #534,
-#526, #527 and #536 are merged, and 94773, #537 and #542 are in review — and
+#526, #527, #536 and #537 are merged, and 94773 and #542 are in review — and
 one of the eight, candidate 4, went first as a question, issue #533, whose
 assignee then asked this project for the change. Two were fixed upstream by the
 maintainer without this project, one of them before this project had found it,
@@ -113,7 +114,7 @@ was re-read at `8674afe` ([§](#537-rebased-onto-main-and-the-corim-names-sent-a
 | 1 | `openbmc/spdm` | no `README.md`, and a newcomer hits five build and test blockers with nothing to say they are expected | five blockers reproduced on 2026-08-11 and 2026-09-18, and re-run on 2026-09-23 | **sent**, 94773. The review of the 2025 attempt was read first and treated as the specification. A minimum compiler version was deliberately **not** part of it: that is a policy change, and a first change should not start an argument |
 | 2 | `DMTF/spdm-emu` | `--help` omits three capabilities the defaults set | two source lines, and the `Flags` word on the wire | not sent: correct and small, but a text fix outranked by ② on usefulness, and a second change to a project before the first is answered is two conversations that do not happen. *2026-10-12: unchanged at `8f36665` — the defaults still set `CHUNK` and `EP_INFO_SIG`, and the responder's `MEL`, and the `By default` lines still omit them. Four open pull requests edit `print_usage()`, so it waits for them. 2026-10-15: unchanged at `8674afe` — `key.c` still sets `CHUNK` and `EP_INFO_SIG` for both and `MEL` for the responder, and neither `By default` line names them. #529 and #531 have merged; #530 and #496 still edit `print_usage()`* |
 | 3 | `DMTF/spdm-emu` | a slot-0 certificate read whose failure is discarded | `w4-tamper` `t3_cert`: the only trace is `ProvisionedSlotMask` 0x13 → 0x12 | not sent: sample-code robustness, queued behind ②. *2026-10-04: reported by someone else, [#532](https://github.com/DMTF/spdm-emu/issues/532) (`annamdi`, 2026-10-02), found while deploying the responder and filed with a `--slot_count` question; its author offers the fix. Not sent from here. 2026-10-12: the maintainer proposes deprecating `--slot_count` instead. 2026-10-15: #532 closed by `jyao1`'s #538, which removed `--slot_count`. The shared `res` is unchanged at `8674afe` — `spdm_responder_spdm.c` reads slots 0, 1 and 4 into it, lines 506–557, and tests it once, at 565 — so the issue that reported this row is closed and the defect is not. Whether to raise it again is the author's question; #532's reporter had offered a fix* |
-| 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | **sent**, as [#537](https://github.com/DMTF/spdm-emu/pull/537) on 2026-10-13, after it was asked as issue [#533](https://github.com/DMTF/spdm-emu/issues/533) on 2026-10-03. The library reports it as a warning **by design** — libspdm #1773 and #1774 made it one in 2023, so that the integrator decides — so it went as a question about what a sample should teach, not as a defect. Re-measured on the head first: `0x40020003` returned three times and ignored, and the same 578 messages as with the stock trust anchor. *2026-10-12: `steven-bellock` chose option 1 — a line naming the slot, and carry on — and assigned the issue to `LeonLinAtAMI`, whose #530 changes the same calls. Not sent from here; the issue's reproduction is what this project can offer the change. The same evening the assignee asked for the change itself, on top of #530 and covering every call; sent on 2026-10-13 as #537, after each of the seven calls had been made to print ([§](#candidate-4s-change-sent-as-537--2026-10-13)). 2026-10-15: approved by `jyao1`, who asked for it on `main` rather than on the unapproved #530; rebased as `9fdfdf1` with the same added and removed lines, and every run repeated with the same results ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15))* |
+| 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | **merged**: sent as [#537](https://github.com/DMTF/spdm-emu/pull/537) on 2026-10-13, after it was asked as issue [#533](https://github.com/DMTF/spdm-emu/issues/533) on 2026-10-03, and merged on 2026-10-15 as `423ba4e`. The library reports it as a warning **by design** — libspdm #1773 and #1774 made it one in 2023, so that the integrator decides — so it went as a question about what a sample should teach, not as a defect. Re-measured on the head first: `0x40020003` returned three times and ignored, and the same 578 messages as with the stock trust anchor. *2026-10-12: `steven-bellock` chose option 1 — a line naming the slot, and carry on — and assigned the issue to `LeonLinAtAMI`, whose #530 changes the same calls. Not sent from here; the issue's reproduction is what this project can offer the change. The same evening the assignee asked for the change itself, on top of #530 and covering every call; sent on 2026-10-13 as #537, after each of the seven calls had been made to print ([§](#candidate-4s-change-sent-as-537--2026-10-13)). 2026-10-15: approved by `jyao1`, who asked for it on `main` rather than on the unapproved #530; rebased as `9fdfdf1` with the same added and removed lines, and every run repeated with the same results ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)); merged by him at 14:07 UTC as `423ba4e`, byte-identical* |
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
 | 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
@@ -2033,7 +2034,7 @@ two messages apart says so.
 | Reviewers | `jyao1` and `steven-bellock`, added by CODEOWNERS. `LeonLinAtAMI` offered to review; the API gives the author `pull` on the repository, which cannot request a reviewer, so the body mentions him |
 | Linked | #533's timeline shows the reference; `Fixes #533` closes it on merge |
 | Checks | DCO success; **45 of 45** check runs success, all eighteen VS2019 builds among them, the last at 13:41:55 UTC. Read from the API |
-| Outcome | open; approved by `jyao1` on 2026-10-15, and rebased onto `main` at his request as `9fdfdf1` ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)) |
+| Outcome | **merged**, 2026-10-15 14:07 UTC, by `jyao1`, as `423ba4e`, after it was approved and rebased onto `main` at his request as `9fdfdf1`, whose tree and message it carries ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)) |
 
 ## #537 rebased onto main, and the CoRIM names sent as #542 — 2026-10-15
 
@@ -2102,7 +2103,30 @@ binaries.
 | Body | edited by the author: the paragraph asking for #530 to be merged first removed, one parenthesis reworded; 1838 bytes, byte-identical to the file reviewed |
 | Reply | 13:41 UTC, the author's, after a review of his draft: what was dropped and rebased, that the changed lines are the approved ones, that the tests were re-run on `main`, and that the point about unapproved branches was taken |
 | Checks | **45 of 45**, DCO and all eighteen VS2019 builds among them, the last at 13:38:40 UTC; `mergeable_state` clean; the approval stands. Read from the API |
-| Outcome | open |
+| Outcome | **merged**, 14:07 UTC, by `jyao1` |
+
+### Merged, and the red check after it
+
+`jyao1` merged #537 at 14:07:58 UTC, by rebase, as `423ba4e` on `8674afe`:
+tree `216ee85` and the 2,261-byte message identical to `9fdfdf1`, the author's,
+which are the bytes tested. Its `Fix #533.` closed the issue a second later.
+This file's previous commit, written five minutes after the merge, still called
+#537 in review: the last read of it had been at 14:03, and the state was not
+read again before the commit that stated it.
+
+Minutes later the repository's front page showed *"Some checks were not
+successful"* for `main`, and the author asked whether his change had caused it.
+One check of `423ba4e` had failed, `VS2019_openssl_build`, in its second step,
+`actions/checkout`, which stopped with *"fatal: unable to access
+'https://github.com/google/boringssl.git/': Empty reply from server"* while
+fetching a submodule five levels down — `SPDM-Responder-Validator`, its
+libspdm, OpenSSL, `cloudflare-quiche`, BoringSSL. Its build and test steps were
+skipped, so nothing had been compiled, and the same tree had passed all 45
+checks on the pull request, eighteen VS2019 builds among them. What the failure
+measured was a third-party server's answer at 14:08 UTC. The other 43 checks
+of `423ba4e`, seventeen VS2019 builds among them, passed, the last at 14:30:24
+UTC. A re-run is the maintainers' to start, and nothing was said on the pull
+request.
 
 ### Candidate ④, sent as #542
 
@@ -2182,7 +2206,7 @@ round trip is not surprised by it.
 
 ### What decides what goes next
 
-- #537 and #542: review.
+- #542: review. #537 is merged.
 - 3: the issue that reported it is closed and the defect is not. Whether to
   raise it again, and where — on #532, whose reporter offered a fix, or as a
   change — is the author's question.

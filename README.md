@@ -16,21 +16,21 @@ post-quantum signatures on the wire.
 
 ![CI](https://github.com/Jhongwe1/mctp-spdm-pqc/actions/workflows/ci.yml/badge.svg?event=push)
 
-**Upstream:** five changes to `DMTF/spdm-emu` merged, each byte-identical to
+**Upstream:** six changes to `DMTF/spdm-emu` merged, each byte-identical to
 what was sent — [#524](https://github.com/DMTF/spdm-emu/pull/524) on
 2026-09-28, [#534](https://github.com/DMTF/spdm-emu/pull/534) on 10-04,
 [#526](https://github.com/DMTF/spdm-emu/pull/526) on 10-05,
-[#527](https://github.com/DMTF/spdm-emu/pull/527) on 10-12 and
-[#536](https://github.com/DMTF/spdm-emu/pull/536) on 10-13. A design question,
-issue [#533](https://github.com/DMTF/spdm-emu/issues/533), was answered by a
-maintainer, and its assignee asked for the change. In review:
-[`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773);
-[#537](https://github.com/DMTF/spdm-emu/pull/537), that change, which makes the
-requester and the attester sample say when a certificate chain matches no root
-they were given, approved by a maintainer and rebased onto `main` at his
-request; and [#542](https://github.com/DMTF/spdm-emu/pull/542), which makes
-`CoRimTool.py` encode every role and hash name it already decodes. The full
-record, including a −1 and what it changed, is in
+[#527](https://github.com/DMTF/spdm-emu/pull/527) on 10-12,
+[#536](https://github.com/DMTF/spdm-emu/pull/536) on 10-13 and
+[#537](https://github.com/DMTF/spdm-emu/pull/537) on 10-15. The last began as a
+design question, issue [#533](https://github.com/DMTF/spdm-emu/issues/533),
+which a maintainer answered and whose assignee asked for the change; it makes
+the requester and the attester sample say when a certificate chain matches no
+root they were given. In review:
+[`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773), and
+[#542](https://github.com/DMTF/spdm-emu/pull/542), which makes `CoRimTool.py`
+encode every role and hash name it already decodes. The full record, including
+a −1 and what it changed, is in
 [`docs/upstream/`](docs/upstream/README.md).
 
 **On one page:** [`docs/one-pager.svg`](docs/one-pager.svg), Table 1, Figure 2
@@ -487,7 +487,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — five changes merged (#524, #534, #526, #527, #536), three in review — 94773, through three patchsets and a −1; #537, approved and rebased onto `main` at the maintainer's request; and #542 — and one design question asked as an issue (#533), answered, and turned into #537 at its assignee's request ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — six changes merged (#524, #534, #526, #527, #536, #537), two in review — 94773, through three patchsets and a −1, and #542 — and one design question asked as an issue (#533), answered, and turned into #537 at its assignee's request ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built

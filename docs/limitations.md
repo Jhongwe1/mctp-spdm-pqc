@@ -234,7 +234,8 @@ work:
 
 ## 6. Upstream
 
-- **Limit. Five changes merged, and none drew a maintainer's comment.**
+- **Limit. Six changes merged, and one maintainer's comment among them, about
+  where a change sat rather than what it said.**
   `DMTF/spdm-emu` #524, #534, #526, #527 and #536 were merged between
   2026-09-28 and 2026-10-13, each as sent, and without a comment from a
   maintainer — at most a label and an approval — so the record shows what was
@@ -247,9 +248,10 @@ work:
   ([`upstream/0002-openbmc-readme.md`](upstream/0002-openbmc-readme.md) §11–§12).
   It has had no review since, and its three threads are still open: on
   2026-10-12 the author chose to wait another week rather than answer them.
-  #537, sent on 2026-10-13, was approved by `jyao1` on 2026-10-15 with a request
-  to rebase it onto `main`, which was met the same day; #542, sent that day, has
-  no review yet.
+  #537, sent on 2026-10-13, was approved by `jyao1` on 2026-10-15 with the one
+  comment: it was good, and should sit on `main` rather than on an unapproved
+  pull request. That was met the same day, and he merged it within the hour;
+  #542, sent that day, has no review yet.
 - **Not done. Most of the twenty-one candidates were not sent.** Eight went as
   changes, one of them, candidate 4, first as a question (issue #533, answered
   on 2026-10-12; its assignee then asked for the change, sent as #537); one was withdrawn
@@ -260,13 +262,15 @@ work:
   recorded with its evidence and the reason it was held back
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
-- **Limit. Each change was tested against one upstream commit.** #524 against
+- **Limit. Each change was tested against the commit it was written on, and one
+  of them again where it landed.** #524 against
   `spdm-emu` `16119ea`, #526, #527 and #534 against `eff07cf`, and #536
   against `8f36665`. #524 and #534 landed on exactly those commits. #526, #527
   and #536 landed by rebase on later ones, `13edd65`, `9975786` and
   `c1bdbe0`, with their bytes unchanged, and their `Tested:` runs were not
   repeated there. #537 was tested against #530's `9517beb` on `1229103`, and
-  again, rebased, against `8674afe`, as #542 was. 94773
+  again, rebased, against `8674afe`, where it landed; #542 against `8674afe` too.
+  94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
 - **Not done. The SPDM 1.5 public-review feedback was drafted and is not
