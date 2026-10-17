@@ -6655,3 +6655,172 @@ size of a CI page.
 - **The weekly CI step and the one-page summary**: as on Day 22. **Recording
   the demo, printing the page, saying it aloud, `c-drills`, Day 17's
   `TODO(me)`**: the author's. Week 13 stays open.
+
+## 2026-10-17 · Day 24 · a question that had been asked
+
+One sitting, from 16:58 here. #542 had merged overnight, and so had #530, the
+pull request two rows of the candidate table had been waiting on. The author
+asked which two candidates were best sent next, and delegated the choice.
+Candidate 21 and candidate 15 were prepared on `main` `376869f`, every
+`Tested:` line run on the committed bytes, and left one sign-off and one push
+from the author. Four findings are worth the five parts; the first changed what
+was sent, and the second is this project's own harness doing what candidate 15
+describes.
+
+---
+
+### 1. ★ A design question that upstream had already answered
+
+**現象** Candidate 21, recorded on 2026-10-13, ended: *"A question first,
+because which of the two is upstream's call"* — set `CHUNK_CAP` in the
+attester, or make its `MaxSPDMmsgSize` follow the flags it does set.
+
+**假設** (1) the choice is open, and an issue is the right first step; (2)
+upstream has made it already, for code next to the attester; (3) someone has
+asked it already, and been answered.
+
+**先驗哪個、為什麼** (3), then (2). A duplicate search is one query, and it
+decides whether there is a question at all; the rule that it comes before
+anything is written up as new dates from 2026-09-30. (2) next, by `git log -S`
+on the samples next to the attester, because if a sibling had been fixed, its
+fix is the answer and its commit the citation.
+
+**根因** (3) and (2) — and this repository had known half of it. #458, opened
+2025-12-16, says that `18e49ea`, *"Adjust MaxSPDMMsgSize based on CHUNK_CAP"*,
+fixed the requester and the responder, and asks whether the attester and
+validator samples were missed. Its reporter ran the validator sample, confirmed
+the case gone on 2026-08-28, and it was closed; nobody answered for the
+attester. 0004's duplicate search found #458 on 2026-09-29 and recorded it as
+*"Closed as no longer reproducing"*, for both samples, which the issue does not
+say. Two weeks later candidate 21 was written up as new without a search of its
+own, and the one record that would have connected them said the problem was
+gone. `18e49ea` landed as `5ef1123` in #428, which also raised
+`LIBSPDM_MAX_SPDM_MSG_SIZE` from `0x1200`, equal to `DataTransferSize`, to
+`0x28000` in builds with SLH-DSA (`97aeeed`): the attester broke in the pull
+request that fixed its siblings, and the choice the row called upstream's had
+been made fourteen months before.
+
+**教訓** ★ **A closed issue is read against every part of what it reported, and
+summarised that way: "no longer reproducing" is a claim about each part, and
+#458 was closed for one of its two.** And "upstream's call" is a claim about
+upstream's history — the closed issues and `git log -S` on the sibling code
+come before the word "question". Day 23's third finding was a record nobody
+read; this is a record read once, summarised too widely, and then trusted.
+
+---
+
+### 2. ★ My harness passed a run that never happened
+
+**現象** The run harness reported `client_rc=0 responder_rc=0` for the
+attester on `--trans NONE`, with logs of 177 and 176 lines.
+
+**假設** (1) the run worked, and the parser of the capture failed; (2) one of
+the two programs refused its arguments; (3) a port collision.
+
+**先驗哪個、為什麼** (2), from the first and last lines of each log, which cost
+nothing and decide between all three: a refused argument prints the usage.
+
+**根因** (2), both programs. The harness passed `--pcap` to every run, and
+`open_pcap_packet_file()` has no link type for NONE, so `process_args()`
+printed the usage and called `exit(0)` in the responder and in the attester.
+Nothing ran, and the exit statuses said success: candidate 15, the defect being
+prepared that hour, the third time it has bitten this project's own testing
+(twice on 2026-09-29 testing 0004).
+
+**教訓** **A harness that reads exit statuses inherits every exit status that
+lies.** Red line 2 applies to the tools written to check upstream, not only to
+upstream: each run now asserts that the usage was not printed, and `--pcap` is
+left off where the transport has no link type. The run became the example in
+the pull request.
+
+---
+
+### 3. A test suite that did not reach one of its targets
+
+**現象** Candidate 15's test runs every option `process_args()` matches, alone
+and with the value `__bogus__`, on four programs: 476 cases, 423 rejected.
+
+**假設** (1) 423 rejections cover the 101 changed exits, since every option
+was run both ways; (2) some exits need an input no generic value produces.
+
+**先驗哪個、為什麼** Neither by reading the 1,200 lines: a throwaway build in
+which exit *k* returns *k* + 1 makes every site name itself, so the statuses
+the cases produce are the coverage, measured.
+
+**根因** (2): 98 of 101. The two expected — an `#ifdef _MSC_VER` branch and a
+failed allocation — and one not: `--iface` rejects only an empty or overlong
+name, and `__bogus__` is a valid one. Two cases more reached it, 99 of 101.
+
+**教訓** **Coverage is measured on the build, not inferred from the inputs.**
+The instrument is cheap when the sites are already distinct statements: number
+them. It is the rule of 2026-09-14 — print the return value before reading
+the library — applied to a test instead of to a bug.
+
+---
+
+### 4. Two sentences of mine, false, before anything was sent
+
+**現象** The sentence audit of the two commit messages and the two pull
+request bodies, run before the sign-off.
+
+**假設** (1) none, since every number came from a run; (2) a number right and
+a description of it wrong.
+
+**先驗哪個、為什麼** (2), by reading each sentence against the log it came
+from rather than against the summary of it.
+
+**根因** (2), twice. *"refused before connecting"*: the attester's log shows
+`connect success!` before the refusal — the socket was connected, and no SPDM
+message was sent; now *"refused before GET_VERSION is sent"*. And *"prints the
+usage … for everything it rejects"*: two of the 101 exits print a message and
+no usage. A third was incomplete rather than false: "every option, alone and
+with a bogus value" had not been run for `-h` and `--help` with a value; it was
+run, eight cases, all 0.
+
+**教訓** **A number checked against a run can sit inside a sentence that is not
+checked against anything.** The audit reads words against the log, and the
+summary is not the log.
+
+---
+
+### Smaller things, each checked
+
+- **#542 as it landed**: `5b6e3a7` on `423ba4e`, the 1,535-byte message and
+  the blob of `CoRimTool.py`, `08a4e885`, identical to `0bdb70b`.
+- **Candidate 21's runs** changed one binary: the requester, the responder and
+  the validator sample build byte-identical with and without the change. The
+  secured messages differ in length from run to run, by the transport's random
+  padding, so the runs are compared by the files saved and the cleartext
+  messages, not by message length.
+- **One pair of the workflow runs took one second**: the slot-0xFF pair, whose
+  requester and responder both drop certificates for `PUB_KEY_ID`. Its capture
+  holds 20 messages, and neither log a usage text.
+- **The README's own table of what was done** said "six upstream changes (four
+  merged, two in review)", false since 2026-10-13 and past two sentence audits,
+  because each audit read the sentences that were new. Corrected.
+- **Clean clones at `c54ab88` and at `fad81eb`**, before this entry:
+  `verify_repo.sh`, `rats/appraise.py matrix --check` and `make -C c-drills`
+  all exit 0 in both, and the libspdm pin matches for all three flavours.
+
+### Decisions
+
+- **The author's**: that two be chosen, and the choice delegated; the
+  sign-offs, the pushes and the pull requests.
+- **Mine, delegated**: 21 and 15, both as pull requests rather than issues; 21
+  by deriving `chunk_cap` from the flags, as `5ef1123` did, rather than by
+  adding `CHUNK_CAP`, which would change what the sample advertises; 2 held
+  for another day; 3 and ③ kept as questions.
+
+### Not done, and the reason for each
+
+- **The two pull requests** are the author's to sign, push and open.
+- **Candidate 2**: after these two; it does not go stale.
+- **Candidates 3 and ③**: questions, and the author's to ask.
+- **A build of the attester before #428**, to show it connected while both
+  sizes were `0x1200`: read from the commits, not built.
+- **`CHUNK_CAP` added instead**: inferred to connect, not built.
+- **Candidate 16's Debug build** is not this session's.
+- **The weekly CI step and the one-page summary**: as on Day 22; the step's
+  next scheduled run is on 2026-10-19.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`**: the author's. Week 13 stays open.
