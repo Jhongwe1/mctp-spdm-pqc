@@ -184,9 +184,13 @@ Searched on 2026-09-29 at 14:11 UTC for `data_transfer_size` and
   default path is untouched. The fix is one line once this change's helper
   exists, and should be its own pull request referencing #358.
 - **#458** (closed 2026-08-28): the validator and attester samples advertised
-  `MaxSPDMmsgSize 0x28000` without `CHUNK_CAP`. Closed as no longer
-  reproducing. This change leaves those samples' maximum-message logic alone
-  and only lowers their receive buffer when asked.
+  `MaxSPDMmsgSize 0x28000` without `CHUNK_CAP`. ~~Closed as no longer
+  reproducing.~~ *Corrected 2026-10-17: closed when its reporter, who had run
+  the validator sample, confirmed that case gone. Nobody answered for the
+  attester, which still fails this way, and is candidate 21
+  ([`README.md`](README.md#542-merged-and-two-more-prepared--2026-10-17)).*
+  This change leaves those samples' maximum-message logic alone and only
+  lowers their receive buffer when asked.
 - **#329** (open): responder-side detection of an inconsistent
   `DataTransferSize` for SPDM 1.0/1.1 requesters. Unrelated.
 

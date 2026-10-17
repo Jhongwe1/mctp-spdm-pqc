@@ -250,15 +250,17 @@ work:
   2026-10-12 the author chose to wait another week rather than answer them.
   #537, sent on 2026-10-13, was approved by `jyao1` on 2026-10-15 with the one
   comment: it was good, and should sit on `main` rather than on an unapproved
-  pull request. That was met the same day, and he merged it within the hour;
-  #542, sent that day, has no review yet.
+  pull request. That was met the same day, and `jyao1` merged it within the
+  hour; #542, sent that day, was merged on 2026-10-16 without a review.
 - **Not done. Most of the twenty-one candidates were not sent.** Eight went as
   changes, one of them, candidate 4, first as a question (issue #533, answered
   on 2026-10-12; its assignee then asked for the change, sent as #537); one was withdrawn
   as never true, one had been fixed upstream before this project found it, one
   had been reported upstream since 2024 and no longer reproduces, and one was
   reported by someone else on 2026-10-02, in an issue closed on 2026-10-15 with
-  the defect still in place. Each of the rest is
+  the defect still in place. One, candidate 21, had been asked about upstream
+  in 2025, in #458, an issue closed when its other half was fixed; it and
+  candidate 15 were prepared as changes on 2026-10-17. Each of the rest is
   recorded with its evidence and the reason it was held back
   ([`upstream/README.md`](upstream/README.md)). They are evidence of reading
   closely, and are not claimed as contributions.
@@ -269,7 +271,9 @@ work:
   and #536 landed by rebase on later ones, `13edd65`, `9975786` and
   `c1bdbe0`, with their bytes unchanged, and their `Tested:` runs were not
   repeated there. #537 was tested against #530's `9517beb` on `1229103`, and
-  again, rebased, against `8674afe`, where it landed; #542 against `8674afe` too.
+  again, rebased, against `8674afe`, where it landed; #542 against `8674afe`
+  too, and it landed by rebase on `423ba4e` with its bytes unchanged, where its
+  runs were not repeated.
   94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
