@@ -6665,7 +6665,8 @@ Candidate 21 and candidate 15 were prepared on `main` `376869f`, every
 `Tested:` line run on the committed bytes, and left one sign-off and one push
 from the author. Four findings are worth the five parts; the first changed what
 was sent, and the second is this project's own harness doing what candidate 15
-describes.
+describes. The author signed, pushed and opened both the same evening, as #545
+and #546.
 
 ---
 
@@ -6798,6 +6799,10 @@ summary is not the log.
 - **The README's own table of what was done** said "six upstream changes (four
   merged, two in review)", false since 2026-10-13 and past two sentence audits,
   because each audit read the sentences that were new. Corrected.
+- **`docs/limitations.md` §6 still said six changes merged**, in the heading
+  of the bullet whose body `fad81eb` had given #542's merge: the README table's
+  miss again, the same day. Found by grepping the docs for every count of
+  changes before recording #545 and #546; corrected.
 - **Clean clones at `c54ab88` and at `fad81eb`**, before this entry:
   `verify_repo.sh`, `rats/appraise.py matrix --check` and `make -C c-drills`
   all exit 0 in both, and the libspdm pin matches for all three flavours.
@@ -6813,7 +6818,8 @@ summary is not the log.
 
 ### Not done, and the reason for each
 
-- **The two pull requests** are the author's to sign, push and open.
+- **Review of the two pull requests**, opened by the author at 13:09 UTC as
+  #545 and #546: the maintainers'.
 - **Candidate 2**: after these two; it does not go stale.
 - **Candidates 3 and ③**: questions, and the author's to ask.
 - **A build of the attester before #428**, to show it connected while both
