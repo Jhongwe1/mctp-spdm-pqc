@@ -6830,3 +6830,175 @@ summary is not the log.
   next scheduled run is on 2026-10-19.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`**: the author's. Week 13 stays open.
+
+## 2026-10-19 · Day 25 · a text fix that had a behaviour
+
+One sitting, from 20:00 here. #545 and #546 had merged overnight: nine of
+nine. The author asked for the next two of the open candidates and delegated
+the choice. Candidate 2 was prepared as a pull request on `main` `ce3b513` and
+candidate 3 as an issue, each measured first; the author signed, and opened
+both on pages pre-filled from the reviewed files, as #548 and #547. Four
+findings are worth the five parts; the first changed what the pull request
+says, and the second is this project's own tooling.
+
+---
+
+### 1. ★ A text fix that had a behaviour
+
+**現象** Candidate 2 was recorded on 2026-08-17 as "`--help` omits three
+capabilities the defaults set", and judged "a text fix outranked by ② on
+usefulness"; every re-read since repeated the judgement.
+
+**假設** (1) the omission is cosmetic: nobody uses the default list as a
+value; (2) somebody does — starts from the documented list to change one flag
+— and then the difference is behaviour.
+
+**先驗哪個、為什麼** (2), by doing exactly that: each program's `--help` list
+passed back as `--cap`, against no `--cap`, read on the wire. Two pairs of runs
+turn a judgement about readers into a measurement.
+
+**根因** (2). On `main` the lists advertise `Flags` `0x8800f7c6` and
+`0xb818fbf7` instead of `0x8882f7c6` and `0xb99afbf7`, a `MaxSPDMmsgSize` of
+4,608 instead of 163,840, and the default flow sends 32 messages fewer —
+`GET_ENDPOINT_INFO` and `GET_MEASUREMENT_EXTENSION_LOG` among them — while
+both programs exit 0. With the change, the same 2,272 messages in the same
+order.
+
+**教訓** ★ **The cost of a documentation defect is measured by following the
+document.** "Cosmetic" was a claim about how the text is used, held for two
+months without using it once; the measurement became the pull request's
+table.
+
+---
+
+### 2. ★ The safeguard was the damage
+
+**現象** The candidate-3 runs stopped on their first case:
+`rsp/ecp384/bundle_responder.certchain4.de does not exist`, and so did the
+other four.
+
+**假設** (1) the sample files were renamed upstream before `ce3b513`; (2) the
+script that ran was not the one written; (3) the copy of `build/bin` was
+incomplete.
+
+**先驗哪個、為什麼** (2): the name in the message lacks one letter, and the
+session had reported the script changed on disk after it was written. Reading
+it costs nothing and decides between all three.
+
+**根因** (2). Every script of the session had gone through
+`sed -i 's/\r$//'`, typed into PowerShell and passed through `wsl.exe`; sed
+received `s/r$//` and deleted a trailing `r` from every line. The strip had
+never been needed — the files were written with LF, 0 CR lines by
+`awk '/\r/'`. The earlier scripts were read line by line: none ended a line in
+`r`, and the one that edited the upstream file had its result checked against
+the diff before. What stopped this one was the line before each removal,
+`[ -f "$O/$SIDE/$F" ] || …`. Without it `rm` would have failed, the run gone
+on with every file in place, and five runs would have said that removing a
+chain changes nothing.
+
+**教訓** **A cleaning step is an operation, and is measured like one: count
+what it is meant to remove before running it.** And asserting that the input
+exists before changing it is not paperwork: here it is the difference between
+a loud stop and a false negative.
+
+---
+
+### 3. A sentence from someone else's report, measured before it was repeated
+
+**現象** #532, the report of candidate 3 by someone else, says the responder
+then serves an empty chain and *"No log line points at the missing file."* The
+draft of #547 was about to say the same.
+
+**假設** (1) true at `ce3b513`; (2) true when #532 was written, and changed
+since; (3) never true for a missing file, and true of something else.
+
+**先驗哪個、為什麼** The responder's own logs of the runs already made — free,
+and they decide (1) against the rest; then `git log -S` on the message, for
+(2).
+
+**根因** (3). `libspdm_read_input_file()` prints `Unable to open file` with
+the name, and has since `56eb4b2`, 2021-05-01, so at #532's time too. The
+silent case is a chain that opens and does not verify:
+`libspdm_read_responder_public_certificate_chain()` returns false after
+`libspdm_verify_cert_chain_data()` without a word — the case this project's
+`t3_cert` produced on 2026-09-10, and the reason its only trace was
+`ProvisionedSlotMask`.
+
+**教訓** **Another reporter's sentence is a citation like any other, and is
+measured before it is repeated.** Measuring it did more than keep a false
+sentence out: it found the case that is silent, which is the stronger report.
+
+---
+
+### 4. Three sentences of mine, before anything was sent
+
+**現象** The sentence audit of the issue's draft, against the runs,
+`git blame` and #532's text.
+
+**假設** (1) none, since every number came from a run; (2) words about
+history and structure, which no run checks.
+
+**先驗哪個、為什麼** (2), because the numbers had been checked by the runs that
+made them and the words had not been checked by anything.
+
+**根因** (2), three times. *"the last paragraph of #532"*: the one before it.
+*"these lines did not change"*: #538 did edit `spdm_responder_spdm.c`,
+elsewhere; `git blame` dates lines 504–565 to `e0abd5e`, 2026-06-09, and the
+sentence now says that. *"The difference is the slot-1 row"*: the slot-4 row
+differs as well, and is the one a requester with defaults meets.
+
+**教訓** **A claim about a file is a claim about lines, and is checked with
+`blame`, not with the list of commits that touched the file.** Day 24's lesson
+held again: the numbers were right and the sentences around them were not.
+
+---
+
+### Smaller things, each checked
+
+- **#545 and #546 as they landed**: `ad6095f` and `ce3b513`, with trees,
+  patch-ids and messages identical to `afa4bb1` and `0dd5f75`, committed by
+  Jiewen Yao; #546 with one approval and no text, #545 with no review.
+- **Both shapes of candidate 3 are five days old, in one commit**: `8674afe`
+  chained the requester's own reads and gave the responder's reads of the
+  Requester's chains one shared `res`. #17, whose requester half `c0f2e43`
+  says it fixes, is still open.
+- **`docs/limitations.md` would have kept "most of the twenty-one candidates
+  were not sent"**: eleven have gone as changes. Found by counting the table
+  before writing the status lines; it now says ten were not. My first draft of
+  that file's last bullet also said #546 landed on `376869f`; it landed on
+  #545's commit.
+- **The issue and the pull request** were opened by the author on pages
+  pre-filled from the reviewed files, each URL decoded and compared with them
+  before it was opened, and both read back byte-identical. The push to the fork
+  was run here at the author's instruction: he sent the command.
+- **The weekly CI run** at 09:53 UTC on `988c42b`: five of five jobs green, and
+  the `upstream` job's unit-test step, which had never passed before `0451fac`,
+  passed for the first time.
+- **94773** re-read: unchanged since 2026-09-23.
+- **#548's checks**: DCO success and 45 of 45 check runs, all eighteen VS
+  builds among them, the last at 13:13:12 UTC; `mergeable_state` clean. My
+  watcher for them could not read its own file for the hour it ran — a Git
+  Bash path inside inline Python, which Windows Python cannot open — so it
+  waited out its timeout; the figures are from the read at its end, 13:52 UTC.
+- **A clean clone at `928a505`**, the record's commit, before this entry:
+  `verify_repo.sh`, `rats/appraise.py matrix --check` and `make -C c-drills`
+  all exit 0, and the libspdm pin matches for all three flavours.
+
+### Decisions
+
+- **The author's**: that the next two be chosen, and the choice delegated; the
+  sign-off; that the push be run for him; both submissions.
+- **Mine, delegated**: 2 as a pull request and 3 as an issue; for 3, a
+  question between two behaviours rather than a patch, because #532's reporter
+  had offered the change; ③, 13 and 16 held.
+
+### Not done, and the reason for each
+
+- **Review of #548 and an answer to #547**: the maintainers'. If #547 is
+  answered and #532's reporter does not take the change, whether it goes from
+  here is the author's call.
+- **Candidates ③, 13 and 16**: a question, a conversation, a Debug build.
+- **94773**: the author's decision, due today and not yet taken.
+- **The one-page summary**: still the 2026-09-29 snapshot.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`**: the author's. Week 13 stays open.
