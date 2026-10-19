@@ -16,23 +16,25 @@ post-quantum signatures on the wire.
 
 ![CI](https://github.com/Jhongwe1/mctp-spdm-pqc/actions/workflows/ci.yml/badge.svg?event=push)
 
-**Upstream:** seven changes to `DMTF/spdm-emu` merged, each byte-identical to
+**Upstream:** nine changes to `DMTF/spdm-emu` merged, each byte-identical to
 what was sent — [#524](https://github.com/DMTF/spdm-emu/pull/524) on
 2026-09-28, [#534](https://github.com/DMTF/spdm-emu/pull/534) on 10-04,
 [#526](https://github.com/DMTF/spdm-emu/pull/526) on 10-05,
 [#527](https://github.com/DMTF/spdm-emu/pull/527) on 10-12,
 [#536](https://github.com/DMTF/spdm-emu/pull/536) on 10-13,
-[#537](https://github.com/DMTF/spdm-emu/pull/537) on 10-15 and
-[#542](https://github.com/DMTF/spdm-emu/pull/542) on 10-16. #537 began as a
+[#537](https://github.com/DMTF/spdm-emu/pull/537) on 10-15,
+[#542](https://github.com/DMTF/spdm-emu/pull/542) on 10-16, and
+[#545](https://github.com/DMTF/spdm-emu/pull/545) and
+[#546](https://github.com/DMTF/spdm-emu/pull/546) on 10-19. #537 began as a
 design question, issue [#533](https://github.com/DMTF/spdm-emu/issues/533),
 which a maintainer answered and whose assignee asked for the change; it makes
 the requester and the attester sample say when a certificate chain matches no
 root they were given. #542 makes `CoRimTool.py` encode every role and hash
-name it already decodes. In review: two more, sent on 10-17 —
-[#545](https://github.com/DMTF/spdm-emu/pull/545), which lets the attester
-sample connect with its defaults, and
-[#546](https://github.com/DMTF/spdm-emu/pull/546), which makes an invalid
-argument exit 1 rather than 0 — and
+name it already decodes; #545 lets the attester sample connect with its
+defaults, and #546 makes an invalid argument exit 1 rather than 0. In review:
+[#548](https://github.com/DMTF/spdm-emu/pull/548), which makes `--help` list
+every capability the defaults set, sent on 10-19 with a second design
+question, issue [#547](https://github.com/DMTF/spdm-emu/issues/547), and
 [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773). The
 full record, including a −1 and what it changed, is in
 [`docs/upstream/`](docs/upstream/README.md).
@@ -264,7 +266,7 @@ signature; the host's own is 3.0.13 and has no ML-DSA.
 | the RATS pipeline: reference values, policy, verdict (`rats/`) | the responder validator and the fuzz targets |
 | the negative suite: three advisory classes, 21 deliberately wrong implementations | `libspdm`, `spdm-emu` and `spdm-dump` themselves |
 | the CI that goes red when a tampered measurement is accepted | |
-| ten upstream changes (seven merged, three in review) and one issue | |
+| eleven upstream changes (nine merged, two in review) and two issues | |
 
 The accurate verbs are "I measured it" and "I connected it up". I did not
 implement SPDM, and I did not add post-quantum support.
@@ -491,7 +493,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — seven changes merged (#524, #534, #526, #527, #536, #537, #542), three in review — #545 and #546, sent on 2026-10-17, and 94773, through three patchsets and a −1 — and one design question asked as an issue (#533), answered, and turned into #537 at its assignee's request ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — nine changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546), two in review — #548, sent on 2026-10-19, and 94773, through three patchsets and a −1 — and two design questions asked as issues: #533, answered and turned into #537 at its assignee's request, and #547 ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built
