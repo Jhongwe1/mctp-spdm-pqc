@@ -7188,3 +7188,94 @@ what was checked out, not what was linked.**
 - **The one-page summary**: still the 2026-09-29 snapshot.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`**: the author's. Week 13 stays open.
+
+## 2026-10-20 · Day 26, evening · the warning our own table had shown
+
+A second sitting, from 18:15 here. An hour after #550 was opened, `annamdi`,
+#532's reporter, requested a change: read slot 4's chain, and report it, only
+in a multi-key connection. It was right. The revision was measured in 84
+runs, the author signed it and the push to the fork was run here on his word,
+and the body and two replies were his. One finding is worth the five parts.
+
+---
+
+### 1. ★ A false alarm we had measured, and a sentence fixed instead of the code
+
+**現象** `annamdi` asked why slot 4's chain is read when `multi_key_conn_rsp`
+is false. `8c43299` read it in every connection, and when the read failed it
+printed `Slot 4: certificate chain not loaded, not provisioned` — with
+`--ver 1.2` too, where slot 4 can never be provisioned.
+
+**假設** (1) a preference, not a defect: the line is true either way, since
+the chain did not load and the slot is not provisioned; (2) a false alarm
+that this project's runs had already shown and nobody read as one; (3)
+skipping the read could change what is provisioned somewhere.
+
+**先驗哪個、為什麼** (2) and (3) together, since both are in our own data and
+in one function: `t1`'s rows with `--ver 1.2`, and every use of `data4` and
+`res4` in the callback. (1) is answered by (2): a warning that fires where
+nothing could have been done is not true in the way a warning has to be.
+
+**根因** (2). `t1`'s B1 and B6, `--ver 1.2` with slot 4's chain removed (in
+B6 slot 1's too), printed the slot-4 line, and the record read them as the
+change working. In
+the audit before sending, a draft sentence, "a line for each slot not
+provisioned", was corrected because slot 4 in a connection without multi-key
+is not provisioned and prints nothing: the sentence was made to fit the code,
+and the code was not asked whether it should read a chain it cannot use. The
+author's answer in #547 had named both halves of the cause: slot 4's chain is
+read in every connection although slot 4 is provisioned only in a multi-key
+one, *and* that read decides for slots 0 and 1. `8c43299` fixed only the
+second. Not (3): `data4` is used again only by the Requester's reads further
+down, which assign it afresh, and the runs agree — the first version and the
+revision differ only where the read was skipped, by the warning and by the
+reader's own `Unable to open file`.
+
+**教訓** ★ **When a sentence has to be corrected because the code contradicts
+it, ask the code first; the correction may belong there. And when the cause
+has been written down in two halves, check the change against each half.** A
+warning that fires where nothing could have been provisioned trains its
+reader to ignore it, and the reviewer whose deployment it was saw that on one
+reading.
+
+---
+
+### Smaller things, each checked
+
+- **The amend was refused.** This session's permission classifier refused
+  `git commit --amend` of the signed, pushed `8c43299`, and it was not worked
+  around. The revision went as a new commit on a new branch from `main`, and
+  the author's one command applied the reviewed message and the sign-off.
+- **`multi_key_data_size` was kept on purpose.** `jyao1`'s `ea77f25`
+  introduced it so that the multi-key query would not overwrite `data_size`,
+  slot 0's chain size. Before the reads, `data_size` would have been safe; a
+  reviewer should not have to work out the order to see that.
+- **A connection without multi-key at 1.4**: `--other_param OPAQUE_FMT_1` on
+  the requester leaves `MULTI_KEY_CONN` out of `NEGOTIATE_ALGORITHMS`
+  (`libspdm_rsp_algorithms.c` 1080–1101): `DIGESTS` `0x03`/`0x03`, and the
+  message sequence of the default run.
+- **The 78 sample runs took 95 minutes**, one after another, for the fixed
+  port.
+- **The replies went on the pull request, not in the two threads.** They read
+  in order after the force-push; posting them again in the threads would have
+  notified the reviewer twice more.
+- **The checks of `dcf2cc4`**: DCO success and 45 of 45 check runs, the last
+  at 12:46:33 UTC, `mergeable_state` clean; the Windows job whose checkout
+  failed on `8c43299` got past it and passed.
+
+### Decisions
+
+- **The author's**: the sign-off; the instruction to push; the body; the
+  replies and their wording.
+- **Mine, delegated**: the review accepted in full rather than the line
+  defended as true; one revised commit, force-pushed with a lease on
+  `8c43299`, rather than a correction on top, since `main` takes each commit
+  of a rebase merge; the query moved rather than repeated; the Requester's
+  chains still left alone.
+
+### Not done, and the reason for each
+
+- **`annamdi`'s answer and the maintainers' review**: theirs.
+- **Candidate 22, and ③, 13 and 16**: as this morning.
+- **94773, the one-page summary, the demo, `c-drills`, Day 17's
+  `TODO(me)`**: as this morning; the author's. Week 13 stays open.
