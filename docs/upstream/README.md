@@ -90,6 +90,7 @@ needs a date attached to it.
 | #547 answered | **answered** | 2026-10-19, 14:24–15:28 UTC | #532's reporter and a second user chose option 2; `jyao1` doubted the use case, and wrote: *"First, I do not mind to fix. Feel free to submit patch if you want."* [§](#548-merged-and-3s-change-sent-as-550--2026-10-20) |
 | ★ Candidate 3's change **SENT** | **done** | 2026-10-20, 09:04 UTC | [`DMTF/spdm-emu` #550](https://github.com/DMTF/spdm-emu/pull/550), *spdm_responder_emu: provision each slot that loads*: `8c43299` on `f7fa183`, +24 −11, signed by the author; option 2 of #547, measured against `main` in 48 runs, six of them on the `DEVICE=tpm` build, where a responder configured with one slot reproduces #547 with nothing removed. The author's answer to `jyao1`'s question went to #547 the same morning. [§](#548-merged-and-3s-change-sent-as-550--2026-10-20) |
 | Candidate 22, found while testing it | **recorded, not sent** | 2026-10-20 | `spdm_requester_emu` built for a TPM responder with one slot stops before `GET_DIGESTS`: once the algorithms are negotiated it reads the responder's root for slot 1, and exits 1 when it cannot. [§](#candidate-22-found-while-testing-it) |
+| ★ #550 **changes requested, and changed** | **done** | 2026-10-20, 10:11 and 12:23 UTC | `annamdi`, #532's reporter, asked that slot 4's chain be read, and reported, only in a multi-key connection, the only kind that provisions slot 4. Right: `8c43299` warned about slot 4 where it could never be provisioned, which this project's own runs had shown. Revised as **`dcf2cc4`**, measured in 84 runs, signed by the author and force-pushed; the body and two replies are his. CI 45 of 45. [§](#550-reviewed-and-changed--2026-10-20) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -123,13 +124,13 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 Rows 4 and 8–11 changed, and row 21 was added, on 2026-10-13 ([§](#candidate-4s-change-sent-as-537--2026-10-13)).
 Rows 2–4, 8–11, 15, 16, 20 and 21 changed on 2026-10-15, when every unsent row
 was re-read at `8674afe` ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)).
-Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)).*
+Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
 | 1 | `openbmc/spdm` | no `README.md`, and a newcomer hits five build and test blockers with nothing to say they are expected | five blockers reproduced on 2026-08-11 and 2026-09-18, and re-run on 2026-09-23 | **sent**, 94773. The review of the 2025 attempt was read first and treated as the specification. A minimum compiler version was deliberately **not** part of it: that is a policy change, and a first change should not start an argument |
 | 2 | `DMTF/spdm-emu` | `--help` omits three capabilities the defaults set | two source lines, and the `Flags` word on the wire | **merged**: sent as [#548](https://github.com/DMTF/spdm-emu/pull/548) on 2026-10-19, and merged on 2026-10-20 as `f7fa183`, its patch and message unchanged, on a base #549 had moved. Until then not sent: correct and small, but a text fix outranked by ② on usefulness, and a second change to a project before the first is answered is two conversations that do not happen. *2026-10-12: unchanged at `8f36665` — the defaults still set `CHUNK` and `EP_INFO_SIG`, and the responder's `MEL`, and the `By default` lines still omit them. Four open pull requests edit `print_usage()`, so it waits for them. 2026-10-15: unchanged at `8674afe` — `key.c` still sets `CHUNK` and `EP_INFO_SIG` for both and `MEL` for the responder, and neither `By default` line names them. #529 and #531 have merged; #530 and #496 still edit `print_usage()`. 2026-10-17: unchanged at `376869f`. #530 has merged, and #496, untouched since 2026-06-27, is the only open pull request that edits `print_usage()`. Not sent with 21 and 15: a third pull request the same day spends a reviewer's attention on two lines that do not go stale. 2026-10-19: sent as #548 once #545 and #546 had merged, and measured for the first time on the way: the documented lists, passed back as `--cap`, advertise `0x8800f7c6` and `0xb818fbf7` instead of `0x8882f7c6` and `0xb99afbf7` and a `MaxSPDMmsgSize` of 4,608, and the default flow loses 32 messages, `GET_ENDPOINT_INFO` and `GET_MEASUREMENT_EXTENSION_LOG` among them, while both programs exit 0. The text fix had a behaviour ([§](#candidate-2s-change)). 2026-10-20: merged by `jyao1` as `f7fa183` ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20))* |
-| 3 | `DMTF/spdm-emu` | a slot-0 certificate read whose failure is discarded | `w4-tamper` `t3_cert`: the only trace is `ProvisionedSlotMask` 0x13 → 0x12 | **in review**: sent as [#550](https://github.com/DMTF/spdm-emu/pull/550) on 2026-10-20, after it was asked as issue [#547](https://github.com/DMTF/spdm-emu/issues/547) on 2026-10-19 and the maintainer invited the change. Until then not sent: sample-code robustness, queued behind ②. *2026-10-04: reported by someone else, [#532](https://github.com/DMTF/spdm-emu/issues/532) (`annamdi`, 2026-10-02), found while deploying the responder and filed with a `--slot_count` question; its author offers the fix. Not sent from here. 2026-10-12: the maintainer proposes deprecating `--slot_count` instead. 2026-10-15: #532 closed by `jyao1`'s #538, which removed `--slot_count`. The shared `res` is unchanged at `8674afe` — `spdm_responder_spdm.c` reads slots 0, 1 and 4 into it, lines 506–557, and tests it once, at 565 — so the issue that reported this row is closed and the defect is not. Whether to raise it again is the author's question; #532's reporter had offered a fix. 2026-10-17: unchanged at `376869f`, and the same shape is at 688–709, for the requester chains the responder provisions for mutual authentication. [#17](https://github.com/DMTF/spdm-emu/issues/17), open since 2021, asks the same of the requester's own reads at a 2021 commit; not re-read against `main`. The fix is a choice — stop, or name the slot and carry on — so a question, later. 2026-10-19: asked as #547, measured at `ce3b513` first: the slot-4 read decides whether any slot is provisioned, and a missing file is reported where a chain that does not verify is not. #17 re-read: its requester half was fixed by `c0f2e43` in 2021, whose message says so, and #17 is still open; and `jyao1`'s `8674afe` gave the requester's own three reads the chained form on 2026-10-14, in the commit that also wrote the responder's reads of the Requester's chains with one shared `res` ([§](#candidate-3s-question)). 2026-10-20: #532's reporter and a second user chose option 2, and `jyao1` invited a patch and asked how it is reproduced without removing a file. Sent as #550, option 2, measured on 48 runs; and answered in #547: a responder with one key and one chain, or with a chain that does not verify, and spdm-emu's own TPM build configured with one responder slot, with nothing removed ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20))* |
+| 3 | `DMTF/spdm-emu` | a slot-0 certificate read whose failure is discarded | `w4-tamper` `t3_cert`: the only trace is `ProvisionedSlotMask` 0x13 → 0x12 | **in review**: sent as [#550](https://github.com/DMTF/spdm-emu/pull/550) on 2026-10-20, after it was asked as issue [#547](https://github.com/DMTF/spdm-emu/issues/547) on 2026-10-19 and the maintainer invited the change. Until then not sent: sample-code robustness, queued behind ②. *2026-10-04: reported by someone else, [#532](https://github.com/DMTF/spdm-emu/issues/532) (`annamdi`, 2026-10-02), found while deploying the responder and filed with a `--slot_count` question; its author offers the fix. Not sent from here. 2026-10-12: the maintainer proposes deprecating `--slot_count` instead. 2026-10-15: #532 closed by `jyao1`'s #538, which removed `--slot_count`. The shared `res` is unchanged at `8674afe` — `spdm_responder_spdm.c` reads slots 0, 1 and 4 into it, lines 506–557, and tests it once, at 565 — so the issue that reported this row is closed and the defect is not. Whether to raise it again is the author's question; #532's reporter had offered a fix. 2026-10-17: unchanged at `376869f`, and the same shape is at 688–709, for the requester chains the responder provisions for mutual authentication. [#17](https://github.com/DMTF/spdm-emu/issues/17), open since 2021, asks the same of the requester's own reads at a 2021 commit; not re-read against `main`. The fix is a choice — stop, or name the slot and carry on — so a question, later. 2026-10-19: asked as #547, measured at `ce3b513` first: the slot-4 read decides whether any slot is provisioned, and a missing file is reported where a chain that does not verify is not. #17 re-read: its requester half was fixed by `c0f2e43` in 2021, whose message says so, and #17 is still open; and `jyao1`'s `8674afe` gave the requester's own three reads the chained form on 2026-10-14, in the commit that also wrote the responder's reads of the Requester's chains with one shared `res` ([§](#candidate-3s-question)). 2026-10-20: #532's reporter and a second user chose option 2, and `jyao1` invited a patch and asked how it is reproduced without removing a file. Sent as #550, option 2, measured on 48 runs; and answered in #547: a responder with one key and one chain, or with a chain that does not verify, and spdm-emu's own TPM build configured with one responder slot, with nothing removed ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)). That evening `annamdi` requested a change — read slot 4's chain only in a multi-key connection — which was right; revised as `dcf2cc4` and force-pushed ([§](#550-reviewed-and-changed--2026-10-20))* |
 | 4 | `DMTF/spdm-emu` | the requester never checks `VERIF_NO_AUTHORITY` | `t3b_foreign` completes a handshake against a root it was never given | **merged**: sent as [#537](https://github.com/DMTF/spdm-emu/pull/537) on 2026-10-13, after it was asked as issue [#533](https://github.com/DMTF/spdm-emu/issues/533) on 2026-10-03, and merged on 2026-10-15 as `423ba4e`. The library reports it as a warning **by design** — libspdm #1773 and #1774 made it one in 2023, so that the integrator decides — so it went as a question about what a sample should teach, not as a defect. Re-measured on the head first: `0x40020003` returned three times and ignored, and the same 578 messages as with the stock trust anchor. *2026-10-12: `steven-bellock` chose option 1 — a line naming the slot, and carry on — and assigned the issue to `LeonLinAtAMI`, whose #530 changes the same calls. Not sent from here; the issue's reproduction is what this project can offer the change. The same evening the assignee asked for the change itself, on top of #530 and covering every call; sent on 2026-10-13 as #537, after each of the seven calls had been made to print ([§](#candidate-4s-change-sent-as-537--2026-10-13)). 2026-10-15: approved by `jyao1`, who asked for it on `main` rather than on the unapproved #530; rebased as `9fdfdf1` with the same added and removed lines, and every run repeated with the same results ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)); merged by him at 14:07 UTC as `423ba4e`, byte-identical* |
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
@@ -2703,6 +2704,123 @@ change at a time to the same maintainer, and #550 first.
 - ③: a question. 13: a conversation. 16: a Debug build.
 - 94773: read at 09:11 UTC, unchanged since 2026-09-23 17:10 UTC; the
   author's.
+
+## #550 reviewed, and changed — 2026-10-20
+
+Read from 10:16 UTC, when the author said #550 had a reply.
+
+### What came back
+
+`annamdi`, #532's reporter and one of the two users #550 credits, reviewed
+`8c43299` an hour after it was opened. The API gives the reviewer no
+association with the repository; it is the review of the person whose
+deployment #547 is about.
+
+| time (UTC) | where | what |
+|---|---|---|
+| 10:09:10 | line 529, the slot-4 read | *"why not only attempt to load slot 4 when multi_key_conn_rsp is true?"* |
+| 10:10:30 | line 575, the `Slot 4` line | *"only when multi-key is intended but slot 4 cannot load."* |
+| 10:11:25 | the review, **changes requested** | *"might be best to condition it to when multi-key is intended."* |
+
+### Why it was right, and where this record had already shown it
+
+The callback provisions slot 4 only in a multi-key connection:
+`LIBSPDM_DATA_LOCAL_SUPPORTED_SLOT_MASK` gets bit 4 only when
+`multi_key_conn_rsp` is true, and `slot_data[2]` is `NULL` otherwise — the
+rule of `jyao1`'s `ea77f25`, 2026-09-08, titled *"fix: provision slot 4 only
+when multi-key"*. libspdm sets `multi_key_conn_rsp` while answering
+`NEGOTIATE_ALGORITHMS` (`libspdm_rsp_algorithms.c` 1080–1101 at `6cb52f2`):
+from SPDM 1.3, and only if the Requester asked for `MULTI_KEY_CONN`.
+`8c43299` still read slot 4's chain in every connection, and when the read
+failed it printed `Slot 4: certificate chain not loaded, not provisioned` in
+connections that could never provision slot 4 — a warning about something
+nothing could have done, on every such connection to a responder like #532's.
+
+The line was in this project's own runs. `t1`'s B1 and B6, `--ver 1.2` with
+slot 4's chain removed (in B6 slot 1's too), print the slot-4 line, and the
+previous section read them as the change working. Its "What the hours before sending found"
+corrected a draft sentence, "a line for each slot not provisioned", because
+slot 4 in a connection that is not multi-key is not provisioned and prints
+nothing: the sentence was made to fit the code, and the code was not asked
+whether it should read a chain it cannot use. And the author's answer in #547
+had named both halves of the cause: slot 4's chain is read in every
+connection although slot 4 is provisioned only in a multi-key one, and that
+read decides for slots 0 and 1. `8c43299` fixed only the second.
+
+### The change, revised
+
+`dcf2cc4` on `f7fa183`, +50 −28 against `main` (`8c43299` was +24 −11; the
+difference is the moved query and two re-indented reads). Still one commit, so that `main`
+would get one change rather than the first version and its correction:
+
+- the `multi_key_conn_rsp` query moves, unchanged, from the provisioning block
+  to before the reads — with `multi_key_data_size`, which `ea77f25` introduced
+  so that the query would not overwrite `data_size`, slot 0's chain size.
+  Before the reads `data_size` would have been safe; a reviewer should not
+  have to work out the order to see it;
+- both slot-4 reads, the traditional and the post-quantum, are made only when
+  it is true;
+- the `Slot 4` line is printed on `multi_key_conn_rsp && !res4`.
+
+The Requester's chains are still left as they are. The revision was committed
+on a new branch, `responder-slot-res-v2`, from `main`, not by amending
+`8c43299`: this session's permission classifier refused an amend of a signed
+commit that had been pushed, and was not worked around. The author signed
+with one command, which applied the reviewed message and the sign-off
+together.
+
+### Tested
+
+The harness and the build tree of `t1`, 26 cases, each against `main`,
+`8c43299`'s tree and the revision: 78 runs, in scratch,
+`~/spdm-lab/scratch-1020/t4`, with no `manifest.json`. Five cases are new:
+`--other_param OPAQUE_FMT_1` on the requester, which leaves `MULTI_KEY_CONN`
+out of `NEGOTIATE_ALGORITHMS` and so gives a 1.4 connection without multi-key
+(`DIGESTS` `0x03`/`0x03`), unaltered and with slot 4's chain removed, each
+also with `--pqc_first TRUE` on the responder; and all three chains removed
+with `--ver 1.2`.
+
+- **The first version against the revision**: the same exit status, message
+  sequence, requester log and responder log in 21 of the 26 cases, apart from
+  the `[PSK]` line on `PCI_DOE`. The other five are exactly the connections
+  without multi-key with slot 4's chain removed, and in each the revision's
+  responder log lacks two lines: `Slot 4: certificate chain not loaded, not
+  provisioned`, and `Unable to open file …/bundle_responder.certchain4.der` —
+  it did not open the file.
+- **`main` against the revision**, with slot 4's chain removed and no
+  multi-key: `main` exits 1 after eight messages; the revision exits 0 with
+  the message sequence of the unaltered run — 2,216 messages with `--ver 1.2`,
+  2,272 with `--other_param OPAQUE_FMT_1`, 2,632 with that and `--pqc_first
+  TRUE`. All three chains removed with `--ver 1.2`: exit 1 on both, and the
+  revision prints lines for slots 0 and 1. The workflows' commands: as for
+  `8c43299`.
+
+`DEVICE=tpm`, Debug, a fresh `swtpm` for each run (`t5`, 6 runs). The default
+slots, the workflow's configuration: the same as `main`. The one-slot
+responder with the default build's requester: `0x01`, exit 0, and lines for
+slots 1 and 4, since in a multi-key connection slot 4 is wanted and missing.
+The same with `--ver 1.2` on the requester: `main` exits 1; `8c43299` exits 0,
+prints lines for slots 1 and 4, and the TPM library reports *"unsupported
+slot_id"* for both; the revision exits 0, prints the slot-1 line only, and
+does not ask the TPM library for slot 4.
+
+### Sent — 2026-10-20, 12:23 UTC
+
+| | |
+|---|---|
+| Commit | **`dcf2cc4`** on `f7fa183`, signed by the author: tree `82ba048`, the bytes tested, and the reviewed message with one line added, the sign-off; `check_upstream_commit.sh` satisfied |
+| Before the push | read at 12:21:30 UTC: #550 unchanged since 10:11:25 UTC, nothing new on #547, `main` still `f7fa183`, the fork's branch still `8c43299` |
+| Push | a force-push with a lease on `8c43299`, run here on the author's instruction: `+ 8c43299...dcf2cc4` at 12:23:11 UTC. The pull request's head read back as `dcf2cc4`, one commit |
+| Body | replaced by the author with the reviewed file, read back byte-identical, 3,473 bytes: a sentence on slot 4 and multi-key, a row for connections without multi-key in place of the `--ver 1.2` row, the all-removed row, and the one-slot TPM run with `--ver 1.2`. His correction of 09:34 UTC is kept |
+| Replies | two comments by the author, at 12:25:37 and 12:26:46 UTC, on the pull request rather than in the two threads: agreement, then what the revision does where multi-key is not negotiated, and that the table was updated. His wording: the first is the first sentence of the reviewed draft, the second the draft without its first word |
+| Review | requested again from `annamdi` at 12:26:53 UTC |
+| Checks | DCO success; **45 of 45** check runs success, the last at 12:46:33 UTC, and `mergeable_state` clean — among them the Windows job whose checkout could not reach github.com on `8c43299`, built and passed this time. Read from the API |
+
+### What decides what goes next
+
+- #550: `annamdi`'s answer, then the maintainers'.
+- 22: after #550 has an answer.
+- ③: a question. 13: a conversation. 16: a Debug build.
 
 ## Three identity traps, all of which are silent until they are not
 
