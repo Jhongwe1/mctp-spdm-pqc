@@ -7002,3 +7002,189 @@ held again: the numbers were right and the sentences around them were not.
 - **The one-page summary**: still the 2026-09-29 snapshot.
 - **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
   17's `TODO(me)`**: the author's. Week 13 stays open.
+
+## 2026-10-20 · Day 26 · a reproduction without removing anything
+
+One sitting, from 15:36 here. #548 had merged overnight, ten of ten, and #547
+had five new comments, the last the maintainer's: *"I do not mind to fix. Feel
+free to submit patch if you want"*, and a question — with the emulator's own
+keys the slot-4 file is always there, so how is this reproduced without
+removing it? The author asked what the issue needed and for the candidate best
+sent now, and delegated the choice. Candidate 3 went as option 2, #550, after
+48 runs against `main` at `f7fa183`; the author signed, opened it, and
+answered the question in #547. Four findings are worth the five parts. The
+first is the sentence of mine that got out.
+
+---
+
+### 1. ★ A sentence that got out, and why the audit missed it
+
+**現象** #550's body said the requester built for a one-slot TPM responder
+stops "reading the responder's roots for slots 1 and 4". Seven minutes after
+the pull request was opened, reading `spdm_requester_spdm.c` for row 22 showed
+reads of the roots of slots 0 and 1, and none of slot 4.
+
+**假設** (1) a second read of slot 4's root elsewhere; (2) the numbers came
+from a different log than the claim is about.
+
+**先驗哪個、為什麼** Both in one step, since each was cheap: the requester's
+own log of that run is one `grep`, and the lines that read the roots are
+sixty-four. The log decides between them; the code says what the sentence
+should have said.
+
+**根因** (2). The requester's log has *"unsupported slot_id 1"* and stops. The
+lines *"unsupported slot_id 1"* and *"unsupported slot_id 4"* are in the
+**responder's** log of the same run — its own chain reads, which this change is
+about. Four other sentences of the drafts had been caught before signing, each
+by setting it beside the runs: they claimed more than had been run. This one
+named no case; it stated a mechanism, and a mechanism is checked against code,
+which the audit did not open. The author corrected the body on GitHub at
+09:29 and 09:34 UTC; the sentence now ends *"reading the responder's roots
+for slot 1."*, read back after each edit.
+
+**教訓** ★ **A "because" is a claim with its own source, and the source of a
+mechanism is the code, not the nearest log line that mentions the same
+numbers.** Checking each sentence against the runs catches over-counting; it
+cannot catch a cause attributed to the wrong process, because the numbers are
+right.
+
+---
+
+### 2. ★ A reproduction without removing anything
+
+**現象** `jyao1` asked how #547 is reproduced without removing a file. Every
+sample-key directory the emulator reads chains from ships all three, so with
+the emulator's own keys it is not.
+
+**假設** (1) it cannot be, inside spdm-emu: the case lives outside, on #532's
+single-identity board; (2) a configuration the project itself supports has
+fewer chains than the emulator reads; (3) a chain that does not verify — but
+that is still changing a file.
+
+**先驗哪個、為什麼** (2), because it is the only one that answers the question
+as asked, and the TPM library's `CMakeLists.txt` says what it accepts:
+responder slot IDs *"must include slot 0"*, and nothing more.
+
+**根因** (2). `DEVICE=tpm` with `LIBSPDM_TPM_RESPONDER_SLOT_IDS=0`, one handle
+and one NV index, nothing removed: on `main` no slot is provisioned and the
+requester exits 1; with the change, slot 0 is, and it exits 0. Two caveats came
+with it and are in the record: the requester built with that setting stops
+first — candidate 22 — so the runs used the default TPM build's requester; and
+the TPM reader returns false for an unconfigured slot without writing `*data`,
+which is why the change assigns each slot's chain only on its own read's
+success.
+
+**教訓** ★ **When a maintainer asks how a defect appears without the step that
+looks artificial, look first for a configuration the project supports in which
+that step is unnecessary.** A use case outside the project asks to be
+believed; a configuration inside it can be run.
+
+---
+
+### 3. A hypothesis refuted by a log before it was written down
+
+**現象** The TPM reader's early return, read with the shared `res`, implied
+that upstream's own TPM job provisions no slot today.
+
+**假設** (1) it does provision none, and the job passes because nobody checks
+the requester's exit status; (2) the job's configuration covers all three
+slots.
+
+**先驗哪個、為什麼** The job log of `f7fa183`'s run: one `gh api` GET, and it
+decides between them before the claim reached a draft.
+
+**根因** (2). *"Responder configured slots: 0;1;4"*, and `DIGESTS` with
+`0x13`: the default configuration gives all three slots one key and one chain.
+What survived is narrower — a one-slot configuration — and became finding 2.
+
+**教訓** **Code says what can happen; the log says what does. Read the log of
+the run before describing the run from the code.**
+
+---
+
+### 4. A control build that was too fast
+
+**現象** After a libspdm and an OpenSSL bump, the control build of `f7fa183`
+finished in 21 seconds.
+
+**假設** (1) make missed the submodule change; (2) some of it was rebuilt and
+some was not; (3) both bumps were small.
+
+**先驗哪個、為什麼** Count it: the `.c` files that changed between `1d98f73`
+and `6cb52f2` against the objects in the build log, then `ldd` and the
+OpenSSL objects' dates.
+
+**根因** (2). Every changed libspdm file was recompiled. OpenSSL is built by an
+`ExternalProject`, which did not rebuild: the binaries load `libcrypto.so.3`
+from the build tree, built on 2026-10-13 from the earlier pointer. Both sides
+of the A/B load the same library, so the comparison stands, and the record
+says what was linked. The scratch `BUILT_FROM` written by my build script had
+recorded the submodule's checkout, `45e844f`, as if it were what the binaries
+ran; the new TPM build directory did build `45e844f`.
+
+**教訓** **A build that is too fast is a measurement: count what it rebuilt
+against what changed. And a provenance note written from the source tree says
+what was checked out, not what was linked.**
+
+---
+
+### Smaller things, each checked
+
+- **#548 as it landed**: `f7fa183` on `897f13e`, with the patch-id
+  (`7d805a68395d`) and the message of `aecb922`; no review. #549, by
+  `steven-bellock`, had moved libspdm to `6cb52f2` the evening before.
+- **#547's thread**, recorded in full in `docs/upstream/README.md`: #532's
+  reporter and a second user chose option 2; the maintainer doubted the use
+  case, then invited a patch. The author's answer went as two comments, at
+  09:07 and 09:08 UTC, together byte-identical to the reviewed text.
+- **The push to the fork** was run here: the author's request had said to
+  push it, and he signed first. The pull request was his click, on a page
+  pre-filled from the reviewed files, read back byte-identical.
+- **Four sentences of the drafts claimed more than had been run**, found
+  before signing: the `--ver 1.2` and post-quantum results, run with the chain
+  removed, stated for "removed or altered"; "slot 1 removed or altered", run
+  removed only; "a line for each slot not provisioned", which slot 4
+  contradicts in a connection that is not multi-key; and a universal "between
+  any two runs" from four runs. The fifth, finding 1, was of another kind.
+- **The checks of #550**: DCO success and 44 of 45 check runs, the last at
+  09:28:37 UTC. The failure, which the author saw first, is `actions/checkout`
+  in one Windows job failing to reach github.com for a submodule four levels
+  down (`libspdm` → OpenSSL → `oqs-provider`), before anything was built — the
+  class of 2026-10-15's failure on `main`. The seventeen Windows builds that
+  got past checkout passed, as did the TPM job and the seven format checks.
+- **Packages installed in WSL for the TPM build**, those upstream's
+  `build_CI_TPM.yml` installs: `swtpm` 0.7.3, `tpm2-tools` 5.6,
+  `tpm2-openssl` 1.2.0, `libtss2-dev` 4.0.1. Each TPM run started its own
+  `swtpm` with upstream's `script/setup-tpm.sh`, which leaves the simulator
+  running and its state in `/tmp`; both were removed after every run.
+- **The 42 sample runs took fifty minutes**, one after another, because the
+  emulator's port is fixed; running them in separate network namespaces was
+  refused by this session's permission classifier, and was not worked around.
+- **`PCI_DOE` prints a different `[PSK]` value on every run**, `main`'s own
+  responder included: the only difference between the logs of `main` and the
+  change on the workflows' commands.
+- **94773** read at 09:11 UTC: unchanged since 2026-09-23 17:10 UTC.
+
+### Decisions
+
+- **The author's**: that a candidate be chosen and sent, the choice delegated;
+  the sign-off; the pull request; the answer in #547 and its two comments; the
+  correction of the body.
+- **Mine, delegated**: candidate 3 as option 2 now, rather than first asking
+  #532's reporter again — the maintainer had invited the patch, and the
+  reporter had answered without taking it; the TPM configuration as the answer
+  to the maintainer's question; the Requester's chains left alone, because
+  there `res` also decides mutual authentication; 22 held until #550 has an
+  answer.
+
+### Not done, and the reason for each
+
+- **Review of #550, and the maintainer's answer in #547**: theirs.
+- **Re-running a check that failed before it built**: the maintainers'; the
+  author's permission on the repository is read-only.
+- **Candidate 22, and ③, 13 and 16**: after #550; a question; a conversation;
+  a Debug build.
+- **94773**: the author's.
+- **The one-page summary**: still the 2026-09-29 snapshot.
+- **Recording the demo, printing the page, saying it aloud, `c-drills`, Day
+  17's `TODO(me)`**: the author's. Week 13 stays open.
