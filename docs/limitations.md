@@ -255,7 +255,9 @@ work:
   #545 and #546, sent on 2026-10-17, on 2026-10-19, #546 after an approval
   without a comment and #545 without a review. #548, sent on 2026-10-19, was
   merged on 2026-10-20 without a review; #550, sent that day, was revised the
-  same day at the request of #532's reporter, and is in review.
+  same day at the request of #532's reporter, approved that evening by that
+  reporter and by a second user, and waits on the maintainers, who had not
+  acted on it by 2026-10-26.
 - **Not done. Ten of the twenty-two candidates were not sent as changes.**
   Twelve went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
