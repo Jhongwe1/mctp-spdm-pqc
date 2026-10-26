@@ -39,7 +39,9 @@ responder's certificate slots depend on its own chain only, sent on 10-20
 after a second design question, issue
 [#547](https://github.com/DMTF/spdm-emu/issues/547), whose maintainer invited
 the change, and which both users the question was about approved the same
-day; and
+day; [#551](https://github.com/DMTF/spdm-emu/pull/551), which lets
+`CoRimTool.py` read the JSON its own `cbor_to_json` writes, sent on 10-26
+after the question it had waited on was answered by measurement; and
 [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773). The
 full record, including a −1 and what it changed, is in
 [`docs/upstream/`](docs/upstream/README.md).
@@ -271,7 +273,7 @@ signature; the host's own is 3.0.13 and has no ML-DSA.
 | the RATS pipeline: reference values, policy, verdict (`rats/`) | the responder validator and the fuzz targets |
 | the negative suite: three advisory classes, 21 deliberately wrong implementations | `libspdm`, `spdm-emu` and `spdm-dump` themselves |
 | the CI that goes red when a tampered measurement is accepted | |
-| twelve upstream changes (ten merged, two in review) and two issues | |
+| thirteen upstream changes (ten merged, three in review) and two issues | |
 
 The accurate verbs are "I measured it" and "I connected it up". I did not
 implement SPDM, and I did not add post-quantum support.
@@ -498,7 +500,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — ten changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548), two in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user, and 94773, through three patchsets and a −1 — and two design questions asked as issues, each answered and turned into a change: #533 into #537, at its assignee's request, and #547 into #550, at the maintainer's invitation ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — ten changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548), three in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user; [#551](https://github.com/DMTF/spdm-emu/pull/551), sent on 2026-10-26, which lets `CoRimTool.py` read the JSON its own `cbor_to_json` writes; and 94773, through three patchsets and a −1 — and two design questions asked as issues, each answered and turned into a change: #533 into #537, at its assignee's request, and #547 into #550, at the maintainer's invitation ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built

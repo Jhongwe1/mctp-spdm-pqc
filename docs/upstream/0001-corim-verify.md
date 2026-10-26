@@ -318,6 +318,19 @@ where it belongs — a checklist is a discipline and this one had already missed
 **No CLA to sign** — see §0.5. The only paperwork is the sign-off already in
 the commit.
 
+**Added 2026-10-26, from #551**, the thirteenth change and the first on which
+this was caught, by the author, on the page:
+
+```
+☐ open the pre-filled pull-request page and READ THE PREVIEW before the
+   button. GitHub links "#" followed by digits in pull-request text and in
+   commit messages — "#6.500", CDDL's notation for CBOR tag 500, rendered
+   as a link to issue #6 — and the commit's reference would reach the
+   issue when the commit reaches the repository. A rendered Markdown file
+   is left alone (measured on the readme GitHub serves), so the notation
+   stays in code and readme and leaves the two texts.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a

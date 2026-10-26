@@ -93,6 +93,7 @@ needs a date attached to it.
 | ★ #550 **changes requested, and changed** | **done** | 2026-10-20, 10:11 and 12:23 UTC | `annamdi`, #532's reporter, asked that slot 4's chain be read, and reported, only in a multi-key connection, the only kind that provisions slot 4. Right: `8c43299` warned about slot 4 where it could never be provisioned, which this project's own runs had shown. Revised as **`dcf2cc4`**, measured in 84 runs, signed by the author and force-pushed; the body and two replies are his. CI 45 of 45. [§](#550-reviewed-and-changed--2026-10-20) |
 | ★ #550 **approved twice** | **approved** | 2026-10-20, 14:55 and 15:02 UTC | by `annamdi`, #532's reporter, two and a half hours after the revision was pushed, and by `giovanni-cf`, the second user #547 heard from, each without a comment: the two deployments the question was about. At 15:08 `steven-bellock` removed his own review request, as he had on #524 before `jyao1` merged it; `jyao1` is the one reviewer still requested. Read on 2026-10-26: not merged, `main` still `f7fa183`. [§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26) |
 | Candidate ③ prepared | **prepared** | 2026-10-26 | *CoRimTool: accept the JSON cbor_to_json writes*: `baedf75` on `f7fa183`, +7 in `CoRimTool.py` and +2 in its readme, unsigned, every `Tested:` line run on the committed bytes. Measured first, at `f7fa183`: the two keys `cbor_to_json` wraps the map in are the only asymmetry, and the shipped policy reads through them, which made the call the row had waited on. The sign-off, the push and the pull request are the author's. [§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26) |
+| ★ Candidate ③ **SENT** | **done** | 2026-10-26, 05:28 UTC | [`DMTF/spdm-emu` #551](https://github.com/DMTF/spdm-emu/pull/551), *CoRimTool: accept the JSON cbor_to_json writes*: `2ee099d` on `f7fa183`, +9 −0, signed by the author; body byte-identical to the reviewed file; reviewers by CODEOWNERS. Before it was opened the author caught, on the preview, `#6.500` rendered as a link to issue #6; the body and the commit message were reworded to `tag 500`, the commit signed again, and the replacement force-pushed by the author after the classifier here refused it. DCO and 45 of 45 check runs success by 06:16 UTC; no review by then. [§](#sent--2026-10-26-0528-utc) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -103,9 +104,9 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Twenty-two candidates have been recorded. Twelve went as changes — #524,
-#534, #526, #527, #536, #537, #542, #545, #546 and #548 are merged, and #550
-and 94773 are in review — and two of the twelve went first as questions:
+Twenty-two candidates have been recorded. Thirteen went as changes — #524,
+#534, #526, #527, #536, #537, #542, #545, #546 and #548 are merged, and #550,
+#551 and 94773 are in review — and two of the thirteen went first as questions:
 candidate 4 as issue #533, whose assignee then asked this project for the
 change, and candidate 3 as issue #547, where the maintainer invited it. Candidate 3 had been
 reported by someone else on 2026-10-02, in an issue the maintainer closed on
@@ -126,7 +127,7 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 Rows 4 and 8–11 changed, and row 21 was added, on 2026-10-13 ([§](#candidate-4s-change-sent-as-537--2026-10-13)).
 Rows 2–4, 8–11, 15, 16, 20 and 21 changed on 2026-10-15, when every unsent row
 was re-read at `8674afe` ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)).
-Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured and prepared as a change ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)).*
+Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured, prepared and sent as #551 ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
@@ -137,7 +138,7 @@ Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-un
 | 5 | `DMTF/spdm-emu` | `command.h` says the socket payload starts at the SPDM header; for MCTP it starts one byte later | any capture here, and `tamper_proxy.py` | **merged**: sent as [#534](https://github.com/DMTF/spdm-emu/pull/534) on 2026-10-03, once #526 had been answered, and merged seven hours later as `13edd65`. Re-measured on four transports first: the comment is right for NONE only — MCTP, the default, puts one byte in front of the SPDM header, PCI_DOE eight and TCP four — so the change says what comes first for each. #408 quoted the comment; #244 asked the question it now answers |
 | 6 | `DMTF/spdm-emu` | ① `requirements.txt` has no upper bounds and the ceiling has arrived | a fresh virtualenv, 2026-09-12 | **named in #524's body** as the workaround a reviewer needs; not a change of its own |
 | 7 | `DMTF/spdm-emu` | ② `CoRimTool.py verify` has never verified a signature, in two lines that mask each other | re-running the commit's own `Tested:` lines: fixing one line alone makes it accept anything | **merged**, #524, 2026-09-28, as `b015187`, and in the `4.0.0-rc2` tag. Both lines in one change, because the first alone is the more harmful state — measured, not reasoned |
-| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared, then sent as [#536](https://github.com/DMTF/spdm-emu/pull/536) ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13)), and merged on 2026-10-13 at 06:45 UTC as `1229103`, byte-identical. 2026-10-15: ④ sent as [#542](https://github.com/DMTF/spdm-emu/pull/542) ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)); ③ unchanged at `8674afe`, `cbor_to_json`'s output still stopping `json_to_cbor` at `KeyError: 'corim'`. 2026-10-16: ④ merged as `5b6e3a7`, byte-identical. 2026-10-17: ③ unchanged; `CoRimTool.py` at `376869f` is the blob tested on 2026-10-15. 2026-10-26: ③ measured at `f7fa183`, where `CoRimTool.py` is still that blob: the two keys `cbor_to_json` wraps the map in, `corim` and `unsigned_corim_map`, are the only asymmetry — with them removed, `json_to_cbor` gives back the sample's 996 bytes — and the shipped policy reads the reference through them, so the call the row was waiting on is made by the files, and the change goes in `json_to_cbor`. Prepared as `baedf75`, +7 and +2 lines, unsigned ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26))* |
+| 8–11 | `DMTF/spdm-emu` | ③ `json_to_cbor` cannot read `cbor_to_json`'s output; ④ `translate_data` hard-codes two names; ⑤ `verify` exits 0 on failure; ⑥ the sample policy does not parse on OPA 1.x | each reproduces with the tool's own sample data | ⑤ **merged**: sent as [#526](https://github.com/DMTF/spdm-emu/pull/526) ([`0003`](0003-corim-exit-status.md)) on 2026-09-29 — #524's description had offered it, and at `eff07cf` a forged signature still exits 0 — and merged on 2026-10-05 as `532f667`. ③ ④ ⑥ not sent and still present at `eff07cf`; three of them need a maintainer's call on which form is canonical. *2026-10-12: all three still present at `8f36665`. ④ needs no call after all: the tables it should consult, `SupportHashAlgMap` and `ComidRoleTypeChoice`, are in the same file. ⑥'s only call is which OPA releases it should still parse on. Both are sendable; ③ is a question first. 2026-10-13: ⑥ prepared, then sent as [#536](https://github.com/DMTF/spdm-emu/pull/536) ([§](#the-sample-policy-on-opa-1x-prepared--2026-10-13)), and merged on 2026-10-13 at 06:45 UTC as `1229103`, byte-identical. 2026-10-15: ④ sent as [#542](https://github.com/DMTF/spdm-emu/pull/542) ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)); ③ unchanged at `8674afe`, `cbor_to_json`'s output still stopping `json_to_cbor` at `KeyError: 'corim'`. 2026-10-16: ④ merged as `5b6e3a7`, byte-identical. 2026-10-17: ③ unchanged; `CoRimTool.py` at `376869f` is the blob tested on 2026-10-15. 2026-10-26: ③ measured at `f7fa183`, where `CoRimTool.py` is still that blob: the two keys `cbor_to_json` wraps the map in, `corim` and `unsigned_corim_map`, are the only asymmetry — with them removed, `json_to_cbor` gives back the sample's 996 bytes — and the shipped policy reads the reference through them, so the call the row was waiting on is made by the files, and the change goes in `json_to_cbor`. Prepared as `baedf75`, +7 and +2 lines, unsigned, and sent the same day as [#551](https://github.com/DMTF/spdm-emu/pull/551), signed as `2ee099d` after the author caught `#6.500` in the message and the body rendering as a link to issue #6 ([§](#sent--2026-10-26-0528-utc))* |
 | 12 | `DMTF/spdm-emu` | the sample policy does not check what it appears to check | [`../rats-pipeline.md`](../rats-pipeline.md) §5 | not a defect to report: a design finding, kept where the design is discussed |
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
@@ -2941,6 +2942,23 @@ runs used (`b32e15c9` and `b9aff839`), checked by hashing the copies.
   `corim-json-roundtrip`; and five searches for the defect's words find only
   this project's own merged pull requests. The pre-filled pull-request page
   was built from the reviewed files and decoded back to them byte for byte.
+- ★ **A link nobody wrote.** The author, reading the pre-filled page's
+  preview before opening it, saw `#6.500` rendered as a link to issue #6.
+  GitHub links `#` and digits in pull-request text and in commit messages,
+  and the commit, once in the repository, would have put a reference on #6,
+  a 2021 issue of `jyao1`'s. The notation is CDDL's for a CBOR tag and the
+  file's own — `#6.505` in `GenCbor`'s comments, `#6.552(svn)` in the
+  readme — and in a rendered Markdown file GitHub leaves it alone. So the
+  body and the commit message now say `tag 500` and `tag 501`, in one line
+  each, and the code comment and the readme sentence keep the notation. The
+  message changed, so the commit did: the author signed `2ee099d` in place
+  of `5698f6e`, same tree.
+- **The replacement push was refused here.** This session's permission
+  classifier refused the force-push with a lease on `5698f6e`, as it had
+  refused an amend on 2026-10-20, and the author ran the prepared script
+  himself. He had opened the pull request first, so from 05:28 to 05:51 UTC
+  #551's head was the first signed commit, with the old wording, under the
+  new body.
 
 ### What is left, and whose
 
@@ -2951,10 +2969,26 @@ the branch pushed to the fork, and open the pull request from
 `~/spdm-lab/work/corim-json-roundtrip.pr-url.txt`, whose title and body are
 the reviewed files, unedited.
 
+### Sent — 2026-10-26, 05:28 UTC
+
+| | |
+|---|---|
+| URL | <https://github.com/DMTF/spdm-emu/pull/551> |
+| Opened | 05:28:02 UTC by the author, from `Jhongwe1:corim-json-roundtrip`, on a page pre-filled from the reviewed files; the URL had been decoded back and compared with them before it was handed over |
+| Title and body | the commit's subject; the body byte-identical to the reviewed file, 2,631 bytes, read back from the API |
+| Commit | **`2ee099d`** on `f7fa183`, signed by the author at 05:23 UTC: tree `4639bc2`, the bytes tested, and the reviewed message with one line added, the sign-off; `check_upstream_commit.sh` satisfied. It replaced `5698f6e`, signed at 05:13 UTC with the message's first wording, which the fork held from 05:14 UTC and the pull request from 05:28 to 05:51 UTC |
+| Diff | two files, +9 −0 |
+| Before each push | read at 05:13:58 and 05:24:07 UTC: `main` still `f7fa183`, nothing opened or updated upstream since 2026-10-20 15:08 UTC, no duplicate, the fork's branch absent and then at the first signed commit, and no pull request from it yet |
+| Pushes | the first at 05:14:25 UTC, run here on the author's instruction; the replacement, a force-push with a lease on `5698f6e`, run by the author at 05:51:09 UTC after this session's permission classifier refused it |
+| Reviewers | `jyao1` and `steven-bellock`, added by CODEOWNERS |
+| Checks | DCO success; **45 of 45** check runs success on `2ee099d`, all eighteen VS builds among them, the last at 06:16:12 UTC; `mergeable_state` clean. Read from the API |
+| Outcome | in review: no review and no comment at 06:16 UTC |
+
 ### What decides what goes next
 
+- #551: review. A comment that comes back is read here first, and the
+  reply is the author's.
 - #550: the maintainers.
-- ③: the sign-off, the push, the pull request; then its review.
 - 22: after #550 has the maintainers' answer, and as a question. 13: a
   conversation. 16: a Debug build.
 - 94773: not read today; the author's.

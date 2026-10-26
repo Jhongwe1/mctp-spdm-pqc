@@ -257,17 +257,19 @@ work:
   merged on 2026-10-20 without a review; #550, sent that day, was revised the
   same day at the request of #532's reporter, approved that evening by that
   reporter and by a second user, and waits on the maintainers, who had not
-  acted on it by 2026-10-26.
-- **Not done. Ten of the twenty-two candidates were not sent as changes.**
-  Twelve went as changes, two of them first as questions: candidate 4 as issue
+  acted on it by 2026-10-26. #551, candidate ③, was sent on 2026-10-26, after
+  the question it had been held for since 2026-10-12 was answered by
+  measurement rather than asked.
+- **Not done. Nine of the twenty-two candidates were not sent as changes.**
+  Thirteen went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
   sent as #537; and candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
   in place; its maintainer invited the change, sent as #550 on 2026-10-20. Of
-  the ten, one was withdrawn as never true, one had been fixed upstream before
+  the nine, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, and one, candidate 22, was found on 2026-10-20 while
-  testing #550. One of the twelve, candidate 21, had been asked about upstream
+  testing #550. One of the thirteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is
@@ -288,8 +290,8 @@ work:
   on #545, with its bytes unchanged — the two edit different files — and its
   runs were not repeated there. #548 was tested against `ce3b513`, and landed
   by rebase on `897f13e`, the libspdm `4.0.0-rc3` sync, with its patch
-  unchanged; its runs were not repeated there. #550 was tested against
-  `f7fa183`, which is still `main`.
+  unchanged; its runs were not repeated there. #550 and #551 were tested
+  against `f7fa183`, which is still `main`.
   94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
