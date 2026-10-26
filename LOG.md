@@ -7394,3 +7394,74 @@ reviewer would be right to refuse. Match bytes, not what the screen shows.
   Debug build.
 - **94773, the one-page summary, the demo, `c-drills`, Day 17's
   `TODO(me)`**: not read or touched today; the author's. Week 13 stays open.
+
+## 2026-10-26 · Day 27, afternoon · sent as #551, and a link nobody wrote
+
+Candidate ③ went as #551 at 05:28 UTC, from the author's keystrokes: the
+sign-off, the first push on his word, the page, and the second push by his
+own hand. Before he opened the page he read its preview and caught something
+the audit of the text had not. One finding is worth the five parts.
+
+---
+
+### 1. ★ A link nobody wrote
+
+**現象** On the pre-filled page's preview, `#6.500` and `#6.501` rendered
+with `#6` as a link, to a 2021 issue of `jyao1`'s about a memory leak, and
+`.500` as text. The author asked whether that was right.
+
+**假設** (1) GitHub links `#` followed by digits wherever it renders
+Markdown, so the readme's own `#6.552(svn)` is linked too and the notation
+has to go everywhere; (2) it links them in issues, pull requests and commit
+messages only, and leaves rendered files alone, so the fix is confined to
+the two texts; (3) a code span or a backslash in the body is enough, and
+the commit message can stay as it is.
+
+**先驗哪個、為什麼** (2) against (1) first, because it decides how much has
+to change and costs one request: the readme as GitHub serves it, as HTML.
+Then (3) by reasoning rather than a run: a commit message is plain text to
+GitHub, so nothing in it can be escaped, and the reference an unmerged
+commit makes becomes a line on the issue on the day the commit reaches the
+repository.
+
+**根因** (2). The served HTML of the readme has `#6.552(svn)` as text, with
+no anchor, and the body's `(tag 500)` renders as text. The commit message
+cannot be protected, so both texts say `tag 500` and `tag 501` now, one line
+each, and the code comment and the readme sentence keep CDDL's notation,
+which is the file's own. The message changed, so the commit did: `2ee099d`
+for `5698f6e`, the same tree, signed again by the author.
+
+**教訓** ★ **Text that someone else's renderer will show has to be read in
+that renderer, not in the editor.** Every audit of these texts has been of
+bytes against files, and the file was right; the preview was the first
+reading of the rendering, and the author did it. `0001` §6 gains the line.
+
+---
+
+### Smaller things, each checked
+
+- **The replacement push was refused here**, by the permission classifier,
+  as the amend was on 2026-10-20; the author ran the prepared script, which
+  checked the same five things before pushing. He had opened the pull
+  request first, so for twenty-three minutes #551's head was the first
+  signed commit under the new body. The force-push is on the timeline.
+- **The rendered readme was measured, not assumed**, through the API's HTML
+  rendering, before the sentence about rendered files was written.
+- **The freshness read and the duplicate search** were repeated before each
+  push: nothing moved, nothing found.
+- **The checks on `2ee099d`**: DCO success and 45 of 45 check runs success,
+  the last at 06:16:12 UTC; `mergeable_state` clean; no review and no comment
+  at 06:16 UTC.
+
+### Decisions
+
+- **The author's**: the sign-off, twice; both pushes, one by his word and
+  one by his hand; the pull request; and the catch.
+- **Mine, delegated**: `tag 500` in prose rather than an escaped `#6.500`;
+  the code comment and the readme sentence left in the file's notation.
+
+### Not done, and the reason for each
+
+- **#551's review, and #550's merge**: the maintainers'.
+- **Candidates 22, 13 and 16, 94773, the one-page summary, the demo,
+  `c-drills`, Day 17's `TODO(me)`**: as this morning.
