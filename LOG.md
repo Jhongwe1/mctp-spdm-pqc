@@ -7279,3 +7279,118 @@ reading.
 - **Candidate 22, and ③, 13 and 16**: as this morning.
 - **94773, the one-page summary, the demo, `c-drills`, Day 17's
   `TODO(me)`**: as this morning; the author's. Week 13 stays open.
+
+## 2026-10-26 · Day 27 · a call the files had already made
+
+Six days after #550 was revised. The first read of the day found it approved
+twice on the evening of the 20th — by `annamdi` and by `giovanni-cf`, the two
+users whose deployments #547 is about — and waiting on the maintainers since;
+`main` has not moved. The author asked for the one candidate best sent now,
+as a change or a question, and delegated the choice. Candidate ③, the CoRIM
+tool's JSON that its own `json_to_cbor` cannot read, was measured at `f7fa183`
+and prepared as a change, `baedf75`, unsigned; the sign-off, the push and the
+pull request are his. Two findings are worth the five parts.
+
+---
+
+### 1. ★ A "maintainer's call" that three commands settled
+
+**現象** Row ③ had been held since 2026-10-12 with one reason, repeated on
+10-17, 10-19 and 10-20: *which JSON form is canonical is the maintainer's
+call; a question first.* Today it went as a change, not a question.
+
+**假設** (1) the two forms — the bare map `json_to_cbor` reads and the
+wrapped one `cbor_to_json` writes — are two candidates, and only the
+maintainer can pick; (2) the shipped files have picked already, because
+something downstream reads one of the forms, so the other side has to move;
+(3) the difference between the forms is more than the two outer keys, so a
+question is needed to scope the fix before anything is written.
+
+**先驗哪個、為什麼** (3) first: it is one experiment — strip the two keys
+from `cbor_to_json`'s output, encode, compare bytes — and its answer decides
+whether (1) and (2) are even about a small thing. Then (2), by reading what
+consumes `cbor_to_json`'s output: the readme's flow and the sample policy.
+
+**根因** (3) is false: with the two keys removed the encoder gives back the
+sample's 996 bytes exactly, so the wrapper is the whole difference. (2) is
+true: the readme's verification flow writes the wrapped file for the policy,
+and `SpdmSamplePolicy.rego` reads the reference through
+`corim.unsigned_corim_map`, so that form is fixed by every policy written
+against it, and `json_to_cbor` is the only side free to change. (1) was
+never tested: for six weeks the row carried a judgement about the decision
+space that no run had been asked about, and the run that collapsed it took
+three commands and a `grep`.
+
+**教訓** ★ **"The maintainer's call" names a hypothesis about the space of
+answers, and the space can be measured like anything else. Before deferring
+a candidate as a question, run the cheapest experiment that could make the
+question disappear.** The sequencing rule of 2026-09-30 — not everything at
+once — is about a reviewer's attention; it says nothing about whether a row
+is a question or a change, and it had been letting a content judgement go
+unexamined under cover of a scheduling one.
+
+---
+
+### 2. The file that did not match its own listing
+
+**現象** The script that applies the change asserted that `GenCbor`'s first
+three lines occur once in `CoRimTool.py`, and found them zero times — in a
+file whose listing, read earlier through `sed -n`, showed exactly those
+lines.
+
+**假設** (1) the worktree held a different revision than the listing; (2)
+the file's bytes differ from what the terminal shows, by line ending; (3)
+the script's own string had a typo.
+
+**先驗哪個、為什麼** (2), because it is one `awk` over the file and the
+other two would each have needed a diff; and because the repository already
+has a rule about line endings, in the other direction.
+
+**根因** (2). `CoRimTool.py` and `readme.md` are CRLF upstream, every line —
+the terminal drops the CR when it prints — and the anchor ended in LF. The
+script now reads each file's own ending, asserts the file does not mix them,
+and writes with the same; the committed blobs carry a CR on every line, as
+the originals do.
+
+**教訓** **A listing is a rendering.** The project's rule that no tool may
+normalise a capture was written for evidence; the same rule holds for code
+someone else owns, where the cost is a 392-line diff of nothing that a
+reviewer would be right to refuse. Match bytes, not what the screen shows.
+
+---
+
+### Smaller things, each checked
+
+- **The approvals had sat unread for six days.** The 20th's record ends
+  with "`annamdi`'s answer, then the maintainers'"; the answer came that
+  afternoon, after the record was committed. Nothing reads upstream between
+  sessions, so the read is the first act of a session, and today it was.
+- **The refusal line for a signed file.** `cbor_to_json` reads the signed
+  `.corim` too, as the readme says, and `json_to_cbor` cannot encode that in
+  any form — signing is `sign`'s job — so the change answers it with a line
+  in the file's own style rather than a `KeyError` one key deeper.
+- **`py_compile`'s `__pycache__`** was reported by `check_upstream_commit.sh`
+  as uncommitted changes. It was, and the checker was right to say so.
+- **The duplicate search**, five queries, finds only this project's own
+  merged pull requests; #542's body had already named this as what it did
+  not fix.
+
+### Decisions
+
+- **The author's**: that one candidate be chosen and sent, the choice
+  delegated; the sign-off, the push and the pull request, still to come.
+- **Mine, delegated**: ③ as a change rather than the question the record
+  had planned, for the measured reason above; the fix in `json_to_cbor`
+  rather than `cbor_to_json`; a line for the signed case; one readme
+  sentence; and 22 held until #550 has the maintainers' answer, since
+  `c0f2e43` made the requester's stop deliberate.
+
+### Not done, and the reason for each
+
+- **The sign-off, the push and the pull request for ③**: the author's;
+  everything up to them is one command away.
+- **#550's merge**: the maintainers'.
+- **Candidates 22, 13 and 16**: after #550, as a question; a conversation; a
+  Debug build.
+- **94773, the one-page summary, the demo, `c-drills`, Day 17's
+  `TODO(me)`**: not read or touched today; the author's. Week 13 stays open.
