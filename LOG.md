@@ -7465,3 +7465,134 @@ reading of the rendering, and the author did it. `0001` §6 gains the line.
 - **#551's review, and #550's merge**: the maintainers'.
 - **Candidates 22, 13 and 16, 94773, the one-page summary, the demo,
   `c-drills`, Day 17's `TODO(me)`**: as this morning.
+
+## 2026-10-30 · Day 28 · #550 for its maintainer, and the answer's own runs
+
+From 19:10 here on 2026-10-29 into the 30th. #551 had been merged three days
+earlier, and `jyao1` had commented on #550 seven minutes after: slot 0 is a
+must-have when `CERT_CAP` is set, and the other slots are acceptable if the
+sample library's data agree. The first became #550's third version; the
+second, measured, became a question back, with two ways forward; and the
+measuring found candidate 23, asked as #552. The author's keystrokes sent all
+of it — the sign-off, the push, the body, the issue and the reply — and each
+was read back byte for byte. Two findings are worth the five parts.
+
+---
+
+### 1. ★ The answer's own runs
+
+**現象** To answer whether "any data in sample library is consistent with
+slot 1 and slot 4 … E.g. KeyPair ID", twelve runs used RSA-2048 on both
+sides, so that KeyPairID 1, the one the requester asks about, would be the
+key pair the connection uses. Eleven of them reported the two fields the
+question was about, `DIGESTS` and `KEY_PAIR_INFO`, and exited 0; the twelfth,
+`main` with slot 4's chain removed, stopped at `GET_DIGESTS`, which is #547.
+None of the twelve opened a session: the eleven printed
+`ERROR: libspdm_start_session - 8001000a`.
+
+**假設** (1) The change does it: a slot left empty breaks the session, so
+#550 has a defect the comment did not ask about. (2) RSA-2048 is broken in
+this build or in libspdm, whatever the flow does. (3) Something the default
+flow does between reading `KEY_PAIR_INFO` and `KEY_EXCHANGE` changes the key
+pair the session needs.
+
+**先驗哪個、為什麼** (1) first, because it is the one that would make the
+reply wrong and the change unsendable, and because the runs to test it
+already existed: the twelve included `main` with nothing removed, and it
+opened no session either — so not (1). Then (3) against (2) with one control
+rather than a debugger. RSA-3072, ECDSA P-256 and the default P-384 open
+their sessions in the same flow, so (2) would have to be specific to one key
+size; and KeyPairID 1, RSA-2048's primary key pair, is the one key pair the
+flow's `SET_KEY_PAIR_INFO` step touches. If (3), leaving that step out of
+`--exe_conn` and `--exe_session` gives RSA-3072's sequence exactly.
+
+**根因** (3). It did: 2,256 messages, RSA-3072's sequence with the same
+options. `do_set_key_pair_info_via_spdm()` sets KeyPairID 1's association to
+none and then erases it, hard-coded since 2024; the responder does what it
+is asked — DSP0274 lets `SET_KEY_PAIR_INFO` remove an association — clears
+slots 0 and 1's key usage, and refuses `KEY_EXCHANGE` on slot 0. The values
+the reply quotes were read before that step — the code calls GET before SET,
+and `0x03` is the value before the change — so they stand. Recorded as row
+23, asked as #552, and one sentence in the reply points at it.
+
+**教訓** ★ **A run chosen to make one field unambiguous has to be read whole
+before the field is quoted.** Choosing RSA-2048 made `KEY_PAIR_INFO` speak
+about the key pair in use, and the same choice is what lined a hard-coded
+constant up with the key pair in use. The fields were right; the run around
+them was broken, and the first thing anyone reproducing the reply would have
+seen is the failure, not the fields. Exit 0 said nothing either way.
+
+### 2. A reviewer's question is a pointer to the reviewer's own work
+
+**現象** `jyao1`'s second comment asked whether the sample library's data
+are consistent with slots 1 and 4 when they are not there, "E.g. KeyPair
+ID". The sample library is not part of #550, and the comment named no
+function.
+
+**假設** (1) He suspects #550 itself reports a wrong KeyPairID for a slot it
+leaves empty. (2) He is applying DSP0274's multi-key rule — a slot with an
+associated key pair belongs in `ProvisionedSlotMask` — and asks whether the
+emulator breaks it. (3) He is pointing at an inconsistency he already knows
+of, in his own code.
+
+**先驗哪個、為什麼** (3) first, by searching libspdm's issues and pull
+requests for the comment's terms: it costs a query, and if it is true it
+changes the terms the answer has to be written in. Then (1) against (2) by
+measuring on `main` as well as on the change, because a question about
+consistency answered only for the change answers about the wrong thing.
+
+**根因** (3) and (2) together. libspdm #3638 is his, open since June: in the
+device sample, `assoc_cert_slot_mask` is not consistent with the slots'
+certificates. His #3650 set the table that associates each primary key pair
+with slots 0 and 1 and each secondary with slot 4. That table does not
+follow which chains load, and libspdm's `DIGESTS` cannot report a slot that
+has a key pair and no chain (#2493), so the two disagree for any slot left
+empty — on `main` as with the change. Not (1).
+
+**教訓** **Before measuring an answer to a reviewer's question, search the
+reviewer's own history for it.** The question was his #3638 again, from the
+emulator's side, and the reply could say so in his terms — #3650's table,
+#2493's state — and offer the two ways his own constraints leave, instead of
+a fix that would have been one more design he had not chosen.
+
+---
+
+### Smaller things, each checked
+
+- **A status that was not a verdict.** The first wording of v3's slot-0
+  `Tested:` line said the requester exits 1. Measured: status 141, `SIGPIPE`,
+  raised while it sends its shutdown to the socket the responder closed; the
+  failure itself is `libspdm_init_connection`'s, `0x80040001`. The line says
+  that now.
+- **The first TPM runs measured the machine.** Without the three variables
+  `build_CI_TPM.yml` sets, every case on both builds failed after six
+  messages, looking for `/dev/tpm0`. Kept apart and not used; the runs with
+  the variables set are the ones quoted.
+- **`exit()` was new to the file**: declared for every toolchain the CI
+  builds, through `spdm_emu.h`'s unconditional `stdlib.h`, checked before the
+  push.
+- **The order of the sends changed**: the issue before the reply, since the
+  reply needed its number, and the reply after the 45 checks, since its first
+  words are "done in the update".
+- **The approvals stand** after the force-push, on `dcf2cc4`.
+- **Every send was read back**: the commit (tree `2a9704b`, one sign-off),
+  the branch, the body (3,820 bytes), #552 (2,553 bytes) and the reply
+  (2,253 bytes), each byte-identical to the reviewed file; DCO and 45 of 45
+  check runs success.
+
+### Decisions
+
+- **The author's**: the sign-off, the push, the body, the issue and the
+  reply — five keystrokes; and delegating the fork in the second comment.
+- **Mine, delegated**: #550 changed for the first comment only; the second
+  answered with measurements and two ways, recommending the first; 23 sent
+  now, as a question; 22 held; the issue before the reply, and the reply
+  after the checks; one sentence added to the reviewed reply.
+
+### Not done, and the reason for each
+
+- **#550's fourth version**: `jyao1`'s choice between the two ways.
+- **#552's change**: the maintainers' answer first.
+- **Candidate 22**: after #550's answer.
+- **Candidates 13 and 16, 94773, the one-page summary, the demo,
+  `c-drills`, Day 17's `TODO(me)`**: as before.
