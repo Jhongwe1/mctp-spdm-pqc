@@ -7596,3 +7596,124 @@ a fix that would have been one more design he had not chosen.
 - **Candidate 22**: after #550's answer.
 - **Candidates 13 and 16, 94773, the one-page summary, the demo,
   `c-drills`, Day 17's `TODO(me)`**: as before.
+
+## 2026-11-02 · Day 29 · the right size, by the wrong key
+
+From 04:19 here. The author asked whether #550's third version and #552 had
+been answered, and whether another candidate should go now. Neither had
+been — one working day, on the maintainer's calendar — and nothing went. The
+two record commits of 2026-10-30 were pushed on his word. The wait went to
+candidate 16, which in seven weeks had never had a cause, and now has one.
+Two findings are worth the five parts.
+
+---
+
+### 1. ★ A signature of the right size, made with the wrong key
+
+**現象** Re-run at `9cc8b46`, SLH-DSA-SHA2-128s still fails both signed
+operations with `80020001`, while `DIGEST,CERT` completes and ML-DSA passes —
+as on 2026-09-14, when the responder's signature had measured exactly 7,856
+bytes and the requester had verified a chain whose every signature is
+SLH-DSA. § ⑯ had concluded "not signing", and that what was left was the
+requester's verification.
+
+**假設** (1) Chunking: SLH-DSA's signed responses are chunked, and the
+transcript or the signature comes out of reassembly different. (2) The
+sample's files: the responder's private key does not pair with the leaf it
+sends. (3) libspdm's SLH-DSA signing and verification disagree — on the
+context string, on pure or pre-hash, or on the bytes signed.
+
+**先驗哪個、為什麼** (1) first, because the old control could not have
+tested it — ML-DSA-44's `CHALLENGE_AUTH` is 2,562 bytes and never chunked —
+and one run with ML-DSA-87, whose signed responses are chunked, does: it
+passed. Then (2), because it needs no build, only a byte comparison over
+fifteen directories: every pair matched, and I called (2) rejected. Then the
+twelve parameter sets, to tell a systematic fault from a wrong mapping: every
+reachable one failed. Then (3) by reading, before a Debug build: signing and
+verification were mirror images, of each other and of ML-DSA's. The
+asymmetry was one level up, in which file the responder reads — and (2)'s
+check had verified the files, not that.
+
+**根因** In a connection that is not multi-key the responder signs with
+KeyPairID 0, and the sample library reads slot 4's key, `end_responder4.key`,
+whenever the KeyPairID equals slot 4's; its key pair table has no SLH-DSA key
+pair, so slot 4's is 0 too. Every SLH-DSA signature is made with slot 4's key
+and checked against slot 0's certificate, and the requester is right to
+refuse it. libspdm #3650's, since 2026-06-11. Shown by intervention: with
+`end_responder4.key` holding `end_responder.key`'s bytes and nothing else
+changed, every arm it was tried on passes — three parameter sets and both
+signed operations at `9cc8b46`, and S1's own run on the build of 2026-09-14.
+
+**教訓** ★ **Check the path the program takes at run time, not only the data
+it might take.** The fifteen key pairs were right, and "the keys are wrong"
+was declared rejected on that; what was wrong was which of two right keys was
+read. Two of § ⑯'s deductions made the same move: a signature of the correct
+size was taken for a signature by the correct key, and a control was taken to
+cover a path it never ran. **A control rules out only what it shares with the
+failing case, and a check of data at rest says nothing about the code that
+picks it.** One file changed and everything else held is what decided.
+
+### 2. "No answer" is counted on the other side's calendar
+
+**現象** The author: the change pushed and the issue opened on 2026-10-29
+"seem to have had no response". Three days and four hours had passed, and
+neither had a comment.
+
+**假設** (1) The question was unwelcome, or missed. (2) The maintainer was
+busy elsewhere. (3) Too little of his working time had passed to call it
+silence.
+
+**先驗哪個、為什麼** (2) and (3) first: both are read from public data in two
+queries — his public activity, and this project's own record of how long its
+questions waited — and a reminder sent on (1) costs goodwill if (2) or (3) is
+the truth.
+
+**根因** (2) and (3). The reply went at 23:59 on a Thursday in UTC+8, where
+his activity falls; one working day followed, in which his public activity
+was his own libspdm pull request and one review elsewhere, and then a
+weekend. This project's questions have been answered in two hours and in
+nine days, and #550's first round took six.
+
+**教訓** **Silence is measured in the other side's working days, against
+their own record, before it is called silence** — and the wait is for making
+the next candidate ready, not for sending it.
+
+---
+
+### Smaller things, each checked
+
+- **The decoder's limit, again.** `spdm_dump` stops after the first
+  `CERTIFICATE` of every post-quantum capture here — "cert_chain is too
+  larger", its `LIBSPDM_MAX_CERT_CHAIN_SIZE` — so the first message counts,
+  taken from its decode, gave `CHALLENGE_AUTH` 0 for arms that had completed.
+  Counted from `pcapstat`'s reassembly instead. Red line 2's short decode,
+  hit by the tool that wrote the counts.
+- **A quoting fault voided one run.** PowerShell split a double-quoted
+  pattern inside the `wsl … bash -lc '…'` string, and the first
+  `verify_repo.sh` run's output was lost; it was run again from a script
+  file, and every later command went through one.
+- **Six of the twelve parameter sets never get past `GET_DIGESTS`**, with
+  chains of 90,634 bytes and more: row 24, not investigated.
+- **`--slot_count` is gone** (#538), so S1's controlled options lost one for
+  the re-run; S1's own command line was kept for the build of 2026-09-14.
+- **The requester's twin**: libspdm's line 225 selects the requester's own
+  post-quantum key the same way. Read, not measured.
+- **The push**: `verify_repo.sh` passed, `19be578..bc0e6ab` went out on the
+  author's word, and the push run's four jobs passed; the weekly upstream job
+  is skipped on a push by design.
+
+### Decisions
+
+- **The author's**: the push; and delegating what to do while waiting, and
+  what to do with 16's cause.
+- **Mine, delegated**: no reminder yet and no new send; the wait spent on
+  16; its change prepared here next and held until #550's answer.
+
+### Not done, and the reason for each
+
+- **16's change**: prepared next, and held — the same maintainer, and #3650's
+  code.
+- **Row 24's limit**: to be read before anything is said of it.
+- **#550's fourth version, #552's change, candidate 22**: as on 2026-10-30.
+- **Candidate 13, 94773, the one-page summary, the demo, `c-drills`, Day 17's
+  `TODO(me)`**: as before.
