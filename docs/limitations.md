@@ -263,17 +263,20 @@ work:
   candidate ③, sent on 2026-10-26 after the question it had been held for
   since 2026-10-12 was answered by measurement rather than asked, was merged
   the same day without a review.
-- **Not done. Ten of the twenty-three candidates were not sent as changes.**
+- **Not done. Eleven of the twenty-four candidates were not sent as changes.**
   Thirteen went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
   sent as #537; and candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
   in place; its maintainer invited the change, sent as #550 on 2026-10-20. Of
-  the ten, one was withdrawn as never true, one had been fixed upstream before
+  the eleven, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
-  #550, and one, candidate 23, found on 2026-10-29 while measuring the answer
-  to #550's maintainer, was asked as issue #552. One of the thirteen, candidate 21, had been asked about upstream
+  #550, one, candidate 23, found on 2026-10-29 while measuring the answer
+  to #550's maintainer, was asked as issue #552, and one, candidate 24, was
+  found on 2026-11-02 while measuring candidate 16's cause and is not yet
+  investigated. Candidate 16's cause was found that day, and its change is
+  held. One of the thirteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is

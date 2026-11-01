@@ -640,6 +640,19 @@ not recoverable and that the requester exits 1 having printed nothing. The line
 above was in the arm's log, `S1-all.req.log`, from the start
 ([`upstream/README.md`](upstream/README.md), candidate 16).*
 
+*Corrected 2026-11-02: "it is not signing either" and "what is left is
+SPDM-signature verification on the requester" were both wrong. In a
+connection that is not multi-key, as this one is, the sample library has the
+responder sign with slot 4's private key, `end_responder4.key`, for every
+SLH-DSA parameter set, and the requester, checking against slot 0's
+certificate, refuses the signature correctly. A signature made with another
+key of the same parameter set has the same size, so a correctly sized
+signature was never evidence of the right key. Found by giving
+`end_responder4.key` the bytes of `end_responder.key` and changing nothing
+else: S1's own run then completes on this build, and so does each arm it was
+tried on at `spdm-emu` `9cc8b46`, three parameter sets and both signed
+operations ([`upstream/README.md`](upstream/README.md), candidate 16).*
+
 Reported as upstream candidate 16, with the bisection above as its evidence:
 DMTF ships SLH-DSA sample certificates for twelve parameter sets and advertises
 `--pqc_asym SLH_DSA_SHA2_128S`, and on this build no signed operation completes
