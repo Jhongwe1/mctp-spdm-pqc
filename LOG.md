@@ -7862,3 +7862,95 @@ project's harness.
 - **Changes for 24 and 25**: after 16, and 25 after #550.
 - **#550's fourth version, #552's change, candidate 22, candidate 13, 94773,
   the one-page summary, the demo, `c-drills`, Day 17's `TODO(me)`**: as before.
+
+## 2026-11-02 · Day 29, late afternoon · sent to libspdm, and a check that could pass without running
+
+Candidate 16's change went to libspdm as #4268 at 08:43 UTC, from the
+author's keystrokes: the fork, the sign-off, the word for the push, and the
+pull request. It is this project's first change to libspdm. Before the push,
+the freshness check failed for reasons of its own. One finding is worth the
+five parts.
+
+---
+
+### 1. ★ A check whose verdict did not read its searches
+
+**現象** The freshness run before the push, at 07:16 UTC, said NOT FRESH.
+It named three open pull requests, #4258, #3671 and #3629, as new and
+touching the change's files; and each of its four searches of the last 24
+hours, for `SLH-DSA`, `KeyPairID`, `key_pair_id` and `end_responder4`,
+printed `accepts 1 arg(s), received 4` where a count belonged.
+
+**假設** (1) The three edit what the change depends on, and the push waits
+until they are read. (2) The filter takes in more than the change depends
+on. (3) The searches never ran, and nothing in the script notices.
+
+**先驗哪個、為什麼** (1) against (2) first: it decides whether anything is
+sent, and the answer was already in the output, the files each pull request
+touches. Then (3), because a search that did not run looks, in a summary,
+like a search that found nothing.
+
+**根因** (2) and (3). In the sample library the three touch only
+`set_cert.c`, the `SET_CERTIFICATE` writer, and none of the four functions
+it defines is named in the five files the change depends on — the two
+readers, `key_pair.c`, `sign.c` and the header. The filter had been the
+whole directory; it now names the five, and only #3668 and #3637 match, as
+that afternoon. The searches handed jq's `--arg` to `gh api --jq`, which took
+it as its expression and the next three words as arguments, printed its
+error, and the loop went on. And the verdict never read their status: with
+the filter right and the searches still broken, the script would have printed
+FRESH having searched nothing. The query is now built in the string; re-run
+at 07:18 and 07:26 UTC, 0 for each, and FRESH.
+
+**教訓** ★ **A check guards a send only if its own failure can change the
+verdict, and it has been run on a known answer before it guards anything.**
+The read-back was tested on #551 both ways before it was used; the freshness
+script's first real run was its test, and two of its steps could print an
+error and still count as a pass. `0001` §6 gains the line.
+
+---
+
+### Smaller things, each checked
+
+- **The read-back's own first test** ran with #551's title file missing — it
+  was in another session's folder — and went on to ask GitHub for the checks
+  of an empty SHA, HTTP 422. It now stops on a missing file; then it read
+  #551 as identical against its own files, and as three differences against
+  libspdm's texts and a wrong SHA.
+- **libspdm `main` moved at 05:48 UTC**, to `0df82c8`: Steven Bellock's *Make
+  Basic Constraints optional in the leaf certificate*, in
+  `libspdm_crypt_cert.c`, its unit test and the changelog — none of the five
+  files, and not row 24's lines. The pull request stays on `6de8048`, where it
+  was tested; its checks run it merged onto `0df82c8`, a combination no build
+  here has run.
+- **The signed commit, as GitHub stores it**: tree `20b1b0c`, parent
+  `6de8048`, and the reviewed message with one line added, the sign-off, in
+  ASCII. This project's `check_upstream_commit.sh`, written for spdm-emu,
+  flags the 66-character subject, the two unwrapped `Fixes:` lines and a
+  `CONTRIBUTING.md` that is not spdm-emu's, as expected; libspdm's own
+  commit-message encoding check passed on it.
+- **The pull request as opened**: title and body byte-identical to the
+  reviewed files, the body 3,799 bytes; one commit, two files, +20 −8;
+  `jyao1` and `steven-bellock` requested by CODEOWNERS.
+- **The checks on `d8c077c`**: 56 of 56 success — DCO at 08:44:01 UTC, and
+  55 in four workflows, the last, Fuzzing, at 08:59:55 UTC; `mergeable_state`
+  clean; no review and no comment at 09:02 UTC. `main`'s own 53 at
+  `0df82c8`: 52 success, one skipped.
+
+### Decisions
+
+- **The author's**: the fork, the sign-off, the word for the push, and the
+  pull request.
+- **Mine**: none new since the afternoon's; the push was run here on his
+  word, by the script that checks the signed commit and refuses to overwrite
+  a branch.
+
+### Not done, and the reason for each
+
+- **#4268's review**: the maintainers'. A comment that comes back is read
+  here first; the reply is the author's.
+- **SLH-DSA key pairs for slot 4**: a second change, if asked for.
+- **Changes for 24 and 25**: after 16, and 25 after #550; 24 re-read at the
+  head first, since `libspdm_crypt_cert.c` has moved.
+- **#550's fourth version, #552's change, candidate 22, candidate 13, 94773,
+  the one-page summary, the demo, `c-drills`, Day 17's `TODO(me)`**: as before.
