@@ -3579,7 +3579,7 @@ authored by the author, messages from the reviewed files:
 | 2 | `spdm_emu: provision each requester slot that loads` — both programs: tree `f193f1f` (the sign-off will give both commits new names, not new trees) |
 | Diff | two files, +239 −76 against `main` |
 | Checker | `check_upstream_commit.sh` on each: only the three sign-off lines, which are the author's to add |
-| Texts | description 6,837 bytes, reply 2,188 bytes, title *spdm_emu: provision each slot that loads, on both sides* |
+| Texts | description 6,859 bytes, reply 2,188 bytes, title *spdm_emu: provision each slot that loads, on both sides* |
 
 ### Tested
 
