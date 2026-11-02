@@ -331,6 +331,18 @@ this was caught, by the author, on the page:
    stays in code and readme and leaves the two texts.
 ```
 
+**Added 2026-11-02, from libspdm #4268**, the fourteenth change, from the
+script that read freshness before its push:
+
+```
+☐ run each pre-send check on a case whose answer is known, both ways,
+   before it guards a send, and make each step's own failure change the
+   verdict. The freshness script's first run named three pull requests
+   that touch none of the change's files, and printed gh's argument error
+   in place of four searches while its verdict ignored them: with the
+   filter right, it would have said FRESH having searched nothing.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a

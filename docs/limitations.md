@@ -234,7 +234,7 @@ work:
 
 ## 6. Upstream
 
-- **Limit. Ten changes merged, and one maintainer's comment among them, about
+- **Limit. Eleven changes merged, and one maintainer's comment among them, about
   where a change sat rather than what it said.**
   `DMTF/spdm-emu` #524, #534, #526, #527 and #536 were merged between
   2026-09-28 and 2026-10-13, each as sent, and without a comment from a
@@ -263,13 +263,13 @@ work:
   candidate ③, sent on 2026-10-26 after the question it had been held for
   since 2026-10-12 was answered by measurement rather than asked, was merged
   the same day without a review.
-- **Not done. Twelve of the twenty-five candidates were not sent as changes.**
-  Thirteen went as changes, two of them first as questions: candidate 4 as issue
+- **Not done. Eleven of the twenty-five candidates were not sent as changes.**
+  Fourteen went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
   sent as #537; and candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
   in place; its maintainer invited the change, sent as #550 on 2026-10-20. Of
-  the twelve, one was withdrawn as never true, one had been fixed upstream before
+  the eleven, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
   #550, one, candidate 23, found on 2026-10-29 while measuring the answer
@@ -277,7 +277,8 @@ work:
   found on 2026-11-02 while measuring candidate 16's cause, and has had its
   own cause read, and one, candidate 25, was found the same day while running
   spdm-emu's own command for 16. Candidate 16's cause was found that day, and
-  its change prepared and measured, and not yet sent. One of the thirteen, candidate 21, had been asked about upstream
+  its change prepared, measured and sent the same day, as libspdm #4268, the
+  first to libspdm. One of the fourteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is
@@ -301,7 +302,11 @@ work:
   unchanged; its runs were not repeated there. #551 was tested
   against `f7fa183`, and landed on it, as `9cc8b46`. #550's first two
   versions were tested against `f7fa183`, and its third against `9cc8b46`,
-  which is still `main`.
+  which is still `main`. libspdm #4268 was tested in `spdm-emu` `9cc8b46`, whose
+  libspdm, `6cb52f2`, has the same four files the key selection involves as
+  `6de8048`, the commit it is written on and where libspdm's unit tests were
+  run; libspdm's `main` moved to `0df82c8` before it was sent, in none of
+  those files, and its checks ran on that merge, which no build here has.
   94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.

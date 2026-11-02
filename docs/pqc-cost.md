@@ -656,7 +656,9 @@ operations ([`upstream/README.md`](upstream/README.md), candidate 16).*
 Reported as upstream candidate 16, with the bisection above as its evidence:
 DMTF ships SLH-DSA sample certificates for twelve parameter sets and advertises
 `--pqc_asym SLH_DSA_SHA2_128S`, and on this build no signed operation completes
-with it.
+with it. The change, in which KeyPairID 0 selects the default key, was sent to
+libspdm on 2026-11-02 as [#4268](https://github.com/DMTF/libspdm/pull/4268),
+and is in review.
 
 ---
 
