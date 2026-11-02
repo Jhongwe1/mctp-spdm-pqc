@@ -8055,3 +8055,56 @@ builds without it fail.
 with nothing removed on `main`. Here it turned the test that looked like the
 change's failure into a defect the change has nothing to do with, and moved
 the evidence to a connection where the control passes.
+
+### 4. A second decoder, and the binary under each sentence
+
+**Phenomenon.** Before anything was sent, the author asked for the work to
+be confirmed from another angle, because the first pass had already caught
+my own instruments twice (§2, and a runner field read as one connection).
+
+**Hypotheses.**
+1. `wire.py` is wrong in a way that agrees with itself: it had been wrong
+   once already, on 1.4 offsets, and it infers multi-key `DIGESTS` from the
+   message size.
+2. A sentence rests on a binary other than the one being sent: the commits
+   were rearranged in the night, three commits first and then two, and the
+   builds were named after them.
+3. CI does something never done here: it builds with mbedtls, with
+   `LIBSPDM_DEBUG_LIBSPDM_ASSERT_CONFIG=3`, which turns any assert into
+   exit 1, and with MSVC at `/W4 /WX`.
+
+**Which first, and why.** 2, because it was the cheapest and the most
+decisive: each tested binary set records the hashes of the sources it was
+built from, and those either are the two commits' blobs or are not. The
+sets behind the tables were; but the sentence on the root of the
+responder's slot 1 had run only against the responder before its last edit,
+which added the designated-slot rule. Re-run, three runs on the final
+binaries and `main`'s control, it holds. Then 1, with upstream's `spdm_dump` (DMTF/spdm-dump
+`9d91f21`, unmodified) on all 459 captures. The pinned build stopped at the
+first ML-DSA-87 certificate chain, record 22, and exited 0 — the
+compile-time `LIBSPDM_MAX_CERT_CHAIN_SIZE` of 0x1000 that `healthcheck.sh`
+already warns about — so a second build of it, with the ceiling raised, in
+its own directory. 457 of 459 captures agree with `wire.py` on every field
+compared; the two that differ are the PQC probes summarised before
+`wire.py` reassembled chunks, the gap they exposed. From `spdm_dump` alone
+both four-case tables in the description come out the same, and every
+`KEY_PAIR_INFO` response, its mask blanked, is identical to the same
+KeyPairID's with nothing removed, 2,811 of 2,811: option 1 changes nothing
+but `AssocCertSlotMask`. Then 3, with `build_CI.yml`'s own configure line
+for mbedtls, built from the commits' bytes: `main` and both commits pass
+`-Werror`, and the workflow commands, the validator sample and the four
+cases give what the openssl builds gave. MSVC cannot be run here; libspdm
+builds its own `uint8_t |= (1 << n)` under the same flags, and the new forms
+are cast. That one stays CI's to show.
+
+**Root cause.** None in the change. What was found was in the evidence: a
+decoder that ends at a compile-time constant without saying so, and one
+sentence tested a build behind.
+
+**Lesson.** A second decoder is a second opinion only if it fails
+differently, and only if it says when it cannot read. This one's limit is a
+constant where `wire.py`'s were offsets and a size guess, and where it gave
+up it still exited 0, so its silence would have read as agreement. And a
+sentence is tested on a binary known by the hashes of its sources, not by a
+branch or a build name: that is what found the one sentence whose evidence
+was a build behind.
