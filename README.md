@@ -44,7 +44,9 @@ the change, and which both users the question was about approved the same
 day; on 10-29 it was revised as its maintainer asked, so that a responder
 that supports certificates stops when slot 0 has no chain, and his question
 about the sample's key pairs was answered with measurements and two ways to
-resolve it;
+resolve it; on 11-02 he chose the first, and asked for slots 1 and 4 to be
+validated in all four combinations on both sides, and a fourth version, for
+the requester's certificate too, is prepared;
 [`DMTF/libspdm` #4268](https://github.com/DMTF/libspdm/pull/4268), sent on
 11-02, the first change to libspdm: outside a multi-key connection, its sample
 key library made every SLH-DSA signature with slot 4's key, so none
@@ -509,7 +511,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — eleven changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548, #551), three in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user, then revised on 2026-10-29 as the maintainer asked, his second question answered with measurements; libspdm [#4268](https://github.com/DMTF/libspdm/pull/4268), sent on 2026-11-02, the first to libspdm; and 94773, through three patchsets and a −1 — and three design questions asked as issues: #533 and #547, each answered and turned into a change, #537 at its assignee's request and #550 at the maintainer's invitation, and [#552](https://github.com/DMTF/spdm-emu/issues/552), asked on 2026-10-29 ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — eleven changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548, #551), three in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user, then revised on 2026-10-29 as the maintainer asked, his second question answered with measurements, and on 2026-11-02 his choice made, with four cases to validate on both sides, for which a fourth version is prepared; libspdm [#4268](https://github.com/DMTF/libspdm/pull/4268), sent on 2026-11-02, the first to libspdm; and 94773, through three patchsets and a −1 — and three design questions asked as issues: #533 and #547, each answered and turned into a change, #537 at its assignee's request and #550 at the maintainer's invitation, and [#552](https://github.com/DMTF/spdm-emu/issues/552), asked on 2026-10-29 ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built

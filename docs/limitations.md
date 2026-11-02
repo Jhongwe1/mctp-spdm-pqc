@@ -259,24 +259,29 @@ work:
   reporter and by a second user, and revised again on 2026-10-29 after the
   maintainer's comment of 2026-10-26, in two parts: the first asked for a
   change, which was made, and the second asked a question, answered with
-  measurements and two ways forward, which waits on his choice. #551,
+  measurements and two ways forward. On 2026-11-02 he chose the first, and
+  asked for four cases to be validated on both sides; a fourth version, for
+  the requester's certificate too, is prepared and not yet sent. #551,
   candidate ③, sent on 2026-10-26 after the question it had been held for
   since 2026-10-12 was answered by measurement rather than asked, was merged
   the same day without a review.
-- **Not done. Eleven of the twenty-five candidates were not sent as changes.**
+- **Not done. Thirteen of the twenty-seven candidates were not sent as changes.**
   Fourteen went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
   sent as #537; and candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
   in place; its maintainer invited the change, sent as #550 on 2026-10-20. Of
-  the eleven, one was withdrawn as never true, one had been fixed upstream before
+  the thirteen, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
-  #550, one, candidate 23, found on 2026-10-29 while measuring the answer
+  #550 and is now part of its fourth version, prepared and not yet sent, one,
+  candidate 23, found on 2026-10-29 while measuring the answer
   to #550's maintainer, was asked as issue #552, one, candidate 24, was
   found on 2026-11-02 while measuring candidate 16's cause, and has had its
-  own cause read, and one, candidate 25, was found the same day while running
-  spdm-emu's own command for 16. Candidate 16's cause was found that day, and
+  own cause read, one, candidate 25, was found the same day while running
+  spdm-emu's own command for 16, and two, candidates 26 and 27, were found on
+  2026-11-03 while validating #550's fourth version, the second of them a
+  question in its prepared reply. Candidate 16's cause was found on 2026-11-02, and
   its change prepared, measured and sent the same day, as libspdm #4268, the
   first to libspdm. One of the fourteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
@@ -301,8 +306,8 @@ work:
   by rebase on `897f13e`, the libspdm `4.0.0-rc3` sync, with its patch
   unchanged; its runs were not repeated there. #551 was tested
   against `f7fa183`, and landed on it, as `9cc8b46`. #550's first two
-  versions were tested against `f7fa183`, and its third against `9cc8b46`,
-  which is still `main`. libspdm #4268 was tested in `spdm-emu` `9cc8b46`, whose
+  versions were tested against `f7fa183`, and its third and its fourth,
+  prepared, against `9cc8b46`, which is still `main`. libspdm #4268 was tested in `spdm-emu` `9cc8b46`, whose
   libspdm, `6cb52f2`, has the same four files the key selection involves as
   `6de8048`, the commit it is written on and where libspdm's unit tests were
   run; libspdm's `main` moved to `0df82c8` before it was sent, in none of
