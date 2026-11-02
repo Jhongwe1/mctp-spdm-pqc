@@ -100,6 +100,9 @@ needs a date attached to it.
 | ★ Candidate 23 **ASKED** | **done** | 2026-10-29, 15:56 UTC | issue [#552](https://github.com/DMTF/spdm-emu/issues/552): with RSA-2048 on both sides, the requester's `SET_KEY_PAIR_INFO` step erases the key pair the connection uses, so no session opens, and the requester exits 0. Found that day in the runs for `jyao1`'s second comment; #550's reply points at it. Title and body byte-identical to the reviewed files. [§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29) |
 | #550 and #552 | **no answer yet** | checked 2026-11-01, 20:19 UTC | #550 unchanged since the reply of 2026-10-29, `jyao1` the one reviewer requested and the two approvals standing; #552 without a comment, label or assignee; `main` still `9cc8b46`. One working day had passed for the maintainer, whose public activity was his own libspdm pull requests. Not pinged. `openbmc/spdm` 94773 unchanged since 2026-09-23 17:10 UTC. [§](#candidate-16s-cause-found--2026-11-02) |
 | ★ Candidate 16's cause **found** | **found, by intervention** | 2026-11-02 | in a connection that is not multi-key, the sample responder signs SLH-DSA with slot 4's private key: libspdm #3650's key selection compares KeyPairID 0 with slot 4's, and slot 4's is 0 for any algorithm without a key pair in the sample's table, which lists ML-DSA only. Giving `end_responder4.key` the bytes of `end_responder.key`, and changing nothing else, turns each failing arm it was tried on into a pass: three SLH-DSA parameter sets and both signed operations on `9cc8b46`, and S1's own run on the build of 2026-09-14. The requester's verification was right; the two sentences that said what was left was it are corrected. Six of the twelve SLH-DSA parameter sets never reach a signature: row 24. [§](#candidate-16s-cause-found--2026-11-02) |
+| #550 and #552 | **no answer yet** | checked 2026-11-02, 05:11 UTC | as at 20:19 UTC the day before: #550 at `b20e680`, its last activity the reply of 2026-10-29; #552 without a comment, label or assignee; `main` still `9cc8b46`. Not pinged. [§](#candidate-16s-change-prepared--2026-11-02) |
+| ★ Candidate 16's change **prepared** | **prepared** | 2026-11-02 | in libspdm, on `main` `6de8048`: KeyPairID 0 always selects the default key, at the four places #3650 and #4149 compare it with slot 4's; unsigned, tree `20b1b0c`. With it, both roles' SLH-DSA signatures verify on the six parameter sets that get that far, the other algorithms are unchanged, and libspdm's seven basic unit tests give the same results. spdm-emu's own PQC command then passes whole without multi-key; with it, the default, the second session, on slot 4, still fails, because SLH-DSA has no KeyPairID for slot 4 to carry — and the text says so. The fork, the sign-off, the push and the pull request are the author's; held for those, no longer for #550's answer. [§](#candidate-16s-change-prepared--2026-11-02) |
+| Candidate 24's cause, and candidate 25 | **read; recorded** | 2026-11-02 | 24: the sample's chain readers call `libspdm_verify_cert_chain_data()`, which refuses a chain longer than 0xFFFF bytes less its header and the largest root hash, and all six chains are longer. 25: `spdm_requester_emu` exits 0 after any failure that follows its `GET_ENDPOINT_INFO` step — measured by leaving that step out of the same failing run, which then exits 1. Neither sent. [§](#candidate-16s-change-prepared--2026-11-02) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -110,7 +113,7 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Twenty-four candidates have been recorded. Thirteen went as changes — #524,
+Twenty-five candidates have been recorded. Thirteen went as changes — #524,
 #534, #526, #527, #536, #537, #542, #545, #546, #548 and #551 are merged, and
 #550 and 94773 are in review — and two of the thirteen went first as questions:
 candidate 4 as issue #533, whose assignee then asked this project for the
@@ -134,7 +137,7 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 Rows 4 and 8–11 changed, and row 21 was added, on 2026-10-13 ([§](#candidate-4s-change-sent-as-537--2026-10-13)).
 Rows 2–4, 8–11, 15, 16, 20 and 21 changed on 2026-10-15, when every unsent row
 was re-read at `8674afe` ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)).
-Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured, prepared and sent as #551 ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)). Rows 3, 8–11 and 22 changed, and row 23 was added, on 2026-10-29, when #551's merge and `jyao1`'s comment on #550, in two parts, were read, #550 was changed for the first and answered on the second, and 23 was asked as #552 ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)). Row 16 changed, and row 24 was added, on 2026-11-02, when 16 was re-run at `9cc8b46` and its cause found ([§](#candidate-16s-cause-found--2026-11-02)).*
+Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured, prepared and sent as #551 ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)). Rows 3, 8–11 and 22 changed, and row 23 was added, on 2026-10-29, when #551's merge and `jyao1`'s comment on #550, in two parts, were read, #550 was changed for the first and answered on the second, and 23 was asked as #552 ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)). Row 16 changed, and row 24 was added, on 2026-11-02, when 16 was re-run at `9cc8b46` and its cause found ([§](#candidate-16s-cause-found--2026-11-02)). Rows 16 and 24 changed again, and row 25 was added, that afternoon, when 16's change was prepared and measured ([§](#candidate-16s-change-prepared--2026-11-02)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
@@ -150,7 +153,7 @@ Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-un
 | 13 | `DMTF/spdm-emu` | `--req_asym NONE --req_pqc_asym NONE` parses, then makes every handshake impossible | the bisection in `LOG.md`, 2026-09-14; four arms that work in `w7-pqc-ab` | not sent: three possible fixes, and the one that makes the flags mean what they say changes behaviour others may rely on — a conversation, not a patch. *Re-read 2026-09-29: libspdm 4.0.0-rc2 carries the same rule. `490f02c` (2026-09-07) changed when the responder emulator asks for mutual authentication, which is a different thing* |
 | 14 | `DMTF/spdm-emu` | ~~`--cap` is parsed by the requester and never read, and echoed as if it were~~ | ~~a `grep` of every reader of the variable~~ | ★ **withdrawn 2026-09-29: it was never true.** The requester has applied `--cap` since `ef556a0` (2022-12-21), and the pinned tree has the two lines that do it. Measured: `--cap CERT,CHAL` on the requester puts `Flags 0x00000006` on the wire where the default puts `0x0002f7c6`. The evidence cell had been a `grep` whose printed output was abbreviated by hand, and the abbreviation is where the requester's line went. See § ⑭ below |
 | 15 | `DMTF/spdm-emu` | every invalid argument exits 0 | `grep -c 'exit(0)'` | **merged**: sent as [#546](https://github.com/DMTF/spdm-emu/pull/546) on 2026-10-17, and merged on 2026-10-19 as `ce3b513`, byte-identical, after an approval without a comment. Until then not sent: mechanical, and 78 sites at the pin have become 91 at `eff07cf`. It bit this project's own testing of 0004 twice on 2026-09-29: `--pcap` with `--trans NONE` or `TCP` prints the usage and exits 0. *2026-09-30: all 91 are in `process_args()`, where #527 adds 25 lines and the maintainer's #496 adds 54, so it goes after both. 2026-10-12: 93 at `8f36665`, and the four open pull requests that edit `process_args()` add fifteen more between them. After they land, and as a question first. 2026-10-15: 98 at `8674afe`, every one in `process_args()`; #529 and #531 have merged, and #530 and #496 still edit it. 2026-10-17: 102 at `376869f`, four of them #530's, and #530 has merged; the only open pull request that edits `process_args()` is #496, untouched since 2026-06-27. Prepared as `24849f6` rather than asked first: it is one rule a reviewer can check from the diff, the rule #526 applied to `CoRimTool.py` ([§](#candidate-15s-change)). Signed by the author as `0dd5f75`, tree unchanged, and sent the same evening as #546 ([§](#sent--2026-10-17-1309-utc)). 2026-10-19: merged by `jyao1` as `ce3b513`, byte-identical ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19))* |
-| 16 | `libspdm`, its sample secret library, which `spdm-emu` builds | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to the two signed operations, which the requester refuses. ★ *Corrected 2026-11-02*: it is right to; the responder signs with slot 4's key | **cause found, not sent**. Until 2026-11-02 not sendable: the root cause needed a Debug build this project had not made, and a report without one asks the maintainer to do the work. *Re-run on 4.0.0-rc2, 2026-09-29: S1 still exits 1, P1 exits 0. 2026-10-15: the status was never unrecoverable. Both signed arms' logs begin `ERROR: do_authentication_via_spdm - 80020001`, `LIBSPDM_STATUS_VERIF_FAIL` — the status the README's Table 1 shows for a measurement or a signature altered in flight — so this row's premise that nothing was printed was false, and it is corrected in § ⑯ and in `../pqc-cost.md`. What a Debug build would add is which check fails. Not re-run at `8674afe`. 2026-11-02: re-run at `9cc8b46`, where it persists, and its cause found without a Debug build. In a connection that is not multi-key the responder signs with KeyPairID 0, and the sample library reads slot 4's private key, `end_responder4.key`, whenever the KeyPairID equals slot 4's; its key pair table has no SLH-DSA key pair, so slot 4's is 0 too, and every SLH-DSA signature is made with slot 4's key and checked against slot 0's certificate. Giving `end_responder4.key` the bytes of `end_responder.key`, and changing nothing else, makes each failing arm it was tried on pass: three parameter sets and both signed operations there, and S1's own run on the build of 2026-09-14. From libspdm #3650, and still on libspdm `main`. The change is small; it is prepared here next, and held until #550 has its maintainer's answer — the same maintainer, and #3650's code ([§](#candidate-16s-cause-found--2026-11-02))* |
+| 16 | `libspdm`, its sample secret library, which `spdm-emu` builds | no signed operation completes with SLH-DSA on a default build | `w8-pqc-matrix` `S1-*`: bisected to the two signed operations, which the requester refuses. ★ *Corrected 2026-11-02*: it is right to; the responder signs with slot 4's key | **change prepared, not sent**. Until 2026-11-02 not sendable: the root cause needed a Debug build this project had not made, and a report without one asks the maintainer to do the work. *Re-run on 4.0.0-rc2, 2026-09-29: S1 still exits 1, P1 exits 0. 2026-10-15: the status was never unrecoverable. Both signed arms' logs begin `ERROR: do_authentication_via_spdm - 80020001`, `LIBSPDM_STATUS_VERIF_FAIL` — the status the README's Table 1 shows for a measurement or a signature altered in flight — so this row's premise that nothing was printed was false, and it is corrected in § ⑯ and in `../pqc-cost.md`. What a Debug build would add is which check fails. Not re-run at `8674afe`. 2026-11-02: re-run at `9cc8b46`, where it persists, and its cause found without a Debug build. In a connection that is not multi-key the responder signs with KeyPairID 0, and the sample library reads slot 4's private key, `end_responder4.key`, whenever the KeyPairID equals slot 4's; its key pair table has no SLH-DSA key pair, so slot 4's is 0 too, and every SLH-DSA signature is made with slot 4's key and checked against slot 0's certificate. Giving `end_responder4.key` the bytes of `end_responder.key`, and changing nothing else, makes each failing arm it was tried on pass: three parameter sets and both signed operations there, and S1's own run on the build of 2026-09-14. From libspdm #3650, and still on libspdm `main`. The change is small; it is prepared here next, and held until #550 has its maintainer's answer — the same maintainer, and #3650's code ([§](#candidate-16s-cause-found--2026-11-02)). That afternoon prepared, in libspdm on `main` `6de8048`, unsigned, tree `20b1b0c`: KeyPairID 0 selects the default key at all four sites. Both roles' SLH-DSA signatures verify with it on the six parameter sets that reach a signature, and nothing else changes, except that in a multi-key connection, where SLH-DSA has no KeyPairID for any slot, slot 4 now fails where slot 0 used to — in spdm-emu's own default flow, its second session. The commit message and the pull request say so, and offer SLH-DSA key pairs as the way to make slot 4 work. Held for the author's keystrokes, no longer for #550's answer: neither of #550's two ways touches it ([§](#candidate-16s-change-prepared--2026-11-02))* |
 | 17 | `DMTF/spdm-emu` | `DataTransferSize` has no run-time flag | a 55-line patch, a sweep, and a control that proves it inert | **merged**: sent as [#527](https://github.com/DMTF/spdm-emu/pull/527) ([`0004`](0004-data-transfer-size.md)), rebuilt on 4.0.0-rc2, and merged on 2026-10-12 as `fd75485`. Porting it found two defects in this project's version, neither of which the sweep could reach: with `CHUNK_CAP` cleared it advertised a `MaxSPDMmsgSize` larger than its `DataTransferSize`, which the peer rejects (`0x80010005`, measured on the `pqc-dts` build), and on `--trans NONE` it advertised 128 bytes more than asked. *2026-10-04: reviewed and approved by a contributor, `LeonLinAtAMI`, whose [#531](https://github.com/DMTF/spdm-emu/pull/531) is built on its commit, unchanged* |
 | 18 | `DMTF/spdm-emu` | the validator sample's configuration and the suite disagree in both directions | `--audit-config` recomputes the table from the two files | **half fixed upstream**, without this project: `eff07cf`, 2026-09-29, registers both `SUCCESS_13` cases, which were the half that mattered. `CERTIFICATE_SIZE_REQ` is still not registered and `CERTIFICATE_SPDM_X509_CERTIFICATE` is still registered and not implemented — `--audit-config`, 83 implemented, 83 registered. Two lines remain. *2026-10-12: the same two, at `8f36665` with the suite at `7acde98`. Not sent: the maintainer re-syncs this array himself* |
 | 19 | `SPDM-Responder-Validator` | a conformance case reports FAIL for a correct signature, because it discarded the chain it fetched | `challenge_verify.py`: calibration 9/9, disputed 2/2 verified | ★ **fixed upstream before this project found it.** `65bcccc` and `ad6db5c`, authored 2026-09-07 and 09-14, on the suite's `main` on 2026-09-15; this row was written on 2026-09-20, against the submodule pointer `c27bb1c`. Not sendable. The fix's own commit message names the mechanism this entry derived, and repairs it the way this entry preferred |
@@ -158,7 +161,8 @@ Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-un
 | 21 | `DMTF/spdm-emu` | `spdm_device_attester_sample` cannot connect to the responder it ships with | its `GET_CAPABILITIES`, read off the wire at `eff07cf`, and again on `1229103` under #530, which does not touch the sample: `Flags` `0x000072c6`, no `CHUNK_CAP`, `DataTransferSize` 4,608, `MaxSPDMmsgSize` 163,840. libspdm requires the two sizes to be equal without `CHUNK_CAP` (`libspdm_rsp_capabilities.c` 239–244 at `a6994ee`), so the responder answers `ERROR(InvalidRequest)`, `libspdm_init_connection` returns `0x8001000a`, and the program exits 0 | **merged**: sent as [#545](https://github.com/DMTF/spdm-emu/pull/545) on 2026-10-17, and merged on 2026-10-19 as `ad6095f`, byte-identical, without a review. Until then not sent. Found on 2026-10-13 while testing #537, whose attester half had to be run with a local patch because of it. Before #531 no option got past it: the sample never sets the SPDM version, so `--ver` changes nothing (measured from 1.0 to 1.4), and `process_args()` accepts `--cap` only from the requester and the responder. Since #531, `--max_spdm_msg_size 4608` does: the request then carries 4,608 twice, and the sample collects its chains and its measurement — measured, and found only when this row's first wording, "no command line gets past it", was audited. The sample also passes `chunk_cap = true` to #531's size helpers without setting `CHUNK_CAP`, so by the rule above one word or one flag would fix the default — inferred, not built. A question first, because which of the two is upstream's call. *2026-10-15: unchanged at `8674afe`: the same request, `0x000072c6` with 4,608 and 163,840, the same `ERROR(InvalidRequest)`, and `--max_spdm_msg_size 4608` still gets it through. 2026-10-17: unchanged at `376869f`, on MCTP, PCI_DOE and NONE. And not new: [#458](https://github.com/DMTF/spdm-emu/issues/458), opened 2025-12-16, asked whether the attester and validator samples needed the fix `5ef1123` had made to the requester and the responder, and was closed when its reporter confirmed the validator's case gone; [`0004`](0004-data-transfer-size.md) had recorded that as no longer reproducing, for both. `5ef1123` is upstream's answer to the question this row asked, so it was prepared as a change, `0bd516a` ([§](#candidate-21s-change)). Signed by the author as `afa4bb1`, tree unchanged, and sent the same evening as #545 ([§](#sent--2026-10-17-1309-utc)). 2026-10-19: merged by `jyao1` as `ad6095f`, byte-identical ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19))* |
 | 22 | `DMTF/spdm-emu` | `spdm_requester_emu` built for a TPM responder with one slot cannot start | `DEVICE=tpm` with `LIBSPDM_TPM_RESPONDER_SLOT_IDS=0`, at `f7fa183`: *"unsupported slot_id 1 (supported mask: 0x1)"*, then *"read_responder_root_public_certificate fail!"*, and exit 1 after six messages. Once the algorithms are negotiated, the requester reads the responder's roots for slots 0 and 1 (`spdm_requester_spdm.c` 600–663) and stops if either read fails | **recorded, not sent**: found on 2026-10-20 while testing #550, whose one-slot TPM runs had to use the requester of the default TPM build. Candidate 3's assumption, from the requester's side. After #550 has an answer ([§](#candidate-22-found-while-testing-it)). *2026-10-29: still reproduces at `9cc8b46`. Held for `jyao1`'s choice on #550: with the first of the two ways its reply offers, a responder with one TPM slot is a consistent configuration, and this is how its requester then fails; with the second, that responder stops by itself ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29))* |
 | 23 | `DMTF/spdm-emu` | with RSA-2048, the requester's `SET_KEY_PAIR_INFO` step erases the key pair the connection uses | at `9cc8b46`, unmodified binaries, `--asym RSASSA_2048` given to both programs, nothing removed: no session opens — `KEY_EXCHANGE` gets `ERROR(InvalidRequest)` — in 570 messages, and the requester prints `ERROR: libspdm_start_session - 8001000a` and exits 0; with the step left out of `--exe_conn` and `--exe_session`, 2,256 messages, the sequence of `RSASSA_3072` with the same options. `do_set_key_pair_info_via_spdm()` (`spdm_requester_key_pair_info.c` 86–111, `d667dbe`, 2024) always sets KeyPairID 1's association to none and then erases it, and KeyPairID 1 is the sample library's RSA-2048 primary key pair, which backs slots 0 and 1 | **asked**: issue [#552](https://github.com/DMTF/spdm-emu/issues/552) on 2026-10-29, as a question, since the flow could pick a key pair the connection does not use in more than one way. Found that day in #550's runs for `jyao1`'s second comment, twelve of which used RSA-2048 so that KeyPairID 1, the one the requester asks about, would be the key pair in use: none of the twelve opened a session, and #550's reply says so ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)) |
-| 24 | `spdm-emu` or `libspdm` | six of the twelve SLH-DSA parameter sets the sample ships never get past `GET_DIGESTS` | at `9cc8b46`, `--pqc_asym` `SLH_DSA_SHA2_192F`, `SHA2_256S`, `SHA2_256F` or their SHAKE twins, with `DIGEST,CERT,CHAL`: after eight messages `GET_DIGESTS` gets a four-byte `ERROR`, the requester prints `ERROR: do_authentication_via_spdm - 8001000a`, and the responder prints nothing but its arguments and its shutdown. Their slot-0 chains hold 90,634 to 150,826 bytes of certificates (the SHA2 ones measured); the largest that works, SHA2-128f's, holds 52,426 | **recorded, not investigated**: found on 2026-11-02 while sweeping candidate 16 across every parameter set. The limit lies between those two sizes; which one it is has not been read ([§](#candidate-16s-cause-found--2026-11-02)) |
+| 24 | `libspdm` | six of the twelve SLH-DSA parameter sets the sample ships never get past `GET_DIGESTS` | at `9cc8b46`, `--pqc_asym` `SLH_DSA_SHA2_192F`, `SHA2_256S`, `SHA2_256F` or their SHAKE twins, with `DIGEST,CERT,CHAL`: after eight messages `GET_DIGESTS` gets a four-byte `ERROR`, the requester prints `ERROR: do_authentication_via_spdm - 8001000a`, and the responder prints nothing but its arguments and its shutdown. Their slot-0 chains hold 90,634 to 150,832 bytes of certificates (SHA2 and SHAKE measured); the largest that works, SHAKE-128f's, holds 52,432 | **cause read, not sent**: found on 2026-11-02 while sweeping candidate 16 across every parameter set ([§](#candidate-16s-cause-found--2026-11-02)). *That afternoon its cause was read: the sample's chain readers call `libspdm_verify_cert_chain_data()` (`read_pub_cert_pqc.c` 524, 1118, 1268 and 1471), which first refuses chain data longer than `0xFFFF - (4 + LIBSPDM_MAX_HASH_SIZE)` bytes (`libspdm_crypt_cert.c` 1891–1897), 65,467 with SHA-512 built in. Given one of these chains as its own, the requester prints `read_requester_public_certificate_chain fail!`; the responder prints nothing. libspdm's own `GET_CERTIFICATE` handler takes a longer chain when SPDM 1.4's large certificate chain is in use (`libspdm_rsp_certificate.c` 149). Read, not instrumented; whether the sample should accept these is libspdm's question, after 16 ([§](#candidate-16s-change-prepared--2026-11-02))* |
+| 25 | `DMTF/spdm-emu` | `spdm_requester_emu` exits 0 after any failure that follows its `GET_ENDPOINT_INFO` step | at `9cc8b46` with candidate 16's change, the default flow with `--pqc_asym SLH_DSA_SHA2_128S`, and `--pqc_first TRUE` on the responder: the second session, on slot 4, fails (`ERROR: libspdm_start_session - 80020001`) and the requester exits 0; the same run with `EP_INFO` left out of the default `--exe_conn` exits 1. Line 204 stores the result of the platform call for the encapsulated `GET_ENDPOINT_INFO` in `result`, which line 147 set to false and `main` returns negated, so every later `goto done` exits 0. From `8e33385`, 2025-06-06 | **recorded, not sent**: found on 2026-11-02 while running spdm-emu's own PQC command for candidate 16 ([§](#candidate-16s-change-prepared--2026-11-02)). The default flow runs that step from SPDM 1.3 on, so a failure after it does not reach the exit status upstream's workflows see. One line; after 16 and #550 |
 
 **How the two were chosen**, in the order the criteria were applied: can a
 reviewer verify it from the change alone; would the next person to hit it be
@@ -3319,6 +3323,141 @@ pull requests.
   call.
 - 24: which limit stops the six large parameter sets, read before anything is
   said of it.
+- #550, #552, 22, 13 and 94773: as on 2026-10-29.
+
+## Candidate 16's change, prepared — 2026-11-02
+
+From 04:19 UTC. The author asked for 16's change to be prepared in libspdm,
+locally and unsigned, and tested on every SLH-DSA parameter set, on ML-DSA, on
+the traditional algorithms, on a multi-key connection and with the requester
+signing; then asked for a second check, from another angle, of whether it
+needed sending at all; then delegated what was left.
+
+### What came back
+
+Nothing, at 04:19 UTC and again at 05:11. #550 was at `b20e680`, its last
+activity the reply of 2026-10-29; #552 had no comment, label or assignee;
+`spdm-emu` `main` was `9cc8b46`, and libspdm `main` `6de8048`, 45 commits after
+the `6cb52f2` that `9cc8b46` builds. No issue or pull request in either
+repository had been updated since 04:00 UTC. `jyao1`'s public activity that
+morning was in `intel/MigTD` and `confidential-containers/td-shim`, from 01:51
+to 03:02 UTC.
+
+### What was decided, and why
+
+| | decided | because |
+|---|---|---|
+| the change | KeyPairID 0 selects the default key, at all four sites | the header describes the readers that way: only the negotiated algorithm's secondary key pair selects `end_*4.key`, and "any other key_pair_id uses the default end_responder.key". SLH-DSA has no secondary key pair. `jyao1`'s `e79dc8c1` guards `key_pair_id == 0` the same way in the key pair info HAL |
+| SLH-DSA key pairs in the table | offered, not included | they would give slot 4 a KeyPairID of its own, but would renumber every secondary KeyPairID — with all twelve parameter sets, ECDSA_P384's would move from 17 to 29 — change the default of `LIBSPDM_MAX_KEY_PAIR_COUNT`, which `cf053131` made overridable, and touch the table #550's second question is about. `spdm.h` already has their capability bits |
+| when to send | on the author's keystrokes, not on #550's answer | a change from the section above. Neither of #550's two ways touches it: the first changes slot 4's association only in a multi-key connection, where the KeyPairIDs it changes are not 0 (read, not run). It goes to another repository, which has a second code owner, and it is a change, not a question |
+| the texts | the default flow's result in both | the second check found it; below |
+
+### The change
+
+In a clone of libspdm, branch `default-key-for-key-pair-id-0`: `8e1a97c` on
+`main` `6de8048`, unsigned, tree `20b1b0c`, +20 −8 in `read_priv_key_pem.c` and
+`read_priv_key_pem_pqc.c`. Each of the four tests becomes
+
+```c
+    if ((key_pair_id == 0) ||
+        (key_pair_id != libspdm_get_key_pair_id_by_slot(0, pqc_asym_algo, 4))) {
+```
+
+with its own arguments, and each comment gains a sentence. `Fixes:` names
+`1e16c60f6d30`, #3650, for the Responder's two, and `8620d4cb14f4`, #4149, for
+the Requester's. The four files the selection involves — the two readers,
+`key_pair.c` and `sign.c` — are the same blobs at `6cb52f2` and at `main`.
+libspdm's `CONTRIBUTING.md` asks for the DCO sign-off and an `Assisted-by:`
+trailer, and forbids `Co-authored-by:` for a tool; its compliance workflow
+requires an ASCII commit message and uncrustify 0.78's formatting; `CODEOWNERS`
+adds `jyao1` and `steven-bellock`. The author has no fork of `DMTF/libspdm` yet,
+and nothing there from him.
+
+### Tested
+
+The two blobs were put into `spdm-emu` `9cc8b46`'s libspdm, built, and
+restored; the shipped binaries rebuilt afterwards are byte-identical to the
+ones compared against. Both builds were run with strace recording which private
+key file each side opened, the variable itself, and the algorithms, the slot,
+the KeyPairIDs and `MutAuthRequested` were read back from each capture.
+
+| | as shipped | with the change |
+|---|---|---|
+| Responder, not multi-key, `DIGEST,CERT,CHAL,MEAS`: SLH-DSA SHA2 and SHAKE, 128s, 128f, 192s | `80020001`, `end_responder4.key` | pass, `end_responder.key`; 42→66, 74→118 and 70→110 messages |
+| the same, 192f, 256s, 256f | `ERROR` for `GET_DIGESTS` after eight messages, no key file opened | the same |
+| ML-DSA-44/65/87 and 11 traditional algorithms | pass | the same |
+| SM2_P256 | `ERROR(Unspecified)` for `CHALLENGE` | the same |
+| Multi-key, slots 0 and 4: ECDSA_P384 (KeyPairIDs 5,5,17), RSAPSS_3072 (2,2,14), ML-DSA (10,10,22 to 12,12,24) | pass, slot 4 with `end_responder4.key` | the same |
+| Multi-key, SLH-DSA SHA2-128s and SHAKE-128f (0,0,0), slot 0 | `80020001` | pass |
+| the same, slot 4 | pass | `80020001` |
+| Requester signing `FINISH`, `WO_ENCAP`, not multi-key: SLH-DSA SHA2 and SHAKE, 128s, 128f, 192s | `8001000f`, `end_requester4.key` | pass, `end_requester.key` |
+| the same, 192f, 256s, 256f | cannot read its own chain | the same |
+| Requester, SLH-DSA SHA2-128s, `W_ENCAP`, and `WO_ENCAP` in a multi-key connection | fail | pass |
+| Requester ML-DSA-44/65/87, ECDSA_P384 and RSASSA_2048; ML-DSA-44 and ECDSA_P384 with `W_ENCAP` and multi-key | pass | the same |
+
+The first run of the traditional arms is void, and kept: with `--dhe NONE
+--kem NONE` both builds got `ERROR(InvalidRequest)` for `NEGOTIATE_ALGORITHMS`
+in six messages and opened no key file — the same on both because nothing ran.
+Re-run with `--dhe SECP_384_R1`, the one option changed. libspdm's seven basic
+unit tests, built as its Tier 1 builds them (Linux, GCC, Release, OpenSSL,
+`LIBSPDM_CHECK_MACRO` and assert configuration 3), give the same results and the
+same passing test names with and without the change; `test_crypt` prints
+nothing either way. `script/format_nix.sh --check` passes, and uncrustify with
+the repository's configuration refuses a copy with one continuation line
+indented two columns less.
+
+### What a user sees
+
+The matrix holds everything but one variable still. The second check asked the
+other question: spdm-emu's own PQC command, as `pqc_check.yml` runs it, with
+`--pqc_first TRUE` on the responder, `--pqc_asym SLH_DSA_SHA2_128S` on both,
+and everything else default.
+
+| | as shipped | with the change |
+|---|---|---|
+| not multi-key (`--other_param OPAQUE_FMT_1`) | `80020001` at the first `CHALLENGE`, 42 messages | the whole flow: 2,636 messages, `KEY_EXCHANGE` on slots 0 and 1 and the PSK session, no error in the log |
+| multi-key, the default | the same | everything until the second `KEY_EXCHANGE`, on slot 4: `80020001`, after 1,978 messages, and exit status 0 |
+
+SHAKE-128f behaves the same with multi-key; ML-DSA-44 is the same on both
+builds, 2,376 messages. So the change is necessary, and not sufficient for the
+default: it gives slot 0, which every connection uses, the key it needs, and in
+a multi-key connection SLH-DSA still has no KeyPairID for slot 4. The commit
+message and the pull request say so. The first run without multi-key stopped
+at 2,461 messages when the harness's 120 seconds ran out, exit status 124, and
+is not counted; with 600 it finished in 131.
+
+Why nothing upstream noticed: `--pqc_asym`'s default lists ML-DSA only
+(`doc/spdm_emu.md` 98), `pqc_check.yml` runs that default, and libspdm's
+Requester and Responder unit tests mention SLH-DSA once, in a
+`SET_KEY_PAIR_INFO` test. Eleven searches of the two repositories that day
+found no report. Two open libspdm pull requests touch the same files:
+`alistair23`'s #3668, and the #3637 it replaces. #3668 adds `spdm_context` to
+the Responder's two tests and keeps the comparison, and has not moved since
+2026-09-25; whichever lands second needs a small rebase.
+
+### What else this found
+
+- **24's cause, read.** The sample's chain readers call
+  `libspdm_verify_cert_chain_data()`, which first refuses chain data longer than
+  `0xFFFF - (4 + LIBSPDM_MAX_HASH_SIZE)` bytes, 65,467 with SHA-512 built in.
+  The six chains are 90,634 to 150,832 bytes, and the six that pass at most
+  52,432. Read, not instrumented (row 24).
+- **25: an exit status set by the wrong call.** The run above that fails on
+  slot 4 exits 0; left without `EP_INFO` in its `--exe_conn`, the same run exits
+  1. Line 204 of `spdm_requester_emu.c`, from `8e33385`, stores the platform
+  call for the encapsulated `GET_ENDPOINT_INFO` in the routine's own `result`,
+  so every later failure returns success (row 25).
+- **SM2_P256** fails `CHALLENGE` on both builds with `ERROR(Unspecified)`,
+  having opened its key file: not this change's, and not investigated.
+
+### What decides what goes next
+
+- 16: the author's fork of `DMTF/libspdm`; his reading of the commit; his
+  sign-off, `git commit --amend -s --no-edit`, after which the tree must still be
+  `20b1b0c`; a freshness check; the push on his word; and the pull request, from
+  the prepared title and body.
+- SLH-DSA key pairs in `key_pair.c`: if the maintainer asks for them.
+- 24 and 25: after 16, and 25 after #550.
 - #550, #552, 22, 13 and 94773: as on 2026-10-29.
 
 ## Three identity traps, all of which are silent until they are not
