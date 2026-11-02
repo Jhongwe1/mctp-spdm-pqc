@@ -7717,3 +7717,148 @@ the next candidate ready, not for sending it.
 - **#550's fourth version, #552's change, candidate 22**: as on 2026-10-30.
 - **Candidate 13, 94773, the one-page summary, the demo, `c-drills`, Day 17's
   `TODO(me)`**: as before.
+
+## 2026-11-02 · Day 29, afternoon · fixed in the matrix, half-fixed for a user
+
+From 04:19 UTC. The author asked for 16's change, prepared in libspdm
+locally and unsigned, and tested on every SLH-DSA parameter set, on ML-DSA, on
+the traditional algorithms, on a multi-key connection and with the requester
+signing; then for a second check, from another angle, of whether it needed
+sending; then delegated the rest. It is prepared as `8e1a97c`, tree
+`20b1b0c`, on libspdm `main` `6de8048`, and not sent. The morning's plan, to
+hold it until #550's answer, is changed (Decisions). Three findings are worth
+the five parts.
+
+---
+
+### 1. ★ The matrix said fixed; the user's command said half
+
+**現象** Every arm of the A/B matrix moved as predicted, and the change was
+ready to describe as a fix. For the second check the author asked for,
+upstream's own PQC command was run with SLH-DSA selected and everything else
+default. Before the change, the first `CHALLENGE` fails; after it, the run goes
+on for 1,978 messages, its second `KEY_EXCHANGE` fails with `80020001` — and
+the requester exits 0.
+
+**假設** (1) A fifth site the change missed. (2) The default flow reaches a
+case the matrix had held apart: the default is multi-key, and the matrix's own
+row "multi-key, SLH-DSA, slot 4: pass, then VERIF_FAIL" is such a case. (3)
+Something else in a flow far longer than any arm: candidate 23's
+`SET_KEY_PAIR_INFO`, or a timeout.
+
+**先驗哪個、為什麼** (2) first, because the capture on disk answers it with no
+new run: the failing `KEY_EXCHANGE` asks for SlotID 4, at message 1,971. Then
+the same command without multi-key, which separates (2) from (1) and (3) by
+one option: it passes whole, 2,636 messages, `KEY_EXCHANGE` on slots 0 and 1
+and the PSK session, no error — on its second attempt, after my harness's 120
+seconds cut the first short with exit status 124.
+
+**根因** (2). spdm-emu's default flow is multi-key, and its second session uses
+slot 4, where SLH-DSA has KeyPairID 0: the trade the change makes knowingly.
+The matrix showed it as one row; the default flow shows it as its last session
+failing, behind an exit status of 0.
+
+**教訓** ★ **An isolated variable says whether a change works; only the user's
+own command says what a user will meet after it.** Run both before deciding to
+send, and write both into the text: the pull request's table had the row, and
+still did not say what anyone running the documented command would see.
+
+### 2. ★ "The same on both builds" because neither ran
+
+**現象** The first run of the traditional arms: 24 runs, and 8 more of the
+multi-key arms with traditional algorithms, the two builds identical in every
+one, every one exit status 1.
+
+**假設** (1) A failure in the traditional path present on both builds, older
+than the change. (2) The arms never reached a signature. (3) The runner broke.
+
+**先驗哪個、為什麼** (2) first: the message count and the key files opened are
+columns the runner already prints. Six messages, and no key file:
+`NEGOTIATE_ALGORITHMS` had been answered with `ERROR(InvalidRequest)` on both
+builds.
+
+**根因** My configuration: `--dhe NONE` and `--kem NONE` together, which the
+responder refuses at negotiation. With `--dhe SECP_384_R1`, the one option
+changed, the arms ran: 11 of 12 pass identically, SM2_P256 fails
+identically, and the multi-key ones pass identically.
+
+**教訓** **"No difference" is evidence only where the variable was observed on
+both sides.** The exit statuses agreed perfectly and said nothing; the
+key-file column, empty in all 32, said that nothing had been compared.
+2026-10-04's finding again, from the other direction: there, nothing changed
+and the library had to be shown to have noticed; here, nothing changed because
+nothing ran.
+
+### 3. An exit status set by the wrong call
+
+**現象** After the change, the default multi-key run logs `ERROR:
+libspdm_start_session - 80020001` for its second session and exits 0. The
+mutual-authentication arms, failing the same way in a shorter flow, had exited
+1.
+
+**假設** (1) The requester treats its second session as optional. (2)
+Something overwrites the flag `main` returns. (3) The runner reports a status
+other than the requester's.
+
+**先驗哪個、為什麼** (3) by reading `harness/lib/handshake.sh`: `hs_run` returns
+the requester's own status. Then the requester, by reading: `main` returns
+`!result`, line 147 sets `result` false and line 294 true, and line 204 assigns
+it the result of the platform call for the encapsulated `GET_ENDPOINT_INFO` —
+(2). Then an intervention instead of more reading: the same failing run with
+`EP_INFO` left out of the default `--exe_conn`.
+
+**根因** (2): exit status 1 without `EP_INFO`, 0 with it. `8e33385`, 2025-06-06,
+reused the routine's `result` for that call, so after it every `goto done`
+returns success. Candidate 25.
+
+**教訓** **When one failure gives two exit statuses in two flows, the difference
+between the flows is the instrument**: take one step out and see whether the
+status follows. Red line 2, in the program under test as much as in this
+project's harness.
+
+---
+
+### Smaller things, each checked
+
+- **The bytes main has.** The four files the key selection involves are the
+  same blobs at `6cb52f2`, which spdm-emu builds, and at libspdm `main`; the
+  sample library differs only in `psk.c`.
+- **The variable, observed.** strace shows which private key file each side
+  opens; this morning that had been inferred from an intervention.
+- **The judges, mutated.** The capture reader refused three wrong expectations,
+  and uncrustify refused a copy with one continuation line indented two columns
+  less.
+- **ASCII.** libspdm's CI rejects a commit message with a non-ASCII byte; my
+  drafts use dashes that are not ASCII. All three texts are ASCII, counted by
+  bytes.
+- **Sentences, before anything left.** "11 traditional algorithms, both roles"
+  (the requester side had two), "so GET_DIGESTS gets ERROR" (a cause read, not
+  measured, written as one), "the same four files", "both sessions" (three),
+  "the same two lines" as #3668's (two of four), "SHAKE-128f the same" (with
+  multi-key only). The 72-column check stopped one amend.
+- **Row 24's cause, read.** `libspdm_verify_cert_chain_data()` refuses chain
+  data over `0xFFFF - (4 + LIBSPDM_MAX_HASH_SIZE)` bytes; not instrumented.
+- **The quoting fault, again.** A `wsl -- bash -c` line lost its `$x`; done
+  again from a script file.
+
+### Decisions
+
+- **The author's**: the four predictions answered with "explain them", and the
+  explanations into `study/` (Q39–Q43); the second check; and "decide the
+  rest".
+- **Mine, delegated**: the guard, not the table; both texts to carry the
+  default flow's result; the send on the author's keystrokes, not on #550's
+  answer — a change from the morning, because neither of #550's two ways touches
+  this, it goes to another repository with a second code owner, and it is a
+  change, not a question; this record now, before the send; 24 and 25
+  recorded, not sent.
+
+### Not done, and the reason for each
+
+- **Sending 16's change**: the fork, the sign-off, the push and the pull
+  request are the author's.
+- **SLH-DSA key pairs in `key_pair.c`**: the maintainer's call; offered in the
+  text.
+- **Changes for 24 and 25**: after 16, and 25 after #550.
+- **#550's fourth version, #552's change, candidate 22, candidate 13, 94773,
+  the one-page summary, the demo, `c-drills`, Day 17's `TODO(me)`**: as before.
