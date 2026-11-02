@@ -7954,3 +7954,104 @@ error and still count as a pass. `0001` §6 gains the line.
   head first, since `libspdm_crypt_cert.c` has moved.
 - **#550's fourth version, #552's change, candidate 22, candidate 13, 94773,
   the one-page summary, the demo, `c-drills`, Day 17's `TODO(me)`**: as before.
+
+## 2026-11-03 · Day 30 · option 1, and the other half of "consistent"
+
+### 1. "Everything must be consistent" is a list of places
+
+**Phenomenon.** `jyao1` answered #550 at 15:34 UTC on 2026-11-02: *"I am OK
+with option-1. Please validate carefully to ensure the final state is
+consistent. Since slot 0 is always there, we need to handle 4 cases {slot 1
+and slot 4, slot 1 only, slot 4 only, no slot 1 or slot 4}. Also please
+validate for responder side cert and requester side cert in mut auth case."*
+Before it: *"If you prefer to make slot 1/4 optional, the everything must be
+consistent."*
+
+**Hypotheses.**
+1. The Requester's side needs validating only: the change is the
+   Responder's, and mutual authentication has to keep working with it.
+2. The Requester's side has #547's shape too, and "consistent" asks for the
+   same change there.
+3. Option 1 writes the sample library's key-pair table, which belongs to the
+   process, not the connection, so a responder that outlives a connection
+   carries the write into the next.
+
+**Which first, and why.** 2, by reading, because it decided the scope of
+everything after it and cost minutes. The Requester's per-slot chains had
+been written three weeks earlier, in `8674afe`, in the same fixed 0/1/4
+shape, and were: the requester stops at the first of its three chains that
+does not load and exits; the responder reads its copy of them into one `res`
+that slot 4's read alone decides, and that `res` decides whether mutual
+authentication is requested; and the requester exits without the root of
+the responder's slot 1, which was candidate 22. Then 3, by reading
+`key_pair.c`: `libspdm_get_key_pair_id_by_slot()` reads the masks option 1
+writes, and the sample library's key choice for KeyPairID 0 compares against
+it — candidate 16's mechanism. Measured with a build that leaves the slot
+removed: after a multi-key connection without slot 4, the next connection,
+without multi-key, fails its `CHALLENGE` (`VERIF_FAIL`), with ECDSA P-384
+and with ML-DSA-87; with the give-back, both complete.
+
+**Root cause.** The emulator's slots were a fixed configuration on both
+sides — `jyao1`'s words: *"The old solution uses a fixed configuration and
+requires slot 0/1/4."* #547 found one of the four places that assumed it, and
+v3 fixed that one.
+
+**Lesson.** A maintainer's *"everything must be consistent"* is a scope
+statement, not a standard of care. Before writing the change, list every
+place the old invariant is assumed — here every read of a slot's chain, on
+either side — because a bug report names only the place where it was found.
+And a change made to process-wide state on behalf of one connection has to be
+undone for the next; the cheapest proof that the undoing matters is a build
+without it.
+
+### 2. The mutation landed on the disk, not where the program reads
+
+**Phenomenon.** In a run that removed only the Requester's slot-0 chain, the
+responder also said the Requester's slot 1 had not loaded.
+
+**Hypotheses.** 1. The change reads slot 1 wrongly. 2. The sample library
+reads slot 1 from slot 0's file, so every "slot 1 removed" case so far
+removed a file nothing reads. 3. The harness removed the wrong file.
+
+**Which first, and why.** 2, because it is one function to read, and if true
+it voids a whole column. It was: the Requester's per-slot readers give slot 4
+its own file and every other slot `bundle_requester.certchain.der`. The 56
+runs that removed `bundle_requester.certchain1.der` had removed it, as the
+harness checked, and changed nothing, which it did not check: wherever the
+requester got as far as its `DIGESTS`, they still showed slot 1. They were re-run with a local change
+to the reader, and an assertion per run that the Requester's `DIGESTS` has
+exactly the case's slots — 80 runs, none not as wanted.
+
+**Root cause.** The harness verified the mutation where it made it, in the
+file system, not where the program under test reads it.
+
+**Lesson.** Check a mutation at the first observable the program produces
+from it, not at the input you changed: the earlier rule, that a mutation must
+be shown to have changed its input, holds here and still let 56 runs through.
+And read the anomalous line in a run that passed; it was the only signal.
+
+### 3. A failure is the change's only after the same run passes without it
+
+**Phenomenon.** Two requesters on one responder, slot 4 removed: a multi-key
+first connection, then a `--ver 1.2` one, whose second session failed with
+`VERIF_FAIL` — exactly the failure the give-back exists to prevent, on the
+build that has it.
+
+**Hypotheses.** 1. The give-back does not work. 2. Something else carried
+over between the connections. 3. The 1.2 run fails on its own.
+
+**Which first, and why.** 3 and 2 at once, with the control: the same two
+connections with nothing removed, on `main`. It fails the same way; two 1.2
+connections in turn do not; and a single 1.2 connection without slot 4
+passes. So it is the emulator's, across connections, unrelated to #550 —
+candidate 26 — and the give-back is shown with a second connection at 1.4
+without multi-key instead: there the control passes on `main` and on the
+final build, both builds with the give-back pass without slot 4, and both
+builds without it fail.
+
+**Root cause.** Not read; recorded as 26.
+
+**Lesson.** Before reading a failure as the change's, run the same thing
+with nothing removed on `main`. Here it turned the test that looked like the
+change's failure into a defect the change has nothing to do with, and moved
+the evidence to a connection where the control passes.
