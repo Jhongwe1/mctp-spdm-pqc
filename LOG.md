@@ -8108,3 +8108,94 @@ up it still exited 0, so its silence would have read as agreement. And a
 sentence is tested on a binary known by the hashes of its sources, not by a
 branch or a build name: that is what found the one sentence whose evidence
 was a build behind.
+
+## 2026-11-03 · Day 30, midday · #550's fourth version sent, and a citation that moved
+
+#550's fourth version went at 03:56 UTC, from the author's keystrokes: the
+sign-off, the word for the push, the title and description, and the reply.
+An hour before, libspdm #4268, this project's first change there, had been
+merged. One finding is worth the five parts.
+
+---
+
+### 1. ★ A citation is a claim about someone else's change
+
+**Phenomenon.** At 03:44 UTC, between the author's sign-off (03:41:52) and
+the push, the freshness check read libspdm #4268 as closed: merged by
+`jyao1` at 02:49:06 UTC, as `b068d55`. #550's description, its reply and its
+first commit's message each cite #4268 for why each connection gives back
+the slot the one before it removed: without that, the sample library signs
+with slot 4's key for KeyPairID 0.
+
+**Hypotheses.**
+1. The merge takes away the give-back's reason at #550's base, so the change
+   should drop it, or wait for spdm-emu's libspdm to move.
+2. The merge changes nothing at #550's base, because spdm-emu builds the
+   libspdm its submodule names; only how the sentence reads has changed.
+3. What was merged is not what was sent: it went in on a later commit, and
+   its diff or its message could differ.
+
+**Which first, and why.** 2, because it decided whether the code moves or
+only the text, and it is three reads: spdm-emu `main`'s gitlink for libspdm
+is `6cb52f2`; `6cb52f2` is 50 commits behind `b068d55`; and its
+`read_priv_key_pem.c` compares the KeyPairID with slot 4's alone (line 77),
+and slot 4's is 0 when it has no key pair, where `b068d55` selects the
+default key for KeyPairID 0 first (79–80). So at the base
+the sentence is true, and the give-back still needed. Then 3: the diff and
+the message, as GitHub serves them, are byte-identical to `d8c077c`'s.
+
+**Root cause.** None in the change. The texts cited #4268 without its state,
+which was complete when they were written and incomplete an hour before they
+were sent: a reader who had just merged the fix could read the reason as
+gone. The description and the reply each gained one clause, *(DMTF/libspdm#4268
+fixes that in libspdm; spdm-emu's libspdm, 6cb52f2, predates it)*, and the
+signed commit keeps its citation, which is true of its own tree, rather than
+ask for a second sign-off.
+
+**Lesson.** ★ **A citation is a claim about someone else's change, and it
+goes stale when that change moves.** The freshness check before a send
+covered the branch it goes to and the thread it answers; it saw the merge
+only because #4268 was on its list as this project's other open change, not
+because #550's texts cite it. Re-read what the texts cite, too. `0001` §6
+gains the line.
+
+---
+
+### Smaller things, each checked
+
+- **The signed commits**, before the push: `3985d32` and `ddb5fd1`, trees
+  `fddf3f7` and `f193f1f`, the bytes tested; each message the reviewed file
+  with one line added, the sign-off; author and committer the author;
+  `check_upstream_commit.sh`, every rule satisfied on each.
+- **KeyPairID 1 at `0x00`** in the give-back runs' second connections, `0x03`
+  in the first: the requester's own `SET_KEY_PAIR_INFO` step, candidate 23's,
+  sets KeyPairID 1's association to none and erases it in the first
+  connection, read in `spdm_requester_key_pair_info.c`; `main`'s
+  two-connection controls show the same. Not the change's.
+- **The push**: freshness read again at 03:55:40 UTC, unchanged; forced over
+  `b20e680` with a lease on it at 03:56 UTC; read back at 03:56:17: head
+  `ddb5fd1`, two commits, +239 −76. The title, the description (6,923 bytes)
+  and the reply (comment 6595072958, 2,252 bytes, at 03:58:14 UTC), read back
+  at 03:58:36 UTC: byte-identical to the files.
+- **The checks on `ddb5fd1`**: 45 of 45 success — DCO at 03:56:09 UTC, and 44
+  in GitHub Actions, the last at 04:20:59 UTC; `mergeable_state` clean; no
+  comment after the reply at 04:21 UTC.
+
+### Decisions
+
+- **The author's**: the sign-off, the word for the push, the title and
+  description, and the reply.
+- **Mine**: the clause in the description and the reply, and not asking for
+  a second sign-off for the commit's citation.
+
+### Not done, and the reason for each
+
+- **#550's review**: the maintainer's. If he asks whether the give-back stays
+  once spdm-emu's libspdm has `b068d55`: the key no longer depends on it, and
+  what it still does is start each connection with slot 4's key pair as a
+  fresh responder has it. Reasoned, not measured with `b068d55`; measured if
+  asked.
+- **The one-page summary's upstream line**, as of 2026-09-29: the author's
+  call before he prints.
+- **26, 27, 24, 25, #552, 13, 94773, the demo, `c-drills`, Day 17's
+  `TODO(me)`**: as before.
