@@ -343,6 +343,18 @@ script that read freshness before its push:
    filter right, it would have said FRESH having searched nothing.
 ```
 
+**Added 2026-11-03, from #550's fourth version**, from the freshness read
+between its sign-off and its push:
+
+```
+☐ re-read the state of every change and issue the texts cite, not only
+   the branch and the thread they go to. #550's description, reply and
+   first commit cited libspdm #4268 for why a step is needed; its
+   maintainer merged #4268 an hour before the push, and the reason could
+   have read as gone. The check saw it only because #4268 was on its
+   list as this project's other open change.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a

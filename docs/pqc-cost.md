@@ -658,7 +658,8 @@ DMTF ships SLH-DSA sample certificates for twelve parameter sets and advertises
 `--pqc_asym SLH_DSA_SHA2_128S`, and on this build no signed operation completes
 with it. The change, in which KeyPairID 0 selects the default key, was sent to
 libspdm on 2026-11-02 as [#4268](https://github.com/DMTF/libspdm/pull/4268),
-and is in review.
+and merged on 2026-11-03 as `b068d55`, byte-identical. `spdm-emu`'s libspdm,
+`6cb52f2`, predates it.
 
 ---
 

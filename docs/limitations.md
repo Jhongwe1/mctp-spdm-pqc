@@ -234,7 +234,7 @@ work:
 
 ## 6. Upstream
 
-- **Limit. Eleven changes merged, and one maintainer's comment among them, about
+- **Limit. Twelve changes merged, and one maintainer's comment among them, about
   where a change sat rather than what it said.**
   `DMTF/spdm-emu` #524, #534, #526, #527 and #536 were merged between
   2026-09-28 and 2026-10-13, each as sent, and without a comment from a
@@ -261,10 +261,11 @@ work:
   change, which was made, and the second asked a question, answered with
   measurements and two ways forward. On 2026-11-02 he chose the first, and
   asked for four cases to be validated on both sides; a fourth version, for
-  the requester's certificate too, is prepared and not yet sent. #551,
+  the requester's certificate too, was sent on 2026-11-03. #551,
   candidate ③, sent on 2026-10-26 after the question it had been held for
   since 2026-10-12 was answered by measurement rather than asked, was merged
-  the same day without a review.
+  the same day without a review. libspdm #4268, candidate 16, sent on
+  2026-11-02, was merged on 2026-11-03 by `jyao1`, without a review.
 - **Not done. Thirteen of the twenty-seven candidates were not sent as changes.**
   Fourteen went as changes, two of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
@@ -274,16 +275,16 @@ work:
   the thirteen, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
-  #550 and is now part of its fourth version, prepared and not yet sent, one,
+  #550 and is now part of its fourth version, sent on 2026-11-03, one,
   candidate 23, found on 2026-10-29 while measuring the answer
   to #550's maintainer, was asked as issue #552, one, candidate 24, was
   found on 2026-11-02 while measuring candidate 16's cause, and has had its
   own cause read, one, candidate 25, was found the same day while running
   spdm-emu's own command for 16, and two, candidates 26 and 27, were found on
   2026-11-03 while validating #550's fourth version, the second of them a
-  question in its prepared reply. Candidate 16's cause was found on 2026-11-02, and
+  question in its reply. Candidate 16's cause was found on 2026-11-02, and
   its change prepared, measured and sent the same day, as libspdm #4268, the
-  first to libspdm. One of the fourteen, candidate 21, had been asked about upstream
+  first to libspdm, which merged it on 2026-11-03. One of the fourteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is
@@ -306,12 +307,14 @@ work:
   by rebase on `897f13e`, the libspdm `4.0.0-rc3` sync, with its patch
   unchanged; its runs were not repeated there. #551 was tested
   against `f7fa183`, and landed on it, as `9cc8b46`. #550's first two
-  versions were tested against `f7fa183`, and its third and its fourth,
-  prepared, against `9cc8b46`, which is still `main`. libspdm #4268 was tested in `spdm-emu` `9cc8b46`, whose
+  versions were tested against `f7fa183`, and its third and its fourth
+  against `9cc8b46`, which is still `main`; the fourth was sent on 2026-11-03. libspdm #4268 was tested in `spdm-emu` `9cc8b46`, whose
   libspdm, `6cb52f2`, has the same four files the key selection involves as
   `6de8048`, the commit it is written on and where libspdm's unit tests were
   run; libspdm's `main` moved to `0df82c8` before it was sent, in none of
-  those files, and its checks ran on that merge, which no build here has.
+  those files, and its checks ran on that merge, which no build here has. It
+  landed on `0f72079`, as `b068d55`, with its diff unchanged; its runs were
+  not repeated there.
   94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.
