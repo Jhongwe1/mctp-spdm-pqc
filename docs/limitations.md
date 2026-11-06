@@ -261,18 +261,24 @@ work:
   change, which was made, and the second asked a question, answered with
   measurements and two ways forward. On 2026-11-02 he chose the first, and
   asked for four cases to be validated on both sides; a fourth version, for
-  the requester's certificate too, was sent on 2026-11-03. #551,
+  the requester's certificate too, was sent on 2026-11-03, and he approved it
+  on 2026-11-06; it is not yet merged. Of his two comments the day before, one
+  asked for an issue and a fix, sent to libspdm as #4299 and #4300 on
+  2026-11-07, and the other was answered with measurements. #551,
   candidate ③, sent on 2026-10-26 after the question it had been held for
   since 2026-10-12 was answered by measurement rather than asked, was merged
   the same day without a review. libspdm #4268, candidate 16, sent on
   2026-11-02, was merged on 2026-11-03 by `jyao1`, without a review.
-- **Not done. Thirteen of the twenty-seven candidates were not sent as changes.**
-  Fourteen went as changes, two of them first as questions: candidate 4 as issue
+- **Not done. Twelve of the twenty-seven candidates were not sent as changes.**
+  Fifteen went as changes, three of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
-  sent as #537; and candidate 3 as issue #547 on 2026-10-19, after someone
+  sent as #537; candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
-  in place; its maintainer invited the change, sent as #550 on 2026-10-20. Of
-  the thirteen, one was withdrawn as never true, one had been fixed upstream before
+  in place; its maintainer invited the change, sent as #550 on 2026-10-20; and
+  candidate 27, asked in #550's reply on 2026-11-03, which its maintainer
+  called a bug and asked to have filed and fixed, sent to libspdm as issue
+  #4299 and #4300 on 2026-11-07. Of
+  the twelve, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
   #550 and is now part of its fourth version, sent on 2026-11-03, one,
@@ -280,11 +286,10 @@ work:
   to #550's maintainer, was asked as issue #552, one, candidate 24, was
   found on 2026-11-02 while measuring candidate 16's cause, and has had its
   own cause read, one, candidate 25, was found the same day while running
-  spdm-emu's own command for 16, and two, candidates 26 and 27, were found on
-  2026-11-03 while validating #550's fourth version, the second of them a
-  question in its reply. Candidate 16's cause was found on 2026-11-02, and
+  spdm-emu's own command for 16, and one, candidate 26, was found on
+  2026-11-03 while validating #550's fourth version. Candidate 16's cause was found on 2026-11-02, and
   its change prepared, measured and sent the same day, as libspdm #4268, the
-  first to libspdm, which merged it on 2026-11-03. One of the fourteen, candidate 21, had been asked about upstream
+  first to libspdm, which merged it on 2026-11-03. One of the fifteen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is
@@ -314,7 +319,10 @@ work:
   run; libspdm's `main` moved to `0df82c8` before it was sent, in none of
   those files, and its checks ran on that merge, which no build here has. It
   landed on `0f72079`, as `b068d55`, with its diff unchanged; its runs were
-  not repeated there.
+  not repeated there. libspdm #4300 was tested in `spdm-emu` `9cc8b46` too,
+  whose libspdm, `6cb52f2`, has the same two files and sample keys as
+  `c2b2573`, the commit it is written on and where libspdm's own build and
+  unit tests were run; `main` had not moved when it was sent.
   94773
   patchset 3 is against `openbmc/spdm` `32e9f8b`; upstream moves, and the gap
   it addresses may be closed by someone else first.

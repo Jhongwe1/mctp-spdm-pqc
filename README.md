@@ -51,7 +51,11 @@ that supports certificates stops when slot 0 has no chain, and his question
 about the sample's key pairs was answered with measurements and two ways to
 resolve it; on 11-02 he chose the first, and asked for slots 1 and 4 to be
 validated in all four combinations on both sides, and a fourth version, for
-the requester's certificate too, was sent on 11-03; and
+the requester's certificate too, was sent on 11-03 and approved by him on
+11-06; [libspdm #4300](https://github.com/DMTF/libspdm/pull/4300), which
+gives the requester sample's slot 1 the chain made for it, where it read
+slot 0's, sent on 11-07 at his request with issue
+[#4299](https://github.com/DMTF/libspdm/issues/4299); and
 [`openbmc/spdm` 94773](https://gerrit.openbmc.org/c/openbmc/spdm/+/94773). A
 third question, issue [#552](https://github.com/DMTF/spdm-emu/issues/552),
 found while measuring that answer, asks how the requester sample should
@@ -285,7 +289,7 @@ signature; the host's own is 3.0.13 and has no ML-DSA.
 | the RATS pipeline: reference values, policy, verdict (`rats/`) | the responder validator and the fuzz targets |
 | the negative suite: three advisory classes, 21 deliberately wrong implementations | `libspdm`, `spdm-emu` and `spdm-dump` themselves |
 | the CI that goes red when a tampered measurement is accepted | |
-| fourteen upstream changes (twelve merged, two in review) and three issues | |
+| fifteen upstream changes (twelve merged, three in review) and four issues | |
 
 The accurate verbs are "I measured it" and "I connected it up". I did not
 implement SPDM, and I did not add post-quantum support.
@@ -512,7 +516,7 @@ is in [`docs/progress.md`](docs/progress.md).
 | G4 | post-quantum cost quantification | **complete** — Table 2 and Figures 2 and 3 ([`docs/pqc-cost.md`](docs/pqc-cost.md)) |
 | G5 | real transports (QEMU / AF_MCTP) | **complete** — Table 4 ([`docs/transports.md`](docs/transports.md)) |
 | G6 | conformance and negative testing | **complete** — [`docs/validator-report.md`](docs/validator-report.md), [`docs/negative-tests.md`](docs/negative-tests.md), [`negative/`](negative/) |
-| G7 | upstream contribution | **complete** — twelve changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548, #551, and libspdm [#4268](https://github.com/DMTF/libspdm/pull/4268) on 2026-11-03, the first to libspdm), two in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user, then revised on 2026-10-29 as the maintainer asked, his second question answered with measurements, and on 2026-11-02 his choice made, with four cases to validate on both sides, for which a fourth version was sent on 2026-11-03; and 94773, through three patchsets and a −1 — and three design questions asked as issues: #533 and #547, each answered and turned into a change, #537 at its assignee's request and #550 at the maintainer's invitation, and [#552](https://github.com/DMTF/spdm-emu/issues/552), asked on 2026-10-29 ([`docs/upstream/`](docs/upstream/README.md)) |
+| G7 | upstream contribution | **complete** — twelve changes merged (#524, #534, #526, #527, #536, #537, #542, #545, #546, #548, #551, and libspdm [#4268](https://github.com/DMTF/libspdm/pull/4268) on 2026-11-03, the first to libspdm), three in review — #550, sent on 2026-10-20, revised the same day at the request of #532's reporter and approved that evening by that reporter and a second user, then revised on 2026-10-29 as the maintainer asked, his second question answered with measurements, and on 2026-11-02 his choice made, with four cases to validate on both sides, for which a fourth version was sent on 2026-11-03 and approved by him on 2026-11-06; libspdm [#4300](https://github.com/DMTF/libspdm/pull/4300), sent on 2026-11-07 at his request; and 94773, through three patchsets and a −1 — and four issues: three design questions, #533 and #547, each answered and turned into a change, #537 at its assignee's request and #550 at the maintainer's invitation, and [#552](https://github.com/DMTF/spdm-emu/issues/552), asked on 2026-10-29; and libspdm [#4299](https://github.com/DMTF/libspdm/issues/4299), the defect #4300 fixes, filed on 2026-11-07 as he asked ([`docs/upstream/`](docs/upstream/README.md)) |
 | G8 | delivery and write-up | **in progress** — this README, [`docs/threat-scope.md`](docs/threat-scope.md) and [`docs/limitations.md`](docs/limitations.md) in week 12; in week 13 [`docs/one-pager.svg`](docs/one-pager.svg) and [`harness/demo.sh`](harness/demo.sh), the demo's terminal, which checks what it shows. Its dry run passed on 2026-09-30; the recording has not been made, and will not be linked here. Week 14 remains |
 
 ## How this was built

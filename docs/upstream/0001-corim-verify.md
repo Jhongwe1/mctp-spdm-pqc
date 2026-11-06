@@ -355,6 +355,21 @@ between its sign-off and its push:
    list as this project's other open change.
 ```
 
+**Added 2026-11-07, from #550's reply and libspdm #4300**, the fifteenth
+change:
+
+```
+☐ when a text names a defect and the change that fixes it, say in the
+   main clause which of the two the reader faces. #550's reply of
+   2026-11-03 put "would sign with slot 4's key" in the sentence and the
+   fix, libspdm #4268, in a parenthesis; its maintainer, who had merged
+   #4268 that morning, read a second bug and asked for an issue.
+☐ write a reference to another repository in full, DMTF/libspdm#N, in
+   any text posted where it does not live: a bare "#4268" in a comment
+   on spdm-emu links spdm-emu's #4268. The reply of 2026-11-07 had one,
+   caught on the last read. Then read the links of what was posted.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a
