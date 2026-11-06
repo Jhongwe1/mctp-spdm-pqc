@@ -8199,3 +8199,181 @@ gains the line.
   call before he prints.
 - **26, 27, 24, 25, #552, 13, 94773, the demo, `c-drills`, Day 17's
   `TODO(me)`**: as before.
+
+## 2026-11-07 · Day 31 · a bug filed as asked, and a second one already fixed
+
+#550 was approved by its maintainer on 2026-11-06. The day before he had
+commented twice, on the last two paragraphs of the reply of 2026-11-03, each
+time calling what it described a bug and asking for an issue. The first is
+one: the Requester's slot 1 reads slot 0's file. It went to libspdm as issue
+#4299 and its fix, #4300. The second is the line #4268 changed, and was
+answered with measurements instead. Read at 00:16 here; the issue, the
+sign-off, the push, the pull request and the reply were the author's, between
+02:02 and 02:26. Three findings are worth the five parts.
+
+---
+
+### 1. ★ "Another bug" was the fix the reply had cited, in a parenthesis
+
+**Phenomenon.** The maintainer quoted the reply's sentence that a later
+connection without multi-key "would sign with slot 4's key, because the
+sample library picks it for KeyPairID 0 when slot 4 has no key pair", called
+it another bug, asked *"Why the code pick KeyPairID 0???"*, said libspdm
+should fail when slot 4 is requested without a certificate, and asked for an
+issue. The sentence went on: *(DMTF/libspdm#4268 fixes that in libspdm;
+spdm-emu's libspdm, 6cb52f2, predates it)*. He had merged #4268 that
+morning.
+
+**Hypotheses.**
+1. #4268 does not cover this path: something besides its comparison picks
+   slot 4's key, and the reply was wrong to cite it.
+2. He means a defect in the library, not in the sample: a request naming a
+   slot that has no chain is not refused.
+3. He read the main clause, and the parenthesis did not register: the
+   behaviour is #4268's, and his question has an answer.
+
+**Which first, and why.** 1, because it is the one that would make this
+project's own statement false, and it costs one build: #4268's two files on
+spdm-emu's libspdm, under #550 without its give-back, with strace on the
+Responder to see which key file each connection opens. Then 2: three request
+handlers read, and one request for slot 4 run with and without its chain. 3
+is what is left if both come back clean; it can be answered, not measured.
+
+**Root cause.** Not 1: without #4268 the second connection opens
+`end_responder4.key` and fails in 14 messages; with its two files it opens
+only `end_responder.key`, 46 times, and passes in 2,272. The same requester
+binary in both. Not 2: `GET_CERTIFICATE` for slot 4 without its chain is
+answered `ERROR(InvalidRequest)`, and `CHALLENGE` and `KEY_EXCHANGE` make the
+same check. So 3. The reply put the defect in its main clause and the fix in
+a parenthesis, added an hour after #4268 merged to keep the sentence true at
+#550's base (Day 30, midday), and the one reader who had merged the fix read
+the defect.
+
+**Lesson.** ★ **When a maintainer calls something a bug, measure first the
+hypothesis that would make your own earlier statement wrong; then answer with
+the measurement, and offer the filing rather than refuse it.** And a text that
+names a defect and the change that fixes it says in its main clause which of
+the two the reader faces. `0001` §6 gains that line, and one more: a
+reference to another repository is written in full. Today's reply had a bare
+`#4268`, which on spdm-emu links spdm-emu's #4268; it was caught on the last
+read, and the posted comment's three links all go to libspdm.
+
+---
+
+### 2. ★ The instruments of 2026-11-03 had gone with the session that ran them
+
+**Phenomenon.** Today needed the decoding of 2026-11-03: which sample file
+each slot's digest came from, which slot each request named. The runs of that
+day were all on the lab disk, each with the summary its decoder wrote. The
+decoder, the run harness, `assert4.py` and `edit_r1.py` were not. They had
+lived in that session's scratchpad, and the directory no longer exists.
+
+**Hypotheses.**
+1. Copies are on the lab disk, beside the runs or the binaries.
+2. They can be recovered from what the binaries record of how they were
+   built.
+3. They are gone, and a rebuilt decoder has to be shown to read the old
+   captures the way the old one did before it is trusted with new ones.
+
+**Which first, and why.** 1, one `find`: no copy. 2: each `BUILT_FROM` names
+the blobs that were compiled, not the tools that measured the result. One of
+those ids did let that day's responder without the give-back be rebuilt
+byte-identically, blob `e86ed94`, so its binaries could stand as today's
+control. So 3.
+
+**Root cause.** The evidence was kept with the project and the instruments
+with the session. The summaries were readable; the numbers in them could no
+longer be derived again by the program that derived them.
+
+**Lesson.** ★ **An instrument kept apart from its evidence is lost with the
+session that ran it.** Today's decoder reads captures with
+`bench/pcapstat.py`'s framing and chunk reassembly, and was run first on two
+captures of 2026-11-03 whose summaries survive. Every value both decoders
+print agreed but one: the old summary gives the slots `GET_CERTIFICATE` named
+as `0,4`, the new decoder `0, 4, 0`, and `pcapstat.py`'s own count of that
+message in the capture is three, at packets 9, 11 and 25. The new one also
+lists the encapsulated requests carried in `ENCAPSULATED_RESPONSE_ACK`, which
+the old one did not. Today's decoder, run harness, and build and check
+scripts are kept in `scratch-1107/tools` beside the runs.
+
+---
+
+### 3. The same quoting fault, a third time
+
+**Phenomenon.** The reply to #550, 1,708 bytes, copied to the lab disk,
+arrived as 1,656 bytes with no letter r in it.
+
+**Hypotheses.**
+1. The copy was cut short.
+2. The step that strips carriage returns stripped something else.
+3. The source changed between the copy and the check.
+
+**Which first, and why.** 2, because the command was `tr -d "\r"` typed
+inline, through PowerShell and `wsl -- bash -c`: the shape that ate a
+trailing r on 2026-10-19 and one inside a word on 2026-11-03. Counting the
+letter in both files decides it, and needs nothing else: 52 in the source,
+none in the copy.
+
+**Root cause.** The backslash did not survive two shells, and `tr` was told
+to delete r. The rule that would have prevented it — anything with a quote or
+a backslash goes into a script file — was known and written down, and was not
+followed once, for a command that looked too small to need it.
+
+**Lesson.** ★ **A rule that depends on noticing the exception is broken on
+the occasion that looks too small for it.** What caught it was a byte count
+printed after the copy, not the rule. So every copy is compared with its
+source byte for byte, and what is posted is the source itself: the reply
+posted was never touched. Today's other copies, each made through a script
+file, compared identical.
+
+---
+
+### Smaller things, each checked
+
+- **A W_ENCAP pass is not evidence for the new chain.** With `--req_slot_id
+  1`, the encapsulated `GET_CERTIFICATE` fetches slot 0's chain, and slots 0
+  and 1 share the key, so a pass shows no regression and nothing more.
+  WO_ENCAP was added, where no chain crosses the wire in the session.
+- **`script/format_nix.sh --check` returned 1**, with 136 failures, every one
+  in the local `build/` directory, which a checkout does not have. On a clean
+  export of the tree it returns 0.
+- **Real copies for the runs, not hard links.** The responder writes
+  `slot_id_N_cert_chain.der` into its directory on `SET_CERTIFICATE`; through
+  a hard link that would have rewritten the binary directory the next run
+  starts from. Changed before the first run.
+- **Bit `0x10` of an `ALGORITHMS` response is the Requester's multi-key
+  connection** (`rsp_algorithms.c` 803 at `6cb52f2`). `bench/pcapstat.py`
+  prints it as `MULTI_KEY_CONN`, the bit's name; a connection whose Responder
+  side is not multi-key carries it, as today's second connections do.
+- **Two sentences corrected before they were sent.** "In every algorithm
+  directory": four of the 28 `sample_key` directories have no
+  `bundle_requester.certchain1.der`, so it reads "each of the 24 directories
+  these readers use". "Once no key pair has slot 4": the other algorithms'
+  key pairs keep it, so it reads "no key pair of that algorithm".
+- **The read-back script said DIFFERS for an identical title.** It read its
+  expected file twice through a process substitution, and the second read
+  was empty. Fixed and read again: identical.
+- **Day 30's open item, "not measured with `b068d55`; measured if asked"**,
+  was in effect asked, and is measured: #4268's two files alone make the
+  second connection pass without the give-back.
+
+### Decisions
+
+- **The author's**: the issue, the sign-off, the push, the pull request and
+  the reply; and the second comment left to me.
+- **Mine**: answer the second comment rather than file it, and offer to;
+  give slot 1 a branch of its own rather than reshape the Requester's reader
+  like the Responder's, which would also move slots 2, 3 and 5 to 7; write the
+  change on libspdm `main`, and test it on spdm-emu's libspdm, which has the
+  same two files.
+
+### Not done, and the reason for each
+
+- **#550's merge and #4300's review**: the maintainers'.
+- **spdm-emu after #4300**: when its libspdm moves past it, its Requester's
+  slot 1 changes there too. Nothing in spdm-emu's CI passes `--req_slot_id`.
+- **`pcapstat.py`'s name for bit `0x10`**: its group names are the ones
+  `harness/fields.py` uses, so that `--check` can compare the two; a rename is
+  a change to both, not for today.
+- **26, #552, 13, 24, 25, 94773, the demo, `c-drills`, Day 17's `TODO(me)`**:
+  as before.
