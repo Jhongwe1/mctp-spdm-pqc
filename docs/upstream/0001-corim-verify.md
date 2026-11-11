@@ -386,6 +386,22 @@ change:
    real difference was a probe left in place on 2026-11-03.
 ```
 
+**Added 2026-11-11, from libspdm #4313 and #553**, the sixteenth and
+seventeenth changes; the first from a correction made within the hour by the
+author of the commit #4313's `Fixes:` had named:
+
+```
+☐ take a Fixes: line from the history of the function the change
+   touches: the commit that removed what the change puts back, by
+   `git log -L` over the function and `git log -S` on the line. #4313
+   named 0f0e189, where the two sibling functions changed and where the
+   comparison had begun; 13db5117 had removed the line seven weeks
+   earlier, and both commands list it.
+☐ when a change's own CI is meant to go red, watch it with the expected
+   failures named, workflow, job and step, so that only another one
+   stops the watch, and an expected one that stays green is reported.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a

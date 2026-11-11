@@ -116,6 +116,9 @@ needs a date attached to it.
 | ★★ libspdm #4300 **MERGED** | **done** | 2026-11-09, 07:04 UTC | by **Jiewen Yao** (`jyao1`), as **`306502a`** on `ee4199f`, after `steven-bellock`'s approval of 2026-11-06 without a comment, and with no review of his own: its diff and its message byte-identical to `420fbce`'s, the author's. #4299 closed by it, as completed, two seconds later. Both pull requests this project has sent to libspdm are merged. [§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11) |
 | `openbmc/spdm` 94773, and #552 | **no movement** | checked 2026-11-11 | 94773 unchanged since 2026-09-23 17:10 UTC: patchset 3, `Verified+1`, no Code-Review vote, three threads unresolved. #552 without a comment, label or assignee since it was opened on 2026-10-29 |
 | ★ Candidates 25 and 28 **prepared** | **prepared** | 2026-11-11 | 25, in spdm-emu: the requester exits 0 after any failure past its `GET_ENDPOINT_INFO` step, where #290, for #265, had made every failure exit 1, and `8e33385` broke it; `spdm_requester_emu.c` +4 −5, tested on six builds against every Linux command line in `.github/workflows`. 28, in libspdm, found in spdm-emu's own CI log while confirming what 25 hides: a requester built with `RECORD_TRANSCRIPT_DATA_SUPPORT` signs `FINISH` over its own slot's responder chain, so its session on slot 4 fails, in each of the 109 CI runs that got that far since 2026-08-17, and the step passes; +1 line, measured by intervention. With 25 alone that step fails in four jobs, so the two are prepared to go together, 28 first. Both unsigned; the issue, the sign-offs, the pushes and the pull requests are the author's. [§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11) |
+| ★ Candidate 28 **FILED and SENT** | **done** | 2026-11-11, 17:10 and 17:22 UTC | issue [`DMTF/libspdm` #4312](https://github.com/DMTF/libspdm/issues/4312) and its fix, [#4313](https://github.com/DMTF/libspdm/pull/4313), *Use the session's peer slot for the FINISH signature*: **`d65fe0e`** on `839bc24`, +1 −0, signed by the author, tree `53cdef6`, the bytes tested. Titles and bodies byte-identical to the reviewed files; reviewers by `CODEOWNERS`. **56 of 56** check runs success, the last at 17:38:37 UTC. [§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11) |
+| ★★ libspdm #4313 **APPROVED**, and its `Fixes:` corrected | **approved** | 2026-11-11, 17:35 and 17:52 UTC | by **`steven-bellock`**, without a comment, two minutes after he said on #4312 that the defect was introduced by `13db5117`, not by his #3435, which the commit's `Fixes:` had named. Read and confirmed: `13db5117` removed the line #4313 puts back. Re-signed by the author with that line alone changed, **`6495195`**, the same tree, and pushed over `d65fe0e` with a lease; the approval stayed, and the CI ran again, 56 of 56, the last at 18:07:22 UTC. The author's reply on #4312, byte-identical to the reviewed file, at 17:58 UTC. Waiting on `jyao1`. [§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11) |
+| ★ Candidate 25 **SENT** | **done** | 2026-11-11, 18:10 UTC | [`DMTF/spdm-emu` #553](https://github.com/DMTF/spdm-emu/pull/553), *spdm_requester_emu: exit 1 on errors after EP_INFO*: **`ab7ed0a`** on `0e9d60c`, +4 −5, signed by the author, tree `89da40a`, the bytes tested. Title and body byte-identical to the reviewed files; reviewers by `CODEOWNERS`. Its description cites libspdm #4312 and #4313 in full, and both show the reference. CI as the description said: **41 of 45** check runs success, and the four that failed are the four jobs that run `Test_RECORD_TRANSCRIPT_DATA_consistent`, each at that step, the last at 18:33:54 UTC. [§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11) |
 
 > **Not a deliverable of this project.** A change to `openbmc/docs` was
 > submitted on 2026-08-11 under the other project. It appears nowhere in this
@@ -126,10 +129,10 @@ needs a date attached to it.
 
 ## Candidates, and my judgement on each
 
-Twenty-eight candidates have been recorded. Fifteen went as changes — #524,
+Twenty-eight candidates have been recorded. Seventeen went as changes — #524,
 #534, #526, #527, #536, #537, #542, #545, #546, #548, #551 and #550, and
-libspdm #4268 and #4300, are merged, and 94773 is in review — and
-three of the fifteen went first as questions:
+libspdm #4268 and #4300, are merged, and 94773, libspdm #4313 and #553 are in
+review — and three of the seventeen went first as questions:
 candidate 4 as issue #533, whose assignee then asked this project for the
 change, candidate 3 as issue #547, where the maintainer invited it, and
 candidate 27 in #550's reply, which the maintainer called a bug and asked to
@@ -153,7 +156,7 @@ re-read at `8f36665` ([§](#four-of-four-merged-and-the-rest-re-read--2026-10-12
 Rows 4 and 8–11 changed, and row 21 was added, on 2026-10-13 ([§](#candidate-4s-change-sent-as-537--2026-10-13)).
 Rows 2–4, 8–11, 15, 16, 20 and 21 changed on 2026-10-15, when every unsent row
 was re-read at `8674afe` ([§](#537-rebased-onto-main-and-the-corim-names-sent-as-542--2026-10-15)).
-Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured, prepared and sent as #551 ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)). Rows 3, 8–11 and 22 changed, and row 23 was added, on 2026-10-29, when #551's merge and `jyao1`'s comment on #550, in two parts, were read, #550 was changed for the first and answered on the second, and 23 was asked as #552 ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)). Row 16 changed, and row 24 was added, on 2026-11-02, when 16 was re-run at `9cc8b46` and its cause found ([§](#candidate-16s-cause-found--2026-11-02)). Rows 16 and 24 changed again, and row 25 was added, that afternoon, when 16's change was prepared and measured ([§](#candidate-16s-change-prepared--2026-11-02)), and row 16 once more when it was sent as libspdm #4268 ([§](#candidate-16s-change-sent-as-libspdm-4268--2026-11-02)). Rows 3 and 22 changed on 2026-11-03, when #550's fourth version was prepared ([§](#550-answered-and-changed-on-both-sides--2026-11-03)), and rows 3, 16 and 22 again that day, when libspdm #4268 merged and the fourth version was sent ([§](#libspdm-4268-merged-and-550s-fourth-version-sent--2026-11-03)). Rows 3 and 27 changed on 2026-11-07, when #550 was approved and 27 was sent to libspdm ([§](#550-approved-and-the-requesters-slot-1-sent-to-libspdm--2026-11-07)). Rows 3, 22, 25 and 27 changed on 2026-11-11, when #550 and libspdm #4300 were read as merged and 25 was prepared ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)).*
+Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-unsent-row-at-376869f)), and 15 and 21 again that evening, when they were sent as #546 and #545 ([§](#sent--2026-10-17-1309-utc)). Rows 2, 3, 15 and 21 changed on 2026-10-19, when #545 and #546 merged, 2 was sent as #548 and 3 asked as #547 ([§](#545-and-546-merged-2-sent-and-3-asked--2026-10-19)). Rows 2 and 3 changed, and row 22 was added, on 2026-10-20, when #548 merged and 3 was sent as #550 ([§](#548-merged-and-3s-change-sent-as-550--2026-10-20)), and row 3 again that evening, when #550 was reviewed and changed ([§](#550-reviewed-and-changed--2026-10-20)). Rows 3 and 8–11 changed on 2026-10-26, when #550's two approvals were read and ③ was measured, prepared and sent as #551 ([§](#550-approved-twice-and-the-corim-round-trip-prepared--2026-10-26)). Rows 3, 8–11 and 22 changed, and row 23 was added, on 2026-10-29, when #551's merge and `jyao1`'s comment on #550, in two parts, were read, #550 was changed for the first and answered on the second, and 23 was asked as #552 ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)). Row 16 changed, and row 24 was added, on 2026-11-02, when 16 was re-run at `9cc8b46` and its cause found ([§](#candidate-16s-cause-found--2026-11-02)). Rows 16 and 24 changed again, and row 25 was added, that afternoon, when 16's change was prepared and measured ([§](#candidate-16s-change-prepared--2026-11-02)), and row 16 once more when it was sent as libspdm #4268 ([§](#candidate-16s-change-sent-as-libspdm-4268--2026-11-02)). Rows 3 and 22 changed on 2026-11-03, when #550's fourth version was prepared ([§](#550-answered-and-changed-on-both-sides--2026-11-03)), and rows 3, 16 and 22 again that day, when libspdm #4268 merged and the fourth version was sent ([§](#libspdm-4268-merged-and-550s-fourth-version-sent--2026-11-03)). Rows 3 and 27 changed on 2026-11-07, when #550 was approved and 27 was sent to libspdm ([§](#550-approved-and-the-requesters-slot-1-sent-to-libspdm--2026-11-07)). Rows 3, 22, 25 and 27 changed, and row 28 was added, on 2026-11-11, when #550 and libspdm #4300 were read as merged and 25 and 28 were prepared ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)), and rows 25 and 28 again that evening, when 28 was sent as libspdm #4313 and 25 as #553 ([§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11)).*
 
 | # | where | the candidate | evidence | judgement |
 |:-:|---|---|---|---|
@@ -178,10 +181,10 @@ Rows 2, 3, 8–11, 15 and 21 changed on 2026-10-17, at `376869f` ([§](#every-un
 | 22 | `DMTF/spdm-emu` | `spdm_requester_emu` built for a TPM responder with one slot cannot start | `DEVICE=tpm` with `LIBSPDM_TPM_RESPONDER_SLOT_IDS=0`, at `f7fa183`: *"unsupported slot_id 1 (supported mask: 0x1)"*, then *"read_responder_root_public_certificate fail!"*, and exit 1 after six messages. Once the algorithms are negotiated, the requester reads the responder's roots for slots 0 and 1 (`spdm_requester_spdm.c` 600–663) and stops if either read fails | **merged**, in #550: sent on 2026-11-03 in its fourth version's second commit, and merged on 2026-11-09 as `0e9d60c` ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)). Until then recorded, not sent: found on 2026-10-20 while testing #550, whose one-slot TPM runs had to use the requester of the default TPM build. Candidate 3's assumption, from the requester's side. After #550 has an answer ([§](#candidate-22-found-while-testing-it)). *2026-10-29: still reproduces at `9cc8b46`. Held for `jyao1`'s choice on #550: with the first of the two ways its reply offers, a responder with one TPM slot is a consistent configuration, and this is how its requester then fails; with the second, that responder stops by itself ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)). 2026-11-02: he chose the first, so on 2026-11-03 the change went into #550's fourth version, prepared, in which the requester needs only slot 0's root; measured with the requester built for one responder slot, as above, which then completes ([§](#550-answered-and-changed-on-both-sides--2026-11-03)). Sent in it the same day, signed by the author ([§](#libspdm-4268-merged-and-550s-fourth-version-sent--2026-11-03))* |
 | 23 | `DMTF/spdm-emu` | with RSA-2048, the requester's `SET_KEY_PAIR_INFO` step erases the key pair the connection uses | at `9cc8b46`, unmodified binaries, `--asym RSASSA_2048` given to both programs, nothing removed: no session opens — `KEY_EXCHANGE` gets `ERROR(InvalidRequest)` — in 570 messages, and the requester prints `ERROR: libspdm_start_session - 8001000a` and exits 0; with the step left out of `--exe_conn` and `--exe_session`, 2,256 messages, the sequence of `RSASSA_3072` with the same options. `do_set_key_pair_info_via_spdm()` (`spdm_requester_key_pair_info.c` 86–111, `d667dbe`, 2024) always sets KeyPairID 1's association to none and then erases it, and KeyPairID 1 is the sample library's RSA-2048 primary key pair, which backs slots 0 and 1 | **asked**: issue [#552](https://github.com/DMTF/spdm-emu/issues/552) on 2026-10-29, as a question, since the flow could pick a key pair the connection does not use in more than one way. Found that day in #550's runs for `jyao1`'s second comment, twelve of which used RSA-2048 so that KeyPairID 1, the one the requester asks about, would be the key pair in use: none of the twelve opened a session, and #550's reply says so ([§](#551-merged-550-changed-for-its-maintainer-and-23-asked-as-552--2026-10-29)) |
 | 24 | `libspdm` | six of the twelve SLH-DSA parameter sets the sample ships never get past `GET_DIGESTS` | at `9cc8b46`, `--pqc_asym` `SLH_DSA_SHA2_192F`, `SHA2_256S`, `SHA2_256F` or their SHAKE twins, with `DIGEST,CERT,CHAL`: after eight messages `GET_DIGESTS` gets a four-byte `ERROR`, the requester prints `ERROR: do_authentication_via_spdm - 8001000a`, and the responder prints nothing but its arguments and its shutdown. Their slot-0 chains hold 90,634 to 150,832 bytes of certificates (SHA2 and SHAKE measured); the largest that works, SHAKE-128f's, holds 52,432 | **cause read, not sent**: found on 2026-11-02 while sweeping candidate 16 across every parameter set ([§](#candidate-16s-cause-found--2026-11-02)). *That afternoon its cause was read: the sample's chain readers call `libspdm_verify_cert_chain_data()` (`read_pub_cert_pqc.c` 524, 1118, 1268 and 1471), which first refuses chain data longer than `0xFFFF - (4 + LIBSPDM_MAX_HASH_SIZE)` bytes (`libspdm_crypt_cert.c` 1891–1897), 65,467 with SHA-512 built in. Given one of these chains as its own, the requester prints `read_requester_public_certificate_chain fail!`; the responder prints nothing. libspdm's own `GET_CERTIFICATE` handler takes a longer chain when SPDM 1.4's large certificate chain is in use (`libspdm_rsp_certificate.c` 149). Read, not instrumented; whether the sample should accept these is libspdm's question, after 16 ([§](#candidate-16s-change-prepared--2026-11-02))* |
-| 25 | `DMTF/spdm-emu` | `spdm_requester_emu` exits 0 after any failure that follows its `GET_ENDPOINT_INFO` step | at `9cc8b46` with candidate 16's change, the default flow with `--pqc_asym SLH_DSA_SHA2_128S`, and `--pqc_first TRUE` on the responder: the second session, on slot 4, fails (`ERROR: libspdm_start_session - 80020001`) and the requester exits 0; the same run with `EP_INFO` left out of the default `--exe_conn` exits 1. Line 204 stores the result of the platform call for the encapsulated `GET_ENDPOINT_INFO` in `result`, which line 147 set to false and `main` returns negated, so every later `goto done` exits 0. From `8e33385`, 2025-06-06 | **prepared**: found on 2026-11-02 while running spdm-emu's own PQC command for candidate 16 ([§](#candidate-16s-change-prepared--2026-11-02)). The default flow runs that step from SPDM 1.3 on, so a failure after it does not reach the exit status upstream's workflows see. One line; after 16 and #550. *2026-11-11: both merged. Unchanged at `0e9d60c`, and not a design question: #290, for #265, made the requester exit 1 when its flow fails, and changed the `SHUTDOWN` call at `done:` so that it could not overwrite `result`; `8e33385` put that shape back. Prepared as `6726982` on `0e9d60c`, the call tested directly, +4 −5; on `main` #552's failure and a key mismatch on slot 4 each exit 0, and with the change 1, with the same messages ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11))* |
+| 25 | `DMTF/spdm-emu` | `spdm_requester_emu` exits 0 after any failure that follows its `GET_ENDPOINT_INFO` step | at `9cc8b46` with candidate 16's change, the default flow with `--pqc_asym SLH_DSA_SHA2_128S`, and `--pqc_first TRUE` on the responder: the second session, on slot 4, fails (`ERROR: libspdm_start_session - 80020001`) and the requester exits 0; the same run with `EP_INFO` left out of the default `--exe_conn` exits 1. Line 204 stores the result of the platform call for the encapsulated `GET_ENDPOINT_INFO` in `result`, which line 147 set to false and `main` returns negated, so every later `goto done` exits 0. From `8e33385`, 2025-06-06 | **sent** as [#553](https://github.com/DMTF/spdm-emu/pull/553) on 2026-11-11, with libspdm #4312 and #4313 named for the four jobs it turns red ([§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11)). Found on 2026-11-02 while running spdm-emu's own PQC command for candidate 16 ([§](#candidate-16s-change-prepared--2026-11-02)). The default flow runs that step from SPDM 1.3 on, so a failure after it does not reach the exit status upstream's workflows see. One line; after 16 and #550. *2026-11-11: both merged. Unchanged at `0e9d60c`, and not a design question: #290, for #265, made the requester exit 1 when its flow fails, and changed the `SHUTDOWN` call at `done:` so that it could not overwrite `result`; `8e33385` put that shape back. Prepared as `6726982` on `0e9d60c`, the call tested directly, +4 −5; on `main` #552's failure and a key mismatch on slot 4 each exit 0, and with the change 1, with the same messages ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11))* |
 | 26 | `DMTF/spdm-emu` | on one responder, a `--ver 1.2` connection after an SPDM 1.4 multi-key one fails its second session | at `9cc8b46`, unmodified binaries, nothing removed: the first requester with `--exe_mode CONTINUE` and the default flow, the second with `--ver 1.2`, on the same responder process: the second's `CHALLENGE` and first session complete, then `libspdm_start_session - 80020001` (`LIBSPDM_STATUS_VERIF_FAIL`). Two `--ver 1.2` connections in turn both complete. The same with #550's fourth version | **recorded, not sent**: found on 2026-11-03 as the control for #550's give-back, which is therefore shown with a second connection at 1.4 without multi-key instead ([§](#550-answered-and-changed-on-both-sides--2026-11-03)). Cause not read |
 | 27 | `DMTF/libspdm` | the sample library reads the Requester's slot 1 from slot 0's file | `libspdm_read_requester_public_certificate_chain_per_slot()` and its PQC twin, in `read_pub_cert.c` and `read_pub_cert_pqc.c` at `6cb52f2`, and still at libspdm `main` `c2b2573`, give slot 4 `bundle_requester.certchain4.der` and every other slot `bundle_requester.certchain.der`; `bundle_requester.certchain1.der` is generated and read by nothing, while the Responder's readers give slot 1 `bundle_responder.certchain1.der` | **merged**: sent as libspdm issue [#4299](https://github.com/DMTF/libspdm/issues/4299) and its fix, [#4300](https://github.com/DMTF/libspdm/pull/4300), on 2026-11-07, after #550's maintainer, asked in the reply, called it a bug and asked for both ([§](#550-approved-and-the-requesters-slot-1-sent-to-libspdm--2026-11-07)); merged on 2026-11-09 as `306502a`, byte-identical, and #4299 closed by it ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)). Found on 2026-11-03 when removing that file changed nothing; #550's runs for the Requester's slot 1 used a local change that reads it ([§](#550-answered-and-changed-on-both-sides--2026-11-03)) |
-| 28 | `DMTF/libspdm` | with `RECORD_TRANSCRIPT_DATA_SUPPORT`, the Requester signs `FINISH` over a transcript that holds its own slot's Responder chain | in spdm-emu `0e9d60c`, the Requester built with `LIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1`, the default flow: the second `KEY_EXCHANGE` session, on slot 4 with mutual authentication and `ReqSlotIDParam` 0, has its `FINISH` answered `ERROR(DecryptError)`, `0x8001000f`, against a Responder built either way; slot 0's session passes, and slot 4's passes without mutual authentication. `libspdm_generate_finish_req_signature()` looks the chain up with its `slot_id` parameter, which is `req_slot_id_param`; the two HMAC functions in `libspdm_req_finish.c` use `session_info->peer_used_cert_chain_slot_id`, since libspdm #3435 (`0f0e189`, 2025-12-19). The file is one blob at `6cb52f2` and at `main` `839bc24`. With that one line added, as they have it, every case passes | **prepared**: found on 2026-11-11 in spdm-emu's own CI log, while confirming what candidate 25 hides. The `Test_RECORD_TRANSCRIPT_DATA_consistent` step's second run, a Requester built with the option against a Responder built without it, prints the error in each of the 109 runs of the four jobs that have it that got that far, from 2026-08-17, the oldest log GitHub still serves, and passes because of 25 ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)) |
+| 28 | `DMTF/libspdm` | with `RECORD_TRANSCRIPT_DATA_SUPPORT`, the Requester signs `FINISH` over a transcript that holds its own slot's Responder chain | in spdm-emu `0e9d60c`, the Requester built with `LIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1`, the default flow: the second `KEY_EXCHANGE` session, on slot 4 with mutual authentication and `ReqSlotIDParam` 0, has its `FINISH` answered `ERROR(DecryptError)`, `0x8001000f`, against a Responder built either way; slot 0's session passes, and slot 4's passes without mutual authentication. `libspdm_generate_finish_req_signature()` looks the chain up with its `slot_id` parameter, which is `req_slot_id_param`, the Requester's slot, since `13db5117` (2025-10-29) removed the line that had set it to the Responder's; the two HMAC functions in `libspdm_req_finish.c` use `session_info->peer_used_cert_chain_slot_id`, since libspdm #3435 (`0f0e189`, 2025-12-19). The file is one blob at `6cb52f2` and at `main` `839bc24`. With that one line added, as they have it, every case passes | **approved**: sent as libspdm issue [#4312](https://github.com/DMTF/libspdm/issues/4312) and its fix, [#4313](https://github.com/DMTF/libspdm/pull/4313), on 2026-11-11, and approved by `steven-bellock` within the hour; the commit's `Fixes:` changed from `0f0e189` to `13db5117` at his comment ([§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11)). Found on 2026-11-11 in spdm-emu's own CI log, while confirming what candidate 25 hides. The `Test_RECORD_TRANSCRIPT_DATA_consistent` step's second run, a Requester built with the option against a Responder built without it, prints the error in each of the 109 runs of the four jobs that have it that got that far, from 2026-08-17, the oldest log GitHub still serves, and passes because of 25 ([§](#550-and-libspdm-4300-merged-and-candidates-25-and-28-prepared--2026-11-11)) |
 
 **How the two were chosen**, in the order the criteria were applied: can a
 reviewer verify it from the change alone; would the next person to hit it be
@@ -3942,7 +3945,11 @@ libspdm [#3435](https://github.com/DMTF/libspdm/pull/3435) (`0f0e189`,
 2025-12-19), for [#3434](https://github.com/DMTF/libspdm/issues/3434), *"For
 `KEX_EXCHANGE`, `peer_used_cert_chain_slot_id` needs to be preserved across
 multiple messages within a session"*; this function's lookup gained a slot
-argument there, from its parameter. Without the option the requester signs the
+argument there, from its parameter, which `13db5117` had made the requester's
+slot seven weeks before, when it removed the line that set it to the
+responder's: the commit the fix answers, as `steven-bellock` pointed out once
+it was sent ([§](#28-and-25-sent-and-28s-fixes-corrected--2026-11-11)).
+Without the option the requester signs the
 running transcript hash, so only that build is affected, and only when the
 session's responder slot differs from the requester's own. The file is the
 same blob at `6cb52f2` and at libspdm `main`, `839bc24`.
@@ -4003,6 +4010,104 @@ option with *finish*, *slot* and *mutual*, and `8001000f`: nothing.
   chain readers should take the chains of the six larger SLH-DSA sets.
 - 26: its cause, read before anything is sent. 13, 18, 20 and 94773: as
   before.
+
+## 28 and 25 sent, and 28's `Fixes:` corrected — 2026-11-11
+
+From 17:10 UTC, the same evening. Each step was the author's keystroke or
+word; each text was read back after it was posted and compared byte for byte
+with the reviewed file; each push came after a read of upstream made minutes
+before it.
+
+### Sent
+
+| UTC | |
+|---|---|
+| 17:10:31 | libspdm issue [#4312](https://github.com/DMTF/libspdm/issues/4312): title and body, 2,645 bytes, byte-identical |
+| 17:19 | 28, signed by the author as `d65fe0e` (tree `53cdef6`, parent `839bc24`), pushed to a new branch of his fork, after a read at 17:19:14: no comment on #4312, nothing else opened in libspdm since 17:10, `main` `839bc24`, `libspdm_req_finish.c` blob `fab65a3`, no branch of that name |
+| 17:22:33 | libspdm [#4313](https://github.com/DMTF/libspdm/pull/4313): title and body, 1,611 bytes, byte-identical; one commit, one file, +1 −0; `steven-bellock` and `jyao1` requested by `CODEOWNERS` |
+| 17:33:06 | `steven-bellock` on #4312: the defect was introduced by `13db5117` (below) |
+| 17:35:07 | `steven-bellock` approves #4313, without a comment |
+| 17:38:37 | #4313's last check run completes: 56 of 56 success, CIFuzz among them |
+| 17:52:40 | 28, re-signed by the author as `6495195` with its `Fixes:` line alone changed, the same tree, replaces `d65fe0e` with a lease, after a read at 17:51:59: #4313 open, its head `d65fe0e`; `main` moved to `9741bd5` at 17:33:59, dependabot's #4311, two workflow files, and `libspdm_req_finish.c` the same blob. The approval stays, now on `6495195` |
+| 17:58:20 | the author's reply on #4312, 218 bytes, byte-identical |
+| 18:07:22 | `6495195`'s last check run: 56 of 56 success |
+| 18:09 | 25, signed by the author as `ab7ed0a` (tree `89da40a`, parent `0e9d60c`), pushed to a new branch of his fork, after a read at 18:08:54: spdm-emu `main` `0e9d60c`, `spdm_requester_emu.c` blob `706d361`, nothing opened since 17:58, no branch of that name |
+| 18:10:36 | [#553](https://github.com/DMTF/spdm-emu/pull/553): title and body, 3,187 bytes, byte-identical; one commit, one file, +4 −5; `steven-bellock` and `jyao1` requested. It names libspdm #4312 and #4313 in full, and each shows the reference |
+| 18:33:54 | #553's last check run: 41 of 45 success. The four that failed are `gcc_mbedtls_build` and `gcc_openssl_build` of *Version latest with Certificates* and of *FIPS*, each at `Test_RECORD_TRANSCRIPT_DATA_consistent`, as its description says, and no other. In the first two, the step after it, `Emu_PCIDOE_Test`, did not run; its command lines were among 2026-11-11's runs on the same two builds, and exit 0 before and after, with no `ERROR` line and the same 2,546 messages |
+
+The one other open pull request on `spdm_requester_emu.c`, `jyao1`'s #496,
+open since 2026-06-04 and in conflict with `main`, adds declarations and a
+step early in `platform_client_routine()`, and assigns `result` nowhere.
+
+### Where 28 came from
+
+`steven-bellock`'s comment, in full: *"To be clear though, this issue was
+introduced by https://github.com/DMTF/libspdm/commit/13db5117#diff-c12ea915…"*;
+the anchor is the SHA-256 of `library/spdm_requester_lib/libspdm_req_finish.c`.
+The commit had ended `Fixes: 0f0e189e8cd4 ("Add
+peer_used_cert_chain_slot_id to session_info")`, his #3435. Read in the lab's
+libspdm:
+
+- **`13db5117`** (Jiewen Yao, 2025-10-29, *Add key_pair_id param for
+  signing HAL API for multi-key.*) gave
+  `libspdm_generate_finish_req_signature()` a `slot_id` parameter, which
+  `libspdm_send_receive_finish()` sets to `req_slot_id_param`, for the key
+  pair the requester signs with, and removed
+  `slot_id = spdm_context->connection_info.peer_used_cert_chain_slot_id;`,
+  the line that had set it to the responder's slot before the responder's
+  chain is read.
+- **`0f0e189`** (2025-12-19) gave `libspdm_get_peer_cert_chain_buffer()` a
+  slot argument. The two sibling functions pass it
+  `session_info->peer_used_cert_chain_slot_id`, which it added; this one
+  passes `slot_id`, by then the requester's.
+
+Between the two, the wrong slot decided only whether the responder's raw
+public key or its chain went into the transcript; from `0f0e189` on, it also
+chose the chain. The line #4313 adds is the line `13db5117` removed, with
+`0f0e189`'s field: he is right, and `Fixes:` now names `13db5117`. The
+function's own history says so: `git log -L` over it, at `839bc24`, lists four
+commits whose diffs of it touch `slot_id` — `0f0e189`, `16bbbc7`, `13db5117`
+and `5de7be0` — and `git log -S` on the removed line lists three, of which
+`13db5117` took it out of this function. That history was not read on
+2026-11-11: the comparison began at the two siblings, and `0f0e189` is where
+they changed.
+
+The correction changed that line and nothing else (`diff` of the two
+messages: one line each way). libspdm's commit-message check asks only for
+ASCII, and its `main` has `Fixes:` lines of up to 90 characters; this one is
+80. The push script checked, before it pushed, that the two trees are equal,
+that the messages differ in that line alone, and that the fork still had
+`d65fe0e`, which the lease repeats. The author's reply on #4312: *"Thanks,
+that's right: 13db5117 made `slot_id` the Requester's slot and removed the
+line that had set it to the Responder's, before the Responder's chain is read.
+#4313's `Fixes:` now names 13db5117 instead of 0f0e189."*
+
+### What else this found
+
+- **A watcher that knows which red is expected.** 25 turns four jobs red on
+  purpose, so a watcher that stops at the first failure would stop at the
+  expected one. The one written for #553 takes the expected failures as
+  *workflow / job* and failed step, stops at any other, and at the end reports
+  any expected failure that did not happen. It was run before it watched
+  anything: on a commit with a real failure and nothing expected, it named
+  *Version 1.3 with Certificates / gcc_openssl_build*, step *Build*; on
+  `main`, green, with 25's four expected, it reported all four as not having
+  failed.
+- **The signing check printed a wrong label.** `v1111_signed.sh` said
+  *parent = main 0e9d60c* while checking 28 against `839bc24`, which it did
+  compare. It prints the parent it compares now; its self-test still passes,
+  seven of seven.
+- **A message-only force-push kept the approval** on libspdm, measured once:
+  the review reads `APPROVED` on `6495195`.
+
+### What decides what goes next
+
+- #4313: `jyao1`'s merge. #553: its review. Until spdm-emu's libspdm includes
+  #4313, the four `Test_RECORD_TRANSCRIPT_DATA_consistent` jobs stay red on
+  #553, as its description says.
+- Eleven of the twenty-eight are not sent as changes. The next are as before:
+  24, a question to libspdm; 26, whose cause has not been read; and 23, which
+  waits on #552, without an answer since 2026-10-29.
 
 ## Three identity traps, all of which are silent until they are not
 

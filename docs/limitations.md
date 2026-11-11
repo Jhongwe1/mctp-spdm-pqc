@@ -270,8 +270,13 @@ work:
   since 2026-10-12 was answered by measurement rather than asked, was merged
   the same day without a review. libspdm #4268, candidate 16, sent on
   2026-11-02, was merged on 2026-11-03 by `jyao1`, without a review.
-- **Not done. Thirteen of the twenty-eight candidates were not sent as changes.**
-  Fifteen went as changes, three of them first as questions: candidate 4 as issue
+  libspdm #4313, candidate 28, sent on 2026-11-11 and not yet merged, drew the
+  second comment on what a change said: within the hour `steven-bellock` wrote
+  on its issue that the defect came from `13db5117`, not from his #3435, which
+  the commit's `Fixes:` had named, and approved it. He was right; the line was
+  changed and re-signed. #553, candidate 25, was sent the same evening.
+- **Not done. Eleven of the twenty-eight candidates were not sent as changes.**
+  Seventeen went as changes, three of them first as questions: candidate 4 as issue
   #533, answered on 2026-10-12, after which its assignee asked for the change,
   sent as #537; candidate 3 as issue #547 on 2026-10-19, after someone
   else had reported it on 2026-10-02 in an issue closed with the defect still
@@ -279,21 +284,22 @@ work:
   candidate 27, asked in #550's reply on 2026-11-03, which its maintainer
   called a bug and asked to have filed and fixed, sent to libspdm as issue
   #4299 and #4300 on 2026-11-07. Of
-  the thirteen, one was withdrawn as never true, one had been fixed upstream before
+  the eleven, one was withdrawn as never true, one had been fixed upstream before
   this project found it, one had been reported upstream since 2024 and no
   longer reproduces, one, candidate 22, was found on 2026-10-20 while testing
   #550 and went into its fourth version, merged on 2026-11-09, one,
   candidate 23, found on 2026-10-29 while measuring the answer
   to #550's maintainer, was asked as issue #552, one, candidate 24, was
   found on 2026-11-02 while measuring candidate 16's cause, and has had its
-  own cause read, one, candidate 25, was found the same day while running
-  spdm-emu's own command for 16, and had its change prepared on 2026-11-11,
-  once 16 and #550 had merged, one, candidate 26, was found on
-  2026-11-03 while validating #550's fourth version, and one, candidate 28,
-  was found on 2026-11-11 in spdm-emu's own CI log, the failure candidate 25
-  hides, and had its libspdm change prepared the same day. Candidate 16's cause was found on 2026-11-02, and
+  own cause read, and one, candidate 26, was found on
+  2026-11-03 while validating #550's fourth version. Candidate 25, found on
+  2026-11-02 while running spdm-emu's own command for 16, and candidate 28,
+  found on 2026-11-11 in spdm-emu's own CI log, the failure 25 hides, were
+  sent on 2026-11-11: 28 to libspdm as issue #4312 and #4313, approved within
+  the hour, and 25 as #553, which turns four CI jobs red until spdm-emu's
+  libspdm has 28, as its description says. Candidate 16's cause was found on 2026-11-02, and
   its change prepared, measured and sent the same day, as libspdm #4268, the
-  first to libspdm, which merged it on 2026-11-03. One of the fifteen, candidate 21, had been asked about upstream
+  first to libspdm, which merged it on 2026-11-03. One of the seventeen, candidate 21, had been asked about upstream
   in 2025, in #458, an issue closed when its other half was fixed; it and
   candidate 15 were sent as #545 and #546 on 2026-10-17, and candidate 2 as
   #548 on 2026-10-19. Each of the rest is
