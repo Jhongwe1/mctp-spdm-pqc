@@ -8554,3 +8554,107 @@ the real one would have been a build of `0e9d60c` and a probe, labelled
 - **The Windows jobs**: run the same command lines; not runnable here.
 - **26, #552, 13, 24, 94773, the demo, `c-drills`, Day 17's `TODO(me)`**: as
   before.
+
+## 2026-11-12 · Day 33 · two sent, and the commit a `Fixes:` line should have named
+
+A second sitting the same night, from 01:10 here, 17:10 UTC: 28 went to
+libspdm as issue #4312 and pull request #4313, and 25 to spdm-emu as #553.
+Every step was the author's keystroke or word, every text was read back byte
+for byte, and every push followed a read of upstream made minutes before it.
+Eleven minutes after #4313 was opened, the author of the commit its `Fixes:`
+line named said on the issue which commit had introduced the defect, and two
+minutes later he approved the pull request. He was right. One finding is
+worth the five parts.
+
+---
+
+### 1. ★ A `Fixes:` line taken from where the reading began, not from the function's history
+
+**Phenomenon.** #4313's commit ended `Fixes: 0f0e189e8cd4 ("Add
+peer_used_cert_chain_slot_id to session_info")`, libspdm #3435, by
+`steven-bellock`. At 17:33 UTC he wrote on #4312: *"To be clear though, this
+issue was introduced by"* `13db5117`, linking its diff of
+`libspdm_req_finish.c`; the anchor in the link is the SHA-256 of that path.
+
+**Hypotheses.**
+1. He is right, and the commit names the wrong origin.
+2. The two commits share it: one changed what `slot_id` holds, the other used
+   it to choose the chain.
+3. He means another defect in the same lines.
+
+**Which first, and why.** 1 and 2 together: both are answered by the two
+commits' diffs of that one file, which the lab's libspdm already holds, and
+the answer was owed before #4313 merged as it stood. `13db5117` (Jiewen Yao,
+2025-10-29, *"Add key_pair_id param for signing HAL API for multi-key."*)
+gave `libspdm_generate_finish_req_signature()` a `slot_id` parameter, the
+requester's own slot, for the key pair it signs with, and removed
+`slot_id = spdm_context->connection_info.peer_used_cert_chain_slot_id;`, the
+line that had set it to the responder's slot before the responder's chain is
+read. `0f0e189`, seven weeks later, gave the chain lookup a slot argument and
+passed it that `slot_id`. Not 3: the line #4313 adds is the line `13db5117`
+removed, with the session's field that `0f0e189` added.
+
+**Root cause.** 1, with 2 as its mechanism: between the two commits the wrong
+slot decided only whether the responder's raw public key or its chain went
+into the transcript, and from `0f0e189` on it also chose the chain. The fix
+puts back what `13db5117` removed, so `Fixes:` names `13db5117`. On 11-11 the
+line was taken from the commit where the two sibling functions changed,
+because that is where the comparison began; the function's own history was
+not read. Read now: `git log -L` over the function lists four commits whose
+diffs of it touch `slot_id`, `13db5117` among them, and `git log -S` on the
+removed line lists three, of which `13db5117` took it out of this function.
+That line alone was changed; the author re-signed the commit as `6495195`,
+the tree unchanged, and it replaced `d65fe0e` with a lease. The approval
+stayed, and the CI ran again, 56 of 56. His reply on #4312 says so.
+
+**Lesson.** ★ **A `Fixes:` line is a claim about history: take it from the
+history of the function the change touches — the commit that removed what the
+change puts back — and not from the commit where the reading began.**
+`git log -L` and `git log -S` name `13db5117` in seconds; the author of the
+commit named instead did it within the hour, in public. `0001` §6 gains the
+line.
+
+---
+
+### Smaller things, each checked
+
+- **A watcher that knows which red is expected.** #553 turns four jobs red on
+  purpose, so `ci_watch.sh` takes the expected failures as *workflow / job*
+  and failed step, stops at any other, and reports an expected one that stays
+  green. Run before it watched anything: on a commit with a real failure and
+  nothing expected, it named *Version 1.3 with Certificates /
+  gcc_openssl_build*, step *Build*; on `main`, green, with 25's four, it
+  reported all four as not having failed. On #553 it ended with exactly
+  those four: 41 of 45 check runs success, each failure at
+  `Test_RECORD_TRANSCRIPT_DATA_consistent`. In two of them the next step,
+  `Emu_PCIDOE_Test`, did not run; its command lines were in 11-11's runs on
+  the same builds, exit 0 before and after.
+- **The signing check printed a wrong label.** `v1111_signed.sh` said *parent
+  = main 0e9d60c* while checking 28 against `839bc24`, which it did compare.
+  It prints the parent it compares now; its self-test passes seven of seven.
+- **Two things recalled, then read.** #4313's first CI was recalled here as 55
+  check runs; the API says 56, the last at 17:38:37 UTC. And libspdm `main`
+  moved during the review, to `9741bd5`, dependabot's two workflow files; the
+  push script checks the blob of the one file the change touches, which had
+  not moved.
+- **One other open pull request touches `spdm_requester_emu.c`**: `jyao1`'s
+  #496, open since 2026-06-04 and in conflict with `main`. It adds
+  declarations and a step early in `platform_client_routine()`, and assigns
+  `result` nowhere.
+
+### Decisions
+
+- **Mine**: change #4313's `Fixes:` rather than leave it, since it stays in
+  libspdm's history and its approver had said otherwise in public; change that
+  line alone; send 25 without waiting for #4313's second CI run, since its
+  tree had already passed; the wording of the reply, offered.
+- **The author's**: the issue, the three sign-offs, the word for each push,
+  the two pull requests, the reply and whether to post it, and the push of
+  this repository.
+
+### Not done, and the reason for each
+
+- **#4313's merge and #553's review**: the maintainers'. Until spdm-emu's
+  libspdm includes #4313, #553's four jobs stay red, as its description says.
+- **26, #552, 13, 24, 94773, the demo, `c-drills`, Day 17's `TODO(me)`**: as
+  before.
