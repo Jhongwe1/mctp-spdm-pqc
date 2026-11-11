@@ -370,6 +370,22 @@ change:
    caught on the last read. Then read the links of what was posted.
 ```
 
+**Added 2026-11-11, from candidate 25**:
+
+```
+☐ for a change that restores a behaviour, find the change that made the
+   behaviour a rule, and cite it. Candidate 25's line breaks #290, the
+   fix for #265, which had rewritten the same call for the same reason;
+   a search for "exit code" found both. Without them the change reads as
+   an opinion about error handling; with them it is a regression.
+☐ check the source tree a build is made from file by file against the
+   commit, with `git hash-object --no-filters`, from a directory outside
+   any repository: from inside this one, hash-object normalised every
+   CRLF file and reported 25 differences that were not there. And a copy
+   of a tree made for one test keeps what that test changed: the one
+   real difference was a probe left in place on 2026-11-03.
+```
+
 ## 7. Sending it
 
 The branch is prepared and the commit is made. What remains is a fork and a
