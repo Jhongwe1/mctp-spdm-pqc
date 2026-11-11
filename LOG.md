@@ -8377,3 +8377,180 @@ file, compared identical.
   a change to both, not for today.
 - **26, #552, 13, 24, 25, 94773, the demo, `c-drills`, Day 17's `TODO(me)`**:
   as before.
+
+## 2026-11-11 · Day 32 · fourteen of fourteen merged, and the failure an exit status hid
+
+The author asked whether what he had sent had merged, and for the next
+candidate. Read from 11:42 UTC: #550 and libspdm #4300 had merged on
+2026-11-09, each byte for byte as signed, so every pull request this project
+has sent to DMTF, fourteen, is merged; 94773 and #552 had not moved. The next
+candidate was 25, whose two conditions had both been met that day. Confirming
+what 25 hides, in upstream's own CI log, found 28: the failure 25 hides, every
+day since August, in libspdm. Both are prepared; neither is sent. Three
+findings.
+
+---
+
+### 1. ★ The failure a silent exit status hid was in upstream's own CI log, every day
+
+**Phenomenon.** To cite, rather than assume, that a CI step judges the
+requester by its exit status, the log of `0e9d60c`'s run of
+`gcc_mbedtls_build` was read for the step's shell (`bash -e`). Two lines
+further down: `ERROR: libspdm_start_session - 8001000f` and `ERROR:
+do_session_via_spdm - 8001000f`, in a step that passed.
+
+**Hypotheses.**
+1. #550, merged that morning, broke a session: this project's own regression.
+2. Noise: a negative case, or a line from a process whose failure is expected.
+3. A real session failure, hidden by candidate 25.
+
+**Which first, and why.** 1, because it would be the most urgent and it is one
+fetch away: the same job's log at `9cc8b46`, before #550, has the same two
+lines. Not 1. Then the step's own echo lines place them: the second run of
+`Test_RECORD_TRANSCRIPT_DATA_consistent`, a requester built with
+`LIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1` against a responder built without
+it, the case the step exists to check. `8001000f` is
+`LIBSPDM_STATUS_SESSION_MSG_ERROR`, "Decrypt error from peer". So 3. A scan of
+the four jobs that run that step finds it in each of the 109 runs that got that
+far, from 2026-08-17, the oldest log GitHub still serves; one more was
+cancelled before that session.
+
+**Root cause.** Reproduced here, then cut by five runs: the second
+`KEY_EXCHANGE` session, on slot 4 with mutual authentication, has its `FINISH`
+answered `ERROR(DecryptError)`; slot 0's passes. It fails with slot 4's
+session first, with both programs built with the option, and with
+`WO_ENCAP`; it passes with `--mut_auth NO`; strace shows the requester opening
+the same key file as the control. Then read:
+`libspdm_generate_finish_req_signature()` looks up the responder's chain with
+its `slot_id` parameter, which is `req_slot_id_param`, the requester's own
+slot; its two sibling functions use `session_info->peer_used_cert_chain_slot_id`,
+since libspdm #3435 (`0f0e189`, 2025-12-19). One line, as they have it, and the
+four failing runs pass. Candidate 28; libspdm's own unit tests give the same
+results with and without the line, in both configurations.
+
+**Lesson.** ★ **Before sending a change that makes failures count, find what
+it will start counting: run the CI's own command lines with it, and read the
+CI's own logs for lines that should have failed a step.** Without the second,
+25's pull request would have turned four jobs red with no explanation; with it,
+the description says why before anyone asks, and the failure it uncovers is
+already root-caused. The log scan's first version reported no error anywhere:
+it took the step's printed script, which names the same echo, for its output.
+`0e9d60c`, known to have the error, was in its list and said so.
+
+---
+
+### 2. ★ The defect was a rule someone had written down, broken twenty months later
+
+**Phenomenon.** Candidate 25: the requester exits 0 after its session fails,
+whenever the failure comes after the `GET_ENDPOINT_INFO` step. On `0e9d60c`,
+#552's command lines print two `ERROR` lines and exit 0.
+
+**Hypotheses.**
+1. Deliberate: failures after that step are meant to be non-fatal, as the
+   in-session steps of `do_session_via_spdm()` print and carry on.
+2. The exit status was never meant to report the flow's outcome.
+3. Accidental: one statement after the flow starts sets `result` to true.
+
+**Which first, and why.** 1 and 2 before 3, because either would make the
+change a design opinion rather than a fix, and both are settled by history,
+not by a run. A search of the tracker for "exit code" found #265
+(`steven-bellock`, 2023: CI reports success when a test fails) and its fix.
+
+**Root cause.** #290 made `platform_client_routine()` hold `result` false until
+the flow's last step and changed the `SHUTDOWN` call at `done:` from `result =
+communicate_platform_data(...)` to `if (!communicate_platform_data(...))`, for
+exactly this reason. So neither 1 nor 2: 3. `8e33385` (2025-06-06) put the
+removed shape back, for the encapsulated `GET_ENDPOINT_INFO`. Measured, each
+twice: #552's failure and a slot-4 key mismatch exit 0 on `main` and 1 with the
+call tested directly, with the same messages; with `EP_INFO` left out of
+`--exe_conn`, 1 on both, and the captures show `GET_ENDPOINT_INFO` sent once in
+the first and not at all in the second.
+
+**Lesson.** ★ **For a change that restores a behaviour, find the change that
+made the behaviour a rule, and cite it.** It decides defect against design, it
+turns the description from an opinion into a regression, and the earlier fix
+often already has the shape the new one should take: 25's is #290's own.
+`0001` §6 gains the line.
+
+---
+
+### 3. ★ The build's own check stopped it twice: once wrongly, once rightly
+
+**Phenomenon.** Before compiling, today's build script hashes every file of
+`0e9d60c`'s tree, and of libspdm `6cb52f2`'s, in the source tree it is about
+to build. It refused: 15 spdm-emu files and 10 libspdm files differed. After a
+fix, one did.
+
+**Hypotheses.**
+1. The lab's source trees had been changed.
+2. The check computes something other than the blob of the bytes on disk.
+3. The list of expected blobs is wrong.
+
+**Which first, and why.** 2, because the 25 shared one thing 1 would not
+explain: every one contains carriage returns. One file hashed three ways
+decides it.
+
+**Root cause.** `git hash-object` applies the attributes of the repository the
+shell is in, not those of the file's own: the script ran from inside this one,
+whose `.gitattributes` says `eol=lf`, and hashed a normalised copy — `010c806`
+for a README whose blob is `ed55ed7`, which `--no-filters`, or the same command
+from `/tmp`, gives. With `--no-filters`, from `/`, the tree matched in full.
+The one difference left was real: the copy of the tree built for #550's CI
+comparison on 2026-11-03 still carried that day's probe, a loop asking for
+every KeyPairID, in `spdm_requester_key_pair_info.c`. The probe's build had
+recorded it, every other build that day had recorded `main`'s blob, and
+nothing had been built from the copy since. Put back; the probe kept aside.
+
+**Lesson.** ★ **A provenance check hashes the bytes the compiler reads:
+`--no-filters`, from outside any repository. And a copy of a source tree,
+which has no `git status`, keeps what its last test changed until something
+reads it file by file.** The false alarm cost ten minutes; without the check,
+the real one would have been a build of `0e9d60c` and a probe, labelled
+`0e9d60c`. `0001` §6 gains this line too.
+
+---
+
+### Smaller things, each checked
+
+- **A case planned as a failure was not one.** A responder without
+  `PSK_WITH_CONTEXT` exits 0 on both builds with no error: the requester drops
+  every step the responder's capabilities do not cover
+  (`spdm_requester_spdm.c` 474–526), and sent no `PSK_EXCHANGE`. The second
+  failure became a key that does not match its certificate.
+- **What two runs of one binary do not share.** The first comparator also
+  compared message lengths, and called a responder without PSK "different".
+  Two runs of `main` differ in the length of 1,067 of 1,708 secured messages,
+  and of the CSR, whose DER signature is 523 to 525 bytes. Those are compared by
+  code only now, and every pair compares equal.
+- **247 `ERROR` responses in #552's run, and one is the session's.** 246
+  answer `GET_MEASUREMENTS` for indices with no block, `InvalidRequest`, the
+  default flow's own enumeration; the 247th answers `KEY_EXCHANGE`.
+- **The read-back script's first test called a byte-identical body
+  different.** `gh --jq .body` adds a newline of its own; the script drops one
+  byte now, and was tested both ways on #546 and libspdm #4300.
+- **A one-second CI run is a real one.** The raw-public-key pair sends 20
+  messages: the requester drops `CHALLENGE`, measurements, `EP_INFO` and
+  `KEY_EXCHANGE` for `PUB_KEY_ID` (`spdm_requester_spdm.c` 568–571).
+- **Parallel runs on one port.** The last half of the comparison ran inside
+  its own network namespace (`unshare -rn`), so that two responders could
+  listen on 2323 at once with the workflows' own command lines.
+- **A new build directory needs the sample certificates.** libspdm's unit tests
+  with `RECORD_TRANSCRIPT_DATA_SUPPORT=1`, first on mbedtls, failed
+  certificate cases with and without the change alike: the directory had never
+  had `copy_sample_key` run, which libspdm's workflow does. With it, on
+  OpenSSL, every suite passes but `test_spdm_sample`'s two known cases.
+
+### Decisions
+
+- **Mine**: 25 over 24 (a question to libspdm) and 26 (cause unread); #290's
+  shape for the fix, not a second variable; 28 measured by intervention before
+  it is written as a cause; both prepared to be sent together, 28 first.
+- **The author's**: whether and in what order they go; the issue, the
+  sign-offs and the pull requests; the push of this repository.
+
+### Not done, and the reason for each
+
+- **25 and 28 upstream**: the author's keystrokes.
+- **The Windows jobs**: run the same command lines; not runnable here.
+- **26, #552, 13, 24, 94773, the demo, `c-drills`, Day 17's `TODO(me)`**: as
+  before.
